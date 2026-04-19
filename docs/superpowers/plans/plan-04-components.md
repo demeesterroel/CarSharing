@@ -2,9 +2,9 @@
 
 > **For agentic workers:** Use superpowers:executing-plans or superpowers:subagent-driven-development.
 
-**Goal:** Build the reusable UI components used across all pages: NavDrawer, CarToggle, PersonSelect, FAB, GroupedList, and BalanceIndicator.
+**Goal:** Build the reusable UI components used across all pages: NavDrawer, BottomTabBar, CarToggle, PersonSelect, FAB, GroupedList, and BalanceIndicator.
 
-**Architecture:** All components are client components in `components/`. They accept props only — no direct data fetching. Pages feed them data via TanStack Query hooks.
+**Architecture:** All components are client components in `components/`. They accept props only — no direct data fetching. Pages feed them data via TanStack Query hooks. Two persistent chrome elements wrap every page: the `NavDrawer` (hamburger → full side sheet) for secondary screens, and the `BottomTabBar` (fixed two-tab footer) with the primary data-entry flows **Kilometers** and **Tanken** always one tap away.
 
 **Tech Stack:** React 19, Tailwind v4, Radix UI, Lucide icons.
 
@@ -21,18 +21,18 @@
 ```tsx
 "use client";
 import * as Dialog from "@radix-ui/react-dialog";
-import { Menu, X, LayoutDashboard, Car, Users, Fuel, Route, Wrench, CreditCard, CalendarDays } from "lucide-react";
+import { Menu, X, LayoutDashboard, Car, Users, Wrench, CreditCard, CalendarDays } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 
+// /trips and /fuel are promoted to the BottomTabBar, so they are intentionally
+// omitted here to avoid duplicating primary actions in two places.
 const NAV_ITEMS = [
   { href: "/", label: "Dashboard", icon: LayoutDashboard },
   { href: "/calendar", label: "Calendar", icon: CalendarDays },
   { href: "/people", label: "People", icon: Users },
   { href: "/cars", label: "Cars", icon: Car },
-  { href: "/trips", label: "Kilometers", icon: Route },
-  { href: "/fuel", label: "Tanken", icon: Fuel },
   { href: "/expenses", label: "Extra Kosten", icon: Wrench },
   { href: "/payments", label: "Betalingen", icon: CreditCard },
 ];
@@ -99,13 +99,15 @@ export function PageHeader({ title }: { title: string }) {
 }
 ```
 
-- [ ] **Step 3: Update app/layout.tsx to include PageHeader**
+- [ ] **Step 3: Update app/layout.tsx to host the persistent BottomTabBar**
 
-Replace the body content — pages will each render their own `<PageHeader>`:
+Pages each render their own `<PageHeader>`. The layout reserves 64 px of bottom space (`pb-16`) so list content never hides behind the tab bar, and mounts `<BottomTabBar>` once at root so every route gets it for free.
+
 ```tsx
 import type { Metadata } from "next";
 import "./globals.css";
 import { Providers } from "./providers";
+import { BottomTabBar } from "@/components/bottom-tab-bar";
 
 export const metadata: Metadata = {
   title: "Autodelen",
@@ -118,9 +120,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="nl">
       <body className="min-h-screen bg-gray-50">
         <Providers>
-          <div className="max-w-2xl mx-auto bg-white min-h-screen shadow-sm">
+          <div className="max-w-2xl mx-auto bg-white min-h-screen shadow-sm pb-16">
             {children}
           </div>
+          <BottomTabBar />
         </Providers>
       </body>
     </html>
@@ -260,7 +263,7 @@ export function Fab({ onClick, label = "Toevoegen" }: Props) {
     <button
       onClick={onClick}
       aria-label={label}
-      className="fixed bottom-6 right-6 w-14 h-14 bg-blue-600 text-white rounded-full shadow-lg flex items-center justify-center hover:bg-blue-700 transition-colors z-20"
+      className="fixed bottom-20 right-6 w-14 h-14 bg-blue-600 text-white rounded-full shadow-lg flex items-center justify-center hover:bg-blue-700 transition-colors z-20"
     >
       <Plus className="w-6 h-6" />
     </button>
@@ -337,4 +340,71 @@ export function GroupedList<T>({
 ```bash
 git add components/grouped-list.tsx
 git commit -m "feat: grouped list component with month headers and totals"
+```
+
+---
+
+### Task 5: BottomTabBar
+
+**Files:**
+- Create: `components/bottom-tab-bar.tsx`
+
+The bar is a two-tab footer pinned to the bottom of the viewport, matching the width constraint of the main content wrapper (`max-w-2xl`). Active-state styling is driven by `usePathname()`; the root layout already reserves 64 px of bottom padding so list content never sits beneath it.
+
+- [ ] **Step 1: Create components/bottom-tab-bar.tsx**
+
+```tsx
+"use client";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { Route, Fuel } from "lucide-react";
+
+const TABS = [
+  { href: "/trips", label: "Kilometers", icon: Route },
+  { href: "/fuel", label: "Tanken", icon: Fuel },
+];
+
+export function BottomTabBar() {
+  const pathname = usePathname();
+  return (
+    <nav
+      aria-label="Primary"
+      className="fixed bottom-0 inset-x-0 z-30 border-t bg-white"
+    >
+      <div className="max-w-2xl mx-auto grid grid-cols-2 h-16">
+        {TABS.map(({ href, label, icon: Icon }) => {
+          const active = pathname === href || pathname.startsWith(`${href}/`);
+          return (
+            <Link
+              key={href}
+              href={href}
+              aria-current={active ? "page" : undefined}
+              className={`flex flex-col items-center justify-center gap-0.5 text-xs transition-colors ${
+                active ? "text-blue-600" : "text-gray-500 hover:text-gray-700"
+              }`}
+            >
+              <Icon className="w-5 h-5" />
+              <span className={active ? "font-medium" : ""}>{label}</span>
+            </Link>
+          );
+        })}
+      </div>
+    </nav>
+  );
+}
+```
+
+- [ ] **Step 2: Verify in browser**
+
+```bash
+npm run dev
+```
+
+Open http://localhost:3000. The bottom tab bar is visible on every route. Tapping **Kilometers** routes to `/trips`, **Tanken** to `/fuel`; the active tab shows in blue. FAB on those pages sits just above the bar (bottom-20). Scrolling a long list does not hide content behind the bar (layout `pb-16` reserves the space).
+
+- [ ] **Step 3: Commit**
+
+```bash
+git add components/bottom-tab-bar.tsx app/layout.tsx
+git commit -m "feat: persistent bottom tab bar for trips and fuel"
 ```

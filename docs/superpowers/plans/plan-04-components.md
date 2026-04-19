@@ -31,10 +31,10 @@ const NAV_ITEMS = [
   { href: "/calendar", label: "Calendar", icon: CalendarDays },
   { href: "/people", label: "People", icon: Users },
   { href: "/cars", label: "Cars", icon: Car },
-  { href: "/ritten", label: "Kilometers", icon: Route },
-  { href: "/tanken", label: "Tanken", icon: Fuel },
-  { href: "/kosten", label: "Extra Kosten", icon: Wrench },
-  { href: "/betaald", label: "Betalingen", icon: CreditCard },
+  { href: "/trips", label: "Kilometers", icon: Route },
+  { href: "/fuel", label: "Tanken", icon: Fuel },
+  { href: "/expenses", label: "Extra Kosten", icon: Wrench },
+  { href: "/payments", label: "Betalingen", icon: CreditCard },
 ];
 
 export function NavDrawer() {

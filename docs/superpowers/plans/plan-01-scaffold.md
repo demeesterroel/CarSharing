@@ -32,8 +32,8 @@ npm install @tanstack/react-query react-hook-form zod @hookform/resolvers
 npm install lucide-react sonner clsx tailwind-merge class-variance-authority
 npm install leaflet @types/leaflet react-leaflet
 npm install @fullcalendar/core @fullcalendar/react @fullcalendar/daygrid @fullcalendar/timegrid @fullcalendar/interaction
-npm install next-pwa
-npm install --save-dev tailwindcss @tailwindcss/postcss postcss vitest @vitejs/plugin-react
+npm install @ducanh2912/next-pwa
+npm install --save-dev tailwindcss @tailwindcss/postcss postcss vitest @vitejs/plugin-react tsx
 ```
 
 - [ ] **Step 3: Update scripts in package.json**
@@ -180,7 +180,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
 - [ ] **Step 3: Create app/layout.tsx**
 
 ```tsx
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { Providers } from "./providers";
 
@@ -188,12 +188,25 @@ export const metadata: Metadata = {
   title: "Autodelen",
   description: "Car sharing cooperative",
   manifest: "/manifest.json",
+};
+
+export const viewport: Viewport = {
   themeColor: "#1976d2",
+  width: "device-width",
+  initialScale: 1,
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="nl">
+      <head>
+        <link
+          rel="stylesheet"
+          href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+          integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+          crossOrigin=""
+        />
+      </head>
       <body>
         <Providers>{children}</Providers>
       </body>
@@ -201,6 +214,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   );
 }
 ```
+
+Note: `themeColor` moved to `viewport` export (Next 14+ requirement). Leaflet CSS is loaded from the layout so the map component doesn't need to render `<link>` itself.
 
 - [ ] **Step 4: Create placeholder home page app/page.tsx**
 

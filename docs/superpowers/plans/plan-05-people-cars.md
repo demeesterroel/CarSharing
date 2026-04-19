@@ -1,10 +1,11 @@
 # CarSharing — Plan 05: People & Cars
 
 > **For agentic workers:** Use superpowers:executing-plans or superpowers:subagent-driven-development.
+> **Prerequisite:** plans 01–04 and 00 (shared helpers) completed.
 
 **Goal:** API routes and pages for People and Cars — list, add, edit.
 
-**Architecture:** Next.js API routes in `app/api/` handle CRUD. Pages use TanStack Query hooks. Forms use React Hook Form + Zod.
+**Architecture:** Every route handler is wrapped by `json()` from `lib/api.ts`. Bodies are parsed via Zod; Next 15 passes `params` as a Promise. CRUD hooks come from `createResourceHooks`. Forms use React Hook Form + Zod.
 
 ---
 
@@ -17,50 +18,54 @@
 - [ ] **Step 1: Create app/api/people/route.ts**
 
 ```ts
-import { NextResponse } from "next/server";
+import { z } from "zod";
 import { getDb } from "@/lib/db";
 import { getPeople, insertPerson } from "@/lib/queries/people";
+import { json, readBody } from "@/lib/api";
 
-export async function GET() {
-  const people = getPeople(getDb());
-  return NextResponse.json(people);
-}
+const PersonSchema = z.object({
+  name: z.string().min(1),
+  discount: z.number().min(0).max(1).default(0),
+  discount_long: z.number().min(0).max(1).default(0),
+  active: z.union([z.literal(0), z.literal(1)]).default(1),
+});
 
-export async function POST(req: Request) {
-  const body = await req.json();
-  const id = insertPerson(getDb(), {
-    name: body.name,
-    korting: body.korting ?? 0,
-    korting_long: body.korting_long ?? 0,
-    active: body.active ?? 1,
-  });
-  return NextResponse.json({ id }, { status: 201 });
-}
+export const GET = json(async () => getPeople(getDb()));
+
+export const POST = json(async (req) => {
+  const data = await readBody(req, PersonSchema);
+  const id = insertPerson(getDb(), data);
+  return Response.json({ id }, { status: 201 });
+});
 ```
 
 - [ ] **Step 2: Create app/api/people/[id]/route.ts**
 
 ```ts
-import { NextResponse } from "next/server";
+import { z } from "zod";
 import { getDb } from "@/lib/db";
 import { getPersonById, updatePerson } from "@/lib/queries/people";
+import { json, readBody, readId, notFound } from "@/lib/api";
 
-export async function GET(_: Request, { params }: { params: { id: string } }) {
-  const person = getPersonById(getDb(), Number(params.id));
-  if (!person) return NextResponse.json({ error: "Not found" }, { status: 404 });
-  return NextResponse.json(person);
-}
+const PersonSchema = z.object({
+  name: z.string().min(1),
+  discount: z.number().min(0).max(1).default(0),
+  discount_long: z.number().min(0).max(1).default(0),
+  active: z.union([z.literal(0), z.literal(1)]).default(1),
+});
 
-export async function PUT(req: Request, { params }: { params: { id: string } }) {
-  const body = await req.json();
-  updatePerson(getDb(), Number(params.id), {
-    name: body.name,
-    korting: body.korting ?? 0,
-    korting_long: body.korting_long ?? 0,
-    active: body.active ?? 1,
-  });
-  return NextResponse.json({ ok: true });
-}
+export const GET = json(async (_req, ctx: { params: Promise<{ id: string }> }) => {
+  const person = getPersonById(getDb(), await readId(ctx));
+  if (!person) notFound();
+  return person;
+});
+
+export const PUT = json(async (req, ctx: { params: Promise<{ id: string }> }) => {
+  const id = await readId(ctx);
+  const data = await readBody(req, PersonSchema);
+  updatePerson(getDb(), id, data);
+  return { ok: true };
+});
 ```
 
 - [ ] **Step 3: Test API manually**
@@ -69,20 +74,28 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
 npm run dev
 curl http://localhost:3000/api/people
 ```
-Expected: `[]` (empty array).
+Expected: `[]` (empty array) or seeded rows.
 
 ```bash
 curl -X POST http://localhost:3000/api/people \
   -H "Content-Type: application/json" \
-  -d '{"name":"Roeland","korting":0,"korting_long":0,"active":1}'
+  -d '{"name":"Roeland","discount":0,"discount_long":0,"active":1}'
 ```
-Expected: `{"id":1}`.
+Expected: `{"id":N}`.
+
+Invalid payload fails fast:
+```bash
+curl -X POST http://localhost:3000/api/people \
+  -H "Content-Type: application/json" \
+  -d '{"name":""}'
+```
+Expected: `400` with `{"error":"Validation failed","issues":[...]}`.
 
 - [ ] **Step 4: Commit**
 
 ```bash
 git add app/api/people/
-git commit -m "feat: people API routes GET/POST/PUT"
+git commit -m "feat: people API routes with zod validation and error wrapper"
 ```
 
 ---
@@ -96,63 +109,68 @@ git commit -m "feat: people API routes GET/POST/PUT"
 - [ ] **Step 1: Create app/api/cars/route.ts**
 
 ```ts
-import { NextResponse } from "next/server";
+import { z } from "zod";
 import { getDb } from "@/lib/db";
 import { getCars, insertCar } from "@/lib/queries/cars";
+import { json, readBody } from "@/lib/api";
 
-export async function GET() {
-  return NextResponse.json(getCars(getDb()));
-}
+const CarSchema = z.object({
+  short: z.string().min(1).max(10),
+  name: z.string().min(1),
+  price_per_km: z.number().positive(),
+  brand: z.string().nullable().optional().transform((v) => v ?? null),
+  color: z.string().nullable().optional().transform((v) => v ?? null),
+});
 
-export async function POST(req: Request) {
-  const body = await req.json();
-  const id = insertCar(getDb(), {
-    short: body.short,
-    name: body.name,
-    prijs: body.prijs,
-    merk: body.merk ?? null,
-    kleur: body.kleur ?? null,
-  });
-  return NextResponse.json({ id }, { status: 201 });
-}
+export const GET = json(async () => getCars(getDb()));
+
+export const POST = json(async (req) => {
+  const data = await readBody(req, CarSchema);
+  const id = insertCar(getDb(), data);
+  return Response.json({ id }, { status: 201 });
+});
 ```
 
 - [ ] **Step 2: Create app/api/cars/[id]/route.ts**
 
 ```ts
-import { NextResponse } from "next/server";
+import { z } from "zod";
 import { getDb } from "@/lib/db";
 import { getCarById, updateCar } from "@/lib/queries/cars";
+import { json, readBody, readId, notFound } from "@/lib/api";
 
-export async function GET(_: Request, { params }: { params: { id: string } }) {
-  const car = getCarById(getDb(), Number(params.id));
-  if (!car) return NextResponse.json({ error: "Not found" }, { status: 404 });
-  return NextResponse.json(car);
-}
+const CarSchema = z.object({
+  short: z.string().min(1).max(10),
+  name: z.string().min(1),
+  price_per_km: z.number().positive(),
+  brand: z.string().nullable().optional().transform((v) => v ?? null),
+  color: z.string().nullable().optional().transform((v) => v ?? null),
+});
 
-export async function PUT(req: Request, { params }: { params: { id: string } }) {
-  const body = await req.json();
-  updateCar(getDb(), Number(params.id), {
-    short: body.short,
-    name: body.name,
-    prijs: body.prijs,
-    merk: body.merk ?? null,
-    kleur: body.kleur ?? null,
-  });
-  return NextResponse.json({ ok: true });
-}
+export const GET = json(async (_req, ctx: { params: Promise<{ id: string }> }) => {
+  const car = getCarById(getDb(), await readId(ctx));
+  if (!car) notFound();
+  return car;
+});
+
+export const PUT = json(async (req, ctx: { params: Promise<{ id: string }> }) => {
+  const id = await readId(ctx);
+  const data = await readBody(req, CarSchema);
+  updateCar(getDb(), id, data);
+  return { ok: true };
+});
 ```
 
 - [ ] **Step 3: Commit**
 
 ```bash
 git add app/api/cars/
-git commit -m "feat: cars API routes GET/POST/PUT"
+git commit -m "feat: cars API routes with zod validation"
 ```
 
 ---
 
-### Task 3: TanStack Query hooks
+### Task 3: TanStack Query hooks via factory
 
 **Files:**
 - Create: `hooks/use-people.ts`
@@ -161,71 +179,35 @@ git commit -m "feat: cars API routes GET/POST/PUT"
 - [ ] **Step 1: Create hooks/use-people.ts**
 
 ```ts
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { createResourceHooks } from "./use-resource";
 import type { Person } from "@/types";
 
-export function usePeople() {
-  return useQuery<Person[]>({
-    queryKey: ["people"],
-    queryFn: () => fetch("/api/people").then((r) => r.json()),
-  });
-}
-
-export function useCreatePerson() {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: (data: Omit<Person, "id">) =>
-      fetch("/api/people", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) }).then((r) => r.json()),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["people"] }),
-  });
-}
-
-export function useUpdatePerson() {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: ({ id, ...data }: Person) =>
-      fetch(`/api/people/${id}`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) }).then((r) => r.json()),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["people"] }),
-  });
-}
+const hooks = createResourceHooks<Person, Omit<Person, "id">>("people", "/api/people", {
+  invalidate: [["dashboard"]],
+});
+export const usePeople = hooks.useList;
+export const useCreatePerson = hooks.useCreate;
+export const useUpdatePerson = hooks.useUpdate;
 ```
 
 - [ ] **Step 2: Create hooks/use-cars.ts**
 
 ```ts
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { createResourceHooks } from "./use-resource";
 import type { Car } from "@/types";
 
-export function useCars() {
-  return useQuery<Car[]>({
-    queryKey: ["cars"],
-    queryFn: () => fetch("/api/cars").then((r) => r.json()),
-  });
-}
-
-export function useCreateCar() {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: (data: Omit<Car, "id">) =>
-      fetch("/api/cars", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) }).then((r) => r.json()),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["cars"] }),
-  });
-}
-
-export function useUpdateCar() {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: ({ id, ...data }: Car) =>
-      fetch(`/api/cars/${id}`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) }).then((r) => r.json()),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["cars"] }),
-  });
-}
+const hooks = createResourceHooks<Car, Omit<Car, "id">>("cars", "/api/cars", {
+  invalidate: [["dashboard"]],
+});
+export const useCars = hooks.useList;
+export const useCreateCar = hooks.useCreate;
+export const useUpdateCar = hooks.useUpdate;
 ```
 
 - [ ] **Step 3: Commit**
 
 ```bash
-git add hooks/
+git add hooks/use-people.ts hooks/use-cars.ts
 git commit -m "feat: TanStack Query hooks for people and cars"
 ```
 
@@ -248,8 +230,8 @@ import type { Person } from "@/types";
 
 const schema = z.object({
   name: z.string().min(1, "Naam is verplicht"),
-  korting: z.coerce.number().min(0).max(1),
-  korting_long: z.coerce.number().min(0).max(1),
+  discount: z.coerce.number().min(0).max(1),
+  discount_long: z.coerce.number().min(0).max(1),
   active: z.coerce.number().int().min(0).max(1),
 });
 type FormData = z.infer<typeof schema>;
@@ -263,7 +245,7 @@ interface Props {
 export function PersonForm({ defaultValues, onSubmit, onCancel }: Props) {
   const { register, handleSubmit, formState: { errors } } = useForm<FormData>({
     resolver: zodResolver(schema),
-    defaultValues: { korting: 0, korting_long: 0, active: 1, ...defaultValues },
+    defaultValues: { discount: 0, discount_long: 0, active: 1, ...defaultValues },
   });
 
   return (
@@ -275,11 +257,15 @@ export function PersonForm({ defaultValues, onSubmit, onCancel }: Props) {
       </div>
       <div>
         <label className="block text-sm font-medium mb-1">Korting (0–1)</label>
-        <input {...register("korting")} type="number" step="0.01" className="w-full border rounded-md px-3 py-2 text-sm" />
+        <input {...register("discount")} type="number" step="0.01" className="w-full border rounded-md px-3 py-2 text-sm" />
       </div>
       <div>
         <label className="block text-sm font-medium mb-1">Korting lang (0–1)</label>
-        <input {...register("korting_long")} type="number" step="0.01" className="w-full border rounded-md px-3 py-2 text-sm" />
+        <input {...register("discount_long")} type="number" step="0.01" className="w-full border rounded-md px-3 py-2 text-sm" />
+      </div>
+      <div className="flex items-center gap-2">
+        <input {...register("active")} type="checkbox" id="active" value="1" defaultChecked={defaultValues?.active !== 0} />
+        <label htmlFor="active" className="text-sm">Actief lid</label>
       </div>
       <div className="flex gap-3 pt-2">
         <button type="button" onClick={onCancel} className="flex-1 border rounded-md py-2 text-sm">Annuleer</button>
@@ -325,13 +311,12 @@ export default function PeoplePage() {
           >
             <span className={`w-2 h-2 rounded-full ${p.active ? "bg-green-500" : "bg-gray-300"}`} />
             <span className="flex-1 text-sm font-medium">{p.name}</span>
-            {p.korting > 0 && <span className="text-xs text-gray-500">{p.korting}</span>}
+            {p.discount > 0 && <span className="text-xs text-gray-500">{p.discount}</span>}
             <ChevronRight className="w-4 h-4 text-gray-400" />
           </button>
         ))}
       </div>
 
-      {/* Add dialog */}
       <Dialog.Root open={adding} onOpenChange={setAdding}>
         <Dialog.Portal>
           <Dialog.Overlay className="fixed inset-0 bg-black/40 z-40" />
@@ -341,6 +326,7 @@ export default function PeoplePage() {
               onSubmit={(data) => {
                 createPerson.mutate(data as Omit<Person, "id">, {
                   onSuccess: () => { setAdding(false); toast.success("Persoon toegevoegd"); },
+                  onError: (e) => toast.error(e.message),
                 });
               }}
               onCancel={() => setAdding(false)}
@@ -349,7 +335,6 @@ export default function PeoplePage() {
         </Dialog.Portal>
       </Dialog.Root>
 
-      {/* Edit dialog */}
       <Dialog.Root open={!!editing} onOpenChange={(o) => !o && setEditing(null)}>
         <Dialog.Portal>
           <Dialog.Overlay className="fixed inset-0 bg-black/40 z-40" />
@@ -361,6 +346,7 @@ export default function PeoplePage() {
                 onSubmit={(data) => {
                   updatePerson.mutate({ ...editing, ...data }, {
                     onSuccess: () => { setEditing(null); toast.success("Opgeslagen"); },
+                    onError: (e) => toast.error(e.message),
                   });
                 }}
                 onCancel={() => setEditing(null)}
@@ -410,9 +396,9 @@ import type { Car } from "@/types";
 const schema = z.object({
   short: z.string().min(1).max(10),
   name: z.string().min(1),
-  prijs: z.coerce.number().positive(),
-  merk: z.string().optional(),
-  kleur: z.string().optional(),
+  price_per_km: z.coerce.number().positive(),
+  brand: z.string().optional(),
+  color: z.string().optional(),
 });
 type FormData = z.infer<typeof schema>;
 
@@ -425,7 +411,7 @@ interface Props {
 export function CarForm({ defaultValues, onSubmit, onCancel }: Props) {
   const { register, handleSubmit, formState: { errors } } = useForm<FormData>({
     resolver: zodResolver(schema),
-    defaultValues: { prijs: 0.20, ...defaultValues },
+    defaultValues: { price_per_km: 0.20, ...defaultValues },
   });
 
   return (
@@ -441,15 +427,15 @@ export function CarForm({ defaultValues, onSubmit, onCancel }: Props) {
       </div>
       <div>
         <label className="block text-sm font-medium mb-1">Prijs/km *</label>
-        <input {...register("prijs")} type="number" step="0.01" className="w-full border rounded-md px-3 py-2 text-sm" />
+        <input {...register("price_per_km")} type="number" step="0.01" className="w-full border rounded-md px-3 py-2 text-sm" />
       </div>
       <div>
         <label className="block text-sm font-medium mb-1">Merk</label>
-        <input {...register("merk")} className="w-full border rounded-md px-3 py-2 text-sm" />
+        <input {...register("brand")} className="w-full border rounded-md px-3 py-2 text-sm" />
       </div>
       <div>
         <label className="block text-sm font-medium mb-1">Kleur</label>
-        <input {...register("kleur")} className="w-full border rounded-md px-3 py-2 text-sm" />
+        <input {...register("color")} className="w-full border rounded-md px-3 py-2 text-sm" />
       </div>
       <div className="flex gap-3 pt-2">
         <button type="button" onClick={onCancel} className="flex-1 border rounded-md py-2 text-sm">Annuleer</button>
@@ -493,7 +479,9 @@ export default function CarsPage() {
             <span className="text-sm font-mono font-bold text-blue-600 w-10">{c.short}</span>
             <div className="flex-1">
               <p className="text-sm font-medium">{c.name}</p>
-              <p className="text-xs text-gray-500">{c.merk} · {c.kleur} · €{c.prijs}/km</p>
+              <p className="text-xs text-gray-500">
+                {[c.brand, c.color].filter(Boolean).join(" · ")} · €{c.price_per_km}/km
+              </p>
             </div>
             <ChevronRight className="w-4 h-4 text-gray-400" />
           </button>
@@ -507,8 +495,9 @@ export default function CarsPage() {
             <Dialog.Title className="px-4 pt-4 text-base font-semibold">Wagen toevoegen</Dialog.Title>
             <CarForm
               onSubmit={(data) => createCar.mutate(
-                { ...data, merk: data.merk ?? null, kleur: data.kleur ?? null } as Omit<Car,"id">,
-                { onSuccess: () => { setAdding(false); toast.success("Wagen toegevoegd"); } }
+                { ...data, brand: data.brand ?? null, color: data.color ?? null } as Omit<Car,"id">,
+                { onSuccess: () => { setAdding(false); toast.success("Wagen toegevoegd"); },
+                  onError: (e) => toast.error(e.message) }
               )}
               onCancel={() => setAdding(false)}
             />
@@ -525,8 +514,9 @@ export default function CarsPage() {
               <CarForm
                 defaultValues={editing}
                 onSubmit={(data) => updateCar.mutate(
-                  { ...editing, ...data, merk: data.merk ?? null, kleur: data.kleur ?? null },
-                  { onSuccess: () => { setEditing(null); toast.success("Opgeslagen"); } }
+                  { ...editing, ...data, brand: data.brand ?? null, color: data.color ?? null },
+                  { onSuccess: () => { setEditing(null); toast.success("Opgeslagen"); },
+                    onError: (e) => toast.error(e.message) }
                 )}
                 onCancel={() => setEditing(null)}
               />
@@ -543,7 +533,7 @@ export default function CarsPage() {
 
 - [ ] **Step 3: Verify in browser**
 
-Navigate to http://localhost:3000/cars — list shows 3 cars (after seed), FAB opens form.
+Navigate to http://localhost:3000/cars — list shows 4 cars (after seed), FAB opens form.
 
 - [ ] **Step 4: Commit**
 

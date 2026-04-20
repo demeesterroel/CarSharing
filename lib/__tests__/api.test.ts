@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { z } from "zod";
-import { json, readBody, badRequest, HttpError } from "../api";
+import { json, readBody, badRequest, readId, HttpError } from "../api";
 
 describe("json wrapper", () => {
   it("returns data as JSON on success", async () => {
@@ -29,5 +29,17 @@ describe("json wrapper", () => {
     const body = await res.json();
     expect(body.error).toBe("Validation failed");
     expect(Array.isArray(body.issues)).toBe(true);
+  });
+});
+
+describe("readId", () => {
+  it("parses a valid integer string", async () => {
+    expect(await readId({ params: Promise.resolve({ id: "42" }) })).toBe(42);
+  });
+  it("throws 400 for non-numeric id", async () => {
+    await expect(readId({ params: Promise.resolve({ id: "abc" }) })).rejects.toBeInstanceOf(HttpError);
+  });
+  it("throws 400 for float id", async () => {
+    await expect(readId({ params: Promise.resolve({ id: "1.5" }) })).rejects.toBeInstanceOf(HttpError);
   });
 });

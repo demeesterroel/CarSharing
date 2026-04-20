@@ -44,6 +44,6 @@ export async function readBody<T>(req: Request, schema: ZodSchema<T>): Promise<T
 export async function readId(ctx: { params: Promise<{ id: string }> }): Promise<number> {
   const { id } = await ctx.params;
   const n = Number(id);
-  if (!Number.isFinite(n)) badRequest(`Invalid id: ${id}`);
+  if (!Number.isInteger(n) || n <= 0) badRequest(`Invalid id: ${id}`);
   return n;
 }

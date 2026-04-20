@@ -29,13 +29,14 @@ export function NavDrawer() {
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 bg-black/40 z-40" onClick={() => setOpen(false)} />
         <Dialog.Content className="fixed left-0 top-0 h-full w-72 bg-white z-50 shadow-xl flex flex-col">
+          <Dialog.Title className="sr-only">{t("nav.menu")}</Dialog.Title>
           <div className="flex items-center gap-3 p-4 border-b">
             <div className="w-10 h-10 rounded border-2 border-blue-600 flex items-center justify-center">
               <Car className="w-5 h-5 text-blue-600" />
             </div>
             <span className="text-lg font-semibold">{t("brand.app")}</span>
             <Dialog.Close asChild>
-              <button className="ml-auto p-1 rounded hover:bg-gray-100">
+              <button className="ml-auto p-1 rounded hover:bg-gray-100" aria-label={t("action.cancel")}>
                 <X className="w-4 h-4" />
               </button>
             </Dialog.Close>
@@ -47,7 +48,9 @@ export function NavDrawer() {
                 href={href}
                 onClick={() => setOpen(false)}
                 className={`flex items-center gap-3 px-4 py-3 text-sm hover:bg-blue-50 transition-colors ${
-                  pathname === href ? "text-blue-600 bg-blue-50 border-l-4 border-blue-600" : "text-gray-700"
+                  (href === "/" ? pathname === href : pathname === href || pathname.startsWith(`${href}/`))
+                    ? "text-blue-600 bg-blue-50 border-l-4 border-blue-600"
+                    : "text-gray-700"
                 }`}
               >
                 <Icon className="w-5 h-5" />

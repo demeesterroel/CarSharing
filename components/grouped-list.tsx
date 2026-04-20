@@ -1,3 +1,5 @@
+import React from "react";
+
 interface GroupedListProps<T> {
   items: T[];
   getKey: (item: T) => string;
@@ -34,7 +36,9 @@ export function GroupedList<T>({
                 {total.toLocaleString("nl-BE", { minimumFractionDigits: 2 })}
               </span>
             </div>
-            {groupItems.map(renderItem)}
+            {groupItems.map((item, i) => (
+              <React.Fragment key={i}>{renderItem(item)}</React.Fragment>
+            ))}
           </div>
         );
       })}

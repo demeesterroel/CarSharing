@@ -1,8 +1,9 @@
 import { createResourceHooks } from "./use-resource";
-import type { Car, CarInput } from "@/types";
+import type { Car } from "@/types";
 
-export const carsHooks = createResourceHooks<Car, CarInput>("cars", "/api/cars");
-export const useCars = carsHooks.useList;
-export const useCreateCar = carsHooks.useCreate;
-export const useUpdateCar = carsHooks.useUpdate;
-export const useDeleteCar = carsHooks.useDelete;
+const hooks = createResourceHooks<Car, Omit<Car, "id">>("cars", "/api/cars", {
+  invalidate: [["dashboard"]],
+});
+export const useCars = hooks.useList;
+export const useCreateCar = hooks.useCreate;
+export const useUpdateCar = hooks.useUpdate;

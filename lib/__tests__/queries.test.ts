@@ -6,6 +6,7 @@ import { getCars, insertCar } from "../queries/cars";
 import { insertTrip, getTrips } from "../queries/trips";
 import { getLastCarState } from "../queries/car-state";
 import { insertFuelFillup } from "../queries/fuel-fillups";
+import { getDashboard } from "../queries/dashboard";
 
 function makeDb() {
   const db = new Database(":memory:");
@@ -91,5 +92,62 @@ describe("getLastCarState", () => {
     insertFuelFillup(db, { person_id: pid, car_id: cid, date: "2026-04-10", amount: 50, liters: 30, odometer: 175, receipt: null, location: "station" });
     insertTrip(db, { person_id: pid, car_id: cid, date: "2026-04-10", start_odometer: 175, end_odometer: 225, location: "parked" });
     expect(getLastCarState(db, cid)).toEqual({ odometer: 225, location: "parked", source: "trip" });
+  });
+});
+
+describe("getDashboard", () => {
+  it("returns zero balance for person with no activity", () => {
+    const db = makeDb();
+    insertPerson(db, { name: "Test", discount: 0, discount_long: 0, active: 1 });
+    const rows = getDashboard(db, 2026);
+    expect(rows[0].balance).toBe(0);
+    expect(rows[0].trip_count).toBe(0);
+  });
+
+  it("computes negative balance when trip amount exceeds payments", () => {
+    const db = makeDb();
+    const pid = insertPerson(db, { name: "Roeland", discount: 0, discount_long: 0, active: 1 });
+    const cid = insertCar(db, {
+      short: "LEW",
+      name: "Lewis",
+      price_per_km: 0.25,
+      brand: null,
+      color: null,
+    });
+    insertTrip(db, {
+      person_id: pid,
+      car_id: cid,
+      date: "2026-01-10",
+      start_odometer: 0,
+      end_odometer: 100,
+      location: null,
+    });
+    const rows = getDashboard(db, 2026);
+    expect(rows[0].balance).toBeCloseTo(-25);
+    expect(rows[0].trip_km).toBe(100);
+    expect(rows[0].trip_count).toBe(1);
+  });
+
+  it("filters trips outside target year", () => {
+    const db = makeDb();
+    const pid = insertPerson(db, { name: "X", discount: 0, discount_long: 0, active: 1 });
+    const cid = insertCar(db, {
+      short: "A",
+      name: "A",
+      price_per_km: 0.25,
+      brand: null,
+      color: null,
+    });
+    insertTrip(db, {
+      person_id: pid,
+      car_id: cid,
+      date: "2025-06-01",
+      start_odometer: 0,
+      end_odometer: 100,
+      location: null,
+    });
+    const rows = getDashboard(db, 2026);
+    expect(rows[0].trip_count).toBe(0);
+    expect(rows[0].balance).toBe(0);
   });
 });

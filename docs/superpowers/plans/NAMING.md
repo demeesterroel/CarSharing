@@ -92,6 +92,6 @@ This document shows the complete Dutch → English mapping applied across all pl
 
 ## UI labels — routed through the i18n module
 
-All user-facing strings resolve through `t(key, params?)` from `lib/i18n/`. Keys are English and namespaced (`nav.*`, `page.*`, `form.*`, `action.*`, `validation.*`, `toast.*`, `state.*`, `error.*`, `balance.*`, `brand.*`). Dutch values live in `lib/i18n/messages/nl.ts`. See `plan-03b-i18n.md` for the full key list and the helper's contract.
+All user-facing strings resolve through `t(key, params?)` from `lib/i18n/`. Keys are English and namespaced (`nav.*`, `page.*`, `form.*`, `action.*`, `validation.*`, `toast.*`, `state.*`, `error.*`, `balance.*`, `brand.*`). Dutch values live in `lib/i18n/messages/nl.ts`. See plan-03b-i18n.md for the full key list and the helper's contract.
 
 Code-level names (variables, files, routes, DB columns) remain English — unchanged.

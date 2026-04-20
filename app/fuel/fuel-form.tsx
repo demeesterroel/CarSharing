@@ -15,16 +15,17 @@ import type { FuelFillup, FuelFillupInput } from "@/types";
 import { t } from "@/lib/i18n";
 
 const schema = z.object({
-  person_id: z.number({ required_error: t("validation.person_required") }),
-  car_id: z.number({ required_error: t("validation.car_required") }),
+  person_id: z.number({ error: t("validation.person_required") }),
+  car_id: z.number({ error: t("validation.car_required") }),
   date: z.string().min(1),
   amount: z.coerce.number().positive(),
   liters: z.coerce.number().positive(),
-  odometer: z.coerce.number().int().nullable().optional(),
-  receipt: z.string().nullable().optional(),
-  location: z.string().nullable().optional(),
+  odometer: z.coerce.number().int().nullable().optional().transform((v) => v ?? null),
+  receipt: z.string().nullable().optional().transform((v) => v ?? null),
+  location: z.string().nullable().optional().transform((v) => v ?? null),
 });
-type FormData = z.infer<typeof schema>;
+type FormInput = z.input<typeof schema>;
+type FormData = z.output<typeof schema>;
 
 interface Props {
   defaultValues?: Partial<FuelFillup>;
@@ -36,7 +37,7 @@ export function FuelForm({ defaultValues, onSubmit, onCancel }: Props) {
   const { data: people = [] } = usePeople();
   const { data: cars = [] } = useCars();
   const isAddMode = !defaultValues?.id;
-  const { register, handleSubmit, control, watch, setValue, getValues } = useForm<FormData>({
+  const { register, handleSubmit, control, watch, setValue, getValues } = useForm<FormInput, unknown, FormData>({
     resolver: zodResolver(schema),
     defaultValues: {
       date: new Date().toISOString().slice(0, 10),
@@ -50,7 +51,7 @@ export function FuelForm({ defaultValues, onSubmit, onCancel }: Props) {
   });
 
   const [amount, liters, carId] = watch(["amount", "liters", "car_id"]);
-  const pricePerLiter = calcPricePerLiter(amount ?? 0, liters ?? 0);
+  const pricePerLiter = calcPricePerLiter(Number(amount) || 0, Number(liters) || 0);
 
   const { data: lastState } = useLastCarState(carId);
   useEffect(() => {

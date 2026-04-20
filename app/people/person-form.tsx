@@ -9,9 +9,10 @@ const schema = z.object({
   name: z.string().min(1, t("validation.name_required")),
   discount: z.coerce.number().min(0).max(1),
   discount_long: z.coerce.number().min(0).max(1),
-  active: z.coerce.number().int().min(0).max(1),
+  active: z.coerce.number().int().min(0).max(1).transform((v): 0 | 1 => (v === 0 ? 0 : 1)),
 });
-type FormData = z.infer<typeof schema>;
+type FormInput = z.input<typeof schema>;
+type FormData = z.output<typeof schema>;
 
 interface Props {
   defaultValues?: Partial<Person>;
@@ -20,7 +21,7 @@ interface Props {
 }
 
 export function PersonForm({ defaultValues, onSubmit, onCancel }: Props) {
-  const { register, handleSubmit, watch, setValue, formState: { errors } } = useForm<FormData>({
+  const { register, handleSubmit, watch, setValue, formState: { errors } } = useForm<FormInput, unknown, FormData>({
     resolver: zodResolver(schema),
     defaultValues: { discount: 0, discount_long: 0, active: 1, ...defaultValues },
   });

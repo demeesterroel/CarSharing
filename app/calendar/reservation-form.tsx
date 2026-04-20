@@ -11,8 +11,8 @@ import { t } from "@/lib/i18n";
 
 const schema = z
   .object({
-    person_id: z.number({ required_error: t("validation.person_required") }),
-    car_id: z.number({ required_error: t("validation.car_required") }),
+    person_id: z.number({ error: t("validation.person_required") }),
+    car_id: z.number({ error: t("validation.car_required") }),
     start_date: z.string().min(1),
     end_date: z.string().min(1),
   })

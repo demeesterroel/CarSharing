@@ -41,7 +41,7 @@ export async function readBody<T>(req: Request, schema: ZodSchema<T>): Promise<T
   return schema.parse(raw);
 }
 
-export async function readId(ctx: { params: Promise<{ id: string }> }): Promise<number> {
+export async function readId(ctx: { params: Promise<Record<string, string>> }): Promise<number> {
   const { id } = await ctx.params;
   const n = Number(id);
   if (!Number.isInteger(n) || n <= 0) badRequest(`Invalid id: ${id}`);

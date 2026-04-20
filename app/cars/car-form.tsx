@@ -12,7 +12,8 @@ const schema = z.object({
   brand: z.string().optional().transform((v) => v === "" ? null : (v ?? null)),
   color: z.string().optional().transform((v) => v === "" ? null : (v ?? null)),
 });
-type FormData = z.infer<typeof schema>;
+type FormInput = z.input<typeof schema>;
+type FormData = z.output<typeof schema>;
 
 interface Props {
   defaultValues?: Partial<Car>;
@@ -21,9 +22,14 @@ interface Props {
 }
 
 export function CarForm({ defaultValues, onSubmit, onCancel }: Props) {
-  const { register, handleSubmit, formState: { errors } } = useForm<FormData>({
+  const { register, handleSubmit, formState: { errors } } = useForm<FormInput, unknown, FormData>({
     resolver: zodResolver(schema),
-    defaultValues: { price_per_km: 0.20, ...defaultValues },
+    defaultValues: {
+      price_per_km: 0.20,
+      ...defaultValues,
+      brand: defaultValues?.brand ?? undefined,
+      color: defaultValues?.color ?? undefined,
+    },
   });
 
   return (

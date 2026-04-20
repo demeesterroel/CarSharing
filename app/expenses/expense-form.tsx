@@ -10,13 +10,14 @@ import type { Expense, ExpenseInput } from "@/types";
 import { t } from "@/lib/i18n";
 
 const schema = z.object({
-  person_id: z.number({ required_error: t("validation.person_required") }),
-  car_id: z.number({ required_error: t("validation.car_required") }),
+  person_id: z.number({ error: t("validation.person_required") }),
+  car_id: z.number({ error: t("validation.car_required") }),
   date: z.string().min(1),
   amount: z.coerce.number().positive(),
-  description: z.string().nullable().optional(),
+  description: z.string().nullable().optional().transform((v) => v ?? null),
 });
-type FormData = z.infer<typeof schema>;
+type FormInput = z.input<typeof schema>;
+type FormData = z.output<typeof schema>;
 
 interface Props {
   defaultValues?: Partial<Expense>;
@@ -27,7 +28,7 @@ interface Props {
 export function ExpenseForm({ defaultValues, onSubmit, onCancel }: Props) {
   const { data: people = [] } = usePeople();
   const { data: cars = [] } = useCars();
-  const { register, handleSubmit, control } = useForm<FormData>({
+  const { register, handleSubmit, control } = useForm<FormInput, unknown, FormData>({
     resolver: zodResolver(schema),
     defaultValues: {
       date: new Date().toISOString().slice(0, 10),

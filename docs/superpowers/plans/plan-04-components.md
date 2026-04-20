@@ -6,6 +6,8 @@
 
 **Architecture:** All components are client components in `components/`. They accept props only — no direct data fetching. Pages feed them data via TanStack Query hooks. Two persistent chrome elements wrap every page: the `NavDrawer` (hamburger → full side sheet) for secondary screens, and the `BottomTabBar` (fixed two-tab footer) with the primary data-entry flows **Kilometers** and **Tanken** always one tap away.
 
+**Prerequisite:** plan-03b-i18n (the `t()` helper and `lib/i18n/messages/nl.ts` dictionary). Every user-facing string in this plan is rendered via `t()`.
+
 **Tech Stack:** React 19, Tailwind v4, Radix UI, Lucide icons.
 
 ---
@@ -25,16 +27,17 @@ import { Menu, X, LayoutDashboard, Car, Users, Wrench, CreditCard, CalendarDays 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
+import { t } from "@/lib/i18n";
 
 // /trips and /fuel are promoted to the BottomTabBar, so they are intentionally
 // omitted here to avoid duplicating primary actions in two places.
 const NAV_ITEMS = [
-  { href: "/", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/calendar", label: "Calendar", icon: CalendarDays },
-  { href: "/people", label: "People", icon: Users },
-  { href: "/cars", label: "Cars", icon: Car },
-  { href: "/expenses", label: "Extra Kosten", icon: Wrench },
-  { href: "/payments", label: "Betalingen", icon: CreditCard },
+  { href: "/", label: t("nav.dashboard"), icon: LayoutDashboard },
+  { href: "/calendar", label: t("nav.calendar"), icon: CalendarDays },
+  { href: "/people", label: t("nav.people"), icon: Users },
+  { href: "/cars", label: t("nav.cars"), icon: Car },
+  { href: "/expenses", label: t("nav.expenses"), icon: Wrench },
+  { href: "/payments", label: t("nav.payments"), icon: CreditCard },
 ];
 
 export function NavDrawer() {
@@ -44,7 +47,7 @@ export function NavDrawer() {
   return (
     <Dialog.Root open={open} onOpenChange={setOpen}>
       <Dialog.Trigger asChild>
-        <button className="p-2 rounded-md hover:bg-gray-100" aria-label="Menu">
+        <button className="p-2 rounded-md hover:bg-gray-100" aria-label={t("nav.menu")}>
           <Menu className="w-5 h-5" />
         </button>
       </Dialog.Trigger>
@@ -55,7 +58,7 @@ export function NavDrawer() {
             <div className="w-10 h-10 rounded border-2 border-blue-600 flex items-center justify-center">
               <Car className="w-5 h-5 text-blue-600" />
             </div>
-            <span className="text-lg font-semibold">Autodelen</span>
+            <span className="text-lg font-semibold">{t("brand.app")}</span>
             <Dialog.Close asChild>
               <button className="ml-auto p-1 rounded hover:bg-gray-100">
                 <X className="w-4 h-4" />
@@ -108,10 +111,11 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { Providers } from "./providers";
 import { BottomTabBar } from "@/components/bottom-tab-bar";
+import { t } from "@/lib/i18n";
 
 export const metadata: Metadata = {
-  title: "Autodelen",
-  description: "Car sharing cooperative",
+  title: t("brand.app"),
+  description: t("brand.description"),
   manifest: "/manifest.json",
 };
 
@@ -135,13 +139,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 
 ```tsx
 import { PageHeader } from "@/components/page-header";
+import { t } from "@/lib/i18n";
 
 export default function HomePage() {
   return (
     <>
-      <PageHeader title="Dashboard" />
+      <PageHeader title={t("page.dashboard")} />
       <main className="p-4">
-        <p className="text-gray-500">Dashboard coming soon.</p>
+        <p className="text-gray-500">{t("page.dashboard_coming_soon")}</p>
       </main>
     </>
   );
@@ -223,6 +228,7 @@ git commit -m "feat: car toggle button group component"
 ```tsx
 "use client";
 import type { Person } from "@/types";
+import { t } from "@/lib/i18n";
 
 interface Props {
   people: Person[];
@@ -231,14 +237,14 @@ interface Props {
   placeholder?: string;
 }
 
-export function PersonSelect({ people, value, onChange, placeholder = "Selecteer persoon" }: Props) {
+export function PersonSelect({ people, value, onChange, placeholder }: Props) {
   return (
     <select
       value={value ?? ""}
       onChange={(e) => onChange(Number(e.target.value))}
       className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
     >
-      <option value="" disabled>{placeholder}</option>
+      <option value="" disabled>{placeholder ?? t("form.select_person_placeholder")}</option>
       {people.map((p) => (
         <option key={p.id} value={p.id}>{p.name}</option>
       ))}
@@ -252,17 +258,18 @@ export function PersonSelect({ people, value, onChange, placeholder = "Selecteer
 ```tsx
 "use client";
 import { Plus } from "lucide-react";
+import { t } from "@/lib/i18n";
 
 interface Props {
   onClick: () => void;
   label?: string;
 }
 
-export function Fab({ onClick, label = "Toevoegen" }: Props) {
+export function Fab({ onClick, label }: Props) {
   return (
     <button
       onClick={onClick}
-      aria-label={label}
+      aria-label={label ?? t("action.add")}
       className="fixed bottom-20 right-6 w-14 h-14 bg-blue-600 text-white rounded-full shadow-lg flex items-center justify-center hover:bg-blue-700 transition-colors z-20"
     >
       <Plus className="w-6 h-6" />
@@ -358,17 +365,18 @@ The bar is a two-tab footer pinned to the bottom of the viewport, matching the w
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Route, Fuel } from "lucide-react";
+import { t } from "@/lib/i18n";
 
 const TABS = [
-  { href: "/trips", label: "Kilometers", icon: Route },
-  { href: "/fuel", label: "Tanken", icon: Fuel },
+  { href: "/trips", label: t("nav.trips"), icon: Route },
+  { href: "/fuel", label: t("nav.fuel"), icon: Fuel },
 ];
 
 export function BottomTabBar() {
   const pathname = usePathname();
   return (
     <nav
-      aria-label="Primary"
+      aria-label={t("nav.primary")}
       className="fixed bottom-0 inset-x-0 z-30 border-t bg-white"
     >
       <div className="max-w-2xl mx-auto grid grid-cols-2 h-16">

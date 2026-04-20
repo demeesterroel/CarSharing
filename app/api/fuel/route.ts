@@ -10,8 +10,8 @@ const FuelFillupSchema = z.object({
   date: z.string().min(10),
   amount: z.number().positive(),
   liters: z.number().positive(),
-  odometer: z.number().int().nonnegative().nullable().optional(),
-  receipt: z.string().nullable().optional(),
+  odometer: z.number().int().nonnegative().nullable().optional().transform((v) => v ?? null),
+  receipt: z.string().nullable().optional().transform((v) => v ?? null),
   location: z.string().nullable().optional().transform((v) => v ?? null),
 });
 

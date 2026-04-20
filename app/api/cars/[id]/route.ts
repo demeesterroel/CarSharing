@@ -11,13 +11,13 @@ const CarSchema = z.object({
   color: z.string().nullable().optional().transform((v) => v ?? null),
 });
 
-export const GET = json(async (_req, ctx: { params: Promise<{ id: string }> }) => {
+export const GET = json(async (_req, ctx) => {
   const car = getCarById(getDb(), await readId(ctx));
   if (!car) notFound();
   return car;
 });
 
-export const PUT = json(async (req, ctx: { params: Promise<{ id: string }> }) => {
+export const PUT = json(async (req, ctx) => {
   const id = await readId(ctx);
   const data = await readBody(req, CarSchema);
   updateCar(getDb(), id, data);

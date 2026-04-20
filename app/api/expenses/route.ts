@@ -9,7 +9,7 @@ const ExpenseSchema = z.object({
   car_id: z.number().int().positive(),
   date: z.string().min(10),
   amount: z.number().positive(),
-  description: z.string().nullable().optional(),
+  description: z.string().nullable().optional().transform((v) => v ?? null),
 });
 
 export const GET = json(async () => getExpenses(getDb()));

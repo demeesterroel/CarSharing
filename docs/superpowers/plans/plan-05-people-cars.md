@@ -1,11 +1,11 @@
 # CarSharing — Plan 05: People & Cars
 
 > **For agentic workers:** Use superpowers:executing-plans or superpowers:subagent-driven-development.
-> **Prerequisite:** plans 01–04 and 00 (shared helpers) completed.
+> **Prerequisite:** plans 01–04, 00 (shared helpers), and 03b (i18n module) completed.
 
 **Goal:** API routes and pages for People and Cars — list, add, edit.
 
-**Architecture:** Every route handler is wrapped by `json()` from `lib/api.ts`. Bodies are parsed via Zod; Next 15 passes `params` as a Promise. CRUD hooks come from `createResourceHooks`. Forms use React Hook Form + Zod.
+**Architecture:** Every route handler is wrapped by `json()` from `lib/api.ts`. Bodies are parsed via Zod; Next 15 passes `params` as a Promise. CRUD hooks come from `createResourceHooks`. Forms use React Hook Form + Zod. All user-facing strings resolve through `t()` from `@/lib/i18n` (plan-03b).
 
 ---
 
@@ -227,9 +227,10 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import type { Person } from "@/types";
+import { t } from "@/lib/i18n";
 
 const schema = z.object({
-  name: z.string().min(1, "Naam is verplicht"),
+  name: z.string().min(1, t("validation.name_required")),
   discount: z.coerce.number().min(0).max(1),
   discount_long: z.coerce.number().min(0).max(1),
   active: z.coerce.number().int().min(0).max(1),
@@ -251,25 +252,25 @@ export function PersonForm({ defaultValues, onSubmit, onCancel }: Props) {
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 p-4">
       <div>
-        <label className="block text-sm font-medium mb-1">Naam *</label>
+        <label className="block text-sm font-medium mb-1">{t("form.name")}</label>
         <input {...register("name")} className="w-full border rounded-md px-3 py-2 text-sm" />
         {errors.name && <p className="text-red-500 text-xs mt-1">{errors.name.message}</p>}
       </div>
       <div>
-        <label className="block text-sm font-medium mb-1">Korting (0–1)</label>
+        <label className="block text-sm font-medium mb-1">{t("form.discount")}</label>
         <input {...register("discount")} type="number" step="0.01" className="w-full border rounded-md px-3 py-2 text-sm" />
       </div>
       <div>
-        <label className="block text-sm font-medium mb-1">Korting lang (0–1)</label>
+        <label className="block text-sm font-medium mb-1">{t("form.discount_long")}</label>
         <input {...register("discount_long")} type="number" step="0.01" className="w-full border rounded-md px-3 py-2 text-sm" />
       </div>
       <div className="flex items-center gap-2">
         <input {...register("active")} type="checkbox" id="active" value="1" defaultChecked={defaultValues?.active !== 0} />
-        <label htmlFor="active" className="text-sm">Actief lid</label>
+        <label htmlFor="active" className="text-sm">{t("form.active_member")}</label>
       </div>
       <div className="flex gap-3 pt-2">
-        <button type="button" onClick={onCancel} className="flex-1 border rounded-md py-2 text-sm">Annuleer</button>
-        <button type="submit" className="flex-1 bg-blue-600 text-white rounded-md py-2 text-sm">Opslaan</button>
+        <button type="button" onClick={onCancel} className="flex-1 border rounded-md py-2 text-sm">{t("action.cancel")}</button>
+        <button type="submit" className="flex-1 bg-blue-600 text-white rounded-md py-2 text-sm">{t("action.save")}</button>
       </div>
     </form>
   );
@@ -289,6 +290,7 @@ import { PersonForm } from "./person-form";
 import { usePeople, useCreatePerson, useUpdatePerson } from "@/hooks/use-people";
 import type { Person } from "@/types";
 import { ChevronRight } from "lucide-react";
+import { t } from "@/lib/i18n";
 
 export default function PeoplePage() {
   const { data: people = [], isLoading } = usePeople();
@@ -297,11 +299,11 @@ export default function PeoplePage() {
   const [editing, setEditing] = useState<Person | null>(null);
   const [adding, setAdding] = useState(false);
 
-  if (isLoading) return <><PageHeader title="People" /><p className="p-4 text-gray-500">Laden...</p></>;
+  if (isLoading) return <><PageHeader title={t("page.people")} /><p className="p-4 text-gray-500">{t("state.loading")}</p></>;
 
   return (
     <>
-      <PageHeader title="People" />
+      <PageHeader title={t("page.people")} />
       <div className="divide-y">
         {people.map((p) => (
           <button
@@ -321,11 +323,11 @@ export default function PeoplePage() {
         <Dialog.Portal>
           <Dialog.Overlay className="fixed inset-0 bg-black/40 z-40" />
           <Dialog.Content className="fixed inset-x-0 bottom-0 bg-white rounded-t-xl z-50 max-h-[90vh] overflow-y-auto">
-            <Dialog.Title className="px-4 pt-4 text-base font-semibold">Persoon toevoegen</Dialog.Title>
+            <Dialog.Title className="px-4 pt-4 text-base font-semibold">{t("page.person_add")}</Dialog.Title>
             <PersonForm
               onSubmit={(data) => {
                 createPerson.mutate(data as Omit<Person, "id">, {
-                  onSuccess: () => { setAdding(false); toast.success("Persoon toegevoegd"); },
+                  onSuccess: () => { setAdding(false); toast.success(t("toast.person_added")); },
                   onError: (e) => toast.error(e.message),
                 });
               }}
@@ -339,13 +341,13 @@ export default function PeoplePage() {
         <Dialog.Portal>
           <Dialog.Overlay className="fixed inset-0 bg-black/40 z-40" />
           <Dialog.Content className="fixed inset-x-0 bottom-0 bg-white rounded-t-xl z-50 max-h-[90vh] overflow-y-auto">
-            <Dialog.Title className="px-4 pt-4 text-base font-semibold">Persoon bewerken</Dialog.Title>
+            <Dialog.Title className="px-4 pt-4 text-base font-semibold">{t("page.person_edit")}</Dialog.Title>
             {editing && (
               <PersonForm
                 defaultValues={editing}
                 onSubmit={(data) => {
                   updatePerson.mutate({ ...editing, ...data }, {
-                    onSuccess: () => { setEditing(null); toast.success("Opgeslagen"); },
+                    onSuccess: () => { setEditing(null); toast.success(t("toast.saved")); },
                     onError: (e) => toast.error(e.message),
                   });
                 }}
@@ -356,7 +358,7 @@ export default function PeoplePage() {
         </Dialog.Portal>
       </Dialog.Root>
 
-      <Fab onClick={() => setAdding(true)} label="Persoon toevoegen" />
+      <Fab onClick={() => setAdding(true)} label={t("page.person_add")} />
     </>
   );
 }
@@ -392,6 +394,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import type { Car } from "@/types";
+import { t } from "@/lib/i18n";
 
 const schema = z.object({
   short: z.string().min(1).max(10),
@@ -417,29 +420,29 @@ export function CarForm({ defaultValues, onSubmit, onCancel }: Props) {
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 p-4">
       <div>
-        <label className="block text-sm font-medium mb-1">Code (ETH/JF/LEW) *</label>
+        <label className="block text-sm font-medium mb-1">{t("form.car_short")}</label>
         <input {...register("short")} className="w-full border rounded-md px-3 py-2 text-sm uppercase" />
         {errors.short && <p className="text-red-500 text-xs mt-1">{errors.short.message}</p>}
       </div>
       <div>
-        <label className="block text-sm font-medium mb-1">Naam *</label>
+        <label className="block text-sm font-medium mb-1">{t("form.name")}</label>
         <input {...register("name")} className="w-full border rounded-md px-3 py-2 text-sm" />
       </div>
       <div>
-        <label className="block text-sm font-medium mb-1">Prijs/km *</label>
+        <label className="block text-sm font-medium mb-1">{t("form.price_per_km")}</label>
         <input {...register("price_per_km")} type="number" step="0.01" className="w-full border rounded-md px-3 py-2 text-sm" />
       </div>
       <div>
-        <label className="block text-sm font-medium mb-1">Merk</label>
+        <label className="block text-sm font-medium mb-1">{t("form.brand")}</label>
         <input {...register("brand")} className="w-full border rounded-md px-3 py-2 text-sm" />
       </div>
       <div>
-        <label className="block text-sm font-medium mb-1">Kleur</label>
+        <label className="block text-sm font-medium mb-1">{t("form.color")}</label>
         <input {...register("color")} className="w-full border rounded-md px-3 py-2 text-sm" />
       </div>
       <div className="flex gap-3 pt-2">
-        <button type="button" onClick={onCancel} className="flex-1 border rounded-md py-2 text-sm">Annuleer</button>
-        <button type="submit" className="flex-1 bg-blue-600 text-white rounded-md py-2 text-sm">Opslaan</button>
+        <button type="button" onClick={onCancel} className="flex-1 border rounded-md py-2 text-sm">{t("action.cancel")}</button>
+        <button type="submit" className="flex-1 bg-blue-600 text-white rounded-md py-2 text-sm">{t("action.save")}</button>
       </div>
     </form>
   );
@@ -459,6 +462,7 @@ import { CarForm } from "./car-form";
 import { useCars, useCreateCar, useUpdateCar } from "@/hooks/use-cars";
 import type { Car } from "@/types";
 import { ChevronRight } from "lucide-react";
+import { t } from "@/lib/i18n";
 
 export default function CarsPage() {
   const { data: cars = [], isLoading } = useCars();
@@ -467,11 +471,11 @@ export default function CarsPage() {
   const [editing, setEditing] = useState<Car | null>(null);
   const [adding, setAdding] = useState(false);
 
-  if (isLoading) return <><PageHeader title="Cars" /><p className="p-4 text-gray-500">Laden...</p></>;
+  if (isLoading) return <><PageHeader title={t("page.cars")} /><p className="p-4 text-gray-500">{t("state.loading")}</p></>;
 
   return (
     <>
-      <PageHeader title="Cars" />
+      <PageHeader title={t("page.cars")} />
       <div className="divide-y">
         {cars.map((c) => (
           <button key={c.id} onClick={() => setEditing(c)}
@@ -492,11 +496,11 @@ export default function CarsPage() {
         <Dialog.Portal>
           <Dialog.Overlay className="fixed inset-0 bg-black/40 z-40" />
           <Dialog.Content className="fixed inset-x-0 bottom-0 bg-white rounded-t-xl z-50 max-h-[90vh] overflow-y-auto">
-            <Dialog.Title className="px-4 pt-4 text-base font-semibold">Wagen toevoegen</Dialog.Title>
+            <Dialog.Title className="px-4 pt-4 text-base font-semibold">{t("page.car_add")}</Dialog.Title>
             <CarForm
               onSubmit={(data) => createCar.mutate(
                 { ...data, brand: data.brand ?? null, color: data.color ?? null } as Omit<Car,"id">,
-                { onSuccess: () => { setAdding(false); toast.success("Wagen toegevoegd"); },
+                { onSuccess: () => { setAdding(false); toast.success(t("toast.car_added")); },
                   onError: (e) => toast.error(e.message) }
               )}
               onCancel={() => setAdding(false)}
@@ -509,13 +513,13 @@ export default function CarsPage() {
         <Dialog.Portal>
           <Dialog.Overlay className="fixed inset-0 bg-black/40 z-40" />
           <Dialog.Content className="fixed inset-x-0 bottom-0 bg-white rounded-t-xl z-50 max-h-[90vh] overflow-y-auto">
-            <Dialog.Title className="px-4 pt-4 text-base font-semibold">Wagen bewerken</Dialog.Title>
+            <Dialog.Title className="px-4 pt-4 text-base font-semibold">{t("page.car_edit")}</Dialog.Title>
             {editing && (
               <CarForm
                 defaultValues={editing}
                 onSubmit={(data) => updateCar.mutate(
                   { ...editing, ...data, brand: data.brand ?? null, color: data.color ?? null },
-                  { onSuccess: () => { setEditing(null); toast.success("Opgeslagen"); },
+                  { onSuccess: () => { setEditing(null); toast.success(t("toast.saved")); },
                     onError: (e) => toast.error(e.message) }
                 )}
                 onCancel={() => setEditing(null)}
@@ -525,7 +529,7 @@ export default function CarsPage() {
         </Dialog.Portal>
       </Dialog.Root>
 
-      <Fab onClick={() => setAdding(true)} label="Wagen toevoegen" />
+      <Fab onClick={() => setAdding(true)} label={t("page.car_add")} />
     </>
   );
 }

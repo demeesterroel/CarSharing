@@ -14,8 +14,8 @@ import type { Trip } from "@/types";
 import { t } from "@/lib/i18n";
 
 const schema = z.object({
-  person_id: z.number({ required_error: t("validation.person_required") }),
-  car_id: z.number({ required_error: t("validation.car_required") }),
+  person_id: z.number({ error: t("validation.person_required") }),
+  car_id: z.number({ error: t("validation.car_required") }),
   date: z.string().min(1),
   start_odometer: z.coerce.number().int().min(0),
   end_odometer: z.coerce.number().int().min(0),
@@ -24,7 +24,8 @@ const schema = z.object({
   path: ["end_odometer"],
   message: t("validation.end_gte_start"),
 });
-type FormData = z.infer<typeof schema>;
+type FormInput = z.input<typeof schema>;
+type FormData = z.output<typeof schema>;
 
 interface Props {
   defaultValues?: Partial<Trip>;
@@ -36,7 +37,7 @@ export function TripForm({ defaultValues, onSubmit, onCancel }: Props) {
   const { data: people = [] } = usePeople();
   const { data: cars = [] } = useCars();
   const isAddMode = !defaultValues?.id;
-  const { register, handleSubmit, control, watch, setValue, getValues, formState: { errors } } = useForm<FormData>({
+  const { register, handleSubmit, control, watch, setValue, getValues, formState: { errors } } = useForm<FormInput, unknown, FormData>({
     resolver: zodResolver(schema),
     defaultValues: {
       date: new Date().toISOString().slice(0, 10),
@@ -46,7 +47,7 @@ export function TripForm({ defaultValues, onSubmit, onCancel }: Props) {
   });
 
   const [start, end, personId, carId] = watch(["start_odometer", "end_odometer", "person_id", "car_id"]);
-  const km = Math.max(0, (end ?? 0) - (start ?? 0));
+  const km = Math.max(0, (Number(end) || 0) - (Number(start) || 0));
   const person = people.find((p) => p.id === personId);
   const car = cars.find((c) => c.id === carId);
   const amount = person && car ? calcTripAmount(km, car.price_per_km, person.discount, person.discount_long) : 0;

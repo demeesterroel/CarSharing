@@ -10,13 +10,13 @@ const PersonSchema = z.object({
   active: z.union([z.literal(0), z.literal(1)]).default(1),
 });
 
-export const GET = json(async (_req, ctx: { params: Promise<{ id: string }> }) => {
+export const GET = json(async (_req, ctx) => {
   const person = getPersonById(getDb(), await readId(ctx));
   if (!person) notFound();
   return person;
 });
 
-export const PUT = json(async (req, ctx: { params: Promise<{ id: string }> }) => {
+export const PUT = json(async (req, ctx) => {
   const id = await readId(ctx);
   const data = await readBody(req, PersonSchema);
   updatePerson(getDb(), id, data);

@@ -17,7 +17,8 @@ export async function GET(
   const uploadsRoot = path.resolve(process.cwd(), "uploads");
   const filePath = path.resolve(uploadsRoot, ...parts);
 
-  if (!filePath.startsWith(uploadsRoot + path.sep)) {
+  const relative = path.relative(uploadsRoot, filePath);
+  if (relative.startsWith("..") || path.isAbsolute(relative)) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 

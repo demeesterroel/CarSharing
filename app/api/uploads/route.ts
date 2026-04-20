@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { writeFile } from "fs/promises";
+import { writeFile, mkdir } from "fs/promises";
 import path from "path";
 import { randomUUID } from "crypto";
 
@@ -24,9 +24,11 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Unsupported file type" }, { status: 415 });
   }
 
+  const uploadsDir = path.join(process.cwd(), "uploads");
   const filename = `${randomUUID()}.${ext}`;
-  const dest = path.join(process.cwd(), "uploads", filename);
+  const dest = path.join(uploadsDir, filename);
   const buffer = Buffer.from(await file.arrayBuffer());
+  await mkdir(uploadsDir, { recursive: true });
   await writeFile(dest, buffer);
 
   return NextResponse.json({ path: `/uploads/${filename}` }, { status: 201 });

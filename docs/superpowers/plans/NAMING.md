@@ -90,11 +90,8 @@ This document shows the complete Dutch → English mapping applied across all pl
 | kost-form.tsx | expense-form.tsx |
 | betaald-form.tsx | payment-form.tsx |
 
-## UI labels (Dutch — kept for users)
+## UI labels — routed through the i18n module
 
-The app UI keeps Dutch labels where appropriate (the users are Dutch-speaking):
-- "Tanken" tab label
-- "Kilometers" tab label  
-- "Naam", "Datum", "Bedrag" form labels
+All user-facing strings resolve through `t(key, params?)` from `lib/i18n/`. Keys are English and namespaced (`nav.*`, `page.*`, `form.*`, `action.*`, `validation.*`, `toast.*`, `state.*`, `error.*`, `balance.*`, `brand.*`). Dutch values live in `lib/i18n/messages/nl.ts`. See `plan-03b-i18n.md` for the full key list and the helper's contract.
 
-Code-level names (variables, files, routes, DB columns) are English throughout.
+Code-level names (variables, files, routes, DB columns) remain English — unchanged.

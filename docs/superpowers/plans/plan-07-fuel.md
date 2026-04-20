@@ -1,11 +1,11 @@
 # CarSharing — Plan 07: Fuel Fill-ups
 
 > **For agentic workers:** Use superpowers:executing-plans or superpowers:subagent-driven-development.
-> **Prerequisites:** plans 00, 01, 02, 02b, 03, 04, 05, 06 completed.
+> **Prerequisites:** plans 00, 01, 02, 02b, 03, 03b (i18n), 04, 05, 06 completed.
 
 **Goal:** Query helpers, API routes, list page, and add/edit form for fuel fill-ups (`fuel_fillups`) — including auto-calculated `price_per_liter` and receipt photo upload.
 
-**Architecture:** Same shape as plan-06-trips: query helpers with joins, Zod-validated route handlers via `json()`, `createResourceHooks` factory. Receipt upload is a separate POST that writes to `./uploads/` and returns a URL path; the path is stored on the fill-up record as `receipt`.
+**Architecture:** Same shape as plan-06-trips: query helpers with joins, Zod-validated route handlers via `json()`, `createResourceHooks` factory. Receipt upload is a separate POST that writes to `./uploads/` and returns a URL path; the path is stored on the fill-up record as `receipt`. Fill-ups also record a `location` (where the fuelling happened — typically a gas station); the field is free-form and can be captured with the same `LocationPicker` used for trips. When the user picks a car in the form, the `odometer` field is prefilled from the car's last known state via `useLastCarState` (see plan-06 Task 2b) — location is NOT prefilled because each fill-up happens at a fresh location. User-facing strings resolve through `t()` from `@/lib/i18n` (plan-03b).
 
 **Tech Stack:** better-sqlite3, Zod, TanStack Query, React Hook Form, Radix Dialog.
 
@@ -46,12 +46,12 @@ export function getFuelFillupById(db: Database.Database, id: number): FuelFillup
 export function insertFuelFillup(db: Database.Database, input: FuelFillupInput): number {
   const price_per_liter = calcPricePerLiter(input.amount, input.liters);
   const result = db.prepare(`
-    INSERT INTO fuel_fillups (person_id,car_id,date,amount,liters,price_per_liter,odometer,receipt)
-    VALUES (?,?,?,?,?,?,?,?)
+    INSERT INTO fuel_fillups (person_id,car_id,date,amount,liters,price_per_liter,odometer,receipt,location)
+    VALUES (?,?,?,?,?,?,?,?,?)
   `).run(
     input.person_id, input.car_id, input.date,
     input.amount, input.liters, price_per_liter,
-    input.odometer ?? null, input.receipt ?? null
+    input.odometer ?? null, input.receipt ?? null, input.location ?? null
   );
   return result.lastInsertRowid as number;
 }
@@ -60,12 +60,12 @@ export function updateFuelFillup(db: Database.Database, id: number, input: FuelF
   const price_per_liter = calcPricePerLiter(input.amount, input.liters);
   db.prepare(`
     UPDATE fuel_fillups
-    SET person_id=?,car_id=?,date=?,amount=?,liters=?,price_per_liter=?,odometer=?,receipt=?
+    SET person_id=?,car_id=?,date=?,amount=?,liters=?,price_per_liter=?,odometer=?,receipt=?,location=?
     WHERE id=?
   `).run(
     input.person_id, input.car_id, input.date,
     input.amount, input.liters, price_per_liter,
-    input.odometer ?? null, input.receipt ?? null, id
+    input.odometer ?? null, input.receipt ?? null, input.location ?? null, id
   );
 }
 
@@ -226,6 +226,7 @@ const FuelFillupSchema = z.object({
   liters: z.number().positive(),
   odometer: z.number().int().nonnegative().nullable().optional(),
   receipt: z.string().nullable().optional(),
+  location: z.string().nullable().optional().transform((v) => v ?? null),
 });
 
 export const GET = json(async () => getFuelFillups(getDb()));
@@ -260,6 +261,7 @@ const FuelFillupSchema = z.object({
   liters: z.number().positive(),
   odometer: z.number().int().nonnegative().nullable().optional(),
   receipt: z.string().nullable().optional(),
+  location: z.string().nullable().optional().transform((v) => v ?? null),
 });
 
 export const GET = json(async (_req, ctx) => {
@@ -306,7 +308,9 @@ import type { FuelFillup, FuelFillupInput } from "@/types";
 export const fuelFillupsHooks = createResourceHooks<FuelFillup, FuelFillupInput>(
   "fuel-fillups",
   "/api/fuel",
-  { invalidate: [["dashboard"]] }
+  // Writes also mutate the car's "last state" (odometer/location), so invalidate
+  // every ["car-state", carId] cache alongside the dashboard.
+  { invalidate: [["dashboard"], ["car-state"]] }
 );
 
 export const useFuelFillups = fuelFillupsHooks.useList;
@@ -336,6 +340,7 @@ git commit -m "feat: useFuelFillups hooks"
 import { useRef, useState } from "react";
 import { Camera } from "lucide-react";
 import { toast } from "sonner";
+import { t } from "@/lib/i18n";
 
 interface Props {
   value: string | null;
@@ -382,12 +387,12 @@ export function ReceiptUpload({ value, onChange }: Props) {
         }}
       />
       {value ? (
-        <img src={value} alt="Bonnetje" className="max-h-32 rounded object-contain" />
+        <img src={value} alt={t("form.receipt")} className="max-h-32 rounded object-contain" />
       ) : (
         <>
           <Camera className={`w-6 h-6 ${uploading ? "animate-pulse text-blue-500" : "text-gray-400"}`} />
           <span className="text-xs text-gray-500">
-            {uploading ? "Uploaden..." : "Bonnetje toevoegen"}
+            {uploading ? t("state.uploading") : t("form.receipt_add")}
           </span>
         </>
       )}
@@ -416,25 +421,30 @@ git commit -m "feat: receipt-upload component"
 
 ```tsx
 "use client";
+import { useEffect } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { CarToggle } from "@/components/car-toggle";
 import { PersonSelect } from "@/components/person-select";
 import { ReceiptUpload } from "@/components/receipt-upload";
+import { LocationPicker } from "@/components/location-picker";
 import { calcPricePerLiter } from "@/lib/formulas";
 import { usePeople } from "@/hooks/use-people";
 import { useCars } from "@/hooks/use-cars";
+import { useLastCarState } from "@/hooks/use-car-state";
 import type { FuelFillup, FuelFillupInput } from "@/types";
+import { t } from "@/lib/i18n";
 
 const schema = z.object({
-  person_id: z.number({ required_error: "Kies een persoon" }),
-  car_id: z.number({ required_error: "Kies een wagen" }),
+  person_id: z.number({ required_error: t("validation.person_required") }),
+  car_id: z.number({ required_error: t("validation.car_required") }),
   date: z.string().min(1),
   amount: z.coerce.number().positive(),
   liters: z.coerce.number().positive(),
   odometer: z.coerce.number().int().nullable().optional(),
   receipt: z.string().nullable().optional(),
+  location: z.string().nullable().optional(),
 });
 type FormData = z.infer<typeof schema>;
 
@@ -447,7 +457,8 @@ interface Props {
 export function FuelForm({ defaultValues, onSubmit, onCancel }: Props) {
   const { data: people = [] } = usePeople();
   const { data: cars = [] } = useCars();
-  const { register, handleSubmit, control, watch } = useForm<FormData>({
+  const isAddMode = !defaultValues?.id;
+  const { register, handleSubmit, control, watch, setValue, getValues } = useForm<FormData>({
     resolver: zodResolver(schema),
     defaultValues: {
       date: new Date().toISOString().slice(0, 10),
@@ -455,17 +466,32 @@ export function FuelForm({ defaultValues, onSubmit, onCancel }: Props) {
       liters: 0,
       odometer: null,
       receipt: null,
+      location: null,
       ...defaultValues,
     },
   });
 
-  const [amount, liters] = watch(["amount", "liters"]);
+  const [amount, liters, carId] = watch(["amount", "liters", "car_id"]);
   const pricePerLiter = calcPricePerLiter(amount ?? 0, liters ?? 0);
+
+  // Last known state (odometer + location) for the selected car.
+  // Only `odometer` is consumed here: location on a fuel fill-up is the gas
+  // station, which differs per visit, so we leave the LocationPicker blank
+  // for the user to fill via GPS or manual map click.
+  const { data: lastState } = useLastCarState(carId);
+  useEffect(() => {
+    if (!isAddMode || !carId || !lastState) return;
+    const current = getValues("odometer");
+    if ((!current || Number(current) === 0) && lastState.odometer != null) {
+      setValue("odometer", lastState.odometer);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [lastState, carId, isAddMode]);
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 p-4">
       <div>
-        <label className="block text-sm font-medium mb-1">Naam *</label>
+        <label className="block text-sm font-medium mb-1">{t("form.name")}</label>
         <Controller
           name="person_id"
           control={control}
@@ -479,7 +505,7 @@ export function FuelForm({ defaultValues, onSubmit, onCancel }: Props) {
         />
       </div>
       <div>
-        <label className="block text-sm font-medium mb-2">Wagen *</label>
+        <label className="block text-sm font-medium mb-2">{t("form.car")}</label>
         <Controller
           name="car_id"
           control={control}
@@ -489,7 +515,7 @@ export function FuelForm({ defaultValues, onSubmit, onCancel }: Props) {
         />
       </div>
       <div>
-        <label className="block text-sm font-medium mb-1">Datum *</label>
+        <label className="block text-sm font-medium mb-1">{t("form.date")}</label>
         <input
           {...register("date")}
           type="date"
@@ -498,7 +524,7 @@ export function FuelForm({ defaultValues, onSubmit, onCancel }: Props) {
       </div>
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <label className="block text-sm font-medium mb-1">Bedrag (€) *</label>
+          <label className="block text-sm font-medium mb-1">{t("form.amount_euro_required")}</label>
           <input
             {...register("amount")}
             type="number"
@@ -507,7 +533,7 @@ export function FuelForm({ defaultValues, onSubmit, onCancel }: Props) {
           />
         </div>
         <div>
-          <label className="block text-sm font-medium mb-1"># Liter *</label>
+          <label className="block text-sm font-medium mb-1">{t("form.liters")}</label>
           <input
             {...register("liters")}
             type="number"
@@ -518,7 +544,7 @@ export function FuelForm({ defaultValues, onSubmit, onCancel }: Props) {
       </div>
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <label className="block text-sm font-medium mb-1">Prijs/liter</label>
+          <label className="block text-sm font-medium mb-1">{t("form.price_per_liter")}</label>
           <input
             readOnly
             value={pricePerLiter.toFixed(3)}
@@ -526,7 +552,7 @@ export function FuelForm({ defaultValues, onSubmit, onCancel }: Props) {
           />
         </div>
         <div>
-          <label className="block text-sm font-medium mb-1">Kilometerstand</label>
+          <label className="block text-sm font-medium mb-1">{t("form.odometer")}</label>
           <input
             {...register("odometer")}
             type="number"
@@ -535,7 +561,7 @@ export function FuelForm({ defaultValues, onSubmit, onCancel }: Props) {
         </div>
       </div>
       <div>
-        <label className="block text-sm font-medium mb-1">Bonnetje</label>
+        <label className="block text-sm font-medium mb-1">{t("form.receipt")}</label>
         <Controller
           name="receipt"
           control={control}
@@ -544,12 +570,22 @@ export function FuelForm({ defaultValues, onSubmit, onCancel }: Props) {
           )}
         />
       </div>
+      <div>
+        <label className="block text-sm font-medium mb-1">{t("form.location")}</label>
+        <Controller
+          name="location"
+          control={control}
+          render={({ field }) => (
+            <LocationPicker value={field.value ?? null} onChange={field.onChange} />
+          )}
+        />
+      </div>
       <div className="flex gap-3 pt-2">
         <button type="button" onClick={onCancel} className="flex-1 border rounded-md py-2 text-sm">
-          Annuleer
+          {t("action.cancel")}
         </button>
         <button type="submit" className="flex-1 bg-blue-600 text-white rounded-md py-2 text-sm">
-          Opslaan
+          {t("action.save")}
         </button>
       </div>
     </form>
@@ -576,6 +612,7 @@ import {
   useDeleteFuelFillup,
 } from "@/hooks/use-fuel-fillups";
 import type { FuelFillup } from "@/types";
+import { t } from "@/lib/i18n";
 
 function yearMonth(date: string) {
   const [y, m] = date.split("-");
@@ -593,15 +630,15 @@ export default function FuelPage() {
   if (isLoading) {
     return (
       <>
-        <PageHeader title="Tanken" />
-        <p className="p-4 text-gray-500">Laden...</p>
+        <PageHeader title={t("page.fuel")} />
+        <p className="p-4 text-gray-500">{t("state.loading")}</p>
       </>
     );
   }
 
   return (
     <>
-      <PageHeader title="Tanken" />
+      <PageHeader title={t("page.fuel")} />
       <GroupedList
         items={fillups}
         getKey={(f) => yearMonth(f.date)}
@@ -641,14 +678,14 @@ export default function FuelPage() {
           <Dialog.Overlay className="fixed inset-0 bg-black/40 z-40" />
           <Dialog.Content className="fixed inset-x-0 bottom-0 bg-white rounded-t-xl z-50 max-h-[95vh] overflow-y-auto">
             <Dialog.Title className="px-4 pt-4 text-base font-semibold">
-              Tankbeurt toevoegen
+              {t("page.fuel_add")}
             </Dialog.Title>
             <FuelForm
               onSubmit={(data) =>
                 createF.mutate(data, {
                   onSuccess: () => {
                     setAdding(false);
-                    toast.success("Tankbeurt opgeslagen");
+                    toast.success(t("toast.fuel_saved"));
                   },
                 })
               }
@@ -663,7 +700,7 @@ export default function FuelPage() {
           <Dialog.Overlay className="fixed inset-0 bg-black/40 z-40" />
           <Dialog.Content className="fixed inset-x-0 bottom-0 bg-white rounded-t-xl z-50 max-h-[95vh] overflow-y-auto">
             <Dialog.Title className="px-4 pt-4 text-base font-semibold">
-              Tankbeurt bewerken
+              {t("page.fuel_edit")}
             </Dialog.Title>
             {editing && (
               <>
@@ -675,7 +712,7 @@ export default function FuelPage() {
                       {
                         onSuccess: () => {
                           setEditing(null);
-                          toast.success("Opgeslagen");
+                          toast.success(t("toast.saved"));
                         },
                       }
                     )
@@ -688,13 +725,13 @@ export default function FuelPage() {
                       deleteF.mutate(editing.id, {
                         onSuccess: () => {
                           setEditing(null);
-                          toast.success("Verwijderd");
+                          toast.success(t("toast.deleted"));
                         },
                       })
                     }
                     className="w-full border border-red-300 text-red-600 rounded-md py-2 text-sm"
                   >
-                    Verwijderen
+                    {t("action.delete")}
                   </button>
                 </div>
               </>
@@ -703,7 +740,7 @@ export default function FuelPage() {
         </Dialog.Portal>
       </Dialog.Root>
 
-      <Fab onClick={() => setAdding(true)} label="Tankbeurt toevoegen" />
+      <Fab onClick={() => setAdding(true)} label={t("page.fuel_add")} />
     </>
   );
 }
@@ -717,10 +754,12 @@ npm run dev
 
 Navigate to http://localhost:3000/fuel. Verify:
 - Add entry — `prijs/liter` auto-calculates from `bedrag` and `liter`.
+- Pick a car that has prior trips or fill-ups: `Kilometerstand` prefills from the car's last known odometer. Clear the field and pick a different car — it refills. Editing an existing fill-up does NOT refill the odometer.
+- `Locatie` starts empty even after picking a car (gas stations change per visit). GPS button captures the station location; map click or GPS both update the pin.
 - Receipt upload opens camera on mobile / file picker on desktop.
 - Upload rejects files > 8 MB and non-image MIME types.
 - List groups by month with euro total in header badge.
-- Edit + delete both work.
+- Edit + delete both work — editing a fill-up preserves its stored `location`.
 
 - [ ] **Step 4: Commit**
 

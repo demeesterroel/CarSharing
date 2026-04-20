@@ -86,6 +86,7 @@ export interface FuelFillup {
   price_per_liter: number;
   odometer: number | null;
   receipt: string | null;
+  location: string | null;
   // joined
   person_name?: string;
   car_short?: string;
@@ -143,10 +144,19 @@ export interface DashboardRow {
 
 // Form input types (no id, no computed fields)
 export type TripInput = Pick<Trip, "person_id"|"car_id"|"date"|"start_odometer"|"end_odometer"|"location">;
-export type FuelFillupInput = Pick<FuelFillup, "person_id"|"car_id"|"date"|"amount"|"liters"|"odometer"|"receipt">;
+export type FuelFillupInput = Pick<FuelFillup, "person_id"|"car_id"|"date"|"amount"|"liters"|"odometer"|"receipt"|"location">;
 export type ExpenseInput = Pick<Expense, "person_id"|"car_id"|"date"|"amount"|"description">;
 export type ReservationInput = Pick<Reservation, "person_id"|"car_id"|"start_date"|"end_date">;
 export type PaymentInput = Pick<Payment, "person_id"|"date"|"amount"|"note">;
+
+// Derived "last known" state for a car, used to prefill trip/fuel forms on car selection.
+// `source` records which table the reading came from — trips always win a same-date tie
+// because that reflects the physical odometer after the trip completed.
+export interface CarState {
+  odometer: number | null;
+  location: string | null;
+  source: "trip" | "fuel";
+}
 ```
 
 - [ ] **Step 2: Commit**

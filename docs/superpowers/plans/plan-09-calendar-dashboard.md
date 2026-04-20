@@ -1,11 +1,11 @@
 # CarSharing — Plan 09: Calendar & Dashboard
 
 > **For agentic workers:** Use superpowers:executing-plans or superpowers:subagent-driven-development.
-> **Prerequisites:** plans 00, 01, 02, 02b, 03, 04, 05, 06, 07, 08 completed.
+> **Prerequisites:** plans 00, 01, 02, 02b, 03, 03b (i18n), 04, 05, 06, 07, 08 completed.
 
 **Goal:** Reservations API + FullCalendar reservation view, and the Dashboard balance summary with per-person saldo.
 
-**Architecture:** Reservations follow the standard CRUD pattern. Dashboard aggregates in 4 `GROUP BY person_id` queries (one per fact table) rather than N × 4 round-trips, then composes balances in memory. FullCalendar all-day events use exclusive end dates, so `end_date` is rendered as `end_date + 1 day`.
+**Architecture:** Reservations follow the standard CRUD pattern. Dashboard aggregates in 4 `GROUP BY person_id` queries (one per fact table) rather than N × 4 round-trips, then composes balances in memory. FullCalendar all-day events use exclusive end dates, so `end_date` is rendered as `end_date + 1 day`. User-facing strings resolve through `t()` from `@/lib/i18n` (plan-03b).
 
 **Tech Stack:** better-sqlite3, Zod, TanStack Query, FullCalendar.
 
@@ -206,16 +206,17 @@ import { PersonSelect } from "@/components/person-select";
 import { usePeople } from "@/hooks/use-people";
 import { useCars } from "@/hooks/use-cars";
 import type { Reservation, ReservationInput } from "@/types";
+import { t } from "@/lib/i18n";
 
 const schema = z
   .object({
-    person_id: z.number({ required_error: "Kies een persoon" }),
-    car_id: z.number({ required_error: "Kies een wagen" }),
+    person_id: z.number({ required_error: t("validation.person_required") }),
+    car_id: z.number({ required_error: t("validation.car_required") }),
     start_date: z.string().min(1),
     end_date: z.string().min(1),
   })
   .refine((v) => v.end_date >= v.start_date, {
-    message: "Einde moet op of na start liggen",
+    message: t("validation.end_date_gte_start"),
     path: ["end_date"],
   });
 type FormData = z.infer<typeof schema>;
@@ -243,7 +244,7 @@ export function ReservationForm({ defaultValues, onSubmit, onCancel }: Props) {
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 p-4">
       <div>
-        <label className="block text-sm font-medium mb-2">Wagen *</label>
+        <label className="block text-sm font-medium mb-2">{t("form.car")}</label>
         <Controller
           name="car_id"
           control={control}
@@ -253,7 +254,7 @@ export function ReservationForm({ defaultValues, onSubmit, onCancel }: Props) {
         />
       </div>
       <div>
-        <label className="block text-sm font-medium mb-1">Naam *</label>
+        <label className="block text-sm font-medium mb-1">{t("form.name")}</label>
         <Controller
           name="person_id"
           control={control}
@@ -268,7 +269,7 @@ export function ReservationForm({ defaultValues, onSubmit, onCancel }: Props) {
       </div>
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <label className="block text-sm font-medium mb-1">Van *</label>
+          <label className="block text-sm font-medium mb-1">{t("form.date_from")}</label>
           <input
             {...register("start_date")}
             type="date"
@@ -276,7 +277,7 @@ export function ReservationForm({ defaultValues, onSubmit, onCancel }: Props) {
           />
         </div>
         <div>
-          <label className="block text-sm font-medium mb-1">Tot *</label>
+          <label className="block text-sm font-medium mb-1">{t("form.date_to")}</label>
           <input
             {...register("end_date")}
             type="date"
@@ -289,10 +290,10 @@ export function ReservationForm({ defaultValues, onSubmit, onCancel }: Props) {
       </div>
       <div className="flex gap-3 pt-2">
         <button type="button" onClick={onCancel} className="flex-1 border rounded-md py-2 text-sm">
-          Annuleer
+          {t("action.cancel")}
         </button>
         <button type="submit" className="flex-1 bg-blue-600 text-white rounded-md py-2 text-sm">
-          Opslaan
+          {t("action.save")}
         </button>
       </div>
     </form>
@@ -358,6 +359,7 @@ import {
   useDeleteReservation,
 } from "@/hooks/use-reservations";
 import type { Reservation } from "@/types";
+import { t } from "@/lib/i18n";
 
 const FullCalendarWrapper = dynamic(() => import("./full-calendar-wrapper"), { ssr: false });
 
@@ -396,7 +398,7 @@ export default function CalendarPage() {
 
   return (
     <>
-      <PageHeader title="Calendar" />
+      <PageHeader title={t("page.calendar")} />
       <div className="p-2">
         {!isLoading && <FullCalendarWrapper events={events} onEventClick={handleEventClick} />}
       </div>
@@ -406,14 +408,14 @@ export default function CalendarPage() {
           <Dialog.Overlay className="fixed inset-0 bg-black/40 z-40" />
           <Dialog.Content className="fixed inset-x-0 bottom-0 bg-white rounded-t-xl z-50 max-h-[90vh] overflow-y-auto">
             <Dialog.Title className="px-4 pt-4 text-base font-semibold">
-              Reservering toevoegen
+              {t("page.reservation_add")}
             </Dialog.Title>
             <ReservationForm
               onSubmit={(data) =>
                 createR.mutate(data, {
                   onSuccess: () => {
                     setAdding(false);
-                    toast.success("Reservering opgeslagen");
+                    toast.success(t("toast.reservation_saved"));
                   },
                 })
               }
@@ -428,7 +430,7 @@ export default function CalendarPage() {
           <Dialog.Overlay className="fixed inset-0 bg-black/40 z-40" />
           <Dialog.Content className="fixed inset-x-0 bottom-0 bg-white rounded-t-xl z-50 max-h-[90vh] overflow-y-auto">
             <Dialog.Title className="px-4 pt-4 text-base font-semibold">
-              Reservering bewerken
+              {t("page.reservation_edit")}
             </Dialog.Title>
             {editing && (
               <>
@@ -440,7 +442,7 @@ export default function CalendarPage() {
                       {
                         onSuccess: () => {
                           setEditing(null);
-                          toast.success("Opgeslagen");
+                          toast.success(t("toast.saved"));
                         },
                       }
                     )
@@ -453,13 +455,13 @@ export default function CalendarPage() {
                       deleteR.mutate(editing.id, {
                         onSuccess: () => {
                           setEditing(null);
-                          toast.success("Verwijderd");
+                          toast.success(t("toast.deleted"));
                         },
                       })
                     }
                     className="w-full border border-red-300 text-red-600 rounded-md py-2 text-sm"
                   >
-                    Verwijderen
+                    {t("action.delete")}
                   </button>
                 </div>
               </>
@@ -468,7 +470,7 @@ export default function CalendarPage() {
         </Dialog.Portal>
       </Dialog.Root>
 
-      <Fab onClick={() => setAdding(true)} label="Reservering toevoegen" />
+      <Fab onClick={() => setAdding(true)} label={t("page.reservation_add")} />
     </>
   );
 }
@@ -760,6 +762,7 @@ import { useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { PageHeader } from "@/components/page-header";
 import { useDashboard } from "@/hooks/use-dashboard";
+import { t } from "@/lib/i18n";
 
 function balanceColor(balance: number) {
   if (balance > 0.005) return "text-green-600";
@@ -774,9 +777,9 @@ function balanceDot(balance: number) {
 }
 
 function balanceMessage(balance: number): string {
-  if (Math.abs(balance) < 0.005) return "vereffend";
-  if (balance > 0) return `Je krijgt €${balance.toFixed(2)}`;
-  return `Je bent €${Math.abs(balance).toFixed(2)} verschuldigd`;
+  if (Math.abs(balance) < 0.005) return t("balance.settled");
+  if (balance > 0) return t("balance.credit", { amount: balance.toFixed(2) });
+  return t("balance.debt", { amount: Math.abs(balance).toFixed(2) });
 }
 
 export default function DashboardPage() {
@@ -786,7 +789,7 @@ export default function DashboardPage() {
 
   return (
     <>
-      <PageHeader title="Dashboard" />
+      <PageHeader title={t("page.dashboard")} />
       <div className="flex items-center justify-between px-4 py-2 border-b">
         <button onClick={() => setYear((y) => y - 1)} className="p-1 rounded hover:bg-gray-100">
           <ChevronLeft className="w-5 h-5" />
@@ -802,7 +805,7 @@ export default function DashboardPage() {
       </div>
 
       {isLoading ? (
-        <p className="p-4 text-gray-500">Laden...</p>
+        <p className="p-4 text-gray-500">{t("state.loading")}</p>
       ) : (
         <div className="divide-y">
           {rows.map((row) => (

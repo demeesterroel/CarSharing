@@ -1,11 +1,11 @@
 # CarSharing — Plan 08: Expenses & Payments
 
 > **For agentic workers:** Use superpowers:executing-plans or superpowers:subagent-driven-development.
-> **Prerequisites:** plans 00, 01, 02, 02b, 03, 04, 05, 06, 07 completed.
+> **Prerequisites:** plans 00, 01, 02, 02b, 03, 03b (i18n), 04, 05, 06, 07 completed.
 
 **Goal:** Query helpers, API routes, and pages for `expenses` (Extra Kosten — maintenance/tax costs) and `payments` (Betaald — settlement payments). Both follow the same shape as trips and fuel.
 
-**Architecture:** Two independent resources. Expenses attach to `(person, car)`; payments attach to `(person)` only and carry a computed `year` column (datum year − 1, from the AppSheet `calcBetaaldYear` helper).
+**Architecture:** Two independent resources. Expenses attach to `(person, car)`; payments attach to `(person)` only and carry a computed `year` column (datum year − 1, from the AppSheet `calcBetaaldYear` helper). User-facing strings resolve through `t()` from `@/lib/i18n` (plan-03b).
 
 **Tech Stack:** better-sqlite3, Zod, TanStack Query, React Hook Form, Radix Dialog.
 
@@ -196,10 +196,11 @@ import { PersonSelect } from "@/components/person-select";
 import { usePeople } from "@/hooks/use-people";
 import { useCars } from "@/hooks/use-cars";
 import type { Expense, ExpenseInput } from "@/types";
+import { t } from "@/lib/i18n";
 
 const schema = z.object({
-  person_id: z.number({ required_error: "Kies een persoon" }),
-  car_id: z.number({ required_error: "Kies een wagen" }),
+  person_id: z.number({ required_error: t("validation.person_required") }),
+  car_id: z.number({ required_error: t("validation.car_required") }),
   date: z.string().min(1),
   amount: z.coerce.number().positive(),
   description: z.string().nullable().optional(),
@@ -228,7 +229,7 @@ export function ExpenseForm({ defaultValues, onSubmit, onCancel }: Props) {
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 p-4">
       <div>
-        <label className="block text-sm font-medium mb-1">Naam *</label>
+        <label className="block text-sm font-medium mb-1">{t("form.name")}</label>
         <Controller
           name="person_id"
           control={control}
@@ -242,7 +243,7 @@ export function ExpenseForm({ defaultValues, onSubmit, onCancel }: Props) {
         />
       </div>
       <div>
-        <label className="block text-sm font-medium mb-2">Wagen *</label>
+        <label className="block text-sm font-medium mb-2">{t("form.car")}</label>
         <Controller
           name="car_id"
           control={control}
@@ -252,7 +253,7 @@ export function ExpenseForm({ defaultValues, onSubmit, onCancel }: Props) {
         />
       </div>
       <div>
-        <label className="block text-sm font-medium mb-1">Datum *</label>
+        <label className="block text-sm font-medium mb-1">{t("form.date")}</label>
         <input
           {...register("date")}
           type="date"
@@ -260,7 +261,7 @@ export function ExpenseForm({ defaultValues, onSubmit, onCancel }: Props) {
         />
       </div>
       <div>
-        <label className="block text-sm font-medium mb-1">Bedrag (€) *</label>
+        <label className="block text-sm font-medium mb-1">{t("form.amount_euro_required")}</label>
         <input
           {...register("amount")}
           type="number"
@@ -269,19 +270,19 @@ export function ExpenseForm({ defaultValues, onSubmit, onCancel }: Props) {
         />
       </div>
       <div>
-        <label className="block text-sm font-medium mb-1">Omschrijving</label>
+        <label className="block text-sm font-medium mb-1">{t("form.description")}</label>
         <input
           {...register("description")}
           className="w-full border rounded-md px-3 py-2 text-sm"
-          placeholder="bv. Verkeersbelasting"
+          placeholder={t("form.description_placeholder")}
         />
       </div>
       <div className="flex gap-3 pt-2">
         <button type="button" onClick={onCancel} className="flex-1 border rounded-md py-2 text-sm">
-          Annuleer
+          {t("action.cancel")}
         </button>
         <button type="submit" className="flex-1 bg-blue-600 text-white rounded-md py-2 text-sm">
-          Opslaan
+          {t("action.save")}
         </button>
       </div>
     </form>
@@ -308,6 +309,7 @@ import {
   useDeleteExpense,
 } from "@/hooks/use-expenses";
 import type { Expense } from "@/types";
+import { t } from "@/lib/i18n";
 
 export default function ExpensesPage() {
   const { data: expenses = [], isLoading } = useExpenses();
@@ -320,15 +322,15 @@ export default function ExpensesPage() {
   if (isLoading) {
     return (
       <>
-        <PageHeader title="Extra Kosten" />
-        <p className="p-4 text-gray-500">Laden...</p>
+        <PageHeader title={t("page.expenses")} />
+        <p className="p-4 text-gray-500">{t("state.loading")}</p>
       </>
     );
   }
 
   return (
     <>
-      <PageHeader title="Extra Kosten" />
+      <PageHeader title={t("page.expenses")} />
       <GroupedList
         items={expenses}
         getKey={(e) => e.date.slice(0, 7)}
@@ -366,14 +368,14 @@ export default function ExpensesPage() {
           <Dialog.Overlay className="fixed inset-0 bg-black/40 z-40" />
           <Dialog.Content className="fixed inset-x-0 bottom-0 bg-white rounded-t-xl z-50 max-h-[95vh] overflow-y-auto">
             <Dialog.Title className="px-4 pt-4 text-base font-semibold">
-              Kost toevoegen
+              {t("page.expense_add")}
             </Dialog.Title>
             <ExpenseForm
               onSubmit={(data) =>
                 createE.mutate(data, {
                   onSuccess: () => {
                     setAdding(false);
-                    toast.success("Opgeslagen");
+                    toast.success(t("toast.saved"));
                   },
                 })
               }
@@ -388,7 +390,7 @@ export default function ExpensesPage() {
           <Dialog.Overlay className="fixed inset-0 bg-black/40 z-40" />
           <Dialog.Content className="fixed inset-x-0 bottom-0 bg-white rounded-t-xl z-50 max-h-[95vh] overflow-y-auto">
             <Dialog.Title className="px-4 pt-4 text-base font-semibold">
-              Kost bewerken
+              {t("page.expense_edit")}
             </Dialog.Title>
             {editing && (
               <>
@@ -400,7 +402,7 @@ export default function ExpensesPage() {
                       {
                         onSuccess: () => {
                           setEditing(null);
-                          toast.success("Opgeslagen");
+                          toast.success(t("toast.saved"));
                         },
                       }
                     )
@@ -413,13 +415,13 @@ export default function ExpensesPage() {
                       deleteE.mutate(editing.id, {
                         onSuccess: () => {
                           setEditing(null);
-                          toast.success("Verwijderd");
+                          toast.success(t("toast.deleted"));
                         },
                       })
                     }
                     className="w-full border border-red-300 text-red-600 rounded-md py-2 text-sm"
                   >
-                    Verwijderen
+                    {t("action.delete")}
                   </button>
                 </div>
               </>
@@ -428,7 +430,7 @@ export default function ExpensesPage() {
         </Dialog.Portal>
       </Dialog.Root>
 
-      <Fab onClick={() => setAdding(true)} label="Kost toevoegen" />
+      <Fab onClick={() => setAdding(true)} label={t("page.expense_add")} />
     </>
   );
 }
@@ -620,9 +622,10 @@ import { z } from "zod";
 import { PersonSelect } from "@/components/person-select";
 import { usePeople } from "@/hooks/use-people";
 import type { Payment, PaymentInput } from "@/types";
+import { t } from "@/lib/i18n";
 
 const schema = z.object({
-  person_id: z.number({ required_error: "Kies een persoon" }),
+  person_id: z.number({ required_error: t("validation.person_required") }),
   date: z.string().min(1),
   amount: z.coerce.number(),
   note: z.string().nullable().optional(),
@@ -650,7 +653,7 @@ export function PaymentForm({ defaultValues, onSubmit, onCancel }: Props) {
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 p-4">
       <div>
-        <label className="block text-sm font-medium mb-1">Naam *</label>
+        <label className="block text-sm font-medium mb-1">{t("form.name")}</label>
         <Controller
           name="person_id"
           control={control}
@@ -660,7 +663,7 @@ export function PaymentForm({ defaultValues, onSubmit, onCancel }: Props) {
         />
       </div>
       <div>
-        <label className="block text-sm font-medium mb-1">Datum *</label>
+        <label className="block text-sm font-medium mb-1">{t("form.date")}</label>
         <input
           {...register("date")}
           type="date"
@@ -668,7 +671,7 @@ export function PaymentForm({ defaultValues, onSubmit, onCancel }: Props) {
         />
       </div>
       <div>
-        <label className="block text-sm font-medium mb-1">Bedrag (€)</label>
+        <label className="block text-sm font-medium mb-1">{t("form.amount_euro")}</label>
         <input
           {...register("amount")}
           type="number"
@@ -677,19 +680,19 @@ export function PaymentForm({ defaultValues, onSubmit, onCancel }: Props) {
         />
       </div>
       <div>
-        <label className="block text-sm font-medium mb-1">Opmerking</label>
+        <label className="block text-sm font-medium mb-1">{t("form.note")}</label>
         <input
           {...register("note")}
           className="w-full border rounded-md px-3 py-2 text-sm"
-          placeholder="bv. Vereffening 2025"
+          placeholder={t("form.note_placeholder")}
         />
       </div>
       <div className="flex gap-3 pt-2">
         <button type="button" onClick={onCancel} className="flex-1 border rounded-md py-2 text-sm">
-          Annuleer
+          {t("action.cancel")}
         </button>
         <button type="submit" className="flex-1 bg-blue-600 text-white rounded-md py-2 text-sm">
-          Opslaan
+          {t("action.save")}
         </button>
       </div>
     </form>
@@ -715,6 +718,7 @@ import {
   useDeletePayment,
 } from "@/hooks/use-payments";
 import type { Payment } from "@/types";
+import { t } from "@/lib/i18n";
 
 export default function PaymentsPage() {
   const { data: payments = [], isLoading } = usePayments();
@@ -727,15 +731,15 @@ export default function PaymentsPage() {
   if (isLoading) {
     return (
       <>
-        <PageHeader title="Betalingen" />
-        <p className="p-4 text-gray-500">Laden...</p>
+        <PageHeader title={t("page.payments")} />
+        <p className="p-4 text-gray-500">{t("state.loading")}</p>
       </>
     );
   }
 
   return (
     <>
-      <PageHeader title="Betalingen" />
+      <PageHeader title={t("page.payments")} />
       <div className="divide-y">
         {payments.map((b) => (
           <button
@@ -764,14 +768,14 @@ export default function PaymentsPage() {
           <Dialog.Overlay className="fixed inset-0 bg-black/40 z-40" />
           <Dialog.Content className="fixed inset-x-0 bottom-0 bg-white rounded-t-xl z-50 max-h-[90vh] overflow-y-auto">
             <Dialog.Title className="px-4 pt-4 text-base font-semibold">
-              Betaling toevoegen
+              {t("page.payment_add")}
             </Dialog.Title>
             <PaymentForm
               onSubmit={(data) =>
                 createP.mutate(data, {
                   onSuccess: () => {
                     setAdding(false);
-                    toast.success("Betaling opgeslagen");
+                    toast.success(t("toast.payment_saved"));
                   },
                 })
               }
@@ -786,7 +790,7 @@ export default function PaymentsPage() {
           <Dialog.Overlay className="fixed inset-0 bg-black/40 z-40" />
           <Dialog.Content className="fixed inset-x-0 bottom-0 bg-white rounded-t-xl z-50 max-h-[90vh] overflow-y-auto">
             <Dialog.Title className="px-4 pt-4 text-base font-semibold">
-              Betaling bewerken
+              {t("page.payment_edit")}
             </Dialog.Title>
             {editing && (
               <>
@@ -798,7 +802,7 @@ export default function PaymentsPage() {
                       {
                         onSuccess: () => {
                           setEditing(null);
-                          toast.success("Opgeslagen");
+                          toast.success(t("toast.saved"));
                         },
                       }
                     )
@@ -811,13 +815,13 @@ export default function PaymentsPage() {
                       deleteP.mutate(editing.id, {
                         onSuccess: () => {
                           setEditing(null);
-                          toast.success("Verwijderd");
+                          toast.success(t("toast.deleted"));
                         },
                       })
                     }
                     className="w-full border border-red-300 text-red-600 rounded-md py-2 text-sm"
                   >
-                    Verwijderen
+                    {t("action.delete")}
                   </button>
                 </div>
               </>
@@ -826,7 +830,7 @@ export default function PaymentsPage() {
         </Dialog.Portal>
       </Dialog.Root>
 
-      <Fab onClick={() => setAdding(true)} label="Betaling toevoegen" />
+      <Fab onClick={() => setAdding(true)} label={t("page.payment_add")} />
     </>
   );
 }

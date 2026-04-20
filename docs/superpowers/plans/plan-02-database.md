@@ -92,7 +92,8 @@ export function applySchema(db: Database.Database) {
       liters          REAL    NOT NULL,
       price_per_liter REAL    NOT NULL,
       odometer        INTEGER,
-      receipt         TEXT
+      receipt         TEXT,
+      location        TEXT
     );
 
     CREATE TABLE IF NOT EXISTS expenses (

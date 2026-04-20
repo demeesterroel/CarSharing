@@ -51,6 +51,7 @@ export default function PaymentsPage() {
             <PaymentForm
               onSubmit={(data) => createP.mutate(data, {
                 onSuccess: () => { setAdding(false); toast.success(t("toast.payment_saved")); },
+                onError: (e) => toast.error(e.message),
               })}
               onCancel={() => setAdding(false)}
             />
@@ -69,12 +70,14 @@ export default function PaymentsPage() {
                   defaultValues={editing}
                   onSubmit={(data) => updateP.mutate({ id: editing.id, ...data }, {
                     onSuccess: () => { setEditing(null); toast.success(t("toast.saved")); },
+                    onError: (e) => toast.error(e.message),
                   })}
                   onCancel={() => setEditing(null)}
                 />
                 <div className="px-4 pb-4">
                   <button onClick={() => deleteP.mutate(editing.id, {
                     onSuccess: () => { setEditing(null); toast.success(t("toast.deleted")); },
+                    onError: (e) => toast.error(e.message),
                   })} className="w-full border border-red-300 text-red-600 rounded-md py-2 text-sm">
                     {t("action.delete")}
                   </button>

@@ -10,7 +10,7 @@ import { t } from "@/lib/i18n";
 const schema = z.object({
   person_id: z.number({ required_error: t("validation.person_required") }),
   date: z.string().min(1),
-  amount: z.coerce.number(),
+  amount: z.coerce.number().positive(),
   note: z.string().nullable().optional(),
 });
 type FormData = z.infer<typeof schema>;

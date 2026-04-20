@@ -56,6 +56,7 @@ export default function ExpensesPage() {
             <ExpenseForm
               onSubmit={(data) => createE.mutate(data, {
                 onSuccess: () => { setAdding(false); toast.success(t("toast.saved")); },
+                onError: (e) => toast.error(e.message),
               })}
               onCancel={() => setAdding(false)}
             />
@@ -74,12 +75,14 @@ export default function ExpensesPage() {
                   defaultValues={editing}
                   onSubmit={(data) => updateE.mutate({ id: editing.id, ...data }, {
                     onSuccess: () => { setEditing(null); toast.success(t("toast.saved")); },
+                    onError: (e) => toast.error(e.message),
                   })}
                   onCancel={() => setEditing(null)}
                 />
                 <div className="px-4 pb-4">
                   <button onClick={() => deleteE.mutate(editing.id, {
                     onSuccess: () => { setEditing(null); toast.success(t("toast.deleted")); },
+                    onError: (e) => toast.error(e.message),
                   })} className="w-full border border-red-300 text-red-600 rounded-md py-2 text-sm">
                     {t("action.delete")}
                   </button>

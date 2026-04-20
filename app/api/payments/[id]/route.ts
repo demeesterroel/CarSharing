@@ -6,7 +6,7 @@ import { json, readBody, readId, notFound } from "@/lib/api";
 const PaymentSchema = z.object({
   person_id: z.number().int().positive(),
   date: z.string().min(10),
-  amount: z.number(),
+  amount: z.number().positive(),
   note: z.string().nullable().optional(),
 });
 

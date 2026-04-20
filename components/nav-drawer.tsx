@@ -1,8 +1,8 @@
 "use client";
 import * as Dialog from "@radix-ui/react-dialog";
-import { Menu, X, LayoutDashboard, Car, Users, Wrench, CreditCard, CalendarDays } from "lucide-react";
+import { Menu, X, LayoutDashboard, Car, Users, Wrench, CreditCard, CalendarDays, LogOut } from "lucide-react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
 import { t } from "@/lib/i18n";
 
@@ -18,6 +18,12 @@ const NAV_ITEMS = [
 export function NavDrawer() {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
+  const router = useRouter();
+
+  const handleLogout = async () => {
+    await fetch("/api/auth/logout", { method: "POST" });
+    router.replace("/login");
+  };
 
   return (
     <Dialog.Root open={open} onOpenChange={setOpen}>
@@ -58,6 +64,15 @@ export function NavDrawer() {
               </Link>
             ))}
           </nav>
+          <div className="border-t py-2">
+            <button
+              onClick={handleLogout}
+              className="flex items-center gap-3 w-full px-4 py-3 text-sm text-gray-700 hover:bg-blue-50 transition-colors"
+            >
+              <LogOut className="w-5 h-5" />
+              {t("nav.logout")}
+            </button>
+          </div>
         </Dialog.Content>
       </Dialog.Portal>
     </Dialog.Root>

@@ -40,6 +40,6 @@ export async function middleware(req: NextRequest) {
 // Run on all paths except Next.js build artefacts and static files.
 export const config = {
   matcher: [
-    "/((?!_next/static|_next/image|favicon\\.ico|icon.*\\.png|manifest\\.webmanifest|uploads/).*)",
+    "/((?!_next/static|_next/image|favicon\\.ico|icon.*\\.png|manifest\\.webmanifest).*)",
   ],
 };

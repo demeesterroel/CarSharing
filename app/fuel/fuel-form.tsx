@@ -60,7 +60,7 @@ export function FuelForm({ defaultValues, onSubmit, onCancel }: Props) {
     if ((!current || Number(current) === 0) && lastState.odometer != null) {
       setValue("odometer", lastState.odometer);
     }
-  }, [lastState, carId, isAddMode]);
+  }, [lastState, carId, isAddMode, setValue, getValues]);
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 p-4">

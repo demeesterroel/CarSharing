@@ -54,19 +54,15 @@ export function TripForm({ defaultValues, onSubmit, onCancel }: Props) {
 
   const { data: lastState } = useLastCarState(carId);
 
-  const maybePrefillEnd = (startVal: number) => {
-    const current = getValues("end_odometer");
-    if (!current || Number(current) === 0) setValue("end_odometer", startVal);
-  };
-
   useEffect(() => {
     if (!isAddMode || !carId || !lastState) return;
     if (lastState.odometer != null) {
       setValue("start_odometer", lastState.odometer);
-      maybePrefillEnd(lastState.odometer);
+      const current = getValues("end_odometer");
+      if (!current || Number(current) === 0) setValue("end_odometer", lastState.odometer);
     }
     if (lastState.location) setValue("location", lastState.location);
-  }, [lastState, carId, isAddMode]);
+  }, [lastState, carId, isAddMode, setValue, getValues]);
 
   const startReg = register("start_odometer");
 
@@ -99,7 +95,9 @@ export function TripForm({ defaultValues, onSubmit, onCancel }: Props) {
             className="w-full border rounded-md px-3 py-2 text-sm"
             onBlur={(e) => {
               startReg.onBlur(e);
-              maybePrefillEnd(Number(e.target.value));
+              const startVal = Number(e.target.value);
+              const current = getValues("end_odometer");
+              if (!current || Number(current) === 0) setValue("end_odometer", startVal);
             }}
           />
         </div>

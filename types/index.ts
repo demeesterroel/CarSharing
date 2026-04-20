@@ -97,6 +97,8 @@ export interface DashboardRow {
 }
 
 // Form input types (no id, no computed fields)
+export type PersonInput = Pick<Person, "name"|"discount"|"discount_long"|"active">;
+export type CarInput = Pick<Car, "short"|"name"|"price_per_km"|"brand"|"color">;
 export type TripInput = Pick<Trip, "person_id"|"car_id"|"date"|"start_odometer"|"end_odometer"|"location">;
 export type FuelFillupInput = Pick<FuelFillup, "person_id"|"car_id"|"date"|"amount"|"liters"|"odometer"|"receipt"|"location">;
 export type ExpenseInput = Pick<Expense, "person_id"|"car_id"|"date"|"amount"|"description">;

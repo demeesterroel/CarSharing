@@ -55,7 +55,9 @@ export default function CalendarPage() {
     <>
       <PageHeader title={t("page.calendar")} />
       <div className="p-2">
-        {!isLoading && <FullCalendarWrapper events={events} onEventClick={handleEventClick} />}
+        {isLoading
+          ? <p className="p-4 text-gray-500">{t("state.loading")}</p>
+          : <FullCalendarWrapper events={events} onEventClick={handleEventClick} />}
       </div>
 
       <Dialog.Root open={adding} onOpenChange={setAdding}>

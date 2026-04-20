@@ -1,0 +1,8 @@
+node_modules
+.next
+data
+uploads
+.git
+.env*
+docs
+cloud-infra

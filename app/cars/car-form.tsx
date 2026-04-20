@@ -9,8 +9,8 @@ const schema = z.object({
   short: z.string().min(1).max(10),
   name: z.string().min(1),
   price_per_km: z.coerce.number().positive(),
-  brand: z.string().optional(),
-  color: z.string().optional(),
+  brand: z.string().optional().transform((v) => v === "" ? null : (v ?? null)),
+  color: z.string().optional().transform((v) => v === "" ? null : (v ?? null)),
 });
 type FormData = z.infer<typeof schema>;
 

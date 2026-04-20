@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { NextResponse } from "next/server";
 import { getDb } from "@/lib/db";
 import { getCars, insertCar } from "@/lib/queries/cars";
 import { json, readBody } from "@/lib/api";
@@ -16,5 +17,5 @@ export const GET = json(async () => getCars(getDb()));
 export const POST = json(async (req) => {
   const data = await readBody(req, CarSchema);
   const id = insertCar(getDb(), data);
-  return Response.json({ id }, { status: 201 });
+  return NextResponse.json({ id }, { status: 201 });
 });

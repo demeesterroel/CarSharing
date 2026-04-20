@@ -20,7 +20,7 @@ interface Props {
 }
 
 export function PersonForm({ defaultValues, onSubmit, onCancel }: Props) {
-  const { register, handleSubmit, formState: { errors } } = useForm<FormData>({
+  const { register, handleSubmit, watch, setValue, formState: { errors } } = useForm<FormData>({
     resolver: zodResolver(schema),
     defaultValues: { discount: 0, discount_long: 0, active: 1, ...defaultValues },
   });
@@ -41,7 +41,13 @@ export function PersonForm({ defaultValues, onSubmit, onCancel }: Props) {
         <input {...register("discount_long")} type="number" step="0.01" className="w-full border rounded-md px-3 py-2 text-sm" />
       </div>
       <div className="flex items-center gap-2">
-        <input {...register("active")} type="checkbox" id="active" value="1" defaultChecked={defaultValues?.active !== 0} />
+        <input
+          type="checkbox"
+          id="active"
+          checked={watch("active") === 1}
+          onChange={(e) => setValue("active", e.target.checked ? 1 : 0)}
+          className="rounded"
+        />
         <label htmlFor="active" className="text-sm">{t("form.active_member")}</label>
       </div>
       <div className="flex gap-3 pt-2">

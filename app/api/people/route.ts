@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { NextResponse } from "next/server";
 import { getDb } from "@/lib/db";
 import { getPeople, insertPerson } from "@/lib/queries/people";
 import { json, readBody } from "@/lib/api";
@@ -15,5 +16,5 @@ export const GET = json(async () => getPeople(getDb()));
 export const POST = json(async (req) => {
   const data = await readBody(req, PersonSchema);
   const id = insertPerson(getDb(), data);
-  return Response.json({ id }, { status: 201 });
+  return NextResponse.json({ id }, { status: 201 });
 });

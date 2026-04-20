@@ -3,6 +3,9 @@ import Database from "better-sqlite3";
 import { applySchema } from "../schema.sql";
 import { getPeople, insertPerson, getPersonById } from "../queries/people";
 import { getCars, insertCar } from "../queries/cars";
+import { insertTrip, getTrips } from "../queries/trips";
+import { getLastCarState } from "../queries/car-state";
+import { insertFuelFillup } from "../queries/fuel-fillups";
 
 function makeDb() {
   const db = new Database(":memory:");
@@ -32,5 +35,61 @@ describe("cars queries", () => {
     const cars = getCars(db);
     expect(cars).toHaveLength(1);
     expect(cars[0].short).toBe("JF");
+  });
+});
+
+describe("trips queries", () => {
+  it("inserts a trip and computes km and amount", () => {
+    const db = makeDb();
+    const pid = insertPerson(db, { name: "Roeland", discount: 0, discount_long: 0, active: 1 });
+    const cid = insertCar(db, { short: "LEW", name: "Lewis", price_per_km: 0.25, brand: null, color: null });
+    insertTrip(db, { person_id: pid, car_id: cid, date: "2026-04-18", start_odometer: 233900, end_odometer: 241929, location: null });
+    const trips = getTrips(db);
+    expect(trips[0].km).toBe(8029);
+    expect(trips[0].amount).toBeCloseTo(2007.25);
+  });
+});
+
+describe("getLastCarState", () => {
+  it("returns null when the car has no trips or fill-ups", () => {
+    const db = makeDb();
+    const cid = insertCar(db, { short: "A", name: "A", price_per_km: 0.25, brand: null, color: null });
+    expect(getLastCarState(db, cid)).toBeNull();
+  });
+
+  it("returns the last trip's end_odometer when trips exist", () => {
+    const db = makeDb();
+    const pid = insertPerson(db, { name: "P", discount: 0, discount_long: 0, active: 1 });
+    const cid = insertCar(db, { short: "A", name: "A", price_per_km: 0.25, brand: null, color: null });
+    insertTrip(db, { person_id: pid, car_id: cid, date: "2026-04-01", start_odometer: 100, end_odometer: 150, location: "51.0,4.4" });
+    insertTrip(db, { person_id: pid, car_id: cid, date: "2026-04-10", start_odometer: 150, end_odometer: 200, location: "51.1,4.5" });
+    expect(getLastCarState(db, cid)).toEqual({ odometer: 200, location: "51.1,4.5", source: "trip" });
+  });
+
+  it("prefers a later fuel fill-up over an earlier trip", () => {
+    const db = makeDb();
+    const pid = insertPerson(db, { name: "P", discount: 0, discount_long: 0, active: 1 });
+    const cid = insertCar(db, { short: "A", name: "A", price_per_km: 0.25, brand: null, color: null });
+    insertTrip(db, { person_id: pid, car_id: cid, date: "2026-04-01", start_odometer: 100, end_odometer: 150, location: null });
+    insertFuelFillup(db, { person_id: pid, car_id: cid, date: "2026-04-05", amount: 50, liters: 30, odometer: 180, receipt: null, location: "station" });
+    expect(getLastCarState(db, cid)).toEqual({ odometer: 180, location: "station", source: "fuel" });
+  });
+
+  it("ignores fuel fill-ups where odometer is null", () => {
+    const db = makeDb();
+    const pid = insertPerson(db, { name: "P", discount: 0, discount_long: 0, active: 1 });
+    const cid = insertCar(db, { short: "A", name: "A", price_per_km: 0.25, brand: null, color: null });
+    insertTrip(db, { person_id: pid, car_id: cid, date: "2026-04-01", start_odometer: 100, end_odometer: 150, location: "loc-trip" });
+    insertFuelFillup(db, { person_id: pid, car_id: cid, date: "2026-04-05", amount: 50, liters: 30, odometer: null, receipt: null, location: "loc-fuel" });
+    expect(getLastCarState(db, cid)).toEqual({ odometer: 150, location: "loc-trip", source: "trip" });
+  });
+
+  it("prefers trip over fuel when both share the same date", () => {
+    const db = makeDb();
+    const pid = insertPerson(db, { name: "P", discount: 0, discount_long: 0, active: 1 });
+    const cid = insertCar(db, { short: "A", name: "A", price_per_km: 0.25, brand: null, color: null });
+    insertFuelFillup(db, { person_id: pid, car_id: cid, date: "2026-04-10", amount: 50, liters: 30, odometer: 175, receipt: null, location: "station" });
+    insertTrip(db, { person_id: pid, car_id: cid, date: "2026-04-10", start_odometer: 175, end_odometer: 225, location: "parked" });
+    expect(getLastCarState(db, cid)).toEqual({ odometer: 225, location: "parked", source: "trip" });
   });
 });

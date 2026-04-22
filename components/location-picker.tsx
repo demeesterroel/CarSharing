@@ -12,10 +12,12 @@ export function LocationPicker({ value, onChange }: Props) {
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstance = useRef<any>(null);
   const markerRef = useRef<any>(null);
+  const initAttempted = useRef(false);
   const [status, setStatus] = useState<"idle"|"loading"|"error">("idle");
 
   useEffect(() => {
-    if (!mapRef.current || mapInstance.current) return;
+    if (!mapRef.current || initAttempted.current) return;
+    initAttempted.current = true;
     let cancelled = false;
 
     (async () => {
@@ -92,7 +94,7 @@ export function LocationPicker({ value, onChange }: Props) {
         </button>
       </div>
       {status === "error" && <p className="text-xs text-red-500">{t("error.gps_unavailable")}</p>}
-      <div ref={mapRef} className="h-48 rounded-md border" />
+      <div ref={mapRef} className="h-48 rounded-md border overflow-hidden" />
     </div>
   );
 }

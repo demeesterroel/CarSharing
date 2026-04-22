@@ -1,10 +1,12 @@
 import React from "react";
+import { paper, fontMono, fontSerif, fmtYearMonth } from "@/lib/paper-theme";
 
 interface GroupedListProps<T> {
   items: T[];
   getKey: (item: T) => string;
   getGroupLabel: (key: string) => string;
   getGroupTotal: (items: T[]) => number;
+  totalSuffix?: string;
   renderItem: (item: T) => React.ReactNode;
 }
 
@@ -13,6 +15,7 @@ export function GroupedList<T>({
   getKey,
   getGroupLabel,
   getGroupTotal,
+  totalSuffix = "€",
   renderItem,
 }: GroupedListProps<T>) {
   const groups = new Map<string, T[]>();
@@ -30,15 +33,27 @@ export function GroupedList<T>({
         const total = getGroupTotal(groupItems);
         return (
           <div key={key}>
-            <div className="flex items-center gap-2 px-4 py-2 bg-gray-50 border-b border-t">
-              <span className="text-sm font-medium text-gray-600">{getGroupLabel(key)}</span>
-              <span className="text-xs bg-gray-200 text-gray-700 px-2 py-0.5 rounded-full font-mono">
-                {total.toLocaleString("nl-BE", { minimumFractionDigits: 2 })}
+            {/* Month header */}
+            <div style={{
+              display: "flex", alignItems: "baseline", justifyContent: "space-between",
+              padding: "10px 20px 6px",
+              borderTop: `1.5px dashed ${paper.ink}`,
+              background: paper.paperDeep,
+            }}>
+              <span style={{ fontFamily: fontSerif, fontSize: 16, fontWeight: 600, color: paper.ink }}>
+                {getGroupLabel(key)}
+              </span>
+              <span style={{ fontFamily: fontMono, fontSize: 11, color: paper.inkDim, fontWeight: 600 }}>
+                {totalSuffix === "€"
+                  ? `€\u00a0${total.toLocaleString("nl-BE", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+                  : `${total.toLocaleString("nl-BE")} ${totalSuffix}`}
               </span>
             </div>
-            {groupItems.map((item, i) => (
-              <React.Fragment key={i}>{renderItem(item)}</React.Fragment>
-            ))}
+            <div style={{ padding: "8px 16px" }}>
+              {groupItems.map((item, i) => (
+                <React.Fragment key={i}>{renderItem(item)}</React.Fragment>
+              ))}
+            </div>
           </div>
         );
       })}

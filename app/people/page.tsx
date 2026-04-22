@@ -7,32 +7,71 @@ import { Fab } from "@/components/fab";
 import { PersonForm } from "./person-form";
 import { usePeople, useCreatePerson, useUpdatePerson } from "@/hooks/use-people";
 import type { Person } from "@/types";
-import { ChevronRight } from "lucide-react";
-import { t } from "@/lib/i18n";
+import { paper, fontMono, fontSerif } from "@/lib/paper-theme";
+import { useT } from "@/components/locale-provider";
+
+const sheetStyle: React.CSSProperties = {
+  position: "fixed", left: 0, right: 0, bottom: 0, background: paper.paper,
+  borderRadius: "16px 16px 0 0", zIndex: 50, maxHeight: "95vh",
+  overflowY: "auto", maxWidth: 480, margin: "0 auto",
+};
 
 export default function PeoplePage() {
+  const t = useT();
   const { data: people = [], isLoading } = usePeople();
   const createPerson = useCreatePerson();
   const updatePerson = useUpdatePerson();
   const [editing, setEditing] = useState<Person | null>(null);
   const [adding, setAdding] = useState(false);
 
-  if (isLoading) return <><PageHeader title={t("page.people")} /><p className="p-4 text-gray-500">{t("state.loading")}</p></>;
+  if (isLoading) return (
+    <div style={{ background: paper.paperDeep, minHeight: "100dvh" }}>
+      <PageHeader title={t("page.people")} />
+      <div style={{ padding: "32px 20px", fontFamily: fontMono, fontSize: 11, color: paper.inkMute, letterSpacing: 1 }}>{t("state.loading")}</div>
+    </div>
+  );
 
   return (
-    <>
+    <div style={{ background: paper.paperDeep, minHeight: "100dvh", paddingBottom: 80 }}>
       <PageHeader title={t("page.people")} />
-      <div className="divide-y">
+
+      <div style={{ padding: "8px 16px" }}>
         {people.map((p) => (
           <button
             key={p.id}
             onClick={() => setEditing(p)}
-            className="w-full flex items-center px-4 py-3 hover:bg-gray-50 text-left gap-3"
+            style={{
+              width: "100%", display: "flex", alignItems: "center", gap: 12,
+              padding: "12px 14px", marginBottom: 8,
+              background: paper.paper, border: "none", cursor: "pointer", textAlign: "left",
+              borderLeft: `3px solid ${p.active ? paper.ink : paper.inkMute}`,
+              boxShadow: "0 1px 2px rgba(0,0,0,0.04)",
+            }}
           >
-            <span className={`w-2 h-2 rounded-full ${p.active ? "bg-green-500" : "bg-gray-300"}`} />
-            <span className="flex-1 text-sm font-medium">{p.name}</span>
-            {p.discount > 0 && <span className="text-xs text-gray-500">{p.discount}</span>}
-            <ChevronRight className="w-4 h-4 text-gray-400" />
+            <div style={{
+              width: 8, height: 8, borderRadius: "50%", flexShrink: 0,
+              background: p.active ? paper.green : paper.inkMute,
+            }} />
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ fontFamily: fontSerif, fontSize: 15, fontWeight: 600, color: p.active ? paper.ink : paper.inkDim }}>
+                {p.name}
+              </div>
+              {(p.discount > 0 || p.discount_long > 0) && (
+                <div style={{ fontFamily: fontMono, fontSize: 10, color: paper.inkDim, letterSpacing: 1, marginTop: 2 }}>
+                  {p.discount > 0 ? `${p.discount}% ${t("form.discount")}` : ""}
+                  {p.discount > 0 && p.discount_long > 0 ? " · " : ""}
+                  {p.discount_long > 0 ? `${p.discount_long}% ${t("form.discount_long")}` : ""}
+                </div>
+              )}
+            </div>
+            {!p.active && (
+              <div style={{
+                padding: "2px 6px", background: paper.paperDark,
+                fontFamily: fontMono, fontSize: 9, color: paper.inkMute, letterSpacing: 1, textTransform: "uppercase",
+              }}>
+                {t("person.inactive")}
+              </div>
+            )}
           </button>
         ))}
       </div>
@@ -40,8 +79,10 @@ export default function PeoplePage() {
       <Dialog.Root open={adding} onOpenChange={setAdding}>
         <Dialog.Portal>
           <Dialog.Overlay className="fixed inset-0 bg-black/40 z-40" />
-          <Dialog.Content className="fixed inset-x-0 bottom-0 bg-white rounded-t-xl z-50 max-h-[90vh] overflow-y-auto">
-            <Dialog.Title className="px-4 pt-4 text-base font-semibold">{t("page.person_add")}</Dialog.Title>
+          <Dialog.Content style={sheetStyle}>
+            <Dialog.Title style={{ padding: "16px 20px 0", fontFamily: fontSerif, fontSize: 20, fontWeight: 700 }}>
+              {t("page.person_add")}
+            </Dialog.Title>
             <PersonForm
               onSubmit={(data) => {
                 createPerson.mutate(data as Omit<Person, "id">, {
@@ -58,8 +99,10 @@ export default function PeoplePage() {
       <Dialog.Root open={!!editing} onOpenChange={(o) => !o && setEditing(null)}>
         <Dialog.Portal>
           <Dialog.Overlay className="fixed inset-0 bg-black/40 z-40" />
-          <Dialog.Content className="fixed inset-x-0 bottom-0 bg-white rounded-t-xl z-50 max-h-[90vh] overflow-y-auto">
-            <Dialog.Title className="px-4 pt-4 text-base font-semibold">{t("page.person_edit")}</Dialog.Title>
+          <Dialog.Content style={sheetStyle}>
+            <Dialog.Title style={{ padding: "16px 20px 0", fontFamily: fontSerif, fontSize: 20, fontWeight: 700 }}>
+              {t("page.person_edit")}
+            </Dialog.Title>
             {editing && (
               <PersonForm
                 defaultValues={editing}
@@ -77,6 +120,6 @@ export default function PeoplePage() {
       </Dialog.Root>
 
       <Fab onClick={() => setAdding(true)} label={t("page.person_add")} />
-    </>
+    </div>
   );
 }

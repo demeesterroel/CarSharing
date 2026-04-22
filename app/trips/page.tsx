@@ -8,10 +8,17 @@ import { Fab } from "@/components/fab";
 import { TripForm } from "./trip-form";
 import { useTrips, useCreateTrip, useUpdateTrip, useDeleteTrip } from "@/hooks/use-trips";
 import type { Trip } from "@/types";
-import { MapPin, ChevronRight } from "lucide-react";
-import { t } from "@/lib/i18n";
+import { paper, fontMono, fontSerif, fmtMoney, fmtYearMonth } from "@/lib/paper-theme";
+import { useT } from "@/components/locale-provider";
+
+const sheetStyle: React.CSSProperties = {
+  position: "fixed", left: 0, right: 0, bottom: 0, background: paper.paper,
+  borderRadius: "16px 16px 0 0", zIndex: 50, maxHeight: "95vh",
+  overflowY: "auto", maxWidth: 480, margin: "0 auto",
+};
 
 export default function TripsPage() {
+  const t = useT();
   const { data: trips = [], isLoading } = useTrips();
   const createTrip = useCreateTrip();
   const updateTrip = useUpdateTrip();
@@ -19,42 +26,70 @@ export default function TripsPage() {
   const [adding, setAdding] = useState(false);
   const [editing, setEditing] = useState<Trip | null>(null);
 
-  if (isLoading) return <><PageHeader title={t("page.trips")} /><p className="p-4 text-gray-500">{t("state.loading")}</p></>;
+  if (isLoading) return (
+    <div style={{ background: paper.paperDeep, minHeight: "100dvh" }}>
+      <PageHeader title={t("page.trips")} />
+      <div style={{ padding: "32px 20px", fontFamily: fontMono, fontSize: 11, color: paper.inkMute, letterSpacing: 1 }}>{t("state.loading")}</div>
+    </div>
+  );
 
   return (
-    <>
+    <div style={{ background: paper.paperDeep, minHeight: "100dvh", paddingBottom: 80 }}>
       <PageHeader title={t("page.trips")} />
+
       <GroupedList
         items={trips}
         getKey={(trip) => trip.date.slice(0, 7)}
-        getGroupLabel={(key) => { const [y, m] = key.split("-"); return `${y}-${Number(m)}`; }}
+        getGroupLabel={(key) => fmtYearMonth(key + "-01")}
         getGroupTotal={(items) => items.reduce((s, trip) => s + trip.km, 0)}
+        totalSuffix="km"
         renderItem={(trip) => (
-          <button key={trip.id} onClick={() => setEditing(trip)}
-            className="w-full flex items-center px-4 py-3 border-b hover:bg-gray-50 text-left gap-3">
-            <div className="flex-1">
-              <div className="flex items-center gap-2">
-                <span className="text-sm font-medium">{trip.person_name}</span>
-                <span className="text-xs font-mono bg-gray-100 px-1.5 py-0.5 rounded">{trip.car_short}</span>
-                <span className="text-xs text-gray-500 ml-auto">{trip.date}</span>
+          <button
+            key={trip.id}
+            onClick={() => setEditing(trip)}
+            style={{
+              width: "100%", display: "flex", alignItems: "center", gap: 12,
+              padding: "12px 14px", marginBottom: 8,
+              background: paper.paper, border: "none", cursor: "pointer", textAlign: "left",
+              borderLeft: `3px solid ${paper.ink}`,
+              boxShadow: "0 1px 2px rgba(0,0,0,0.04)",
+            }}
+          >
+            <div style={{
+              padding: "6px 8px", background: paper.ink, color: paper.paper,
+              fontFamily: fontMono, fontSize: 11, fontWeight: 700, letterSpacing: 2, flexShrink: 0, minWidth: 42, textAlign: "center",
+            }}>
+              {trip.car_short}
+            </div>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ fontFamily: fontSerif, fontSize: 15, fontWeight: 600, color: paper.ink, lineHeight: 1.2, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                {trip.location ?? "—"}
               </div>
-              <div className="flex items-center gap-3 mt-0.5">
-                <span className="text-sm text-gray-600">{trip.km} km</span>
-                <span className="text-xs text-gray-400">{trip.start_odometer} → {trip.end_odometer}</span>
-                <span className="text-sm font-medium ml-auto">€ {trip.amount.toFixed(2)}</span>
+              <div style={{ fontFamily: fontMono, fontSize: 10, color: paper.inkDim, letterSpacing: 1, marginTop: 2 }}>
+                {trip.person_name} · {trip.date} · {trip.start_odometer.toLocaleString("nl-BE")} → {trip.end_odometer.toLocaleString("nl-BE")}
               </div>
             </div>
-            {trip.location && <MapPin className="w-4 h-4 text-gray-400 flex-shrink-0" />}
-            <ChevronRight className="w-4 h-4 text-gray-400 flex-shrink-0" />
+            <div style={{ textAlign: "right", flexShrink: 0 }}>
+              <div style={{ fontFamily: fontMono, fontSize: 14, fontWeight: 700, color: paper.ink }}>{fmtMoney(trip.amount)}</div>
+              <div style={{ fontFamily: fontMono, fontSize: 10, color: paper.inkDim }}>{trip.km} km</div>
+            </div>
           </button>
         )}
       />
 
+      {trips.length === 0 && (
+        <div style={{ padding: "32px 20px", textAlign: "center", fontFamily: fontMono, fontSize: 11, color: paper.inkMute, letterSpacing: 1 }}>
+          {t("state.empty_trips")}
+        </div>
+      )}
+
       <Dialog.Root open={adding} onOpenChange={setAdding}>
         <Dialog.Portal>
           <Dialog.Overlay className="fixed inset-0 bg-black/40 z-40" />
-          <Dialog.Content className="fixed inset-x-0 bottom-0 bg-white rounded-t-xl z-50 max-h-[95vh] overflow-y-auto">
-            <Dialog.Title className="px-4 pt-4 text-base font-semibold">{t("page.trip_add")}</Dialog.Title>
+          <Dialog.Content style={sheetStyle}>
+            <Dialog.Title style={{ padding: "16px 20px 0", fontFamily: fontSerif, fontSize: 20, fontWeight: 700 }}>
+              {t("page.trip_add")}
+            </Dialog.Title>
             <TripForm
               onSubmit={(data) => createTrip.mutate(data as any, {
                 onSuccess: () => { setAdding(false); toast.success(t("toast.trip_saved")); },
@@ -69,8 +104,10 @@ export default function TripsPage() {
       <Dialog.Root open={!!editing} onOpenChange={(o) => !o && setEditing(null)}>
         <Dialog.Portal>
           <Dialog.Overlay className="fixed inset-0 bg-black/40 z-40" />
-          <Dialog.Content className="fixed inset-x-0 bottom-0 bg-white rounded-t-xl z-50 max-h-[95vh] overflow-y-auto">
-            <Dialog.Title className="px-4 pt-4 text-base font-semibold">{t("page.trip_edit")}</Dialog.Title>
+          <Dialog.Content style={sheetStyle}>
+            <Dialog.Title style={{ padding: "16px 20px 0", fontFamily: fontSerif, fontSize: 20, fontWeight: 700 }}>
+              {t("page.trip_edit")}
+            </Dialog.Title>
             {editing && (
               <>
                 <TripForm
@@ -81,11 +118,19 @@ export default function TripsPage() {
                   })}
                   onCancel={() => setEditing(null)}
                 />
-                <div className="px-4 pb-4">
-                  <button onClick={() => deleteTrip.mutate(editing.id, {
-                    onSuccess: () => { setEditing(null); toast.success(t("toast.trip_deleted")); },
-                    onError: (e) => toast.error(e.message),
-                  })} className="w-full border border-red-300 text-red-600 rounded-md py-2 text-sm">
+                <div style={{ padding: "0 16px 24px" }}>
+                  <button
+                    onClick={() => deleteTrip.mutate(editing.id, {
+                      onSuccess: () => { setEditing(null); toast.success(t("toast.trip_deleted")); },
+                      onError: (e) => toast.error(e.message),
+                    })}
+                    style={{
+                      width: "100%", padding: "10px", background: "transparent",
+                      border: `1.5px solid ${paper.accent}`, color: paper.accent,
+                      fontFamily: fontMono, fontSize: 10, fontWeight: 700, letterSpacing: 2,
+                      textTransform: "uppercase", cursor: "pointer",
+                    }}
+                  >
                     {t("action.delete")}
                   </button>
                 </div>
@@ -96,6 +141,6 @@ export default function TripsPage() {
       </Dialog.Root>
 
       <Fab onClick={() => setAdding(true)} label={t("page.trip_add")} />
-    </>
+    </div>
   );
 }

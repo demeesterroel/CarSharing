@@ -11,12 +11,15 @@ export function applySchema(db: Database.Database) {
     );
 
     CREATE TABLE IF NOT EXISTS cars (
-      id           INTEGER PRIMARY KEY AUTOINCREMENT,
-      short        TEXT    NOT NULL UNIQUE,
-      name         TEXT    NOT NULL,
-      price_per_km REAL    NOT NULL,
-      brand        TEXT,
-      color        TEXT
+      id              INTEGER PRIMARY KEY AUTOINCREMENT,
+      short           TEXT    NOT NULL UNIQUE,
+      name            TEXT    NOT NULL,
+      price_per_km    REAL    NOT NULL,
+      brand           TEXT,
+      color           TEXT,
+      owner_name      TEXT,
+      long_threshold  INTEGER NOT NULL DEFAULT 500,
+      fixed_costs_json TEXT
     );
 
     CREATE TABLE IF NOT EXISTS trips (
@@ -58,7 +61,16 @@ export function applySchema(db: Database.Database) {
       person_id  INTEGER NOT NULL REFERENCES people(id) ON DELETE RESTRICT,
       car_id     INTEGER NOT NULL REFERENCES cars(id)   ON DELETE RESTRICT,
       start_date TEXT    NOT NULL,
-      end_date   TEXT    NOT NULL
+      end_date   TEXT    NOT NULL,
+      status     TEXT    NOT NULL DEFAULT 'pending',
+      note       TEXT
+    );
+
+    CREATE TABLE IF NOT EXISTS car_price_history (
+      id             INTEGER PRIMARY KEY AUTOINCREMENT,
+      car_id         INTEGER NOT NULL REFERENCES cars(id) ON DELETE CASCADE,
+      price_per_km   REAL    NOT NULL,
+      effective_from TEXT    NOT NULL
     );
 
     CREATE TABLE IF NOT EXISTS payments (
@@ -70,4 +82,18 @@ export function applySchema(db: Database.Database) {
       year      INTEGER NOT NULL
     );
   `);
+
+  // Migrations for existing databases (safe to run multiple times)
+  const migrations = [
+    "ALTER TABLE reservations ADD COLUMN status TEXT NOT NULL DEFAULT 'pending'",
+    "ALTER TABLE reservations ADD COLUMN note TEXT",
+    "ALTER TABLE cars ADD COLUMN owner_name TEXT",
+    "ALTER TABLE cars ADD COLUMN long_threshold INTEGER NOT NULL DEFAULT 500",
+    "ALTER TABLE cars ADD COLUMN fixed_costs_json TEXT",
+    "ALTER TABLE cars ADD COLUMN active INTEGER NOT NULL DEFAULT 1",
+    "ALTER TABLE cars ADD COLUMN expected_km INTEGER",
+  ];
+  for (const sql of migrations) {
+    try { db.exec(sql); } catch { /* column already exists */ }
+  }
 }

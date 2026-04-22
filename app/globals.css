@@ -1,1 +1,267 @@
 @import "tailwindcss";
+
+/* ── Paper palette ─────────────────────────────────────────── */
+:root {
+  --paper:       #f5f0e6;
+  --paper-deep:  #ebe3d2;
+  --paper-dark:  #d9ceb2;
+  --ink:         #1a1a1a;
+  --ink-dim:     #555047;
+  --ink-mute:    #8a8273;
+  --accent:      #c44536;
+  --green:       #5a7a3c;
+  --blue:        #3d5a7a;
+  --amber:       #b87e0f;
+
+  --font-mono:   var(--font-courier-prime, "Courier Prime", "IBM Plex Mono", ui-monospace, monospace);
+  --font-serif:  var(--font-fraunces, "Fraunces", "Playfair Display", Georgia, serif);
+  --font-sans:   var(--font-inter, "Inter", -apple-system, system-ui, sans-serif);
+}
+
+/* ── Base ──────────────────────────────────────────────────── */
+html, body {
+  margin: 0;
+  padding: 0;
+  background-color: var(--paper-deep);
+  font-family: var(--font-sans);
+  overscroll-behavior: none;
+  color: var(--ink);
+}
+
+/* Center + constrain on desktop */
+#__next {
+  min-height: 100dvh;
+}
+
+/* ── Paper utilities ───────────────────────────────────────── */
+.paper-bg        { background-color: var(--paper); }
+.paper-deep-bg   { background-color: var(--paper-deep); }
+.ink-text        { color: var(--ink); }
+.ink-dim-text    { color: var(--ink-dim); }
+.ink-mute-text   { color: var(--ink-mute); }
+.accent-text     { color: var(--accent); }
+.green-text      { color: var(--green); }
+.blue-text       { color: var(--blue); }
+.amber-text      { color: var(--amber); }
+
+.font-mono-paper { font-family: var(--font-mono); }
+.font-serif-paper{ font-family: var(--font-serif); }
+
+/* Dashed perforation line */
+.perf {
+  height: 0;
+  border-top: 1.5px dashed var(--ink);
+  margin: 12px 0;
+}
+.perf-light {
+  height: 0;
+  border-top: 1.5px dashed var(--ink-dim);
+  margin: 8px 0;
+}
+
+/* Stamp (rotated border box) */
+.stamp {
+  display: inline-block;
+  padding: 6px 14px;
+  border: 2.5px solid currentColor;
+  border-radius: 4px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  transform: rotate(-6deg);
+  opacity: 0.9;
+}
+.stamp-sm {
+  padding: 4px 10px;
+  font-size: 9px;
+}
+.stamp-green { color: var(--green); }
+.stamp-accent { color: var(--accent); }
+.stamp-blue { color: var(--blue); }
+
+/* Car short code pill */
+.car-stamp {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 8px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  border: 1.5px solid var(--ink);
+  min-width: 42px;
+  text-align: center;
+}
+.car-stamp-active {
+  background: var(--ink);
+  color: var(--paper);
+}
+.car-stamp-inactive {
+  background: transparent;
+  color: var(--ink);
+  border-style: dashed;
+}
+
+/* Receipt row (label + value) */
+.receipt-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font-family: var(--font-mono);
+  padding: 4px 0;
+}
+.receipt-row-label {
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-size: 10px;
+  color: var(--ink-dim);
+  white-space: nowrap;
+  margin-right: 12px;
+}
+.receipt-row-value {
+  font-weight: 600;
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+/* Receipt card shadow */
+.receipt-card {
+  background: var(--paper);
+  box-shadow: 0 1px 2px rgba(0,0,0,0.05), 0 8px 24px rgba(0,0,0,0.07);
+}
+
+/* Trip / fuel strip */
+.activity-strip {
+  background: var(--paper);
+  padding: 12px 14px;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+}
+
+/* Bottom nav paper style */
+.bottom-nav-paper {
+  background: var(--paper);
+  border-top: 1.5px dashed var(--ink);
+}
+.bottom-nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  padding: 10px 2px 12px;
+  cursor: pointer;
+  font-family: var(--font-mono);
+  border: none;
+  background: transparent;
+  color: var(--ink);
+  flex: 1;
+  min-width: 0;
+}
+.bottom-nav-item.active {
+  background: var(--ink);
+  color: var(--paper);
+}
+.bottom-nav-label {
+  font-size: 8px;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+/* Section header (serif title + mono "see all" link) */
+.section-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  padding: 24px 20px 10px;
+}
+.section-title {
+  font-family: var(--font-serif);
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--ink);
+  letter-spacing: -0.3px;
+}
+.section-link {
+  cursor: pointer;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--ink-dim);
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  border-bottom: 1px solid var(--ink-dim);
+  text-decoration: none;
+}
+
+/* Pending reservation hatching */
+.reservation-pending {
+  background: repeating-linear-gradient(
+    -45deg,
+    var(--paper-deep),
+    var(--paper-deep) 4px,
+    var(--paper) 4px,
+    var(--paper) 10px
+  );
+}
+
+/* Animations */
+@keyframes popIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes stampDrop {
+  0%   { transform: translate(-50%, -50%) rotate(-8deg) scale(2.4); opacity: 0; }
+  60%  { transform: translate(-50%, -50%) rotate(-8deg) scale(0.94); opacity: 1; }
+  100% { transform: translate(-50%, -50%) rotate(-8deg) scale(1);    opacity: 1; }
+}
+@keyframes tearOff {
+  0%   { transform: translateY(0); opacity: 1; }
+  100% { transform: translateY(100%); opacity: 0; }
+}
+.animate-pop-in  { animation: popIn 0.2s ease-out; }
+.animate-stamp   { animation: stampDrop 0.35s cubic-bezier(0.36, 0.07, 0.19, 0.97); }
+.animate-tear    { animation: tearOff 0.4s ease-in forwards; }
+
+/* Input underline style */
+.input-underline {
+  background: transparent;
+  border: none;
+  border-bottom: 1.5px solid var(--ink);
+  outline: none;
+  font-family: var(--font-serif);
+  font-size: 22px;
+  font-weight: 500;
+  color: var(--ink);
+  width: 100%;
+  padding: 4px 0;
+}
+.input-underline::placeholder {
+  color: var(--ink-mute);
+  font-style: italic;
+}
+
+/* Desktop framing */
+@media (min-width: 900px) {
+  body {
+    background: repeating-linear-gradient(
+      0deg,
+      #e8e2d4 0 2px,
+      #e2dcce 2px 3px
+    );
+    min-height: 100vh;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 20px;
+  }
+}

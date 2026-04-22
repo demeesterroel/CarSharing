@@ -2,16 +2,23 @@
 import { useState } from "react";
 import { toast } from "sonner";
 import * as Dialog from "@radix-ui/react-dialog";
-import { ChevronRight } from "lucide-react";
 import { PageHeader } from "@/components/page-header";
 import { GroupedList } from "@/components/grouped-list";
 import { Fab } from "@/components/fab";
 import { ExpenseForm } from "./expense-form";
 import { useExpenses, useCreateExpense, useUpdateExpense, useDeleteExpense } from "@/hooks/use-expenses";
 import type { Expense } from "@/types";
-import { t } from "@/lib/i18n";
+import { paper, fontMono, fontSerif, fmtMoney, fmtYearMonth } from "@/lib/paper-theme";
+import { useT } from "@/components/locale-provider";
+
+const sheetStyle: React.CSSProperties = {
+  position: "fixed", left: 0, right: 0, bottom: 0, background: paper.paper,
+  borderRadius: "16px 16px 0 0", zIndex: 50, maxHeight: "95vh",
+  overflowY: "auto", maxWidth: 480, margin: "0 auto",
+};
 
 export default function ExpensesPage() {
+  const t = useT();
   const { data: expenses = [], isLoading } = useExpenses();
   const createE = useCreateExpense();
   const updateE = useUpdateExpense();
@@ -19,40 +26,68 @@ export default function ExpensesPage() {
   const [adding, setAdding] = useState(false);
   const [editing, setEditing] = useState<Expense | null>(null);
 
-  if (isLoading) return <><PageHeader title={t("page.expenses")} /><p className="p-4 text-gray-500">{t("state.loading")}</p></>;
+  if (isLoading) return (
+    <div style={{ background: paper.paperDeep, minHeight: "100dvh" }}>
+      <PageHeader title={t("page.expenses")} />
+      <div style={{ padding: "32px 20px", fontFamily: fontMono, fontSize: 11, color: paper.inkMute, letterSpacing: 1 }}>{t("state.loading")}</div>
+    </div>
+  );
 
   return (
-    <>
+    <div style={{ background: paper.paperDeep, minHeight: "100dvh", paddingBottom: 80 }}>
       <PageHeader title={t("page.expenses")} />
+
       <GroupedList
         items={expenses}
         getKey={(e) => e.date.slice(0, 7)}
-        getGroupLabel={(key) => { const [y, m] = key.split("-"); return `${y}-${Number(m)}`; }}
+        getGroupLabel={(key) => fmtYearMonth(key + "-01")}
         getGroupTotal={(items) => items.reduce((s, e) => s + e.amount, 0)}
         renderItem={(e) => (
-          <button key={e.id} onClick={() => setEditing(e)}
-            className="w-full flex items-center px-4 py-3 border-b hover:bg-gray-50 text-left gap-3">
-            <div className="flex-1">
-              <div className="flex items-center gap-2">
-                <span className="text-sm font-medium">{e.person_name}</span>
-                <span className="text-xs font-mono bg-gray-100 px-1.5 py-0.5 rounded">{e.car_short}</span>
-                <span className="text-xs text-gray-500 ml-auto">{e.date}</span>
+          <button
+            key={e.id}
+            onClick={() => setEditing(e)}
+            style={{
+              width: "100%", display: "flex", alignItems: "center", gap: 12,
+              padding: "12px 14px", marginBottom: 8,
+              background: paper.paper, border: "none", cursor: "pointer", textAlign: "left",
+              borderLeft: `3px solid ${paper.amber}`,
+              boxShadow: "0 1px 2px rgba(0,0,0,0.04)",
+            }}
+          >
+            <div style={{
+              padding: "6px 8px", background: paper.ink, color: paper.paper,
+              fontFamily: fontMono, fontSize: 11, fontWeight: 700, letterSpacing: 2, flexShrink: 0, minWidth: 42, textAlign: "center",
+            }}>
+              {e.car_short}
+            </div>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ fontFamily: fontSerif, fontSize: 15, fontWeight: 600, color: paper.ink, lineHeight: 1.2, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                {e.description}
               </div>
-              <div className="flex items-center gap-3 mt-0.5">
-                <span className="text-sm text-gray-600">{e.description}</span>
-                <span className="text-sm font-medium ml-auto">€ {e.amount.toFixed(2)}</span>
+              <div style={{ fontFamily: fontMono, fontSize: 10, color: paper.inkDim, letterSpacing: 1, marginTop: 2 }}>
+                {e.person_name} · {e.date}
               </div>
             </div>
-            <ChevronRight className="w-4 h-4 text-gray-400 flex-shrink-0" />
+            <div style={{ textAlign: "right", flexShrink: 0 }}>
+              <div style={{ fontFamily: fontMono, fontSize: 14, fontWeight: 700, color: paper.amber }}>{fmtMoney(e.amount)}</div>
+            </div>
           </button>
         )}
       />
 
+      {expenses.length === 0 && (
+        <div style={{ padding: "32px 20px", textAlign: "center", fontFamily: fontMono, fontSize: 11, color: paper.inkMute, letterSpacing: 1 }}>
+          {t("state.empty_expenses")}
+        </div>
+      )}
+
       <Dialog.Root open={adding} onOpenChange={setAdding}>
         <Dialog.Portal>
           <Dialog.Overlay className="fixed inset-0 bg-black/40 z-40" />
-          <Dialog.Content className="fixed inset-x-0 bottom-0 bg-white rounded-t-xl z-50 max-h-[95vh] overflow-y-auto">
-            <Dialog.Title className="px-4 pt-4 text-base font-semibold">{t("page.expense_add")}</Dialog.Title>
+          <Dialog.Content style={sheetStyle}>
+            <Dialog.Title style={{ padding: "16px 20px 0", fontFamily: fontSerif, fontSize: 20, fontWeight: 700 }}>
+              {t("page.expense_add")}
+            </Dialog.Title>
             <ExpenseForm
               onSubmit={(data) => createE.mutate(data, {
                 onSuccess: () => { setAdding(false); toast.success(t("toast.saved")); },
@@ -67,8 +102,10 @@ export default function ExpensesPage() {
       <Dialog.Root open={!!editing} onOpenChange={(o) => !o && setEditing(null)}>
         <Dialog.Portal>
           <Dialog.Overlay className="fixed inset-0 bg-black/40 z-40" />
-          <Dialog.Content className="fixed inset-x-0 bottom-0 bg-white rounded-t-xl z-50 max-h-[95vh] overflow-y-auto">
-            <Dialog.Title className="px-4 pt-4 text-base font-semibold">{t("page.expense_edit")}</Dialog.Title>
+          <Dialog.Content style={sheetStyle}>
+            <Dialog.Title style={{ padding: "16px 20px 0", fontFamily: fontSerif, fontSize: 20, fontWeight: 700 }}>
+              {t("page.expense_edit")}
+            </Dialog.Title>
             {editing && (
               <>
                 <ExpenseForm
@@ -79,11 +116,19 @@ export default function ExpensesPage() {
                   })}
                   onCancel={() => setEditing(null)}
                 />
-                <div className="px-4 pb-4">
-                  <button onClick={() => deleteE.mutate(editing.id, {
-                    onSuccess: () => { setEditing(null); toast.success(t("toast.deleted")); },
-                    onError: (e) => toast.error(e.message),
-                  })} className="w-full border border-red-300 text-red-600 rounded-md py-2 text-sm">
+                <div style={{ padding: "0 16px 24px" }}>
+                  <button
+                    onClick={() => deleteE.mutate(editing.id, {
+                      onSuccess: () => { setEditing(null); toast.success(t("toast.deleted")); },
+                      onError: (e) => toast.error(e.message),
+                    })}
+                    style={{
+                      width: "100%", padding: "10px", background: "transparent",
+                      border: `1.5px solid ${paper.accent}`, color: paper.accent,
+                      fontFamily: fontMono, fontSize: 10, fontWeight: 700, letterSpacing: 2,
+                      textTransform: "uppercase", cursor: "pointer",
+                    }}
+                  >
                     {t("action.delete")}
                   </button>
                 </div>
@@ -94,6 +139,6 @@ export default function ExpensesPage() {
       </Dialog.Root>
 
       <Fab onClick={() => setAdding(true)} label={t("page.expense_add")} />
-    </>
+    </div>
   );
 }

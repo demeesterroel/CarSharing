@@ -7,33 +7,69 @@ import { Fab } from "@/components/fab";
 import { CarForm } from "./car-form";
 import { useCars, useCreateCar, useUpdateCar } from "@/hooks/use-cars";
 import type { Car } from "@/types";
-import { ChevronRight } from "lucide-react";
-import { t } from "@/lib/i18n";
+import { paper, fontMono, fontSerif } from "@/lib/paper-theme";
+import { useT } from "@/components/locale-provider";
+
+const sheetStyle: React.CSSProperties = {
+  position: "fixed", left: 0, right: 0, bottom: 0, background: paper.paper,
+  borderRadius: "16px 16px 0 0", zIndex: 50, maxHeight: "95vh",
+  overflowY: "auto", maxWidth: 480, margin: "0 auto",
+};
 
 export default function CarsPage() {
+  const t = useT();
   const { data: cars = [], isLoading } = useCars();
   const createCar = useCreateCar();
   const updateCar = useUpdateCar();
   const [editing, setEditing] = useState<Car | null>(null);
   const [adding, setAdding] = useState(false);
 
-  if (isLoading) return <><PageHeader title={t("page.cars")} /><p className="p-4 text-gray-500">{t("state.loading")}</p></>;
+  if (isLoading) return (
+    <div style={{ background: paper.paperDeep, minHeight: "100dvh" }}>
+      <PageHeader title={t("page.cars")} />
+      <div style={{ padding: "32px 20px", fontFamily: fontMono, fontSize: 11, color: paper.inkMute, letterSpacing: 1 }}>{t("state.loading")}</div>
+    </div>
+  );
 
   return (
-    <>
+    <div style={{ background: paper.paperDeep, minHeight: "100dvh", paddingBottom: 80 }}>
       <PageHeader title={t("page.cars")} />
-      <div className="divide-y">
+
+      <div style={{ padding: "8px 16px" }}>
         {cars.map((c) => (
-          <button key={c.id} onClick={() => setEditing(c)}
-            className="w-full flex items-center px-4 py-3 hover:bg-gray-50 text-left gap-3">
-            <span className="text-sm font-mono font-bold text-blue-600 w-10">{c.short}</span>
-            <div className="flex-1">
-              <p className="text-sm font-medium">{c.name}</p>
-              <p className="text-xs text-gray-500">
-                {[c.brand, c.color].filter(Boolean).join(" · ")} · €{c.price_per_km}/km
-              </p>
+          <button
+            key={c.id}
+            onClick={() => setEditing(c)}
+            style={{
+              width: "100%", display: "flex", alignItems: "center", gap: 12,
+              padding: "12px 14px", marginBottom: 8,
+              background: paper.paper, border: "none", cursor: "pointer", textAlign: "left",
+              borderLeft: `3px solid ${paper.blue}`,
+              boxShadow: "0 1px 2px rgba(0,0,0,0.04)",
+            }}
+          >
+            <div style={{
+              padding: "6px 8px", background: paper.ink, color: paper.paper,
+              fontFamily: fontMono, fontSize: 11, fontWeight: 700, letterSpacing: 2, flexShrink: 0, minWidth: 42, textAlign: "center",
+            }}>
+              {c.short}
             </div>
-            <ChevronRight className="w-4 h-4 text-gray-400" />
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ fontFamily: fontSerif, fontSize: 15, fontWeight: 600, color: paper.ink, lineHeight: 1.2 }}>
+                {c.name}
+              </div>
+              <div style={{ fontFamily: fontMono, fontSize: 10, color: paper.inkDim, letterSpacing: 1, marginTop: 2 }}>
+                {[c.brand, c.color].filter(Boolean).join(" · ")}{c.brand || c.color ? " · " : ""}€{c.price_per_km}/km
+              </div>
+            </div>
+            {c.owner_name && (
+              <div style={{
+                padding: "2px 6px", background: paper.paperDark,
+                fontFamily: fontMono, fontSize: 9, color: paper.inkDim, letterSpacing: 1,
+              }}>
+                {c.owner_name}
+              </div>
+            )}
           </button>
         ))}
       </div>
@@ -41,11 +77,13 @@ export default function CarsPage() {
       <Dialog.Root open={adding} onOpenChange={setAdding}>
         <Dialog.Portal>
           <Dialog.Overlay className="fixed inset-0 bg-black/40 z-40" />
-          <Dialog.Content className="fixed inset-x-0 bottom-0 bg-white rounded-t-xl z-50 max-h-[90vh] overflow-y-auto">
-            <Dialog.Title className="px-4 pt-4 text-base font-semibold">{t("page.car_add")}</Dialog.Title>
+          <Dialog.Content style={sheetStyle}>
+            <Dialog.Title style={{ padding: "16px 20px 0", fontFamily: fontSerif, fontSize: 20, fontWeight: 700 }}>
+              {t("page.car_add")}
+            </Dialog.Title>
             <CarForm
               onSubmit={(data) => createCar.mutate(
-                { ...data, brand: data.brand ?? null, color: data.color ?? null } as Omit<Car,"id">,
+                { ...data, brand: data.brand ?? null, color: data.color ?? null } as Omit<Car, "id">,
                 { onSuccess: () => { setAdding(false); toast.success(t("toast.car_added")); },
                   onError: (e) => toast.error(e.message) }
               )}
@@ -58,8 +96,10 @@ export default function CarsPage() {
       <Dialog.Root open={!!editing} onOpenChange={(o) => !o && setEditing(null)}>
         <Dialog.Portal>
           <Dialog.Overlay className="fixed inset-0 bg-black/40 z-40" />
-          <Dialog.Content className="fixed inset-x-0 bottom-0 bg-white rounded-t-xl z-50 max-h-[90vh] overflow-y-auto">
-            <Dialog.Title className="px-4 pt-4 text-base font-semibold">{t("page.car_edit")}</Dialog.Title>
+          <Dialog.Content style={sheetStyle}>
+            <Dialog.Title style={{ padding: "16px 20px 0", fontFamily: fontSerif, fontSize: 20, fontWeight: 700 }}>
+              {t("page.car_edit")}
+            </Dialog.Title>
             {editing && (
               <CarForm
                 defaultValues={editing}
@@ -76,6 +116,6 @@ export default function CarsPage() {
       </Dialog.Root>
 
       <Fab onClick={() => setAdding(true)} label={t("page.car_add")} />
-    </>
+    </div>
   );
 }

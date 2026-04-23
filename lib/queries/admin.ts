@@ -1,5 +1,41 @@
 import type Database from "better-sqlite3";
-import type { CarFixedCosts } from "@/types";
+import type { FixedCostItem, FixedCostCategory } from "@/types";
+
+const VALID_CATEGORIES: FixedCostCategory[] = [
+  "belastingen", "verzekeringen", "onderhoud", "keuring", "diversen",
+];
+
+function parseFixedCosts(json: string): FixedCostItem[] {
+  try {
+    const parsed = JSON.parse(json);
+    // New format: array of { id, category, description, amount }
+    if (Array.isArray(parsed)) {
+      return parsed.filter(
+        (fc): fc is FixedCostItem =>
+          typeof fc === "object" &&
+          typeof fc.amount === "number" &&
+          VALID_CATEGORIES.includes(fc.category)
+      );
+    }
+    // Legacy format: { verzekering, belasting, keuring, afschrijving }
+    const legacyMap: Record<string, FixedCostCategory> = {
+      verzekering: "verzekeringen",
+      belasting: "belastingen",
+      keuring: "keuring",
+      afschrijving: "diversen",
+    };
+    return Object.entries(parsed)
+      .filter(([, v]) => typeof v === "number" && (v as number) > 0)
+      .map(([k, v], i) => ({
+        id: `legacy-${i}`,
+        category: legacyMap[k] ?? "diversen",
+        description: k,
+        amount: v as number,
+      }));
+  } catch {
+    return [];
+  }
+}
 
 export interface CarPnL {
   car_id: number;
@@ -8,7 +44,7 @@ export interface CarPnL {
   car_price_per_km: number;
   owner_name: string | null;
   long_threshold: number;
-  fixed_costs: CarFixedCosts;
+  fixed_costs: FixedCostItem[];
   expected_km: number | null;
   // aggregates (calendar year)
   trip_count: number;
@@ -68,10 +104,10 @@ export function getCarPnL(db: Database.Database, year: number): CarPnL[] {
   }[];
 
   return cars.map((car) => {
-    const fixed_costs: CarFixedCosts = car.fixed_costs_json
-      ? JSON.parse(car.fixed_costs_json)
-      : { verzekering: 0, belasting: 0, keuring: 0, afschrijving: 0 };
-    const fixed_total = Object.values(fixed_costs).reduce((s, v) => s + v, 0);
+    const fixed_costs: FixedCostItem[] = car.fixed_costs_json
+      ? parseFixedCosts(car.fixed_costs_json)
+      : [];
+    const fixed_total = fixed_costs.reduce((s, fc) => s + fc.amount, 0);
 
     const trips = db.prepare(`
       SELECT COUNT(*) AS cnt, COALESCE(SUM(km),0) AS km, COALESCE(SUM(amount),0) AS rev

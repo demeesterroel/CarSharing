@@ -291,6 +291,25 @@ export const nl = {
   "history.price_title": "Prijshistoriek",
   "history.current": "huidig",
   "history.no_history": "Nog geen prijswijzigingen",
+
+  // Invite / first-login
+  "invite.title": "Welkom bij Autodelen",
+  "invite.subtitle": "Stel je wachtwoord in om te beginnen.",
+  "invite.password_label": "Kies een wachtwoord",
+  "invite.confirm_label": "Bevestig wachtwoord",
+  "invite.submit": "Wachtwoord instellen",
+  "invite.mismatch": "Wachtwoorden komen niet overeen",
+  "invite.too_short": "Minimaal 8 tekens",
+  "invite.invalid": "Ongeldige of verlopen uitnodiging",
+  "invite.success": "Wachtwoord ingesteld — je bent ingelogd",
+
+  // Admin members
+  "admin.members_title": "Leden",
+  "admin.invite_copy": "Kopieer uitnodigingslink",
+  "admin.invite_copied": "Link gekopieerd!",
+  "admin.username_label": "Gebruikersnaam",
+  "admin.is_admin_label": "Admin",
+  "admin.no_username": "Nog geen login",
 } as const;
 
 export type MessageKey = keyof typeof nl;

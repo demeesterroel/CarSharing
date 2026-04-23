@@ -3,7 +3,7 @@ import Database from "better-sqlite3";
 import { applySchema } from "../schema.sql";
 
 describe("applySchema", () => {
-  it("creates all 7 tables", () => {
+  it("creates all 9 tables", () => {
     const db = new Database(":memory:");
     applySchema(db);
     const tables = db
@@ -11,7 +11,7 @@ describe("applySchema", () => {
       .all()
       .map((r: any) => r.name);
     expect(tables).toEqual([
-      "cars", "expenses", "fuel_fillups", "payments", "people", "reservations", "trips"
+      "car_price_history", "cars", "expenses", "fuel_fillups", "invite_tokens", "payments", "people", "reservations", "trips"
     ]);
   });
 

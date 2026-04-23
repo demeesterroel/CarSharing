@@ -524,15 +524,20 @@ function FleetTile({ car, onBreakEven, fullCar, onEdit }: {
   );
 }
 
-function FleetTiles({ onNavigateBreakEven }: { onNavigateBreakEven: () => void }) {
+function FleetTiles() {
   const t = useT();
   const year = new Date().getFullYear();
   const { data } = useAdminSummary(year);
   const { data: cars = [] } = useCars();
   const updateCar = useUpdateCar();
   const [editing, setEditing] = useState<number | null>(null);
+  const [breakEvenCar, setBreakEvenCar] = useState<number | null>(null);
 
   const pnl = data?.carPnL ?? [];
+  const monthlyKm = data?.monthlyCarKm ?? [];
+  const contributions = data?.personContributions ?? [];
+  const historicalKm = data?.historicalCarKm ?? [];
+  const priceHistory = data?.priceHistory ?? [];
   const carMap = new Map(cars.map((c) => [c.id, c]));
   const active = pnl.filter((c) => {
     const full = carMap.get(c.car_id);
@@ -542,6 +547,35 @@ function FleetTiles({ onNavigateBreakEven }: { onNavigateBreakEven: () => void }
     const full = carMap.get(c.car_id);
     return full?.active === 0;
   });
+
+  if (breakEvenCar !== null) {
+    const car = pnl.find((c) => c.car_id === breakEvenCar);
+    if (car) {
+      return (
+        <div style={{ padding: "16px" }}>
+          <button
+            onClick={() => setBreakEvenCar(null)}
+            style={{
+              marginBottom: 12, padding: "7px 14px", background: "transparent",
+              border: `1.5px solid ${paper.ink}`, color: paper.ink,
+              fontFamily: fontMono, fontSize: 9, fontWeight: 700, letterSpacing: 1.5,
+              textTransform: "uppercase", cursor: "pointer",
+            }}>
+            ← {t("admin.sub_cars")}
+          </button>
+          <BreakEvenCard
+            car={car}
+            fullCar={carMap.get(car.car_id)}
+            monthlyKm={monthlyKm.filter((m) => m.car_id === car.car_id)}
+            contributions={contributions.filter((c) => c.car_id === car.car_id)}
+            historicalKm={historicalKm.filter((h) => h.car_id === car.car_id)}
+            priceHistory={priceHistory.filter((h) => h.car_id === car.car_id)}
+            year={year}
+          />
+        </div>
+      );
+    }
+  }
 
   function renderCar(car: CarPnL) {
     const fullCar = carMap.get(car.car_id);
@@ -565,7 +599,7 @@ function FleetTiles({ onNavigateBreakEven }: { onNavigateBreakEven: () => void }
         key={car.car_id}
         car={car}
         fullCar={fullCar}
-        onBreakEven={onNavigateBreakEven}
+        onBreakEven={() => setBreakEvenCar(car.car_id)}
         onEdit={() => setEditing(car.car_id)}
       />
     );
@@ -1564,7 +1598,6 @@ export default function AdminPage() {
   const SUB_PAGES = [
     { key: "inbox",   label: t("admin.sub_inbox") },
     { key: "wagens",  label: t("admin.sub_cars") },
-    { key: "prijs",   label: t("admin.sub_breakeven") },
     { key: "leden",   label: t("admin.sub_members") },
     { key: "hygiene", label: t("admin.sub_data") },
     { key: "afrek",   label: t("admin.sub_settlement") },
@@ -1595,8 +1628,7 @@ export default function AdminPage() {
       )}
 
       {sub === "inbox"   && <Inbox />}
-      {sub === "wagens"  && <FleetTiles onNavigateBreakEven={() => setSub("prijs")} />}
-      {sub === "prijs"   && <BreakEvenDetail year={year} />}
+      {sub === "wagens"  && <FleetTiles />}
       {sub === "leden"   && <Members />}
       {sub === "hygiene" && <DataHygiene year={year} />}
       {sub === "afrek"   && <Settlement year={year} />}

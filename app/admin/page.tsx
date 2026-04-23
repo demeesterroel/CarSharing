@@ -5,9 +5,112 @@ import { PageHeader } from "@/components/page-header";
 import { paper, fontMono, fontSerif, fmtMoney } from "@/lib/paper-theme";
 import { useT } from "@/components/locale-provider";
 import type { CarPnL, KmGap, ZeroKmTrip, MonthlyCarKm, PersonContribution, CarYearKm, CarPriceHistory } from "@/lib/queries/admin";
-import type { DashboardRow, Reservation, Car, Person } from "@/types";
+import type { DashboardRow, Reservation, Car, Person, FixedCostItem, FixedCostCategory } from "@/types";
 import { useCars, useUpdateCar } from "@/hooks/use-cars";
 import { toast } from "sonner";
+
+// ── Fixed cost helpers ────────────────────────────────────────
+const FIXED_COST_CATEGORIES: FixedCostCategory[] = [
+  "belastingen", "verzekeringen", "onderhoud", "keuring", "diversen",
+];
+const FIXED_COST_LABELS: Record<FixedCostCategory, { nl: string; en: string }> = {
+  belastingen:   { nl: "Belastingen",   en: "Road tax"      },
+  verzekeringen: { nl: "Verzekeringen", en: "Insurance"     },
+  onderhoud:     { nl: "Onderhoud",     en: "Maintenance"   },
+  keuring:       { nl: "Keuring",       en: "Inspection"    },
+  diversen:      { nl: "Diversen",      en: "Miscellaneous" },
+};
+
+function FixedCostEditor({
+  items,
+  onChange,
+  lang = "nl",
+}: {
+  items: FixedCostItem[];
+  onChange: (items: FixedCostItem[]) => void;
+  lang?: string;
+}) {
+  const inputStyle: React.CSSProperties = {
+    padding: "5px 6px", border: `1px solid ${paper.paperDark}`,
+    background: paper.paperDeep, fontFamily: fontMono, fontSize: 11, color: paper.ink,
+    outline: "none",
+  };
+
+  const add = () =>
+    onChange([
+      ...items,
+      { id: String(Date.now()), category: "diversen", description: "", amount: 0 },
+    ]);
+
+  const remove = (id: string) => onChange(items.filter((i) => i.id !== id));
+
+  const update = (id: string, patch: Partial<FixedCostItem>) =>
+    onChange(items.map((i) => (i.id === id ? { ...i, ...patch } : i)));
+
+  const total = items.reduce((s, i) => s + i.amount, 0);
+
+  return (
+    <div>
+      <div style={{
+        fontFamily: fontMono, fontSize: 9, color: paper.inkDim,
+        letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 6,
+      }}>
+        {lang === "nl" ? "Vaste kosten" : "Fixed costs"}
+      </div>
+      {items.map((item) => (
+        <div key={item.id} style={{ display: "flex", gap: 4, marginBottom: 6, alignItems: "center" }}>
+          <select
+            value={item.category}
+            onChange={(e) => update(item.id, { category: e.target.value as FixedCostCategory })}
+            style={{ ...inputStyle, flex: "0 0 auto", minWidth: 0 }}
+          >
+            {FIXED_COST_CATEGORIES.map((c) => (
+              <option key={c} value={c}>{FIXED_COST_LABELS[c][lang === "nl" ? "nl" : "en"]}</option>
+            ))}
+          </select>
+          <input
+            value={item.description}
+            onChange={(e) => update(item.id, { description: e.target.value })}
+            placeholder={lang === "nl" ? "omschrijving" : "description"}
+            style={{ ...inputStyle, flex: 1, minWidth: 0 }}
+          />
+          <input
+            type="number"
+            value={item.amount || ""}
+            onChange={(e) => update(item.id, { amount: parseFloat(e.target.value) || 0 })}
+            style={{ ...inputStyle, width: 72, flexShrink: 0 }}
+          />
+          <button
+            onClick={() => remove(item.id)}
+            style={{
+              padding: "4px 7px", background: "transparent",
+              border: `1px solid ${paper.paperDark}`, cursor: "pointer",
+              fontFamily: fontMono, fontSize: 11, color: paper.inkDim,
+            }}
+          >×</button>
+        </div>
+      ))}
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 4 }}>
+        <button
+          onClick={add}
+          style={{
+            padding: "4px 10px", background: "transparent",
+            border: `1px dashed ${paper.inkDim}`, cursor: "pointer",
+            fontFamily: fontMono, fontSize: 9, letterSpacing: 1.5,
+            textTransform: "uppercase", color: paper.inkDim,
+          }}
+        >
+          + {lang === "nl" ? "toevoegen" : "add"}
+        </button>
+        {items.length > 0 && (
+          <span style={{ fontFamily: fontMono, fontSize: 11, color: paper.ink, fontWeight: 700 }}>
+            {lang === "nl" ? "Totaal" : "Total"}: € {total.toLocaleString("nl-BE", { minimumFractionDigits: 2 })}
+          </span>
+        )}
+      </div>
+    </div>
+  );
+}
 
 // ── Primitives ────────────────────────────────────────────────
 function Perf({ margin = "12px 0" }: { margin?: string }) {
@@ -218,6 +321,13 @@ function CarEditForm({ car, onSave, onCancel }: {
   const [owner, setOwner] = useState(car.owner_name ?? "");
   const [expectedKm, setExpectedKm] = useState(car.expected_km ?? 0);
   const [active, setActive] = useState(car.active !== 0);
+  const [fixedCosts, setFixedCosts] = useState<FixedCostItem[]>(() => {
+    if (!car.fixed_costs_json) return [];
+    try {
+      const parsed = JSON.parse(car.fixed_costs_json);
+      return Array.isArray(parsed) ? parsed : [];
+    } catch { return []; }
+  });
 
   const inputStyle: React.CSSProperties = {
     width: "100%", padding: "6px 8px", fontFamily: fontMono, fontSize: 11,
@@ -264,6 +374,10 @@ function CarEditForm({ car, onSave, onCancel }: {
         <input value={owner} onChange={(e) => setOwner(e.target.value)} style={inputStyle} />
       </div>
 
+      <div style={{ marginBottom: 12 }}>
+        <FixedCostEditor items={fixedCosts} onChange={setFixedCosts} />
+      </div>
+
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12, padding: "8px 0", borderTop: `1px dashed ${paper.paperDark}` }}>
         <span style={{ fontFamily: fontMono, fontSize: 9, color: paper.inkDim, letterSpacing: 1.5, textTransform: "uppercase" }}>
           {active ? t("admin.deactivate") : t("admin.activate")}
@@ -288,7 +402,11 @@ function CarEditForm({ car, onSave, onCancel }: {
           {t("action.cancel")}
         </button>
         <button
-          onClick={() => onSave({ name, price_per_km: price, owner_name: owner || null, active: active ? 1 : 0, expected_km: expectedKm || null })}
+          onClick={() => onSave({
+            name, price_per_km: price, owner_name: owner || null,
+            active: active ? 1 : 0, expected_km: expectedKm || null,
+            fixed_costs_json: fixedCosts.length > 0 ? JSON.stringify(fixedCosts) : null,
+          })}
           style={{
             flex: 2, padding: "9px", background: paper.ink, color: paper.paper,
             border: "none", cursor: "pointer", fontFamily: fontMono, fontSize: 9,

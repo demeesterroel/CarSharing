@@ -23,11 +23,18 @@ export interface Car {
   expected_km: number | null;
 }
 
-export interface CarFixedCosts {
-  verzekering: number;
-  belasting: number;
-  keuring: number;
-  afschrijving: number;
+export type FixedCostCategory =
+  | "belastingen"
+  | "verzekeringen"
+  | "onderhoud"
+  | "keuring"
+  | "diversen";
+
+export interface FixedCostItem {
+  id: string;
+  category: FixedCostCategory;
+  description: string;
+  amount: number;
 }
 
 export interface Trip {

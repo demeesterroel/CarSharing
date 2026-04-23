@@ -62,6 +62,10 @@ export const en: Messages = {
   "action.delete": "Delete",
   "action.see_all": "All →",
 
+  // Filter toggle
+  "filter.all": "All",
+  "filter.mine": "Mine",
+
   // Form labels
   "form.name": "Name *",
   "form.password": "Password",

@@ -164,6 +164,13 @@ export const nl = {
   "calendar.list": "Lijst",
   "calendar.calendar": "Kalender",
   "calendar.count": "{count} reserv.",
+  "calendar.available": "Vrij",
+  "calendar.confirmed": "Bevestigd",
+  "calendar.pending": "In aanvraag",
+  "calendar.pick_start": "Start geselecteerd: {date} — kies einddatum",
+  "calendar.upcoming": "Aankomend",
+  "calendar.all_filter": "Alles",
+  "calendar.mine_filter": "Mijn",
 
   // Person
   "person.inactive": "Inactief",

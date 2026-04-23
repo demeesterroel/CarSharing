@@ -166,6 +166,13 @@ export const en: Messages = {
   "calendar.list": "List",
   "calendar.calendar": "Calendar",
   "calendar.count": "{count} reserv.",
+  "calendar.available": "Available",
+  "calendar.confirmed": "Confirmed",
+  "calendar.pending": "Pending",
+  "calendar.pick_start": "Start: {date} — pick end date",
+  "calendar.upcoming": "Upcoming",
+  "calendar.all_filter": "All",
+  "calendar.mine_filter": "Mine",
 
   // Person
   "person.inactive": "Inactive",

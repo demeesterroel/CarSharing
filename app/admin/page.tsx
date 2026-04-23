@@ -930,7 +930,10 @@ function Members() {
       const res = await fetch(`/api/people/${p.id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: p.name, discount: p.discount, discount_long: p.discount_long, active: p.active }),
+        body: JSON.stringify({
+          name: p.name, discount: p.discount, discount_long: p.discount_long,
+          active: p.active, username: p.username, is_admin: p.is_admin,
+        }),
       });
       if (!res.ok) throw new Error("Failed");
     },
@@ -967,8 +970,31 @@ function PersonCard({ person, onSave }: { person: Person; onSave: (p: Person) =>
   const t = useT();
   const [disc, setDisc] = useState(person.discount);
   const [discLong, setDiscLong] = useState(person.discount_long);
-  const dirty = disc !== person.discount || discLong !== person.discount_long;
+  const [username, setUsername] = useState(person.username ?? "");
+  const [isAdmin, setIsAdmin] = useState(person.is_admin === 1);
+  const [inviteBanner, setInviteBanner] = useState<string | null>(null);
+
+  const dirty =
+    disc !== person.discount ||
+    discLong !== person.discount_long ||
+    username !== (person.username ?? "") ||
+    isAdmin !== (person.is_admin === 1);
+
   const isActive = !!person.active;
+
+  const handleInvite = async () => {
+    try {
+      const res = await fetch(`/api/people/${person.id}/invite`, { method: "POST" });
+      if (!res.ok) throw new Error();
+      const { url } = await res.json();
+      await navigator.clipboard.writeText(url);
+      setInviteBanner(t("admin.invite_copied"));
+      setTimeout(() => setInviteBanner(null), 3000);
+    } catch {
+      setInviteBanner("Error generating invite");
+      setTimeout(() => setInviteBanner(null), 3000);
+    }
+  };
 
   if (!isActive) {
     return (
@@ -993,12 +1019,73 @@ function PersonCard({ person, onSave }: { person: Person; onSave: (p: Person) =>
     <Card>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
         <div style={{ fontFamily: fontSerif, fontSize: 17, fontWeight: 700, color: paper.ink }}>{person.name}</div>
-        {(disc > 0 || discLong > 0) && (
-          <div style={{
-            fontFamily: fontMono, fontSize: 9, color: paper.amber, fontWeight: 700,
-            letterSpacing: 1, border: `1px solid ${paper.amber}`, padding: "2px 6px",
-            textTransform: "uppercase",
-          }}>{t("admin.discount_badge")}</div>
+        <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
+          {isAdmin && (
+            <div style={{
+              fontFamily: fontMono, fontSize: 9, color: paper.blue, fontWeight: 700,
+              letterSpacing: 1, border: `1px solid ${paper.blue}`, padding: "2px 6px",
+              textTransform: "uppercase",
+            }}>Admin</div>
+          )}
+          {(disc > 0 || discLong > 0) && (
+            <div style={{
+              fontFamily: fontMono, fontSize: 9, color: paper.amber, fontWeight: 700,
+              letterSpacing: 1, border: `1px solid ${paper.amber}`, padding: "2px 6px",
+              textTransform: "uppercase",
+            }}>{t("admin.discount_badge")}</div>
+          )}
+        </div>
+      </div>
+
+      {/* Login credentials */}
+      <div style={{ marginBottom: 12, display: "flex", gap: 8, alignItems: "flex-end" }}>
+        <div style={{ flex: 1 }}>
+          <div style={{ fontFamily: fontMono, fontSize: 9, color: paper.inkDim, letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 4 }}>
+            {t("admin.username_label")}
+          </div>
+          <input
+            type="text"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            placeholder={t("admin.no_username")}
+            style={{
+              width: "100%", padding: "6px 8px",
+              border: `1px solid ${paper.paperDark}`,
+              background: paper.paperDeep,
+              fontFamily: fontMono, fontSize: 12, color: paper.ink,
+              outline: "none",
+            }}
+          />
+        </div>
+        <label style={{ display: "flex", alignItems: "center", gap: 6, paddingBottom: 6, cursor: "pointer" }}>
+          <input
+            type="checkbox"
+            checked={isAdmin}
+            onChange={(e) => setIsAdmin(e.target.checked)}
+            style={{ accentColor: paper.blue, width: 14, height: 14 }}
+          />
+          <span style={{ fontFamily: fontMono, fontSize: 9, letterSpacing: 1.5, textTransform: "uppercase", color: paper.inkDim }}>
+            {t("admin.is_admin_label")}
+          </span>
+        </label>
+      </div>
+
+      {/* Invite */}
+      <div style={{ marginBottom: 12 }}>
+        <button
+          onClick={handleInvite}
+          style={{
+            padding: "7px 12px", background: "transparent",
+            border: `1px dashed ${paper.inkDim}`, cursor: "pointer",
+            fontFamily: fontMono, fontSize: 9, letterSpacing: 1.5, textTransform: "uppercase",
+            color: paper.inkDim,
+          }}>
+          {t("admin.invite_copy")}
+        </button>
+        {inviteBanner && (
+          <span style={{ marginLeft: 10, fontFamily: fontMono, fontSize: 10, color: paper.green }}>
+            {inviteBanner}
+          </span>
         )}
       </div>
 
@@ -1023,7 +1110,11 @@ function PersonCard({ person, onSave }: { person: Person; onSave: (p: Person) =>
       <div style={{ display: "flex", gap: 8 }}>
         {dirty && (
           <button
-            onClick={() => onSave({ ...person, discount: disc, discount_long: discLong })}
+            onClick={() => onSave({
+              ...person,
+              discount: disc, discount_long: discLong,
+              username: username || null, is_admin: isAdmin ? 1 : 0,
+            })}
             style={{
               flex: 1, padding: "10px", background: paper.ink, color: paper.paper,
               border: "none", cursor: "pointer", fontFamily: fontMono, fontSize: 10,

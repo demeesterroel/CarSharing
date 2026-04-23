@@ -7,15 +7,18 @@ const PUBLIC_PATHS = [
   "/login",
   "/api/auth/login",
   "/api/auth/logout",
+  "/invite",
+  "/api/invite",
 ];
+
+// Pages only admins can visit (non-admins get redirected to /).
+const ADMIN_ONLY_PAGES = ["/cars", "/people", "/payments"];
 
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
   // Static assets and Next.js internals are excluded via the matcher below.
-  // Explicitly public API/page paths bypass the session check.
   if (PUBLIC_PATHS.some((p) => pathname === p || pathname.startsWith(p + "/"))) {
-    // If already authenticated and hitting /login, redirect home.
     if (pathname === "/login") {
       const res = NextResponse.next();
       const session = await getIronSession<SessionData>(req, res, sessionOptions);
@@ -34,10 +37,16 @@ export async function middleware(req: NextRequest) {
     return NextResponse.redirect(loginUrl);
   }
 
+  // Admin-only pages — redirect non-admins to dashboard
+  if (ADMIN_ONLY_PAGES.some((p) => pathname === p || pathname.startsWith(p + "/"))) {
+    if (!session.isAdmin) {
+      return NextResponse.redirect(new URL("/", req.url));
+    }
+  }
+
   return res;
 }
 
-// Run on all paths except Next.js build artefacts and static files.
 export const config = {
   matcher: [
     "/((?!_next/static|_next/image|favicon\\.ico|icon.*\\.png|manifest\\.webmanifest).*)",

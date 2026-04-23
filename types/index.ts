@@ -4,6 +4,9 @@ export interface Person {
   discount: number;
   discount_long: number;
   active: 0 | 1;
+  username: string | null;
+  password_hash: string | null;
+  is_admin: 0 | 1;
 }
 
 export interface Car {
@@ -113,7 +116,10 @@ export interface DashboardRow {
 }
 
 // Form input types (no id, no computed fields)
-export type PersonInput = Pick<Person, "name"|"discount"|"discount_long"|"active">;
+export type PersonInput = Pick<Person, "name"|"discount"|"discount_long"|"active"> & {
+  username?: string | null;
+  is_admin?: 0 | 1;
+};
 export type CarInput = Pick<Car, "short"|"name"|"price_per_km"|"brand"|"color"> & {
   owner_name?: string | null;
   long_threshold?: number;

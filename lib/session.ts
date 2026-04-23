@@ -1,9 +1,10 @@
 import type { SessionOptions } from "iron-session";
 
 export interface SessionData {
-  // Phase B widens this with personId?: number and isAdmin?: boolean
-  // without breaking any Phase A consumer — only authenticated is checked here.
   authenticated: boolean;
+  personId?: number;
+  personName?: string;
+  isAdmin?: boolean;
 }
 
 export const sessionOptions: SessionOptions = {

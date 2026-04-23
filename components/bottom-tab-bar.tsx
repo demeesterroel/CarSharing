@@ -3,20 +3,26 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { paper, fontMono } from "@/lib/paper-theme";
 import { useT } from "@/components/locale-provider";
+import { useMe } from "@/hooks/use-me";
 
-const TABS = [
+const BASE_TABS = [
   { href: "/",         labelKey: "nav.dashboard" as const,        icon: "◉" },
   { href: "/trips",    labelKey: "nav.trips" as const,             icon: "↦" },
   { href: "/fuel",     labelKey: "nav.fuel" as const,              icon: "⛽" },
   { href: "/calendar", labelKey: "nav.tab.reservations" as const,  icon: "▦" },
   { href: "/expenses", labelKey: "nav.tab.expenses" as const,      icon: "₪" },
-  { href: "/admin",    labelKey: "nav.admin" as const,             icon: "✎" },
 ];
+
+const ADMIN_TAB = { href: "/admin", labelKey: "nav.admin" as const, icon: "✎" };
 
 export function BottomTabBar() {
   const t = useT();
   const pathname = usePathname();
-  if (pathname === "/login") return null;
+  const { data: me } = useMe();
+
+  if (pathname === "/login" || pathname.startsWith("/invite")) return null;
+
+  const tabs = (me?.isAdmin || me?.isOwner) ? [...BASE_TABS, ADMIN_TAB] : BASE_TABS;
 
   return (
     <nav
@@ -35,7 +41,7 @@ export function BottomTabBar() {
         margin: "0 auto",
       }}
     >
-      {TABS.map(({ href, labelKey, icon }) => {
+      {tabs.map(({ href, labelKey, icon }) => {
         const active = href === "/" ? pathname === "/" : pathname.startsWith(href);
         return (
           <Link

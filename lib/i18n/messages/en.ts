@@ -293,4 +293,23 @@ export const en: Messages = {
   "history.price_title": "Price history",
   "history.current": "current",
   "history.no_history": "No price changes yet",
+
+  // Invite / first-login
+  "invite.title": "Welcome to Autodelen",
+  "invite.subtitle": "Set your password to get started.",
+  "invite.password_label": "Choose a password",
+  "invite.confirm_label": "Confirm password",
+  "invite.submit": "Set password",
+  "invite.mismatch": "Passwords don't match",
+  "invite.too_short": "Minimum 8 characters",
+  "invite.invalid": "Invalid or expired invitation",
+  "invite.success": "Password set — you're logged in",
+
+  // Admin members
+  "admin.members_title": "Members",
+  "admin.invite_copy": "Copy invite link",
+  "admin.invite_copied": "Link copied!",
+  "admin.username_label": "Username",
+  "admin.is_admin_label": "Admin",
+  "admin.no_username": "No login yet",
 };

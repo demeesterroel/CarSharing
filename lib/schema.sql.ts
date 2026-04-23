@@ -7,7 +7,16 @@ export function applySchema(db: Database.Database) {
       name          TEXT    NOT NULL,
       discount      REAL    NOT NULL DEFAULT 0,
       discount_long REAL    NOT NULL DEFAULT 0,
-      active        INTEGER NOT NULL DEFAULT 1
+      active        INTEGER NOT NULL DEFAULT 1,
+      username      TEXT    UNIQUE,
+      password_hash TEXT,
+      is_admin      INTEGER NOT NULL DEFAULT 0
+    );
+
+    CREATE TABLE IF NOT EXISTS invite_tokens (
+      token      TEXT    PRIMARY KEY,
+      person_id  INTEGER NOT NULL REFERENCES people(id) ON DELETE CASCADE,
+      expires_at TEXT    NOT NULL
     );
 
     CREATE TABLE IF NOT EXISTS cars (
@@ -85,6 +94,9 @@ export function applySchema(db: Database.Database) {
 
   // Migrations for existing databases (safe to run multiple times)
   const migrations = [
+    "ALTER TABLE people ADD COLUMN username TEXT",
+    "ALTER TABLE people ADD COLUMN password_hash TEXT",
+    "ALTER TABLE people ADD COLUMN is_admin INTEGER NOT NULL DEFAULT 0",
     "ALTER TABLE reservations ADD COLUMN status TEXT NOT NULL DEFAULT 'pending'",
     "ALTER TABLE reservations ADD COLUMN note TEXT",
     "ALTER TABLE cars ADD COLUMN owner_name TEXT",

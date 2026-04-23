@@ -60,6 +60,10 @@ export const nl = {
   "action.delete": "Verwijderen",
   "action.see_all": "Alles →",
 
+  // Filter toggle
+  "filter.all": "Alle",
+  "filter.mine": "Van mij",
+
   // Form labels
   "form.name": "Naam *",
   "form.password": "Wachtwoord",

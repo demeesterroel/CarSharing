@@ -7,6 +7,7 @@ import { GroupedList } from "@/components/grouped-list";
 import { Fab } from "@/components/fab";
 import { TripForm } from "./trip-form";
 import { useTrips, useCreateTrip, useUpdateTrip, useDeleteTrip } from "@/hooks/use-trips";
+import { useMe } from "@/hooks/use-me";
 import type { Trip } from "@/types";
 import { paper, fontMono, fontSerif, fmtMoney, fmtYearMonth } from "@/lib/paper-theme";
 import { useT } from "@/components/locale-provider";
@@ -20,11 +21,18 @@ const sheetStyle: React.CSSProperties = {
 export default function TripsPage() {
   const t = useT();
   const { data: trips = [], isLoading } = useTrips();
+  const { data: me } = useMe();
   const createTrip = useCreateTrip();
   const updateTrip = useUpdateTrip();
   const deleteTrip = useDeleteTrip();
   const [adding, setAdding] = useState(false);
   const [editing, setEditing] = useState<Trip | null>(null);
+  const [filter, setFilter] = useState<"all" | "mine">("all");
+
+  const canFilter = me?.personId != null;
+  const visible = filter === "mine" && canFilter
+    ? trips.filter((tr) => tr.person_id === me!.personId)
+    : trips;
 
   if (isLoading) return (
     <div style={{ background: paper.paperDeep, minHeight: "100dvh" }}>
@@ -37,8 +45,30 @@ export default function TripsPage() {
     <div style={{ background: paper.paperDeep, minHeight: "100dvh", paddingBottom: 80 }}>
       <PageHeader title={t("page.trips")} />
 
+      {canFilter && (
+        <div style={{ display: "flex", gap: 0, padding: "12px 16px 4px", borderBottom: `1px solid ${paper.paperDark}` }}>
+          {(["all", "mine"] as const).map((v) => (
+            <button
+              key={v}
+              onClick={() => setFilter(v)}
+              style={{
+                flex: 1, padding: "7px 0",
+                background: filter === v ? paper.ink : "transparent",
+                color: filter === v ? paper.paper : paper.inkDim,
+                border: `1.5px solid ${paper.ink}`,
+                borderRight: v === "all" ? "none" : undefined,
+                fontFamily: fontMono, fontSize: 10, fontWeight: 700, letterSpacing: 2,
+                textTransform: "uppercase", cursor: "pointer",
+              }}
+            >
+              {v === "all" ? t("filter.all") : t("filter.mine")}
+            </button>
+          ))}
+        </div>
+      )}
+
       <GroupedList
-        items={trips}
+        items={visible}
         getKey={(trip) => trip.date.slice(0, 7)}
         getGroupLabel={(key) => fmtYearMonth(key + "-01")}
         getGroupTotal={(items) => items.reduce((s, trip) => s + trip.km, 0)}
@@ -77,7 +107,7 @@ export default function TripsPage() {
         )}
       />
 
-      {trips.length === 0 && (
+      {visible.length === 0 && (
         <div style={{ padding: "32px 20px", textAlign: "center", fontFamily: fontMono, fontSize: 11, color: paper.inkMute, letterSpacing: 1 }}>
           {t("state.empty_trips")}
         </div>

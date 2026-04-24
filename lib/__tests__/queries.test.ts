@@ -16,10 +16,12 @@ function makeDb() {
   return db;
 }
 
+const basePerson = { discount: 0, discount_long: 0, active: 1 as const, username: null, password_hash: null, is_admin: 0 as const };
+
 describe("people queries", () => {
   it("inserts and retrieves a person", () => {
     const db = makeDb();
-    const id = insertPerson(db, { name: "Roeland", discount: 0, discount_long: 0, active: 1 });
+    const id = insertPerson(db, { name: "Roeland", ...basePerson });
     const person = getPersonById(db, id);
     expect(person?.name).toBe("Roeland");
   });
@@ -43,7 +45,7 @@ describe("cars queries", () => {
 describe("trips queries", () => {
   it("inserts a trip and computes km and amount", () => {
     const db = makeDb();
-    const pid = insertPerson(db, { name: "Roeland", discount: 0, discount_long: 0, active: 1 });
+    const pid = insertPerson(db, { name: "Roeland", ...basePerson });
     const cid = insertCar(db, { short: "LEW", name: "Lewis", price_per_km: 0.25, brand: null, color: null });
     insertTrip(db, { person_id: pid, car_id: cid, date: "2026-04-18", start_odometer: 233900, end_odometer: 241929, location: null });
     const trips = getTrips(db);
@@ -61,7 +63,7 @@ describe("getLastCarState", () => {
 
   it("returns the last trip's end_odometer when trips exist", () => {
     const db = makeDb();
-    const pid = insertPerson(db, { name: "P", discount: 0, discount_long: 0, active: 1 });
+    const pid = insertPerson(db, { name: "P", ...basePerson });
     const cid = insertCar(db, { short: "A", name: "A", price_per_km: 0.25, brand: null, color: null });
     insertTrip(db, { person_id: pid, car_id: cid, date: "2026-04-01", start_odometer: 100, end_odometer: 150, location: "51.0,4.4" });
     insertTrip(db, { person_id: pid, car_id: cid, date: "2026-04-10", start_odometer: 150, end_odometer: 200, location: "51.1,4.5" });
@@ -70,7 +72,7 @@ describe("getLastCarState", () => {
 
   it("prefers a later fuel fill-up over an earlier trip", () => {
     const db = makeDb();
-    const pid = insertPerson(db, { name: "P", discount: 0, discount_long: 0, active: 1 });
+    const pid = insertPerson(db, { name: "P", ...basePerson });
     const cid = insertCar(db, { short: "A", name: "A", price_per_km: 0.25, brand: null, color: null });
     insertTrip(db, { person_id: pid, car_id: cid, date: "2026-04-01", start_odometer: 100, end_odometer: 150, location: null });
     insertFuelFillup(db, { person_id: pid, car_id: cid, date: "2026-04-05", amount: 50, liters: 30, odometer: 180, receipt: null, location: "station" });
@@ -79,7 +81,7 @@ describe("getLastCarState", () => {
 
   it("ignores fuel fill-ups where odometer is null", () => {
     const db = makeDb();
-    const pid = insertPerson(db, { name: "P", discount: 0, discount_long: 0, active: 1 });
+    const pid = insertPerson(db, { name: "P", ...basePerson });
     const cid = insertCar(db, { short: "A", name: "A", price_per_km: 0.25, brand: null, color: null });
     insertTrip(db, { person_id: pid, car_id: cid, date: "2026-04-01", start_odometer: 100, end_odometer: 150, location: "loc-trip" });
     insertFuelFillup(db, { person_id: pid, car_id: cid, date: "2026-04-05", amount: 50, liters: 30, odometer: null, receipt: null, location: "loc-fuel" });
@@ -88,7 +90,7 @@ describe("getLastCarState", () => {
 
   it("prefers trip over fuel when both share the same date", () => {
     const db = makeDb();
-    const pid = insertPerson(db, { name: "P", discount: 0, discount_long: 0, active: 1 });
+    const pid = insertPerson(db, { name: "P", ...basePerson });
     const cid = insertCar(db, { short: "A", name: "A", price_per_km: 0.25, brand: null, color: null });
     insertFuelFillup(db, { person_id: pid, car_id: cid, date: "2026-04-10", amount: 50, liters: 30, odometer: 175, receipt: null, location: "station" });
     insertTrip(db, { person_id: pid, car_id: cid, date: "2026-04-10", start_odometer: 175, end_odometer: 225, location: "parked" });
@@ -99,7 +101,7 @@ describe("getLastCarState", () => {
 describe("getDashboard", () => {
   it("returns zero balance for person with no activity", () => {
     const db = makeDb();
-    insertPerson(db, { name: "Test", discount: 0, discount_long: 0, active: 1 });
+    insertPerson(db, { name: "Test", ...basePerson });
     const rows = getDashboard(db, 2026);
     expect(rows[0].balance).toBe(0);
     expect(rows[0].trip_count).toBe(0);
@@ -107,7 +109,7 @@ describe("getDashboard", () => {
 
   it("computes negative balance when trip amount exceeds payments", () => {
     const db = makeDb();
-    const pid = insertPerson(db, { name: "Roeland", discount: 0, discount_long: 0, active: 1 });
+    const pid = insertPerson(db, { name: "Roeland", ...basePerson });
     const cid = insertCar(db, {
       short: "LEW",
       name: "Lewis",
@@ -131,7 +133,7 @@ describe("getDashboard", () => {
 
   it("filters trips outside target year", () => {
     const db = makeDb();
-    const pid = insertPerson(db, { name: "X", discount: 0, discount_long: 0, active: 1 });
+    const pid = insertPerson(db, { name: "X", ...basePerson });
     const cid = insertCar(db, {
       short: "A",
       name: "A",
@@ -154,7 +156,7 @@ describe("getDashboard", () => {
 
   it("includes payments in balance calculation", () => {
     const db = makeDb();
-    const pid = insertPerson(db, { name: "Y", discount: 0, discount_long: 0, active: 1 });
+    const pid = insertPerson(db, { name: "Y", ...basePerson });
     const cid = insertCar(db, {
       short: "B",
       name: "B",

@@ -1,11 +1,7 @@
 "use client";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
-import * as Dialog from "@radix-ui/react-dialog";
-import dynamic from "next/dynamic";
-import type { EventClickArg } from "@fullcalendar/core";
 import { PageHeader } from "@/components/page-header";
-import { Fab } from "@/components/fab";
 import { ReservationForm } from "./reservation-form";
 import {
   useReservations,
@@ -13,124 +9,334 @@ import {
   useUpdateReservation,
   useDeleteReservation,
 } from "@/hooks/use-reservations";
-import type { Reservation } from "@/types";
-import { t } from "@/lib/i18n";
+import { useCars } from "@/hooks/use-cars";
+import type { Reservation, Car } from "@/types";
+import { paper, fontMono, fontSerif } from "@/lib/paper-theme";
+import { useT } from "@/components/locale-provider";
+import { PickCalendar } from "@/components/pick-calendar";
 
-const FullCalendarWrapper = dynamic(() => import("./full-calendar-wrapper"), { ssr: false });
-
-function addOneDay(iso: string): string {
-  const d = new Date(`${iso}T00:00:00Z`);
-  d.setUTCDate(d.getUTCDate() + 1);
+// ── helpers ───────────────────────────────────────────────────
+function toIso(d: Date) {
   return d.toISOString().slice(0, 10);
 }
 
+function addDays(iso: string, n: number) {
+  const d = new Date(`${iso}T00:00:00Z`);
+  d.setUTCDate(d.getUTCDate() + n);
+  return toIso(d);
+}
+
+// ── Bottom Sheet ──────────────────────────────────────────────
+function BottomSheet({
+  open,
+  onClose,
+  children,
+}: {
+  open: boolean;
+  onClose: () => void;
+  children: React.ReactNode;
+}) {
+  if (!open) return null;
+  return (
+    <>
+      <div
+        onClick={onClose}
+        style={{
+          position: "fixed", inset: 0, background: "rgba(0,0,0,0.4)", zIndex: 40,
+        }}
+      />
+      <div
+        style={{
+          position: "fixed", left: 0, right: 0, bottom: 0,
+          background: paper.paper,
+          borderRadius: "16px 16px 0 0",
+          zIndex: 50,
+          maxHeight: "92vh",
+          overflowY: "auto",
+          maxWidth: 480,
+          margin: "0 auto",
+          animation: "slideUp 0.2s ease",
+        }}
+      >
+        {children}
+      </div>
+      <style>{`@keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }`}</style>
+    </>
+  );
+}
+
+// ── Car Timeline ──────────────────────────────────────────────
+function CarTimeline({
+  car,
+  reservations,
+  days,
+  onPickDone,
+}: {
+  car: Car;
+  reservations: Reservation[];
+  days: string[];
+  onPickDone: (carId: number, from: string, to: string) => void;
+}) {
+  return (
+    <div style={{
+      background: paper.paper, marginBottom: 12, padding: "14px 14px 18px",
+      boxShadow: "0 1px 2px rgba(0,0,0,0.04)",
+    }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10 }}>
+        <div style={{
+          padding: "5px 8px", background: car.active ? paper.ink : paper.inkMute, color: paper.paper,
+          fontFamily: fontMono, fontSize: 11, fontWeight: 700, letterSpacing: 2, minWidth: 40, textAlign: "center",
+        }}>
+          {car.short}
+        </div>
+        <div style={{ fontFamily: fontSerif, fontSize: 16, fontWeight: 700, color: paper.ink }}>
+          {car.name}
+        </div>
+      </div>
+
+      <PickCalendar
+        days={days}
+        reservations={reservations}
+        carId={car.id}
+        from={null}
+        to={null}
+        onRangePick={(from, to) => onPickDone(car.id, from, to)}
+      />
+    </div>
+  );
+}
+
+// ── Reservation list item ─────────────────────────────────────
+function ResRow({
+  r,
+  onClick,
+}: {
+  r: Reservation;
+  onClick: () => void;
+}) {
+  const isPending = r.status === "pending";
+  const statusColor = r.status === "confirmed" ? paper.green
+    : r.status === "rejected" ? paper.accent : paper.amber;
+
+  return (
+    <button
+      onClick={onClick}
+      style={{
+        width: "100%", display: "flex", alignItems: "center", gap: 12,
+        padding: "11px 14px", marginBottom: 8,
+        background: isPending
+          ? `repeating-linear-gradient(45deg, ${paper.paper} 0 6px, ${paper.paperDeep} 6px 10px)`
+          : paper.paper,
+        border: "none",
+        borderLeft: `3px ${isPending ? "dashed" : "solid"} ${statusColor}`,
+        boxShadow: "0 1px 2px rgba(0,0,0,0.04)",
+        cursor: "pointer", textAlign: "left",
+      }}
+    >
+      <div style={{
+        padding: "5px 7px", background: paper.ink, color: paper.paper,
+        fontFamily: fontMono, fontSize: 11, fontWeight: 700, letterSpacing: 2,
+        flexShrink: 0, minWidth: 38, textAlign: "center",
+      }}>
+        {r.car_short}
+      </div>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ fontFamily: fontSerif, fontSize: 15, fontWeight: 600, color: paper.ink, lineHeight: 1.2 }}>
+          {r.person_name}
+        </div>
+        <div style={{ fontFamily: fontMono, fontSize: 10, color: paper.inkDim, letterSpacing: 1, marginTop: 2 }}>
+          {r.start_date}{r.start_date !== r.end_date ? ` → ${r.end_date}` : ""}
+        </div>
+        {r.note && (
+          <div style={{ fontFamily: fontMono, fontSize: 10, color: paper.inkMute, marginTop: 2 }}>
+            {r.note}
+          </div>
+        )}
+      </div>
+      <div style={{
+        padding: "3px 6px",
+        background: statusColor,
+        color: paper.paper,
+        fontFamily: fontMono, fontSize: 9, fontWeight: 700,
+        letterSpacing: 1, textTransform: "uppercase", flexShrink: 0,
+      }}>
+        {r.status === "confirmed" ? "✓" : r.status === "rejected" ? "✗" : "?"}
+      </div>
+    </button>
+  );
+}
+
+// ── Main page ─────────────────────────────────────────────────
 export default function CalendarPage() {
+  const t = useT();
+  const today = toIso(new Date());
+  const days = useMemo(
+    () => Array.from({ length: 14 }, (_, i) => addDays(today, i)),
+    [today]
+  );
+
   const { data: reservations = [], isLoading } = useReservations();
+  const { data: cars = [] } = useCars();
   const createR = useCreateReservation();
   const updateR = useUpdateReservation();
   const deleteR = useDeleteReservation();
-  const [adding, setAdding] = useState(false);
-  const [editing, setEditing] = useState<Reservation | null>(null);
 
-  const events = useMemo(
+  const activeCars = cars.filter((c) => c.active);
+
+  const [sheet, setSheet] = useState<"add" | "edit" | null>(null);
+  const [editing, setEditing] = useState<Reservation | null>(null);
+  const [prefillCarId, setPrefillCarId] = useState<number | undefined>();
+  const [prefillFrom, setPrefillFrom] = useState<string | undefined>();
+  const [prefillTo, setPrefillTo] = useState<string | undefined>();
+
+  const upcoming = useMemo(
     () =>
-      reservations.map((r) => ({
-        id: String(r.id),
-        title: `${r.car_short} - ${r.person_name}`,
-        start: r.start_date,
-        end: addOneDay(r.end_date),
-        allDay: true,
-        backgroundColor: "#c0392b",
-        borderColor: "#c0392b",
-        extendedProps: { reservation: r },
-      })),
-    [reservations]
+      reservations
+        .filter((r) => r.status !== "rejected" && r.end_date >= today)
+        .sort((a, b) => a.start_date.localeCompare(b.start_date)),
+    [reservations, today]
   );
 
-  const handleEventClick = (info: EventClickArg) => {
-    setEditing(info.event.extendedProps.reservation as Reservation);
+  const handlePickDone = (carId: number, from: string, to: string) => {
+    setPrefillCarId(carId);
+    setPrefillFrom(from);
+    setPrefillTo(to);
+    setSheet("add");
   };
 
+  if (isLoading) return (
+    <div style={{ background: paper.paperDeep, minHeight: "100dvh" }}>
+      <PageHeader title={t("page.reservations")} />
+      <div style={{ padding: "32px 20px", fontFamily: fontMono, fontSize: 11, color: paper.inkMute, letterSpacing: 1 }}>
+        {t("state.loading")}
+      </div>
+    </div>
+  );
+
   return (
-    <>
-      <PageHeader title={t("page.calendar")} />
-      <div className="p-2">
-        {isLoading
-          ? <p className="p-4 text-gray-500">{t("state.loading")}</p>
-          : <FullCalendarWrapper events={events} onEventClick={handleEventClick} />}
+    <div style={{ background: paper.paperDeep, minHeight: "100dvh", paddingBottom: 80 }}>
+      <PageHeader title={t("page.reservations")} />
+
+      {/* Legend */}
+      <div style={{
+        display: "flex", gap: 16, flexWrap: "wrap",
+        padding: "10px 16px",
+        fontFamily: fontMono, fontSize: 9, letterSpacing: 1.5,
+        textTransform: "uppercase", color: paper.inkDim,
+        borderBottom: `1px solid ${paper.paperDark}`,
+      }}>
+        <span>□ {t("calendar.available")}</span>
+        <span style={{ color: paper.ink }}>■ {t("calendar.confirmed")}</span>
+        <span style={{ color: paper.amber }}>▦ {t("calendar.pending")}</span>
       </div>
 
-      <Dialog.Root open={adding} onOpenChange={setAdding}>
-        <Dialog.Portal>
-          <Dialog.Overlay className="fixed inset-0 bg-black/40 z-40" />
-          <Dialog.Content className="fixed inset-x-0 bottom-0 bg-white rounded-t-xl z-50 max-h-[90vh] overflow-y-auto">
-            <Dialog.Title className="px-4 pt-4 text-base font-semibold">
-              {t("page.reservation_add")}
-            </Dialog.Title>
+      {/* Per-car 14-day timeline */}
+      <div style={{ padding: "12px 12px 4px" }}>
+        {activeCars.map((car) => (
+          <CarTimeline
+            key={car.id}
+            car={car}
+            reservations={reservations}
+            days={days}
+            onPickDone={handlePickDone}
+          />
+        ))}
+      </div>
+
+      {/* Upcoming list */}
+      <div style={{ padding: "8px 16px 0" }}>
+        <div style={{
+          fontFamily: fontMono, fontSize: 10, color: paper.inkDim,
+          letterSpacing: 2, textTransform: "uppercase",
+          marginBottom: 10, borderTop: `1.5px dashed ${paper.ink}`, paddingTop: 12,
+          display: "flex", justifyContent: "space-between", alignItems: "center",
+        }}>
+          <span>{t("calendar.upcoming")}</span>
+          <button
+            onClick={() => { setPrefillCarId(undefined); setPrefillFrom(undefined); setPrefillTo(undefined); setSheet("add"); }}
+            style={{
+              padding: "5px 12px", background: paper.ink, color: paper.paper,
+              border: "none", cursor: "pointer",
+              fontFamily: fontMono, fontSize: 9, fontWeight: 700,
+              letterSpacing: 1.5, textTransform: "uppercase",
+            }}
+          >
+            + {t("page.reservation_add")}
+          </button>
+        </div>
+
+        {upcoming.length === 0 && (
+          <div style={{ padding: "20px 0", textAlign: "center", fontFamily: fontMono, fontSize: 11, color: paper.inkMute, letterSpacing: 1 }}>
+            {t("state.empty_reservations")}
+          </div>
+        )}
+        {upcoming.map((r) => (
+          <ResRow key={r.id} r={r} onClick={() => { setEditing(r); setSheet("edit"); }} />
+        ))}
+      </div>
+
+      {/* Add sheet */}
+      <BottomSheet open={sheet === "add"} onClose={() => setSheet(null)}>
+        <div style={{ padding: "16px 20px 0", fontFamily: fontSerif, fontSize: 20, fontWeight: 700, color: paper.ink }}>
+          {t("page.reservation_add")}
+        </div>
+        <ReservationForm
+          defaultValues={prefillCarId !== undefined ? {
+            car_id: prefillCarId,
+            start_date: prefillFrom,
+            end_date: prefillTo,
+          } : undefined}
+          onSubmit={(data) =>
+            createR.mutate(data, {
+              onSuccess: () => { setSheet(null); toast.success(t("toast.reservation_saved")); },
+              onError: (e) => toast.error(e.message),
+            })
+          }
+          onCancel={() => setSheet(null)}
+        />
+      </BottomSheet>
+
+      {/* Edit sheet */}
+      <BottomSheet open={sheet === "edit" && !!editing} onClose={() => setSheet(null)}>
+        <div style={{ padding: "16px 20px 0", fontFamily: fontSerif, fontSize: 20, fontWeight: 700, color: paper.ink }}>
+          {t("page.reservation_edit")}
+        </div>
+        {editing && (
+          <>
             <ReservationForm
+              defaultValues={editing}
               onSubmit={(data) =>
-                createR.mutate(data, {
-                  onSuccess: () => {
-                    setAdding(false);
-                    toast.success(t("toast.reservation_saved"));
-                  },
-                  onError: (e) => toast.error(e.message),
-                })
-              }
-              onCancel={() => setAdding(false)}
-            />
-          </Dialog.Content>
-        </Dialog.Portal>
-      </Dialog.Root>
-
-      <Dialog.Root open={!!editing} onOpenChange={(o) => !o && setEditing(null)}>
-        <Dialog.Portal>
-          <Dialog.Overlay className="fixed inset-0 bg-black/40 z-40" />
-          <Dialog.Content className="fixed inset-x-0 bottom-0 bg-white rounded-t-xl z-50 max-h-[90vh] overflow-y-auto">
-            <Dialog.Title className="px-4 pt-4 text-base font-semibold">
-              {t("page.reservation_edit")}
-            </Dialog.Title>
-            {editing && (
-              <>
-                <ReservationForm
-                  defaultValues={editing}
-                  onSubmit={(data) =>
-                    updateR.mutate(
-                      { id: editing.id, ...data },
-                      {
-                        onSuccess: () => {
-                          setEditing(null);
-                          toast.success(t("toast.saved"));
-                        },
-                        onError: (e) => toast.error(e.message),
-                      }
-                    )
+                updateR.mutate(
+                  { id: editing.id, ...data },
+                  {
+                    onSuccess: () => { setSheet(null); toast.success(t("toast.saved")); },
+                    onError: (e) => toast.error(e.message),
                   }
-                  onCancel={() => setEditing(null)}
-                />
-                <div className="px-4 pb-4">
-                  <button
-                    onClick={() =>
-                      deleteR.mutate(editing.id, {
-                        onSuccess: () => {
-                          setEditing(null);
-                          toast.success(t("toast.deleted"));
-                        },
-                        onError: (e) => toast.error(e.message),
-                      })
-                    }
-                    className="w-full border border-red-300 text-red-600 rounded-md py-2 text-sm"
-                  >
-                    {t("action.delete")}
-                  </button>
-                </div>
-              </>
-            )}
-          </Dialog.Content>
-        </Dialog.Portal>
-      </Dialog.Root>
-
-      <Fab onClick={() => setAdding(true)} label={t("page.reservation_add")} />
-    </>
+                )
+              }
+              onCancel={() => setSheet(null)}
+            />
+            <div style={{ padding: "0 16px 24px" }}>
+              <button
+                onClick={() =>
+                  deleteR.mutate(editing.id, {
+                    onSuccess: () => { setSheet(null); toast.success(t("toast.deleted")); },
+                    onError: (e) => toast.error(e.message),
+                  })
+                }
+                style={{
+                  width: "100%", padding: "10px", background: "transparent",
+                  border: `1.5px solid ${paper.accent}`, color: paper.accent,
+                  fontFamily: fontMono, fontSize: 10, fontWeight: 700,
+                  letterSpacing: 2, textTransform: "uppercase", cursor: "pointer",
+                }}
+              >
+                {t("action.delete")}
+              </button>
+            </div>
+          </>
+        )}
+      </BottomSheet>
+    </div>
   );
 }

@@ -8,6 +8,8 @@ const PersonSchema = z.object({
   discount: z.number().min(0).max(1).default(0),
   discount_long: z.number().min(0).max(1).default(0),
   active: z.union([z.literal(0), z.literal(1)]).default(1),
+  username: z.string().min(1).nullable().optional(),
+  is_admin: z.union([z.literal(0), z.literal(1)]).default(0),
 });
 
 export const GET = json(async (_req, ctx) => {
@@ -19,6 +21,13 @@ export const GET = json(async (_req, ctx) => {
 export const PUT = json(async (req, ctx) => {
   const id = await readId(ctx);
   const data = await readBody(req, PersonSchema);
-  updatePerson(getDb(), id, data);
+  const existing = getPersonById(getDb(), id);
+  if (!existing) notFound();
+  updatePerson(getDb(), id, {
+    ...existing,
+    ...data,
+    username: data.username ?? existing.username,
+    is_admin: data.is_admin ?? existing.is_admin,
+  });
   return { ok: true };
 });

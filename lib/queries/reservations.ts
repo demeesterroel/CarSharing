@@ -23,14 +23,18 @@ export function getReservationById(db: Database.Database, id: number): Reservati
 
 export function insertReservation(db: Database.Database, input: ReservationInput): number {
   const result = db.prepare(
-    "INSERT INTO reservations (person_id,car_id,start_date,end_date) VALUES (?,?,?,?)"
-  ).run(input.person_id, input.car_id, input.start_date, input.end_date);
+    "INSERT INTO reservations (person_id,car_id,start_date,end_date,status,note) VALUES (?,?,?,?,?,?)"
+  ).run(input.person_id, input.car_id, input.start_date, input.end_date, input.status ?? "pending", input.note ?? null);
   return result.lastInsertRowid as number;
 }
 
 export function updateReservation(db: Database.Database, id: number, input: ReservationInput): void {
-  db.prepare("UPDATE reservations SET person_id=?,car_id=?,start_date=?,end_date=? WHERE id=?")
-    .run(input.person_id, input.car_id, input.start_date, input.end_date, id);
+  db.prepare("UPDATE reservations SET person_id=?,car_id=?,start_date=?,end_date=?,status=?,note=? WHERE id=?")
+    .run(input.person_id, input.car_id, input.start_date, input.end_date, input.status ?? "pending", input.note ?? null, id);
+}
+
+export function updateReservationStatus(db: Database.Database, id: number, status: string): void {
+  db.prepare("UPDATE reservations SET status=? WHERE id=?").run(status, id);
 }
 
 export function deleteReservation(db: Database.Database, id: number): void {

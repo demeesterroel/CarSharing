@@ -9,6 +9,7 @@ const ExpenseSchema = z.object({
   date: z.string().min(10),
   amount: z.number().positive(),
   description: z.string().nullable().optional().transform((v) => v ?? null),
+  category: z.string().nullable().optional().transform((v) => v ?? null),
 });
 
 export const GET = json(async (_req, ctx) => {
@@ -21,7 +22,7 @@ export const GET = json(async (_req, ctx) => {
 export const PUT = json(async (req, ctx) => {
   const id = await readId(ctx);
   const body = await readBody(req, ExpenseSchema);
-  updateExpense(getDb(), id, body);
+  updateExpense(getDb(), id, body as any);
   return { ok: true };
 });
 

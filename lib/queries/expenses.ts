@@ -23,20 +23,20 @@ export function getExpenseById(db: Database.Database, id: number): Expense | nul
 
 export function insertExpense(db: Database.Database, input: ExpenseInput): number {
   const result = db.prepare(`
-    INSERT INTO expenses (person_id,car_id,date,amount,description) VALUES (?,?,?,?,?)
+    INSERT INTO expenses (person_id,car_id,date,amount,description,category) VALUES (?,?,?,?,?,?)
   `).run(
     input.person_id, input.car_id, input.date, input.amount,
-    input.description ?? null
+    input.description ?? null, input.category ?? null
   );
   return result.lastInsertRowid as number;
 }
 
 export function updateExpense(db: Database.Database, id: number, input: ExpenseInput): void {
   db.prepare(`
-    UPDATE expenses SET person_id=?,car_id=?,date=?,amount=?,description=? WHERE id=?
+    UPDATE expenses SET person_id=?,car_id=?,date=?,amount=?,description=?,category=? WHERE id=?
   `).run(
     input.person_id, input.car_id, input.date, input.amount,
-    input.description ?? null, id
+    input.description ?? null, input.category ?? null, id
   );
 }
 

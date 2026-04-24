@@ -1,12 +1,26 @@
 import type { Metadata, Viewport } from "next";
+import { Fraunces, Inter } from "next/font/google";
 import "./globals.css";
 import { Providers } from "./providers";
 import { BottomTabBar } from "@/components/bottom-tab-bar";
-import { t } from "@/lib/i18n";
+import { LocaleProvider } from "@/components/locale-provider";
+
+const fraunces = Fraunces({
+  subsets: ["latin"],
+  variable: "--font-fraunces",
+  weight: "variable",
+  display: "swap",
+});
+
+const inter = Inter({
+  subsets: ["latin"],
+  variable: "--font-inter",
+  display: "swap",
+});
 
 export const metadata: Metadata = {
-  title: "Autodelen",
-  description: "Car sharing cooperative",
+  title: "Autodelen — Coöperatieve Antwerpen",
+  description: "Eerlijk autodelen voor familie en vrienden",
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
@@ -16,25 +30,44 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#1976d2",
+  themeColor: "#f5f0e6",
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,
+  viewportFit: "cover",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="nl">
+    <html lang="nl" className={`${fraunces.variable} ${inter.variable}`}>
       <head>
         <link rel="apple-touch-icon" href="/icons/icon-192.png" />
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
+        <link
+          href="https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&display=swap"
+          rel="stylesheet"
+        />
       </head>
-      <body className="min-h-screen bg-gray-50">
+      <body>
+        <LocaleProvider>
         <Providers>
-          <div className="max-w-2xl mx-auto bg-white min-h-screen shadow-sm pb-16">
+          <div
+            style={{
+              minHeight: "100dvh",
+              maxWidth: 480,
+              margin: "0 auto",
+              background: "var(--paper-deep)",
+              position: "relative",
+              boxShadow: "0 0 0 1px rgba(0,0,0,0.05)",
+              paddingBottom: 72,
+            }}
+          >
             {children}
           </div>
           <BottomTabBar />
         </Providers>
+        </LocaleProvider>
       </body>
     </html>
   );

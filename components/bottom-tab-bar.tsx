@@ -1,39 +1,84 @@
 "use client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Route, Fuel } from "lucide-react";
-import { t } from "@/lib/i18n";
+import { paper, fontMono } from "@/lib/paper-theme";
+import { useT } from "@/components/locale-provider";
+import { useMe } from "@/hooks/use-me";
 
-const TABS = [
-  { href: "/trips", label: t("nav.trips"), icon: Route },
-  { href: "/fuel", label: t("nav.fuel"), icon: Fuel },
+const BASE_TABS = [
+  { href: "/",         labelKey: "nav.dashboard" as const,        icon: "◉" },
+  { href: "/trips",    labelKey: "nav.trips" as const,             icon: "↦" },
+  { href: "/fuel",     labelKey: "nav.fuel" as const,              icon: "⛽" },
+  { href: "/calendar", labelKey: "nav.tab.reservations" as const,  icon: "▦" },
+  { href: "/expenses", labelKey: "nav.tab.expenses" as const,      icon: "₪" },
 ];
 
+const ADMIN_TAB = { href: "/admin", labelKey: "nav.admin" as const, icon: "✎" };
+
 export function BottomTabBar() {
+  const t = useT();
   const pathname = usePathname();
+  const { data: me } = useMe();
+
+  if (pathname === "/login" || pathname.startsWith("/invite")) return null;
+
+  const tabs = (me?.isAdmin || me?.isOwner) ? [...BASE_TABS, ADMIN_TAB] : BASE_TABS;
+
   return (
     <nav
       aria-label={t("nav.primary")}
-      className="fixed bottom-0 inset-x-0 z-30 border-t bg-white"
+      style={{
+        position: "fixed",
+        bottom: 0,
+        left: 0,
+        right: 0,
+        zIndex: 30,
+        background: paper.paper,
+        borderTop: `1.5px dashed ${paper.ink}`,
+        display: "flex",
+        paddingBottom: "env(safe-area-inset-bottom, 0)",
+        maxWidth: 480,
+        margin: "0 auto",
+      }}
     >
-      <div className="max-w-2xl mx-auto grid grid-cols-2 h-16">
-        {TABS.map(({ href, label, icon: Icon }) => {
-          const active = pathname === href || pathname.startsWith(`${href}/`);
-          return (
-            <Link
-              key={href}
-              href={href}
-              aria-current={active ? "page" : undefined}
-              className={`flex flex-col items-center justify-center gap-0.5 text-xs transition-colors ${
-                active ? "text-blue-600" : "text-gray-500 hover:text-gray-700"
-              }`}
-            >
-              <Icon className="w-5 h-5" />
-              <span className={active ? "font-medium" : ""}>{label}</span>
-            </Link>
-          );
-        })}
-      </div>
+      {tabs.map(({ href, labelKey, icon }) => {
+        const active = href === "/" ? pathname === "/" : pathname.startsWith(href);
+        return (
+          <Link
+            key={href}
+            href={href}
+            aria-current={active ? "page" : undefined}
+            style={{
+              flex: 1,
+              padding: "10px 2px 12px",
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              gap: 3,
+              fontFamily: fontMono,
+              background: active ? paper.ink : "transparent",
+              color: active ? paper.paper : paper.ink,
+              textDecoration: "none",
+              minWidth: 0,
+              cursor: "pointer",
+            }}
+          >
+            <span style={{ fontSize: 15, lineHeight: 1 }}>{icon}</span>
+            <span style={{
+              fontSize: 8,
+              letterSpacing: "1.2px",
+              textTransform: "uppercase",
+              fontWeight: 700,
+              whiteSpace: "nowrap",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              maxWidth: "100%",
+            }}>
+              {t(labelKey)}
+            </span>
+          </Link>
+        );
+      })}
     </nav>
   );
 }

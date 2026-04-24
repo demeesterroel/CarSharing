@@ -10,6 +10,8 @@ const TripSchema = z.object({
   start_odometer: z.number().int().nonnegative(),
   end_odometer: z.number().int().nonnegative(),
   location: z.string().nullable().optional().transform((v) => v ?? null),
+  parking: z.string().nullable().optional().transform((v) => v ?? null),
+  gps_coords: z.string().nullable().optional().transform((v) => v ?? null),
 });
 
 export const GET = json(async (_req, ctx) => {

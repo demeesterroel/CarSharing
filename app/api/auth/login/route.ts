@@ -52,14 +52,12 @@ export async function POST(req: Request) {
       );
       if (authenticated) {
         sessionIsAdmin = true;
-        // Try to find the person by name for env-var admin
+        // Try to find a person row by username or name
         const adminPerson = db
-          .prepare("SELECT id, name FROM people WHERE name=? LIMIT 1")
-          .get(AUTH_USERNAME) as { id: number; name: string } | undefined;
-        if (adminPerson) {
-          sessionPersonId = adminPerson.id;
-          sessionPersonName = adminPerson.name;
-        }
+          .prepare("SELECT id, name FROM people WHERE username=? OR name=? LIMIT 1")
+          .get(AUTH_USERNAME, AUTH_USERNAME) as { id: number; name: string } | undefined;
+        sessionPersonId = adminPerson?.id;
+        sessionPersonName = adminPerson?.name ?? AUTH_USERNAME;
       }
     }
   }

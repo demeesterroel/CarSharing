@@ -11,13 +11,11 @@ import {
 } from "@/hooks/use-reservations";
 import { useCars } from "@/hooks/use-cars";
 import type { Reservation, Car } from "@/types";
-import { paper, fontMono, fontSerif, fmtDate } from "@/lib/paper-theme";
+import { paper, fontMono, fontSerif } from "@/lib/paper-theme";
 import { useT } from "@/components/locale-provider";
+import { PickCalendar } from "@/components/pick-calendar";
 
 // ── helpers ───────────────────────────────────────────────────
-const DAYS_NL = ["zo", "ma", "di", "wo", "do", "vr", "za"];
-const DAYS_EN = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
-
 function toIso(d: Date) {
   return d.toISOString().slice(0, 10);
 }
@@ -72,36 +70,13 @@ function CarTimeline({
   car,
   reservations,
   days,
-  lang,
   onPickDone,
 }: {
   car: Car;
   reservations: Reservation[];
   days: string[];
-  lang: string;
   onPickDone: (carId: number, from: string, to: string) => void;
 }) {
-  const dayNames = lang === "nl" ? DAYS_NL : DAYS_EN;
-  const [pickFrom, setPickFrom] = useState<string | null>(null);
-
-  const resForDay = (iso: string) =>
-    reservations.find(
-      (r) => r.car_id === car.id && r.status !== "rejected" && iso >= r.start_date && iso <= r.end_date
-    );
-
-  const handleCell = (iso: string) => {
-    const r = resForDay(iso);
-    if (r) return;
-    if (!pickFrom) {
-      setPickFrom(iso);
-      return;
-    }
-    const from = pickFrom < iso ? pickFrom : iso;
-    const to = pickFrom < iso ? iso : pickFrom;
-    setPickFrom(null);
-    onPickDone(car.id, from, to);
-  };
-
   return (
     <div style={{
       background: paper.paper, marginBottom: 12, padding: "14px 14px 18px",
@@ -119,80 +94,14 @@ function CarTimeline({
         </div>
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 3 }}>
-        {days.map((iso) => {
-          const r = resForDay(iso);
-          const isFirst = r && iso === r.start_date;
-          const isPending = r?.status === "pending";
-          const isPickStart = pickFrom === iso;
-
-          let bg: string = "transparent";
-          let fg: string = paper.ink;
-          let border: string = `1px solid ${paper.paperDark}`;
-
-          if (isPickStart) {
-            bg = paper.accent; fg = paper.paper; border = `1.5px solid ${paper.ink}`;
-          } else if (r) {
-            if (isPending) {
-              bg = `repeating-linear-gradient(45deg, ${paper.paper} 0 4px, ${paper.paperDark} 4px 6px)`;
-              border = `1.5px dashed ${paper.amber}`;
-            } else {
-              bg = paper.ink; fg = paper.paper; border = `1.5px solid ${paper.ink}`;
-            }
-          }
-
-          const d = new Date(`${iso}T00:00:00Z`);
-          const clickable = !r;
-
-          return (
-            <div
-              key={iso}
-              onClick={clickable ? () => handleCell(iso) : undefined}
-              title={r ? `${r.person_name}${isPending ? " (aanvraag)" : ""}` : ""}
-              style={{
-                padding: "5px 2px", textAlign: "center",
-                border, background: bg, color: fg,
-                fontFamily: fontMono, fontSize: 9,
-                minHeight: 44, position: "relative",
-                cursor: clickable ? "pointer" : "default",
-              }}
-            >
-              <div style={{ fontSize: 8, opacity: 0.75 }}>{dayNames[d.getUTCDay()]}</div>
-              <div style={{ fontSize: 13, fontWeight: 700, marginTop: 1 }}>{d.getUTCDate()}</div>
-              {isFirst && (
-                <div style={{ fontSize: 7, marginTop: 1, opacity: 0.85 }}>
-                  {r.person_name?.slice(0, 4)}
-                </div>
-              )}
-              {isFirst && isPending && (
-                <div style={{
-                  position: "absolute", top: 2, right: 2,
-                  fontSize: 9, color: paper.amber, fontWeight: 700,
-                }}>?</div>
-              )}
-            </div>
-          );
-        })}
-      </div>
-
-      {pickFrom && (
-        <div style={{
-          marginTop: 8, padding: "7px 10px",
-          background: paper.paperDeep, border: `1.5px dashed ${paper.accent}`,
-          fontFamily: fontMono, fontSize: 10, letterSpacing: 1, color: paper.ink,
-          display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8,
-        }}>
-          <span>● Start: <b>{fmtDate(pickFrom)}</b> — klik einddatum</span>
-          <button
-            onClick={() => setPickFrom(null)}
-            style={{
-              border: "none", background: "transparent",
-              fontFamily: fontMono, fontSize: 10, cursor: "pointer",
-              color: paper.inkDim, letterSpacing: 1,
-            }}
-          >✕</button>
-        </div>
-      )}
+      <PickCalendar
+        days={days}
+        reservations={reservations}
+        carId={car.id}
+        from={null}
+        to={null}
+        onRangePick={(from, to) => onPickDone(car.id, from, to)}
+      />
     </div>
   );
 }
@@ -273,7 +182,6 @@ export default function CalendarPage() {
   const deleteR = useDeleteReservation();
 
   const activeCars = cars.filter((c) => c.active);
-  const lang = "nl"; // TODO: wire up locale provider
 
   const [sheet, setSheet] = useState<"add" | "edit" | null>(null);
   const [editing, setEditing] = useState<Reservation | null>(null);
@@ -330,7 +238,6 @@ export default function CalendarPage() {
             car={car}
             reservations={reservations}
             days={days}
-            lang={lang}
             onPickDone={handlePickDone}
           />
         ))}

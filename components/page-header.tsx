@@ -1,4 +1,5 @@
 "use client";
+import { useRouter } from "next/navigation";
 import { paper, fontMono, fontSerif } from "@/lib/paper-theme";
 import { useT } from "@/components/locale-provider";
 import { LangSwitcher } from "./lang-switcher";
@@ -11,6 +12,13 @@ interface Props {
 
 export function PageHeader({ title, subtitle, right }: Props) {
   const t = useT();
+  const router = useRouter();
+
+  const handleLogout = async () => {
+    await fetch("/api/auth/logout", { method: "POST" });
+    router.replace("/login");
+  };
+
   return (
     <header
       style={{
@@ -40,6 +48,20 @@ export function PageHeader({ title, subtitle, right }: Props) {
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           {right}
           <LangSwitcher />
+          <button
+            onClick={handleLogout}
+            title={t("nav.logout")}
+            style={{
+              padding: "3px 8px",
+              fontFamily: fontMono, fontSize: 9, fontWeight: 700,
+              letterSpacing: 1.5, textTransform: "uppercase",
+              background: "transparent", color: paper.inkDim,
+              border: `1.5px solid ${paper.paperDark}`,
+              cursor: "pointer", lineHeight: 1.6,
+            }}
+          >
+            ⏻
+          </button>
         </div>
       </div>
       <div style={{

@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useDashboard } from "@/hooks/use-dashboard";
 import { useTrips } from "@/hooks/use-trips";
 import { useFuelFillups } from "@/hooks/use-fuel-fillups";
@@ -16,9 +17,15 @@ import { ExpenseForm } from "@/app/expenses/expense-form";
 import { ReservationForm } from "@/app/calendar/reservation-form";
 import { toast } from "sonner";
 import { useT } from "@/components/locale-provider";
+import { LangSwitcher } from "@/components/lang-switcher";
+import { useMe } from "@/hooks/use-me";
 import {
-  useCreateTrip, useCreateFuelFillup, useCreateExpense, useCreateReservation,
+  useCreateTrip, useUpdateTrip, useDeleteTrip,
+  useCreateFuelFillup, useUpdateFuelFillup, useDeleteFuelFillup,
+  useCreateExpense, useUpdateExpense, useDeleteExpense,
+  useCreateReservation, useUpdateReservation, useDeleteReservation,
 } from "./dashboard-hooks";
+import { useCars } from "@/hooks/use-cars";
 
 // ── Primitives ────────────────────────────────────────────────────
 function Perf({ margin = "12px 0" }: { margin?: string }) {
@@ -78,9 +85,9 @@ function BalanceReceipt({ year, personName }: { year: number; personName: string
         }}>— {t("dashboard.year_balance", { year })} —</div>
         <Perf margin="10px 0 12px" />
 
-        <ReceiptRow label={t("dashboard.your_trips")}       value={`− ${fmtMoney(Math.abs(myRow.trip_amount))}`} />
-        <ReceiptRow label={t("dashboard.your_fuel")}        value={fmtMoney(myRow.fuel_amount)} />
-        <ReceiptRow label={t("dashboard.your_maintenance")} value={fmtMoney(myRow.expense_amount)} />
+        <ReceiptRow label={t("dashboard.your_trips")}       value={`− ${fmtMoney(Math.abs(myRow.trip_amount))}`} color={paper.accent} />
+        <ReceiptRow label={t("dashboard.your_fuel")}        value={fmtMoney(myRow.fuel_amount)}                  color={paper.green} />
+        <ReceiptRow label={t("dashboard.your_maintenance")} value={fmtMoney(myRow.expense_amount)}              color={paper.green} />
 
         <Perf margin="10px 0" />
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", padding: "4px 0" }}>
@@ -137,14 +144,82 @@ function SectionHeader({ title, href }: { title: string; href: string }) {
   );
 }
 
-// ── Activity strips ───────────────────────────────────────────
-function TripStrip({ trip }: { trip: Trip }) {
+// ── Car Locations ─────────────────────────────────────────────
+function CarLocations({ trips, onTripClick }: { trips: Trip[]; onTripClick: (trip: Trip) => void }) {
+  const t = useT();
+  const { data: cars = [] } = useCars();
+  const activeShortsSet = new Set(cars.filter((c) => c.active === 1).map((c) => c.short));
+
+  const carMap = new Map<string, Trip>();
+  for (const trip of trips) {
+    if (trip.car_short && activeShortsSet.has(trip.car_short) && !carMap.has(trip.car_short)) {
+      carMap.set(trip.car_short, trip);
+    }
+  }
+  const entries = Array.from(carMap.entries());
+  if (entries.length === 0) return null;
+
   return (
-    <div style={{
+    <div style={{ padding: "18px 16px 0" }}>
+      <div style={{
+        background: paper.paper, padding: "16px 18px",
+        boxShadow: "0 1px 2px rgba(0,0,0,0.05), 0 8px 24px rgba(0,0,0,0.07)",
+      }}>
+        <div style={{
+          fontFamily: fontMono, fontSize: 11, color: paper.ink,
+          letterSpacing: 3, textTransform: "uppercase", textAlign: "center", fontWeight: 700,
+          marginBottom: 14,
+        }}>— {t("dashboard.car_locations")} —</div>
+        {entries.map(([short, trip]) => {
+          const isParkingOnly = !trip.location && !trip.gps_coords && trip.parking;
+          const loc = trip.location ?? trip.gps_coords ?? trip.parking;
+          return (
+            <button
+              key={short}
+              onClick={() => onTripClick(trip)}
+              style={{
+                width: "100%", textAlign: "left", appearance: "none",
+                background: "transparent", border: "none", padding: 0,
+                display: "flex", alignItems: "center", gap: 12,
+                paddingTop: 10, paddingBottom: 10,
+                borderTop: `1px dashed ${paper.paperDark}`,
+                cursor: "pointer",
+              }}
+            >
+              <CarStamp code={short} />
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{
+                  fontFamily: fontSerif, fontSize: 14, fontWeight: 600, lineHeight: 1.2,
+                  whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis",
+                  color: isParkingOnly ? paper.inkDim : paper.ink,
+                  fontStyle: isParkingOnly ? "italic" : "normal",
+                }}>
+                  {loc ?? "—"}
+                </div>
+                <div style={{ fontFamily: fontMono, fontSize: 9, color: paper.inkMute, letterSpacing: 1, marginTop: 2 }}>
+                  {t("dashboard.last_seen")} · {fmtDate(trip.date)}
+                </div>
+              </div>
+              <div style={{ fontFamily: fontMono, fontSize: 11, color: paper.inkMute, flexShrink: 0 }}>›</div>
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+// ── Activity strips ───────────────────────────────────────────
+function TripStrip({ trip, onClick }: { trip: Trip; onClick?: () => void }) {
+  return (
+    <button onClick={onClick} style={{
+      width: "100%", textAlign: "left", appearance: "none",
       background: paper.paper, padding: "12px 14px", marginBottom: 8,
       display: "flex", alignItems: "center", gap: 12,
-      borderLeft: `3px solid ${paper.ink}`,
+      borderTop: "none", borderRight: "none", borderBottom: "none",
+      borderLeft: `3px solid ${paper.accent}`,
       boxShadow: "0 1px 2px rgba(0,0,0,0.04)",
+      cursor: onClick ? "pointer" : "default",
     }}>
       <CarStamp code={trip.car_short ?? "?"} />
       <div style={{ flex: 1, minWidth: 0 }}>
@@ -156,23 +231,26 @@ function TripStrip({ trip }: { trip: Trip }) {
         </div>
       </div>
       <div style={{ textAlign: "right" }}>
-        <div style={{ fontFamily: fontMono, fontSize: 14, fontWeight: 700, color: paper.ink, whiteSpace: "nowrap" }}>
+        <div style={{ fontFamily: fontMono, fontSize: 14, fontWeight: 700, color: paper.accent, whiteSpace: "nowrap" }}>
           {fmtMoney(trip.amount)}
         </div>
       </div>
-    </div>
+    </button>
   );
 }
 
-function FuelStrip({ fuel }: { fuel: FuelFillup }) {
+const stripButton: React.CSSProperties = {
+  width: "100%", textAlign: "left", appearance: "none",
+  background: paper.paper, padding: "12px 14px", marginBottom: 8,
+  display: "flex", alignItems: "center", gap: 12,
+  borderTop: "none", borderRight: "none", borderBottom: "none",
+  boxShadow: "0 1px 2px rgba(0,0,0,0.04)", cursor: "pointer",
+};
+
+function FuelStrip({ fuel, onClick }: { fuel: FuelFillup; onClick?: () => void }) {
   const t = useT();
   return (
-    <div style={{
-      background: paper.paper, padding: "12px 14px", marginBottom: 8,
-      display: "flex", alignItems: "center", gap: 12,
-      borderLeft: `3px solid ${paper.accent}`,
-      boxShadow: "0 1px 2px rgba(0,0,0,0.04)",
-    }}>
+    <button onClick={onClick} style={{ ...stripButton, borderLeft: `3px solid ${paper.green}` }}>
       <CarStamp code={fuel.car_short ?? "?"} />
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ fontFamily: fontSerif, fontSize: 15, color: paper.ink, fontWeight: 600, lineHeight: 1.2, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
@@ -183,23 +261,18 @@ function FuelStrip({ fuel }: { fuel: FuelFillup }) {
         </div>
       </div>
       <div style={{ textAlign: "right" }}>
-        <div style={{ fontFamily: fontMono, fontSize: 14, fontWeight: 700, color: paper.accent, whiteSpace: "nowrap" }}>
+        <div style={{ fontFamily: fontMono, fontSize: 14, fontWeight: 700, color: paper.green, whiteSpace: "nowrap" }}>
           {fmtMoney(fuel.amount)}
         </div>
       </div>
-    </div>
+    </button>
   );
 }
 
-function ExpenseStrip({ expense }: { expense: Expense }) {
+function ExpenseStrip({ expense, onClick }: { expense: Expense; onClick?: () => void }) {
   const t = useT();
   return (
-    <div style={{
-      background: paper.paper, padding: "12px 14px", marginBottom: 8,
-      display: "flex", alignItems: "center", gap: 12,
-      borderLeft: `3px solid ${paper.amber}`,
-      boxShadow: "0 1px 2px rgba(0,0,0,0.04)",
-    }}>
+    <button onClick={onClick} style={{ ...stripButton, borderLeft: `3px solid ${paper.green}` }}>
       <CarStamp code={expense.car_short ?? "?"} />
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ fontFamily: fontSerif, fontSize: 15, color: paper.ink, fontWeight: 600, lineHeight: 1.2, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
@@ -210,24 +283,23 @@ function ExpenseStrip({ expense }: { expense: Expense }) {
         </div>
       </div>
       <div style={{ textAlign: "right" }}>
-        <div style={{ fontFamily: fontMono, fontSize: 14, fontWeight: 700, color: paper.amber, whiteSpace: "nowrap" }}>
+        <div style={{ fontFamily: fontMono, fontSize: 14, fontWeight: 700, color: paper.green, whiteSpace: "nowrap" }}>
           {fmtMoney(expense.amount)}
         </div>
       </div>
-    </div>
+    </button>
   );
 }
 
-function ReservationStrip({ r }: { r: Reservation }) {
+function ReservationStrip({ r, onClick }: { r: Reservation; onClick?: () => void }) {
   const t = useT();
   const isPending = r.status === "pending";
   return (
-    <div style={{
+    <button onClick={onClick} style={{
+      ...stripButton,
       background: isPending
         ? `repeating-linear-gradient(-45deg, ${paper.paperDeep}, ${paper.paperDeep} 4px, ${paper.paper} 4px, ${paper.paper} 10px)`
         : paper.paper,
-      padding: "12px 14px", marginBottom: 8,
-      display: "flex", alignItems: "center", gap: 12,
       borderLeft: `3px dashed ${paper.blue}`,
     }}>
       <CarStamp code={r.car_short ?? "?"} />
@@ -249,7 +321,7 @@ function ReservationStrip({ r }: { r: Reservation }) {
           {t("dashboard.pending_badge")}
         </div>
       )}
-    </div>
+    </button>
   );
 }
 
@@ -319,8 +391,31 @@ function Sheets({ sheet, setSheet }: { sheet: SheetType; setSheet: (s: SheetType
 // ── Main Dashboard ────────────────────────────────────────────
 export default function DashboardPage() {
   const t = useT();
+  const { data: me } = useMe();
+  const router = useRouter();
   const year = new Date().getFullYear();
   const [sheet, setSheet] = useState<SheetType>(null);
+
+  // Edit state
+  const [editTrip, setEditTrip]               = useState<Trip | null>(null);
+  const [editFuel, setEditFuel]               = useState<FuelFillup | null>(null);
+  const [editExpense, setEditExpense]         = useState<Expense | null>(null);
+  const [editReservation, setEditReservation] = useState<Reservation | null>(null);
+
+  // Mutation hooks
+  const updateTrip    = useUpdateTrip();
+  const deleteTrip    = useDeleteTrip();
+  const updateFuel    = useUpdateFuelFillup();
+  const deleteFuel    = useDeleteFuelFillup();
+  const updateExpense = useUpdateExpense();
+  const deleteExpense = useDeleteExpense();
+  const updateRes     = useUpdateReservation();
+  const deleteRes     = useDeleteReservation();
+
+  const handleLogout = async () => {
+    await fetch("/api/auth/logout", { method: "POST" });
+    router.replace("/login");
+  };
 
   const { data: trips = [] }        = useTrips();
   const { data: fillups = [] }      = useFuelFillups();
@@ -339,15 +434,45 @@ export default function DashboardPage() {
 
   const todayFmt = new Date().toLocaleDateString("nl-BE", { weekday: "short", day: "numeric", month: "short" });
 
+  const sheetStyle: React.CSSProperties = {
+    position: "fixed", bottom: 0,
+    left: "50%", transform: "translateX(-50%)",
+    width: "min(100%, 480px)",
+    maxHeight: "92dvh", borderRadius: "14px 14px 0 0",
+    background: paper.paperDeep, zIndex: 50, overflowY: "auto",
+  };
+  const overlayStyle: React.CSSProperties = {
+    position: "fixed", inset: 0, background: "rgba(0,0,0,0.45)", zIndex: 49,
+  };
+
   return (
     <div style={{ background: paper.paperDeep, minHeight: "100dvh", paddingBottom: 80 }}>
       {/* Header */}
       <div style={{ background: paper.paper, padding: "22px 20px 20px", borderBottom: `1.5px dashed ${paper.ink}` }}>
-        <div style={{ fontFamily: fontMono, fontSize: 9, color: paper.inkDim, letterSpacing: 2, textTransform: "uppercase", marginBottom: 12 }}>
-          {t("brand.tagline")}
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+          <div style={{ fontFamily: fontMono, fontSize: 9, color: paper.inkDim, letterSpacing: 2, textTransform: "uppercase" }}>
+            {t("brand.tagline")}
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <LangSwitcher />
+            <button
+              onClick={handleLogout}
+              title={t("nav.logout")}
+              style={{
+                padding: "3px 8px",
+                fontFamily: fontMono, fontSize: 9, fontWeight: 700,
+                letterSpacing: 1.5, textTransform: "uppercase",
+                background: "transparent", color: paper.inkDim,
+                border: `1.5px solid ${paper.paperDark}`,
+                cursor: "pointer", lineHeight: 1.6,
+              }}
+            >
+              ⏻
+            </button>
+          </div>
         </div>
         <div style={{ fontFamily: fontSerif, fontSize: 32, fontWeight: 700, color: paper.ink, letterSpacing: -0.8, lineHeight: 1.05 }}>
-          {t("dashboard.hello")}
+          {t("dashboard.hello")}{me?.personName ? ` ${me.personName.split(" ")[0]}` : ""}
         </div>
         <div style={{ fontFamily: fontMono, fontSize: 10, color: paper.inkDim, letterSpacing: 2, textTransform: "uppercase", marginTop: 4 }}>
           {t("dashboard.today")} · {todayFmt}
@@ -355,17 +480,10 @@ export default function DashboardPage() {
       </div>
 
       {/* Balance */}
-      <BalanceReceipt year={year} personName="Roeland" />
+      <BalanceReceipt year={year} personName={me?.personName ?? ""} />
 
-      {/* Upcoming reservations */}
-      {upcoming.length > 0 && (
-        <>
-          <SectionHeader title={t("dashboard.upcoming")} href="/calendar" />
-          <div style={{ padding: "0 16px" }}>
-            {upcoming.map((r) => <ReservationStrip key={r.id} r={r} />)}
-          </div>
-        </>
-      )}
+      {/* Car locations */}
+      <CarLocations trips={trips} onTripClick={setEditTrip} />
 
       {/* Recent trips */}
       <SectionHeader title={t("dashboard.recent_trips")} href="/trips" />
@@ -375,7 +493,7 @@ export default function DashboardPage() {
             {t("state.empty_trips")}
           </div>
         ) : (
-          recentTrips.map((trip) => <TripStrip key={trip.id} trip={trip} />)
+          recentTrips.map((trip) => <TripStrip key={trip.id} trip={trip} onClick={() => setEditTrip(trip)} />)
         )}
       </div>
 
@@ -387,7 +505,7 @@ export default function DashboardPage() {
             {t("state.empty_fuel")}
           </div>
         ) : (
-          recentFuel.map((f) => <FuelStrip key={f.id} fuel={f} />)
+          recentFuel.map((f) => <FuelStrip key={f.id} fuel={f} onClick={() => setEditFuel(f)} />)
         )}
       </div>
 
@@ -399,9 +517,19 @@ export default function DashboardPage() {
             {t("state.empty_expenses")}
           </div>
         ) : (
-          recentExpenses.map((e) => <ExpenseStrip key={e.id} expense={e} />)
+          recentExpenses.map((e) => <ExpenseStrip key={e.id} expense={e} onClick={() => setEditExpense(e)} />)
         )}
       </div>
+
+      {/* Upcoming reservations */}
+      {upcoming.length > 0 && (
+        <>
+          <SectionHeader title={t("dashboard.upcoming")} href="/calendar" />
+          <div style={{ padding: "0 16px" }}>
+            {upcoming.map((r) => <ReservationStrip key={r.id} r={r} onClick={() => setEditReservation(r)} />)}
+          </div>
+        </>
+      )}
 
       {/* Footer */}
       <div style={{ fontFamily: fontSerif, fontSize: 12, fontStyle: "italic", color: paper.inkMute, textAlign: "center", padding: "32px 32px 20px", lineHeight: 1.5 }}>
@@ -410,6 +538,98 @@ export default function DashboardPage() {
 
       <MultiFab onPick={(action) => setSheet(action as SheetType)} />
       <Sheets sheet={sheet} setSheet={setSheet} />
+
+      {/* Edit: Trip */}
+      <Dialog.Root open={!!editTrip} onOpenChange={(o) => !o && setEditTrip(null)}>
+        <Dialog.Portal>
+          <Dialog.Overlay style={overlayStyle} />
+          <Dialog.Content style={sheetStyle} aria-describedby={undefined}>
+            <Dialog.Title style={{ position: "absolute", width: 1, height: 1, overflow: "hidden", clip: "rect(0,0,0,0)" }}>{t("page.trip_edit")}</Dialog.Title>
+            {editTrip && (
+              <TripForm
+                defaultValues={editTrip}
+                onSubmit={(d) => updateTrip.mutate({ id: editTrip.id, ...d } as any, {
+                  onSuccess: () => { setEditTrip(null); toast.success(t("toast.saved")); },
+                  onError: (e) => toast.error(e.message),
+                })}
+                onCancel={() => setEditTrip(null)}
+                onDelete={() => deleteTrip.mutate(editTrip.id, {
+                  onSuccess: () => { setEditTrip(null); toast.success(t("toast.trip_deleted")); },
+                  onError: (e) => toast.error(e.message),
+                })}
+              />
+            )}
+          </Dialog.Content>
+        </Dialog.Portal>
+      </Dialog.Root>
+
+      {/* Edit: Fuel */}
+      <Dialog.Root open={!!editFuel} onOpenChange={(o) => !o && setEditFuel(null)}>
+        <Dialog.Portal>
+          <Dialog.Overlay style={overlayStyle} />
+          <Dialog.Content style={sheetStyle} aria-describedby={undefined}>
+            <Dialog.Title style={{ position: "absolute", width: 1, height: 1, overflow: "hidden", clip: "rect(0,0,0,0)" }}>{t("page.fuel_edit")}</Dialog.Title>
+            {editFuel && (
+              <FuelForm
+                defaultValues={editFuel}
+                onSubmit={(d) => updateFuel.mutate({ id: editFuel.id, ...d }, {
+                  onSuccess: () => { setEditFuel(null); toast.success(t("toast.saved")); },
+                  onError: (e) => toast.error(e.message),
+                })}
+                onCancel={() => setEditFuel(null)}
+                onDelete={() => deleteFuel.mutate(editFuel.id, {
+                  onSuccess: () => { setEditFuel(null); toast.success(t("toast.deleted")); },
+                  onError: (e) => toast.error(e.message),
+                })}
+              />
+            )}
+          </Dialog.Content>
+        </Dialog.Portal>
+      </Dialog.Root>
+
+      {/* Edit: Expense */}
+      <Dialog.Root open={!!editExpense} onOpenChange={(o) => !o && setEditExpense(null)}>
+        <Dialog.Portal>
+          <Dialog.Overlay style={overlayStyle} />
+          <Dialog.Content style={sheetStyle} aria-describedby={undefined}>
+            <Dialog.Title style={{ position: "absolute", width: 1, height: 1, overflow: "hidden", clip: "rect(0,0,0,0)" }}>{t("page.expense_edit")}</Dialog.Title>
+            {editExpense && (
+              <ExpenseForm
+                defaultValues={editExpense}
+                onSubmit={(d) => updateExpense.mutate({ id: editExpense.id, ...d } as any, {
+                  onSuccess: () => { setEditExpense(null); toast.success(t("toast.saved")); },
+                  onError: (e) => toast.error(e.message),
+                })}
+                onCancel={() => setEditExpense(null)}
+                onDelete={() => deleteExpense.mutate(editExpense.id, {
+                  onSuccess: () => { setEditExpense(null); toast.success(t("toast.deleted")); },
+                  onError: (e) => toast.error(e.message),
+                })}
+              />
+            )}
+          </Dialog.Content>
+        </Dialog.Portal>
+      </Dialog.Root>
+
+      {/* Edit: Reservation */}
+      <Dialog.Root open={!!editReservation} onOpenChange={(o) => !o && setEditReservation(null)}>
+        <Dialog.Portal>
+          <Dialog.Overlay style={overlayStyle} />
+          <Dialog.Content style={sheetStyle} aria-describedby={undefined}>
+            <Dialog.Title style={{ position: "absolute", width: 1, height: 1, overflow: "hidden", clip: "rect(0,0,0,0)" }}>{t("page.reservation_edit")}</Dialog.Title>
+            {editReservation && (
+              <ReservationForm
+                defaultValues={editReservation}
+                onSubmit={(d) => updateRes.mutate({ id: editReservation.id, ...d } as any, {
+                  onSuccess: () => { setEditReservation(null); toast.success(t("toast.saved")); },
+                  onError: (e) => toast.error(e.message),
+                })}
+                onCancel={() => setEditReservation(null)}
+              />
+            )}
+          </Dialog.Content>
+        </Dialog.Portal>
+      </Dialog.Root>
     </div>
   );
 }

@@ -36,12 +36,12 @@ function compute(db: Database.Database, input: TripInput) {
 export function insertTrip(db: Database.Database, input: TripInput): number {
   const { km, amount } = compute(db, input);
   const result = db.prepare(`
-    INSERT INTO trips (person_id,car_id,date,start_odometer,end_odometer,km,amount,location)
-    VALUES (?,?,?,?,?,?,?,?)
+    INSERT INTO trips (person_id,car_id,date,start_odometer,end_odometer,km,amount,location,parking,gps_coords)
+    VALUES (?,?,?,?,?,?,?,?,?,?)
   `).run(
     input.person_id, input.car_id, input.date,
     input.start_odometer, input.end_odometer, km, amount,
-    input.location ?? null
+    input.location ?? null, input.parking ?? null, input.gps_coords ?? null
   );
   return result.lastInsertRowid as number;
 }
@@ -49,11 +49,11 @@ export function insertTrip(db: Database.Database, input: TripInput): number {
 export function updateTrip(db: Database.Database, id: number, input: TripInput): void {
   const { km, amount } = compute(db, input);
   db.prepare(`
-    UPDATE trips SET person_id=?,car_id=?,date=?,start_odometer=?,end_odometer=?,km=?,amount=?,location=? WHERE id=?
+    UPDATE trips SET person_id=?,car_id=?,date=?,start_odometer=?,end_odometer=?,km=?,amount=?,location=?,parking=?,gps_coords=? WHERE id=?
   `).run(
     input.person_id, input.car_id, input.date,
     input.start_odometer, input.end_odometer, km, amount,
-    input.location ?? null, id
+    input.location ?? null, input.parking ?? null, input.gps_coords ?? null, id
   );
 }
 

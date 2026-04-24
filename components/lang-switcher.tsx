@@ -7,7 +7,7 @@ export function LangSwitcher() {
 
   return (
     <div style={{ display: "flex" }}>
-      {(["nl", "en"] as Locale[]).map((lang, i) => (
+      {(["nl", "en"] as Locale[]).map((lang, i, arr) => (
         <button
           key={lang}
           onClick={() => setLocale(lang)}
@@ -21,7 +21,7 @@ export function LangSwitcher() {
             background: locale === lang ? paper.ink : "transparent",
             color: locale === lang ? paper.paper : paper.ink,
             border: `1.5px solid ${paper.ink}`,
-            borderRight: i === 0 ? "none" : undefined,
+            borderRight: i < arr.length - 1 ? "none" : `1.5px solid ${paper.ink}`,
             cursor: "pointer",
             lineHeight: 1.6,
           }}

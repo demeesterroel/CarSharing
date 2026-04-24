@@ -12,10 +12,15 @@ import type { FuelFillup } from "@/types";
 import { paper, fontMono, fontSerif, fmtMoney, fmtYearMonth } from "@/lib/paper-theme";
 import { useT } from "@/components/locale-provider";
 
+const overlayStyle: React.CSSProperties = {
+  position: "fixed", inset: 0, background: "rgba(0,0,0,0.45)", zIndex: 49,
+};
 const sheetStyle: React.CSSProperties = {
-  position: "fixed", left: 0, right: 0, bottom: 0, background: paper.paper,
-  borderRadius: "16px 16px 0 0", zIndex: 50, maxHeight: "95vh",
-  overflowY: "auto", maxWidth: 480, margin: "0 auto",
+  position: "fixed", bottom: 0,
+  left: "50%", transform: "translateX(-50%)",
+  width: "min(100%, 480px)",
+  maxHeight: "92dvh", borderRadius: "14px 14px 0 0",
+  background: paper.paperDeep, zIndex: 50, overflowY: "auto",
 };
 
 export default function FuelPage() {
@@ -28,11 +33,14 @@ export default function FuelPage() {
   const [adding, setAdding] = useState(false);
   const [editing, setEditing] = useState<FuelFillup | null>(null);
   const [filter, setFilter] = useState<"all" | "mine">("all");
+  const [carFilter, setCarFilter] = useState<string | null>(null);
 
   const canFilter = me?.personId != null;
-  const visible = filter === "mine" && canFilter
-    ? fillups.filter((f) => f.person_id === me!.personId)
-    : fillups;
+  const cars = Array.from(new Set(fillups.map((f) => f.car_short).filter((s): s is string => !!s))).sort();
+
+  const visible = fillups
+    .filter((f) => filter === "mine" && canFilter ? f.person_id === me!.personId : true)
+    .filter((f) => carFilter ? f.car_short === carFilter : true);
 
   if (isLoading) return (
     <div style={{ background: paper.paperDeep, minHeight: "100dvh" }}>
@@ -45,27 +53,50 @@ export default function FuelPage() {
     <div style={{ background: paper.paperDeep, minHeight: "100dvh", paddingBottom: 80 }}>
       <PageHeader title={t("page.fuel")} />
 
-      {canFilter && (
-        <div style={{ display: "flex", gap: 0, padding: "12px 16px 4px", borderBottom: `1px solid ${paper.paperDark}` }}>
-          {(["all", "mine"] as const).map((v) => (
-            <button
-              key={v}
-              onClick={() => setFilter(v)}
-              style={{
-                flex: 1, padding: "7px 0",
-                background: filter === v ? paper.ink : "transparent",
-                color: filter === v ? paper.paper : paper.inkDim,
-                border: `1.5px solid ${paper.ink}`,
-                borderRight: v === "all" ? "none" : undefined,
-                fontFamily: fontMono, fontSize: 10, fontWeight: 700, letterSpacing: 2,
-                textTransform: "uppercase", cursor: "pointer",
-              }}
-            >
-              {v === "all" ? t("filter.all") : t("filter.mine")}
-            </button>
-          ))}
-        </div>
-      )}
+      <div style={{ padding: "10px 16px 8px", borderBottom: `1px solid ${paper.paperDark}`, display: "flex", flexDirection: "column", gap: 6 }}>
+        {canFilter && (
+          <div style={{ display: "flex", gap: 0 }}>
+            {(["mine", "all"] as const).map((v, i, arr) => (
+              <button
+                key={v}
+                onClick={() => setFilter(v)}
+                style={{
+                  padding: "5px 12px",
+                  background: filter === v ? paper.ink : "transparent",
+                  color: filter === v ? paper.paper : paper.inkDim,
+                  border: `1.5px solid ${paper.ink}`,
+                  borderRight: i < arr.length - 1 ? "none" : `1.5px solid ${paper.ink}`,
+                  fontFamily: fontMono, fontSize: 9, fontWeight: 700, letterSpacing: 2,
+                  textTransform: "uppercase", cursor: "pointer",
+                }}
+              >
+                {v === "all" ? t("filter.all") : t("filter.mine")}
+              </button>
+            ))}
+          </div>
+        )}
+        {cars.length > 1 && (
+          <div style={{ display: "flex", gap: 0 }}>
+            {[null, ...cars].map((car, i, arr) => (
+              <button
+                key={car ?? "__all"}
+                onClick={() => setCarFilter(car)}
+                style={{
+                  padding: "5px 12px",
+                  background: carFilter === car ? paper.ink : "transparent",
+                  color: carFilter === car ? paper.paper : paper.inkDim,
+                  border: `1.5px solid ${paper.ink}`,
+                  borderRight: i < arr.length - 1 ? "none" : `1.5px solid ${paper.ink}`,
+                  fontFamily: fontMono, fontSize: 9, fontWeight: 700, letterSpacing: 2,
+                  textTransform: "uppercase", cursor: "pointer",
+                }}
+              >
+                {car ?? t("filter.all")}
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
 
       <GroupedList
         items={visible}
@@ -80,7 +111,7 @@ export default function FuelPage() {
               width: "100%", display: "flex", alignItems: "center", gap: 12,
               padding: "12px 14px", marginBottom: 8,
               background: paper.paper, border: "none", cursor: "pointer", textAlign: "left",
-              borderLeft: `3px solid ${paper.accent}`,
+              borderLeft: `3px solid ${paper.green}`,
               boxShadow: "0 1px 2px rgba(0,0,0,0.04)",
             }}
           >
@@ -92,14 +123,15 @@ export default function FuelPage() {
             </div>
             <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{ fontFamily: fontSerif, fontSize: 15, fontWeight: 600, color: paper.ink, lineHeight: 1.2, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-                ⛽ {f.location ?? t("dashboard.fillup_label")}
+                ⛽ {Number(f.liters).toFixed(1)} L getankt{f.full_tank ? " 🔋" : ""}
               </div>
-              <div style={{ fontFamily: fontMono, fontSize: 10, color: paper.inkDim, letterSpacing: 1, marginTop: 2 }}>
-                {f.person_name} · {f.date} · {Number(f.liters).toFixed(1)} L · €{Number(f.price_per_liter).toFixed(3)}/L
+              <div style={{ fontFamily: fontMono, fontSize: 10, color: paper.inkDim, letterSpacing: 1, marginTop: 2, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                {f.person_name} · {f.date}{f.location ? ` · ${f.location}` : ""}
               </div>
             </div>
             <div style={{ textAlign: "right", flexShrink: 0 }}>
-              <div style={{ fontFamily: fontMono, fontSize: 14, fontWeight: 700, color: paper.accent }}>{fmtMoney(f.amount)}</div>
+              <div style={{ fontFamily: fontMono, fontSize: 14, fontWeight: 700, color: paper.green }}>{fmtMoney(f.amount)}</div>
+              <div style={{ fontFamily: fontMono, fontSize: 10, color: paper.inkMute }}>€{Number(f.price_per_liter).toFixed(3)}/L</div>
             </div>
           </button>
         )}
@@ -113,9 +145,9 @@ export default function FuelPage() {
 
       <Dialog.Root open={adding} onOpenChange={setAdding}>
         <Dialog.Portal>
-          <Dialog.Overlay className="fixed inset-0 bg-black/40 z-40" />
-          <Dialog.Content style={sheetStyle}>
-            <Dialog.Title style={{ padding: "16px 20px 0", fontFamily: fontSerif, fontSize: 20, fontWeight: 700 }}>
+          <Dialog.Overlay style={overlayStyle} />
+          <Dialog.Content style={sheetStyle} aria-describedby={undefined}>
+            <Dialog.Title style={{ position: "absolute", width: 1, height: 1, overflow: "hidden", clip: "rect(0,0,0,0)" }}>
               {t("page.fuel_add")}
             </Dialog.Title>
             <FuelForm
@@ -130,36 +162,22 @@ export default function FuelPage() {
 
       <Dialog.Root open={!!editing} onOpenChange={(o) => !o && setEditing(null)}>
         <Dialog.Portal>
-          <Dialog.Overlay className="fixed inset-0 bg-black/40 z-40" />
-          <Dialog.Content style={sheetStyle}>
-            <Dialog.Title style={{ padding: "16px 20px 0", fontFamily: fontSerif, fontSize: 20, fontWeight: 700 }}>
+          <Dialog.Overlay style={overlayStyle} />
+          <Dialog.Content style={sheetStyle} aria-describedby={undefined}>
+            <Dialog.Title style={{ position: "absolute", width: 1, height: 1, overflow: "hidden", clip: "rect(0,0,0,0)" }}>
               {t("page.fuel_edit")}
             </Dialog.Title>
             {editing && (
-              <>
-                <FuelForm
-                  defaultValues={editing}
-                  onSubmit={(data) => updateF.mutate({ id: editing.id, ...data }, {
-                    onSuccess: () => { setEditing(null); toast.success(t("toast.saved")); },
-                  })}
-                  onCancel={() => setEditing(null)}
-                />
-                <div style={{ padding: "0 16px 24px" }}>
-                  <button
-                    onClick={() => deleteF.mutate(editing.id, {
-                      onSuccess: () => { setEditing(null); toast.success(t("toast.deleted")); },
-                    })}
-                    style={{
-                      width: "100%", padding: "10px", background: "transparent",
-                      border: `1.5px solid ${paper.accent}`, color: paper.accent,
-                      fontFamily: fontMono, fontSize: 10, fontWeight: 700, letterSpacing: 2,
-                      textTransform: "uppercase", cursor: "pointer",
-                    }}
-                  >
-                    {t("action.delete")}
-                  </button>
-                </div>
-              </>
+              <FuelForm
+                defaultValues={editing}
+                onSubmit={(data) => updateF.mutate({ id: editing.id, ...data }, {
+                  onSuccess: () => { setEditing(null); toast.success(t("toast.saved")); },
+                })}
+                onCancel={() => setEditing(null)}
+                onDelete={() => deleteF.mutate(editing.id, {
+                  onSuccess: () => { setEditing(null); toast.success(t("toast.deleted")); },
+                })}
+              />
             )}
           </Dialog.Content>
         </Dialog.Portal>

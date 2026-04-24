@@ -30,6 +30,13 @@ export type FixedCostCategory =
   | "keuring"
   | "diversen";
 
+export type ExpenseCategory =
+  | "onderhoud"
+  | "keuring"
+  | "belasting"
+  | "verzekering"
+  | "diversen";
+
 export interface FixedCostItem {
   id: string;
   category: FixedCostCategory;
@@ -46,7 +53,9 @@ export interface Trip {
   end_odometer: number;
   km: number;
   amount: number;
-  location: string | null;
+  location: string | null;   // human-readable address (shown in list)
+  gps_coords: string | null; // raw "lat, lng" (for map pin)
+  parking: string | null;
   // joined
   person_name?: string;
   car_short?: string;
@@ -60,9 +69,11 @@ export interface FuelFillup {
   amount: number;
   liters: number;
   price_per_liter: number;
+  full_tank: 0 | 1;
   odometer: number | null;
   receipt: string | null;
   location: string | null;
+  gps_coords: string | null;
   // joined
   person_name?: string;
   car_short?: string;
@@ -75,10 +86,15 @@ export interface Expense {
   date: string;
   amount: number;
   description: string | null;
+  category: ExpenseCategory | null;
   // joined
   person_name?: string;
   car_short?: string;
 }
+
+export type ExpenseInput = Pick<Expense, "person_id"|"car_id"|"date"|"amount"|"description"> & {
+  category?: ExpenseCategory | null;
+};
 
 export type ReservationStatus = "pending" | "confirmed" | "rejected";
 
@@ -134,9 +150,8 @@ export type CarInput = Pick<Car, "short"|"name"|"price_per_km"|"brand"|"color"> 
   active?: number;
   expected_km?: number | null;
 };
-export type TripInput = Pick<Trip, "person_id"|"car_id"|"date"|"start_odometer"|"end_odometer"|"location">;
-export type FuelFillupInput = Pick<FuelFillup, "person_id"|"car_id"|"date"|"amount"|"liters"|"odometer"|"receipt"|"location">;
-export type ExpenseInput = Pick<Expense, "person_id"|"car_id"|"date"|"amount"|"description">;
+export type TripInput = Pick<Trip, "person_id"|"car_id"|"date"|"start_odometer"|"end_odometer"|"location"> & { parking?: string | null; gps_coords?: string | null };
+export type FuelFillupInput = Pick<FuelFillup, "person_id"|"car_id"|"date"|"amount"|"liters"|"odometer"|"receipt"|"location"> & { gps_coords?: string | null; full_tank?: 0 | 1 };
 export type ReservationInput = Pick<Reservation, "person_id"|"car_id"|"start_date"|"end_date"> & { note?: string | null; status?: ReservationStatus };
 export type PaymentInput = Pick<Payment, "person_id"|"date"|"amount"|"note">;
 

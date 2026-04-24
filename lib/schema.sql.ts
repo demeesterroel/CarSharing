@@ -104,6 +104,11 @@ export function applySchema(db: Database.Database) {
     "ALTER TABLE cars ADD COLUMN fixed_costs_json TEXT",
     "ALTER TABLE cars ADD COLUMN active INTEGER NOT NULL DEFAULT 1",
     "ALTER TABLE cars ADD COLUMN expected_km INTEGER",
+    "ALTER TABLE trips ADD COLUMN parking TEXT",
+    "ALTER TABLE trips ADD COLUMN gps_coords TEXT",
+    "ALTER TABLE fuel_fillups ADD COLUMN gps_coords TEXT",
+    "ALTER TABLE fuel_fillups ADD COLUMN full_tank INTEGER NOT NULL DEFAULT 0",
+    "ALTER TABLE expenses ADD COLUMN category TEXT",
   ];
   for (const sql of migrations) {
     try { db.exec(sql); } catch { /* column already exists */ }

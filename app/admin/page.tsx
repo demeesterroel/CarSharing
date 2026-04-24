@@ -1405,7 +1405,8 @@ function Settlement({ year: currentYear }: { year: number }) {
   const t = useT();
   const [year, setYear] = useState(currentYear);
   const { data } = useAdminSummary(year);
-  const rows = data?.settlement ?? [];
+  const allRows = data?.settlement ?? [];
+  const rows = allRows.filter((r) => r.trip_count > 0 || r.fuel_count > 0 || r.expense_amount !== 0);
   const totalCredits = rows.filter((r) => r.balance > 0).reduce((s, r) => s + r.balance, 0);
   const totalDebits  = rows.filter((r) => r.balance < 0).reduce((s, r) => s + r.balance, 0);
 
@@ -1487,8 +1488,9 @@ function Settlement({ year: currentYear }: { year: number }) {
 }
 
 // ── 7. OWNER PAYOUT v2 ────────────────────────────────────────
-function OwnerPayout({ year }: { year: number }) {
+function OwnerPayout({ year: currentYear }: { year: number }) {
   const t = useT();
+  const [year, setYear] = useState(currentYear);
   const { data } = useAdminSummary(year);
   const cars = data?.carPnL ?? [];
 
@@ -1500,6 +1502,35 @@ function OwnerPayout({ year }: { year: number }) {
 
   return (
     <div style={{ padding: "16px" }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 0, marginBottom: 12 }}>
+        <button
+          onClick={() => setYear((y) => y - 1)}
+          style={{
+            padding: "6px 14px", background: "transparent", border: `1.5px solid ${paper.ink}`,
+            borderRight: "none", fontFamily: fontMono, fontSize: 10, fontWeight: 700,
+            color: paper.ink, cursor: "pointer", letterSpacing: 1,
+          }}>
+          ← {year - 1}
+        </button>
+        <div style={{
+          padding: "6px 18px", background: paper.ink, color: paper.paper,
+          fontFamily: fontMono, fontSize: 10, fontWeight: 700, letterSpacing: 2,
+          border: `1.5px solid ${paper.ink}`,
+        }}>
+          {year}
+        </div>
+        <button
+          onClick={() => setYear((y) => y + 1)}
+          disabled={year >= currentYear}
+          style={{
+            padding: "6px 14px", background: "transparent", border: `1.5px solid ${paper.ink}`,
+            borderLeft: "none", fontFamily: fontMono, fontSize: 10, fontWeight: 700,
+            color: year >= currentYear ? paper.inkMute : paper.ink,
+            cursor: year >= currentYear ? "default" : "pointer", letterSpacing: 1,
+          }}>
+          {year + 1} →
+        </button>
+      </div>
       <div style={{ fontFamily: fontMono, fontSize: 9, color: paper.inkDim, letterSpacing: 2, textTransform: "uppercase", marginBottom: 12 }}>
         {t("admin.payout_subtitle")}
       </div>

@@ -12,10 +12,15 @@ import type { Trip } from "@/types";
 import { paper, fontMono, fontSerif, fmtMoney, fmtYearMonth } from "@/lib/paper-theme";
 import { useT } from "@/components/locale-provider";
 
+const overlayStyle: React.CSSProperties = {
+  position: "fixed", inset: 0, background: "rgba(0,0,0,0.45)", zIndex: 49,
+};
 const sheetStyle: React.CSSProperties = {
-  position: "fixed", left: 0, right: 0, bottom: 0, background: paper.paper,
-  borderRadius: "16px 16px 0 0", zIndex: 50, maxHeight: "95vh",
-  overflowY: "auto", maxWidth: 480, margin: "0 auto",
+  position: "fixed", bottom: 0,
+  left: "50%", transform: "translateX(-50%)",
+  width: "min(100%, 480px)",
+  maxHeight: "92dvh", borderRadius: "14px 14px 0 0",
+  background: paper.paperDeep, zIndex: 50, overflowY: "auto",
 };
 
 export default function TripsPage() {
@@ -28,11 +33,14 @@ export default function TripsPage() {
   const [adding, setAdding] = useState(false);
   const [editing, setEditing] = useState<Trip | null>(null);
   const [filter, setFilter] = useState<"all" | "mine">("all");
+  const [carFilter, setCarFilter] = useState<string | null>(null);
 
   const canFilter = me?.personId != null;
-  const visible = filter === "mine" && canFilter
-    ? trips.filter((tr) => tr.person_id === me!.personId)
-    : trips;
+  const cars = Array.from(new Set(trips.map((tr) => tr.car_short).filter((s): s is string => !!s))).sort();
+
+  const visible = trips
+    .filter((tr) => filter === "mine" && canFilter ? tr.person_id === me!.personId : true)
+    .filter((tr) => carFilter ? tr.car_short === carFilter : true);
 
   if (isLoading) return (
     <div style={{ background: paper.paperDeep, minHeight: "100dvh" }}>
@@ -45,27 +53,52 @@ export default function TripsPage() {
     <div style={{ background: paper.paperDeep, minHeight: "100dvh", paddingBottom: 80 }}>
       <PageHeader title={t("page.trips")} />
 
-      {canFilter && (
-        <div style={{ display: "flex", gap: 0, padding: "12px 16px 4px", borderBottom: `1px solid ${paper.paperDark}` }}>
-          {(["all", "mine"] as const).map((v) => (
-            <button
-              key={v}
-              onClick={() => setFilter(v)}
-              style={{
-                flex: 1, padding: "7px 0",
-                background: filter === v ? paper.ink : "transparent",
-                color: filter === v ? paper.paper : paper.inkDim,
-                border: `1.5px solid ${paper.ink}`,
-                borderRight: v === "all" ? "none" : undefined,
-                fontFamily: fontMono, fontSize: 10, fontWeight: 700, letterSpacing: 2,
-                textTransform: "uppercase", cursor: "pointer",
-              }}
-            >
-              {v === "all" ? t("filter.all") : t("filter.mine")}
-            </button>
-          ))}
-        </div>
-      )}
+      <div style={{ padding: "10px 16px 8px", borderBottom: `1px solid ${paper.paperDark}`, display: "flex", flexDirection: "column", gap: 6 }}>
+        {/* Mine / All row */}
+        {canFilter && (
+          <div style={{ display: "flex", gap: 0 }}>
+            {(["mine", "all"] as const).map((v, i, arr) => (
+              <button
+                key={v}
+                onClick={() => setFilter(v)}
+                style={{
+                  padding: "5px 12px",
+                  background: filter === v ? paper.ink : "transparent",
+                  color: filter === v ? paper.paper : paper.inkDim,
+                  border: `1.5px solid ${paper.ink}`,
+                  borderRight: i < arr.length - 1 ? "none" : `1.5px solid ${paper.ink}`,
+                  fontFamily: fontMono, fontSize: 9, fontWeight: 700, letterSpacing: 2,
+                  textTransform: "uppercase", cursor: "pointer",
+                }}
+              >
+                {v === "all" ? t("filter.all") : t("filter.mine")}
+              </button>
+            ))}
+          </div>
+        )}
+        {/* Car filter row */}
+        {cars.length > 1 && (
+          <div style={{ display: "flex", gap: 0 }}>
+            {[null, ...cars].map((car, i, arr) => (
+              <button
+                key={car ?? "__all"}
+                onClick={() => setCarFilter(car)}
+                style={{
+                  padding: "5px 12px",
+                  background: carFilter === car ? paper.ink : "transparent",
+                  color: carFilter === car ? paper.paper : paper.inkDim,
+                  border: `1.5px solid ${paper.ink}`,
+                  borderRight: i < arr.length - 1 ? "none" : `1.5px solid ${paper.ink}`,
+                  fontFamily: fontMono, fontSize: 9, fontWeight: 700, letterSpacing: 2,
+                  textTransform: "uppercase", cursor: "pointer",
+                }}
+              >
+                {car ?? t("filter.all")}
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
 
       <GroupedList
         items={visible}
@@ -81,7 +114,7 @@ export default function TripsPage() {
               width: "100%", display: "flex", alignItems: "center", gap: 12,
               padding: "12px 14px", marginBottom: 8,
               background: paper.paper, border: "none", cursor: "pointer", textAlign: "left",
-              borderLeft: `3px solid ${paper.ink}`,
+              borderLeft: `3px solid ${paper.accent}`,
               boxShadow: "0 1px 2px rgba(0,0,0,0.04)",
             }}
           >
@@ -92,15 +125,20 @@ export default function TripsPage() {
               {trip.car_short}
             </div>
             <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ fontFamily: fontSerif, fontSize: 15, fontWeight: 600, color: paper.ink, lineHeight: 1.2, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-                {trip.location ?? "—"}
+              <div style={{
+                fontFamily: fontSerif, fontSize: 15, fontWeight: 600, lineHeight: 1.2,
+                whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis",
+                color: (!trip.location && !trip.gps_coords && trip.parking) ? paper.inkDim : paper.ink,
+                fontStyle: (!trip.location && !trip.gps_coords && trip.parking) ? "italic" : "normal",
+              }}>
+                {trip.location ?? trip.gps_coords ?? trip.parking ?? "—"}
               </div>
               <div style={{ fontFamily: fontMono, fontSize: 10, color: paper.inkDim, letterSpacing: 1, marginTop: 2 }}>
                 {trip.person_name} · {trip.date} · {trip.start_odometer.toLocaleString("nl-BE")} → {trip.end_odometer.toLocaleString("nl-BE")}
               </div>
             </div>
             <div style={{ textAlign: "right", flexShrink: 0 }}>
-              <div style={{ fontFamily: fontMono, fontSize: 14, fontWeight: 700, color: paper.ink }}>{fmtMoney(trip.amount)}</div>
+              <div style={{ fontFamily: fontMono, fontSize: 14, fontWeight: 700, color: paper.accent }}>{fmtMoney(trip.amount)}</div>
               <div style={{ fontFamily: fontMono, fontSize: 10, color: paper.inkDim }}>{trip.km} km</div>
             </div>
           </button>
@@ -115,9 +153,9 @@ export default function TripsPage() {
 
       <Dialog.Root open={adding} onOpenChange={setAdding}>
         <Dialog.Portal>
-          <Dialog.Overlay className="fixed inset-0 bg-black/40 z-40" />
-          <Dialog.Content style={sheetStyle}>
-            <Dialog.Title style={{ padding: "16px 20px 0", fontFamily: fontSerif, fontSize: 20, fontWeight: 700 }}>
+          <Dialog.Overlay style={overlayStyle} />
+          <Dialog.Content style={sheetStyle} aria-describedby={undefined}>
+            <Dialog.Title style={{ position: "absolute", width: 1, height: 1, overflow: "hidden", clip: "rect(0,0,0,0)" }}>
               {t("page.trip_add")}
             </Dialog.Title>
             <TripForm
@@ -133,38 +171,24 @@ export default function TripsPage() {
 
       <Dialog.Root open={!!editing} onOpenChange={(o) => !o && setEditing(null)}>
         <Dialog.Portal>
-          <Dialog.Overlay className="fixed inset-0 bg-black/40 z-40" />
-          <Dialog.Content style={sheetStyle}>
-            <Dialog.Title style={{ padding: "16px 20px 0", fontFamily: fontSerif, fontSize: 20, fontWeight: 700 }}>
+          <Dialog.Overlay style={overlayStyle} />
+          <Dialog.Content style={sheetStyle} aria-describedby={undefined}>
+            <Dialog.Title style={{ position: "absolute", width: 1, height: 1, overflow: "hidden", clip: "rect(0,0,0,0)" }}>
               {t("page.trip_edit")}
             </Dialog.Title>
             {editing && (
-              <>
-                <TripForm
-                  defaultValues={editing}
-                  onSubmit={(data) => updateTrip.mutate({ id: editing.id, ...data } as any, {
-                    onSuccess: () => { setEditing(null); toast.success(t("toast.saved")); },
-                    onError: (e) => toast.error(e.message),
-                  })}
-                  onCancel={() => setEditing(null)}
-                />
-                <div style={{ padding: "0 16px 24px" }}>
-                  <button
-                    onClick={() => deleteTrip.mutate(editing.id, {
-                      onSuccess: () => { setEditing(null); toast.success(t("toast.trip_deleted")); },
-                      onError: (e) => toast.error(e.message),
-                    })}
-                    style={{
-                      width: "100%", padding: "10px", background: "transparent",
-                      border: `1.5px solid ${paper.accent}`, color: paper.accent,
-                      fontFamily: fontMono, fontSize: 10, fontWeight: 700, letterSpacing: 2,
-                      textTransform: "uppercase", cursor: "pointer",
-                    }}
-                  >
-                    {t("action.delete")}
-                  </button>
-                </div>
-              </>
+              <TripForm
+                defaultValues={editing}
+                onSubmit={(data) => updateTrip.mutate({ id: editing.id, ...data } as any, {
+                  onSuccess: () => { setEditing(null); toast.success(t("toast.saved")); },
+                  onError: (e) => toast.error(e.message),
+                })}
+                onCancel={() => setEditing(null)}
+                onDelete={() => deleteTrip.mutate(editing.id, {
+                  onSuccess: () => { setEditing(null); toast.success(t("toast.trip_deleted")); },
+                  onError: (e) => toast.error(e.message),
+                })}
+              />
             )}
           </Dialog.Content>
         </Dialog.Portal>

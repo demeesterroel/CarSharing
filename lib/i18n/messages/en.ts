@@ -107,6 +107,7 @@ export const en: Messages = {
   "form.conflict_warning": "A REQUEST ALREADY EXISTS FOR THIS PERIOD",
   "form.conflict_note": "You can still submit — the owner decides.",
   "action.confirm_reservation": "CONFIRM RESERVATION",
+  "action.request_reservation": "REQUEST RESERVATION",
   "form.log_trip": "LOG A TRIP",
   "form.fuel_receipt": "FUEL RECEIPT",
   "form.extra_cost": "EXTRA COST",

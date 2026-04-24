@@ -7,23 +7,41 @@ import { useT, useLocale } from "@/components/locale-provider";
 const DAYS_NL = ["zo", "ma", "di", "wo", "do", "vr", "za"];
 const DAYS_EN = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
 
+function addDays(date: string, n: number): string {
+  const d = new Date(`${date}T00:00:00Z`);
+  d.setUTCDate(d.getUTCDate() + n);
+  return d.toISOString().slice(0, 10);
+}
+
+function mondayOf(iso: string): string {
+  const d = new Date(`${iso}T00:00:00Z`);
+  const dow = d.getUTCDay();
+  d.setUTCDate(d.getUTCDate() + (dow === 0 ? -6 : 1 - dow));
+  return d.toISOString().slice(0, 10);
+}
+
 interface Props {
-  days: string[];
   reservations: Reservation[];
   carId?: number;
   excludeId?: number;
   from: string | null;
   to: string | null;
   onRangePick: (from: string, to: string) => void;
+  initialOffset?: number;
 }
 
-export function PickCalendar({ days, reservations, carId, excludeId, from, to, onRangePick }: Props) {
+export function PickCalendar({ reservations, carId, excludeId, from, to, onRangePick, initialOffset = 0 }: Props) {
   const t = useT();
   const { locale } = useLocale();
   const dayNames = locale === "nl" ? DAYS_NL : DAYS_EN;
   const [pickFrom, setPickFrom] = useState<string | null>(null);
+  const [weekOffset, setWeekOffset] = useState(initialOffset);
 
   useEffect(() => { setPickFrom(null); }, [from, to]);
+
+  const today = new Date().toISOString().slice(0, 10);
+  const stripStart = addDays(mondayOf(today), weekOffset * 7);
+  const days = Array.from({ length: 14 }, (_, i) => addDays(stripStart, i));
 
   function getReservation(day: string): Reservation | undefined {
     return reservations.find(
@@ -45,8 +63,41 @@ export function PickCalendar({ days, reservations, carId, excludeId, from, to, o
   const rows: string[][] = [];
   for (let i = 0; i < days.length; i += 7) rows.push(days.slice(i, i + 7));
 
+  const navBtn: React.CSSProperties = {
+    fontFamily: fontMono, fontSize: 14, fontWeight: 700,
+    background: "transparent", border: `1px solid ${paper.paperDark}`,
+    color: paper.inkDim, cursor: "pointer", padding: "0 8px",
+    lineHeight: "28px", flexShrink: 0,
+  };
+
   return (
     <div>
+      {/* Nav bar: status message left, ‹ › right — always same height */}
+      <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 8 }}>
+        <div style={{
+          flex: 1, padding: "4px 10px",
+          border: `1.5px dashed ${paper.accent}`,
+          background: paper.paperDeep,
+          fontFamily: fontMono, fontSize: 10, letterSpacing: 1, color: paper.ink,
+          display: "flex", justifyContent: "space-between", alignItems: "center",
+          minHeight: 28,
+          visibility: pickFrom ? "visible" : "hidden",
+        }}>
+          <span>● {pickFrom && t("calendar.pick_start", { date: fmtDate(pickFrom, locale as "nl" | "en") })}</span>
+          <button
+            type="button"
+            onClick={() => setPickFrom(null)}
+            style={{
+              border: "none", background: "transparent",
+              fontFamily: fontMono, fontSize: 12, cursor: "pointer",
+              color: paper.inkDim, lineHeight: 1, padding: 0,
+            }}
+          >✕</button>
+        </div>
+        <button type="button" onClick={() => setWeekOffset((o) => o - 1)} style={navBtn}>‹</button>
+        <button type="button" onClick={() => setWeekOffset((o) => o + 1)} style={navBtn}>›</button>
+      </div>
+
       {rows.map((row, rowIdx) => (
         <div key={rowIdx} style={{
           display: "grid", gridTemplateColumns: "repeat(7, 1fr)",
@@ -74,7 +125,9 @@ export function PickCalendar({ days, reservations, carId, excludeId, from, to, o
                 bg = paper.ink; fg = paper.paper;
               }
             } else if (inRange) {
-              bg = paper.ink; fg = paper.paper;
+              bg = `repeating-linear-gradient(45deg, ${paper.paperDeep} 0 4px, ${paper.paperDark} 4px 6px)`;
+              border = `1.5px dashed ${paper.blue}`;
+              fg = paper.ink;
             }
 
             const d = new Date(`${day}T00:00:00Z`);
@@ -110,26 +163,6 @@ export function PickCalendar({ days, reservations, carId, excludeId, from, to, o
           })}
         </div>
       ))}
-
-      {pickFrom && (
-        <div style={{
-          marginTop: 8, padding: "7px 10px",
-          background: paper.paperDeep, border: `1.5px dashed ${paper.accent}`,
-          fontFamily: fontMono, fontSize: 10, letterSpacing: 1, color: paper.ink,
-          display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8,
-        }}>
-          <span>● {t("calendar.pick_start", { date: fmtDate(pickFrom, locale as "nl" | "en") })}</span>
-          <button
-            type="button"
-            onClick={() => setPickFrom(null)}
-            style={{
-              border: "none", background: "transparent",
-              fontFamily: fontMono, fontSize: 12, cursor: "pointer",
-              color: paper.inkDim, lineHeight: 1, padding: 0,
-            }}
-          >✕</button>
-        </div>
-      )}
     </div>
   );
 }

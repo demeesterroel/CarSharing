@@ -105,6 +105,7 @@ export const nl = {
   "form.conflict_warning": "AL EEN AANVRAAG VOOR DEZE PERIODE",
   "form.conflict_note": "Je kunt nog steeds indienen — de eigenaar beslist.",
   "action.confirm_reservation": "RESERVERING BEVESTIGEN",
+  "action.request_reservation": "RESERVERING AANVRAGEN",
   "form.log_trip": "RIT LOGGEN",
   "form.fuel_receipt": "TANKBEURT",
   "form.extra_cost": "EXTRA KOST",

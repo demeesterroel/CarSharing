@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -32,12 +32,6 @@ interface Props {
   defaultValues?: Partial<Reservation>;
   onSubmit: (data: ReservationInput) => void;
   onCancel: () => void;
-}
-
-function addDays(date: string, n: number): string {
-  const d = new Date(`${date}T00:00:00Z`);
-  d.setUTCDate(d.getUTCDate() + n);
-  return d.toISOString().slice(0, 10);
 }
 
 function diffDays(start: string, end: string): number {
@@ -76,7 +70,12 @@ export function ReservationForm({ defaultValues, onSubmit, onCancel }: Props) {
     }
   }, [me, defaultValues, setValue, getValues]);
 
-  const [weekOffset, setWeekOffset] = useState(0);
+  const calendarInitOffset = (() => {
+    if (!defaultValues?.start_date) return 0;
+    const ms = new Date(`${defaultValues.start_date}T00:00:00Z`).getTime()
+              - new Date(`${today}T00:00:00Z`).getTime();
+    return Math.max(0, Math.floor(ms / (7 * 86400000)));
+  })();
 
   const [startDate, endDate, carId, personId] = watch(["start_date", "end_date", "car_id", "person_id"]);
   const person = people.find((p) => p.id === personId);
@@ -89,10 +88,6 @@ export function ReservationForm({ defaultValues, onSubmit, onCancel }: Props) {
     if (defaultValues?.id && r.id === defaultValues.id) return false;
     return r.start_date <= endDate && r.end_date >= startDate;
   });
-
-  // 14 days (2 rows × 7) centered on startDate, shifted by weekOffset
-  const stripStart = addDays(startDate || today, weekOffset * 7 - 3);
-  const stripDays = Array.from({ length: 14 }, (_, i) => addDays(stripStart, i));
 
   function handleFormSubmit(data: FormData) {
     onSubmit({
@@ -119,15 +114,13 @@ export function ReservationForm({ defaultValues, onSubmit, onCancel }: Props) {
           fontFamily: fontMono, fontSize: 16, fontWeight: 700, background: "transparent",
           border: "none", cursor: "pointer", color: paper.ink, padding: "0 4px", lineHeight: 1,
         }}>×</button>
-        <div style={{ fontFamily: fontMono, fontSize: 10, fontWeight: 700, letterSpacing: 3, color: paper.inkDim, textTransform: "uppercase" }}>
-          🗓 {t("page.reservation_request")}
-        </div>
+        <div />
         <button type="submit" style={{
           fontFamily: fontMono, fontSize: 9, fontWeight: 700, letterSpacing: 2,
-          textTransform: "uppercase", background: paper.blue, color: "#fff",
+          textTransform: "uppercase", background: isAdmin ? paper.blue : paper.accent, color: "#fff",
           border: "none", padding: "8px 14px", cursor: "pointer",
         }}>
-          {t("action.confirm_reservation")}
+          {isAdmin ? t("action.confirm_reservation") : t("action.request_reservation")}
         </button>
       </div>
 
@@ -202,20 +195,8 @@ export function ReservationForm({ defaultValues, onSubmit, onCancel }: Props) {
 
         {/* Calendar grid + navigation */}
         <div style={{ padding: "10px 14px 12px" }}>
-          <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 8, gap: 4 }}>
-            <button type="button" onClick={() => setWeekOffset((o) => o - 1)} style={{
-              fontFamily: fontMono, fontSize: 14, fontWeight: 700,
-              background: "transparent", border: `1px solid ${paper.paperDark}`,
-              color: paper.inkDim, cursor: "pointer", padding: "0 8px", lineHeight: "22px",
-            }}>‹</button>
-            <button type="button" onClick={() => setWeekOffset((o) => o + 1)} style={{
-              fontFamily: fontMono, fontSize: 14, fontWeight: 700,
-              background: "transparent", border: `1px solid ${paper.paperDark}`,
-              color: paper.inkDim, cursor: "pointer", padding: "0 8px", lineHeight: "22px",
-            }}>›</button>
-          </div>
           <PickCalendar
-            days={stripDays}
+            initialOffset={calendarInitOffset}
             reservations={reservations}
             carId={carId}
             excludeId={defaultValues?.id}

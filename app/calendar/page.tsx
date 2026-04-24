@@ -15,17 +15,6 @@ import { paper, fontMono, fontSerif } from "@/lib/paper-theme";
 import { useT } from "@/components/locale-provider";
 import { PickCalendar } from "@/components/pick-calendar";
 
-// ── helpers ───────────────────────────────────────────────────
-function toIso(d: Date) {
-  return d.toISOString().slice(0, 10);
-}
-
-function addDays(iso: string, n: number) {
-  const d = new Date(`${iso}T00:00:00Z`);
-  d.setUTCDate(d.getUTCDate() + n);
-  return toIso(d);
-}
-
 // ── Bottom Sheet ──────────────────────────────────────────────
 function BottomSheet({
   open,
@@ -69,12 +58,10 @@ function BottomSheet({
 function CarTimeline({
   car,
   reservations,
-  days,
   onPickDone,
 }: {
   car: Car;
   reservations: Reservation[];
-  days: string[];
   onPickDone: (carId: number, from: string, to: string) => void;
 }) {
   return (
@@ -95,7 +82,6 @@ function CarTimeline({
       </div>
 
       <PickCalendar
-        days={days}
         reservations={reservations}
         carId={car.id}
         from={null}
@@ -169,11 +155,7 @@ function ResRow({
 // ── Main page ─────────────────────────────────────────────────
 export default function CalendarPage() {
   const t = useT();
-  const today = toIso(new Date());
-  const days = useMemo(
-    () => Array.from({ length: 14 }, (_, i) => addDays(today, i)),
-    [today]
-  );
+  const today = new Date().toISOString().slice(0, 10);
 
   const { data: reservations = [], isLoading } = useReservations();
   const { data: cars = [] } = useCars();
@@ -237,7 +219,6 @@ export default function CalendarPage() {
             key={car.id}
             car={car}
             reservations={reservations}
-            days={days}
             onPickDone={handlePickDone}
           />
         ))}

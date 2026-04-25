@@ -25,12 +25,12 @@ export const metadata: Metadata = {
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "Autodelen",
+    title: "AutoDelen",
   },
 };
 
 export const viewport: Viewport = {
-  themeColor: "#f5f0e6",
+  themeColor: "#1a1a1a",
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,
@@ -41,7 +41,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="nl" className={`${fraunces.variable} ${inter.variable}`}>
       <head>
-        <link rel="apple-touch-icon" href="/icons/icon-192.png" />
+        <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
         <link

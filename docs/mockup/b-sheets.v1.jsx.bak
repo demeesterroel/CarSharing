@@ -1,0 +1,588 @@
+// Tearable sheet + Trip + Fuel + Expense + Reservation forms
+// All forms share the SAME flow order: Wagen → Naam → Datum → (specific fields)
+
+function TearableSheet({ open, onClose, onSaved, children, lang, submitLabel, disabled }) {
+  const [dragY, setDragY] = React.useState(0);
+  const [torn, setTorn] = React.useState(false);
+  const startY = React.useRef(null);
+  const scrollRef = React.useRef(null);
+
+  React.useEffect(() => {
+    if (!open) { setDragY(0); setTorn(false); }
+  }, [open]);
+
+  const onStart = (e) => {
+    if (torn || disabled) return;
+    const el = scrollRef.current;
+    if (el && el.scrollTop > 0) return; // only drag from top
+    startY.current = e.clientY ?? e.touches?.[0]?.clientY;
+  };
+  const onMove = (e) => {
+    if (startY.current == null || torn) return;
+    const y = e.clientY ?? e.touches?.[0]?.clientY;
+    setDragY(Math.max(0, y - startY.current));
+  };
+  const onEnd = () => {
+    if (startY.current == null) return;
+    startY.current = null;
+    if (dragY > 120) tearOff();
+    else setDragY(0);
+  };
+  const tearOff = () => {
+    if (disabled) return;
+    setTorn(true);
+    setTimeout(() => { onSaved?.(); setTimeout(onClose, 420); }, 50);
+  };
+
+  if (!open) return null;
+  const progress = Math.min(dragY / 120, 1);
+
+  return (
+    <div style={{
+      position: 'fixed', inset: 0, zIndex: 60,
+      background: 'rgba(26,26,26,0.35)', backdropFilter: 'blur(3px)',
+      overflow: 'hidden',
+    }}>
+      <button onClick={onClose} style={{
+        position: 'absolute', top: 14, left: 14, zIndex: 2,
+        width: 36, height: 36,
+        background: paperB.paper, color: paperB.ink,
+        fontFamily: paperB.fontMono, fontSize: 18, fontWeight: 700,
+        cursor: 'pointer', border: `1.5px solid ${paperB.ink}`,
+      }}>×</button>
+
+      <div style={{
+        position: 'absolute', top: 0, left: 0, right: 0, zIndex: 1,
+        height: 18, background: paperB.paperDark,
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        fontFamily: paperB.fontMono, fontSize: 8, letterSpacing: 3,
+        color: paperB.inkDim,
+      }}>{'• • • • • • • • • • • • • • • • • • • • • • • • • • • • •'}</div>
+
+      <div
+        ref={scrollRef}
+        onMouseDown={onStart} onMouseMove={onMove} onMouseUp={onEnd} onMouseLeave={onEnd}
+        onTouchStart={onStart} onTouchMove={onMove} onTouchEnd={onEnd}
+        style={{
+          position: 'absolute', top: 18, left: 0, right: 0, bottom: 0,
+          overflow: 'auto',
+          transform: torn ? 'translateY(110%) rotate(2deg)' : `translateY(${dragY}px)`,
+          transition: torn ? 'transform 0.42s cubic-bezier(0.5,0,0.8,1)' : (dragY === 0 ? 'transform 0.25s' : 'none'),
+        }}>
+        {children}
+        <div style={{
+          padding: '12px 20px 16px', textAlign: 'center',
+          fontFamily: paperB.fontMono, fontSize: 10, letterSpacing: 3, textTransform: 'uppercase',
+          color: progress > 0.8 ? paperB.accent : paperB.inkDim,
+          fontWeight: progress > 0.8 ? 700 : 500,
+        }}>{progress > 0.9 ? strings[lang].laatLos : strings[lang].veegOmlaag}</div>
+
+        <div style={{ padding: '0 16px 40px' }}>
+          <button onClick={tearOff} disabled={disabled} style={{
+            width: '100%', padding: '16px',
+            background: disabled ? paperB.inkMute : paperB.ink,
+            color: paperB.paper,
+            fontFamily: paperB.fontMono, fontSize: 13, fontWeight: 700,
+            letterSpacing: 3, textTransform: 'uppercase',
+            border: 'none', cursor: disabled ? 'not-allowed' : 'pointer',
+          }}>{submitLabel} →</button>
+        </div>
+      </div>
+
+      {torn && (
+        <div style={{
+          position: 'absolute', top: '40%', left: '50%',
+          transform: 'translate(-50%, -50%) rotate(-8deg)', zIndex: 3,
+          animation: 'stampDrop 0.35s ease-out',
+        }}>
+          <div style={{
+            padding: '14px 26px', border: `3.5px solid ${paperB.green}`,
+            color: paperB.green, fontFamily: paperB.fontMono,
+            fontSize: 18, fontWeight: 700, letterSpacing: 4, textTransform: 'uppercase',
+            background: 'rgba(245, 240, 230, 0.92)',
+          }}>{strings[lang].bewaard}</div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// Reusable top-of-form: car + driver + date
+function UnifiedTop({ car, setCar, driver, setDriver, date, setDate, lang, title }) {
+  const t = strings[lang];
+  const todayStr = new Date().toISOString().slice(0, 10);
+  return (
+    <>
+      <div style={{ textAlign: 'center', marginBottom: 6 }}>
+        <div style={{
+          fontFamily: paperB.fontSerif, fontSize: 28, fontWeight: 700,
+          color: paperB.ink, letterSpacing: -0.5,
+        }}>{title}</div>
+        <div style={{
+          fontFamily: paperB.fontMono, fontSize: 10, color: paperB.inkDim,
+          letterSpacing: 2, textTransform: 'uppercase', marginTop: 2,
+        }}>{t.coop}</div>
+      </div>
+      <Perf/>
+
+      {/* 1. Car */}
+      <div style={{
+        fontFamily: paperB.fontMono, fontSize: 10, color: paperB.inkDim,
+        letterSpacing: 1.5, textTransform: 'uppercase', marginBottom: 8,
+      }}>① {t.wagen}</div>
+      <CarPicker value={car} onChange={setCar}/>
+
+      {/* 2. Driver */}
+      <div style={{
+        fontFamily: paperB.fontMono, fontSize: 10, color: paperB.inkDim,
+        letterSpacing: 1.5, textTransform: 'uppercase', marginBottom: 8, marginTop: 16,
+      }}>② {t.bestuurder}</div>
+      <PersonPicker value={driver} onChange={setDriver}/>
+      <div style={{
+        fontFamily: paperB.fontMono, fontSize: 9, color: paperB.inkMute,
+        marginTop: 6, letterSpacing: 0.5,
+      }}>
+        <span style={{ color: paperB.accent }}>★</span> {lang === 'nl' ? 'krijgt kortingen' : 'gets discount'}
+      </div>
+
+      {/* 3. Date */}
+      <div style={{ marginTop: 14 }}>
+        <div style={{
+          fontFamily: paperB.fontMono, fontSize: 10, color: paperB.inkDim,
+          letterSpacing: 1.5, textTransform: 'uppercase', marginBottom: 2,
+        }}>③ {t.datum}</div>
+        <input type="date" value={date} onChange={e => setDate(e.target.value)} style={{
+          fontFamily: paperB.fontSerif, fontSize: 22, color: paperB.ink, fontWeight: 500,
+          background: 'transparent', border: 'none',
+          borderBottom: `1.5px solid ${paperB.ink}`, paddingBottom: 4, width: '100%',
+          outline: 'none',
+        }}/>
+      </div>
+
+      <Perf margin="18px 0 14px"/>
+    </>
+  );
+}
+
+// ═══════════ Trip sheet ═══════════
+function TripSheet({ open, onClose, onSaved, lang }) {
+  const t = strings[lang];
+  const [car, setCar] = React.useState('JF');
+  const [driver, setDriver] = React.useState('Roeland');
+  const [date, setDate] = React.useState('2026-04-21');
+  const [startKm, setStartKm] = React.useState('266357');
+  const [eindKm, setEindKm] = React.useState('266485');
+  const [parking, setParking] = React.useState('Antwerpen — Zurenborg');
+
+  const km = Math.max(0, (Number(eindKm) || 0) - (Number(startKm) || 0));
+  const carObj = carByShort[car];
+  const personObj = personByName[driver];
+  const bd = calcTripBreakdown(km, personObj, carObj);
+
+  React.useEffect(() => {
+    if (open) {
+      setCar('JF'); setDriver('Roeland'); setDate('2026-04-21');
+      setStartKm('266357'); setEindKm('266485'); setParking('Antwerpen — Zurenborg');
+    }
+  }, [open]);
+
+  return (
+    <TearableSheet open={open} onClose={onClose} onSaved={onSaved} lang={lang}
+      submitLabel={t.ritOpslaan}>
+      <div style={{ padding: '16px 16px 0' }}>
+        <div style={{
+          background: paperB.paper, padding: '24px 20px',
+          boxShadow: '0 2px 8px rgba(0,0,0,0.08), 0 10px 30px rgba(0,0,0,0.06)',
+        }}>
+          <UnifiedTop car={car} setCar={setCar} driver={driver} setDriver={setDriver}
+            date={date} setDate={setDate} lang={lang}
+            title={lang === 'nl' ? 'Nieuwe rit' : 'New trip'}/>
+
+          {/* 4. Odometer */}
+          <div style={{ display: 'flex', gap: 16 }}>
+            <div style={{ flex: 1 }}>
+              <InputLineB label={'④ ' + t.startKm} value={startKm} onChange={setStartKm}/>
+            </div>
+            <div style={{ flex: 1 }}>
+              <InputLineB label={'⑤ ' + t.eindKm} value={eindKm} onChange={setEindKm}/>
+            </div>
+          </div>
+
+          {/* 5. Parking location (GPS auto-filled) */}
+          <div style={{ marginTop: 4 }}>
+            <InputLineB
+              label={'⑥ ' + t.parkingLoc}
+              value={parking} onChange={setParking}
+            />
+            <div style={{
+              fontFamily: paperB.fontMono, fontSize: 9, color: paperB.green,
+              marginTop: -4, letterSpacing: 1, textTransform: 'uppercase',
+            }}>◉ {t.gpsAuto} · 51.200, 4.402</div>
+          </div>
+
+          <Perf/>
+
+          {/* Breakdown */}
+          <ReceiptRow label={t.afstand} value={`${km} km`}/>
+          <ReceiptRow label={t.tarief}  value={`€ ${carObj.prijs.toFixed(2).replace('.', ',')} / km`}/>
+
+          {bd.baseKm > 0 && (
+            <ReceiptRow
+              label={`${t.tariefBase} · ${bd.baseKm} km${personObj.k > 0 ? ` · −${(personObj.k*100)|0}%` : ''}`}
+              value={fmtMoney(bd.baseCost)}
+            />
+          )}
+          {bd.extraKm > 0 && (
+            <ReceiptRow
+              label={`${t.lange} · ${bd.extraKm} km${personObj.kl > 0 ? ` · −${(personObj.kl*100)|0}%` : ''}`}
+              value={fmtMoney(bd.extraCost)}
+              color={paperB.amber}
+            />
+          )}
+          {bd.discount > 0 && (
+            <ReceiptRow
+              label={lang === 'nl' ? 'Totale korting' : 'Total discount'}
+              value={`− ${fmtMoney(bd.discount)}`}
+              color={paperB.green}
+            />
+          )}
+          {personObj.k === 0 && personObj.kl === 0 && (
+            <div style={{
+              fontFamily: paperB.fontMono, fontSize: 10, color: paperB.inkMute,
+              padding: '2px 0', fontStyle: 'italic',
+            }}>— {t.geenKorting} —</div>
+          )}
+
+          <Perf margin="8px 0"/>
+          <ReceiptRow label={t.totaal} value={fmtMoney(bd.total)} big accent/>
+
+          <div style={{ textAlign: 'center', padding: '14px 0 4px' }}>
+            <Stamp>{t.eerlijkGedeeld}</Stamp>
+          </div>
+        </div>
+      </div>
+    </TearableSheet>
+  );
+}
+
+// ═══════════ Fuel sheet ═══════════
+function FuelSheet({ open, onClose, onSaved, lang }) {
+  const t = strings[lang];
+  const [car, setCar] = React.useState('JF');
+  const [driver, setDriver] = React.useState('Roeland');
+  const [date, setDate] = React.useState('2026-04-21');
+  const [bedrag, setBedrag] = React.useState('62,21');
+  const [liters, setLiters] = React.useState('31,26');
+  const [station, setStation] = React.useState('Q8 — Berchem');
+  const [vol, setVol] = React.useState(false);
+  const [kmStand, setKmStand] = React.useState('');
+
+  React.useEffect(() => {
+    if (open) {
+      setCar('JF'); setDriver('Roeland'); setDate('2026-04-21');
+      setBedrag('62,21'); setLiters('31,26'); setStation('Q8 — Berchem');
+      setVol(false); setKmStand('');
+    }
+  }, [open]);
+
+  const b = Number(bedrag.replace(',', '.')) || 0;
+  const l = Number(liters.replace(',', '.')) || 0;
+  const perL = l > 0 ? b / l : 0;
+
+  const needsKm = vol && !kmStand;
+
+  return (
+    <TearableSheet open={open} onClose={onClose} onSaved={onSaved} lang={lang}
+      submitLabel={t.tankOpslaan} disabled={needsKm}>
+      <div style={{ padding: '16px 16px 0' }}>
+        <div style={{
+          background: paperB.paper, padding: '24px 20px',
+          boxShadow: '0 2px 8px rgba(0,0,0,0.08), 0 10px 30px rgba(0,0,0,0.06)',
+        }}>
+          <UnifiedTop car={car} setCar={setCar} driver={driver} setDriver={setDriver}
+            date={date} setDate={setDate} lang={lang}
+            title={lang === 'nl' ? 'Tankbon' : 'Fuel receipt'}/>
+
+          {/* Station + GPS hint */}
+          <InputLineB label={'④ ' + t.station} value={station} onChange={setStation}/>
+          <div style={{
+            fontFamily: paperB.fontMono, fontSize: 9, color: paperB.green,
+            marginTop: -4, letterSpacing: 1, textTransform: 'uppercase',
+            marginBottom: 8,
+          }}>◉ {t.gpsAuto} · 51.199, 4.394</div>
+
+          {/* Bedrag + liters */}
+          <div style={{ display: 'flex', gap: 16 }}>
+            <div style={{ flex: 1 }}>
+              <InputLineB label={'⑤ ' + t.bedrag} value={bedrag} onChange={setBedrag} suffix="€"/>
+            </div>
+            <div style={{ flex: 1 }}>
+              <InputLineB label={'⑥ ' + t.liters} value={liters} onChange={setLiters} suffix="L"/>
+            </div>
+          </div>
+
+          {/* Volle tank checkbox */}
+          <div onClick={() => setVol(v => !v)} style={{
+            marginTop: 6, padding: '12px 14px',
+            border: `1.5px ${vol ? 'solid' : 'dashed'} ${paperB.ink}`,
+            background: vol ? paperB.ink : 'transparent',
+            color: vol ? paperB.paper : paperB.ink,
+            cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 12,
+          }}>
+            <div style={{
+              width: 20, height: 20,
+              border: `1.5px solid ${vol ? paperB.paper : paperB.ink}`,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontFamily: paperB.fontMono, fontSize: 14, fontWeight: 700,
+            }}>{vol ? '✓' : ''}</div>
+            <div style={{
+              fontFamily: paperB.fontMono, fontSize: 11, fontWeight: 700,
+              letterSpacing: 2, textTransform: 'uppercase',
+            }}>⑦ {t.volleTank}</div>
+          </div>
+
+          {/* Km-stand — only if volle tank */}
+          {vol && (
+            <div style={{ marginTop: 12, animation: 'popIn 0.2s ease-out' }}>
+              <InputLineB label={'⑧ ' + t.kilostand} value={kmStand} onChange={setKmStand} suffix="km"/>
+              <div style={{
+                fontFamily: paperB.fontSerif, fontSize: 11, fontStyle: 'italic',
+                color: paperB.inkDim, marginTop: -4, lineHeight: 1.4,
+              }}>{t.kilostandVereist}</div>
+            </div>
+          )}
+
+          <Perf/>
+          <ReceiptRow label={t.prijsL} value={perL > 0 ? `€ ${perL.toFixed(3).replace('.', ',')}` : '—'}/>
+          <Perf margin="8px 0"/>
+          <ReceiptRow label={lang === 'nl' ? 'In de kas' : 'To the fund'} value={fmtMoney(b)} big accent/>
+
+          <div style={{ textAlign: 'center', padding: '14px 0 4px' }}>
+            <Stamp rotate={4} color={paperB.green}>{t.inDeKas}</Stamp>
+          </div>
+        </div>
+      </div>
+    </TearableSheet>
+  );
+}
+
+// ═══════════ Expense sheet ═══════════
+function ExpenseSheet({ open, onClose, onSaved, lang }) {
+  const t = strings[lang];
+  const [car, setCar] = React.useState('JF');
+  const [driver, setDriver] = React.useState('Roeland');
+  const [date, setDate] = React.useState('2026-04-21');
+  const [bedrag, setBedrag] = React.useState('');
+  const [cat, setCat] = React.useState('maintenance');
+  const [note, setNote] = React.useState('');
+
+  React.useEffect(() => {
+    if (open) {
+      setCar('JF'); setDriver('Roeland'); setDate('2026-04-21');
+      setBedrag(''); setCat('maintenance'); setNote('');
+    }
+  }, [open]);
+
+  const cats = [
+    { k: 'maintenance', l: t.maintenance, e: '🔧' },
+    { k: 'insurance',   l: t.insurance,   e: '🛡' },
+    { k: 'tax',         l: t.tax,         e: '📜' },
+    { k: 'other',       l: t.other,       e: '✎' },
+  ];
+
+  return (
+    <TearableSheet open={open} onClose={onClose} onSaved={onSaved} lang={lang}
+      submitLabel={t.kostOpslaan}>
+      <div style={{ padding: '16px 16px 0' }}>
+        <div style={{
+          background: paperB.paper, padding: '24px 20px',
+          boxShadow: '0 2px 8px rgba(0,0,0,0.08), 0 10px 30px rgba(0,0,0,0.06)',
+        }}>
+          <UnifiedTop car={car} setCar={setCar} driver={driver} setDriver={setDriver}
+            date={date} setDate={setDate} lang={lang}
+            title={lang === 'nl' ? 'Extra kost' : 'Extra cost'}/>
+
+          {/* Category */}
+          <div style={{
+            fontFamily: paperB.fontMono, fontSize: 10, color: paperB.inkDim,
+            letterSpacing: 1.5, textTransform: 'uppercase', marginBottom: 8,
+          }}>④ {t.category}</div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 6, marginBottom: 14 }}>
+            {cats.map(c => {
+              const sel = c.k === cat;
+              return (
+                <button key={c.k} onClick={() => setCat(c.k)} style={{
+                  padding: '12px 4px',
+                  border: `1.5px ${sel ? 'solid' : 'dashed'} ${paperB.ink}`,
+                  background: sel ? paperB.ink : 'transparent',
+                  color: sel ? paperB.paper : paperB.ink,
+                  cursor: 'pointer', display: 'flex', flexDirection: 'column',
+                  alignItems: 'center', gap: 4,
+                }}>
+                  <div style={{ fontSize: 18 }}>{c.e}</div>
+                  <div style={{
+                    fontFamily: paperB.fontMono, fontSize: 9, letterSpacing: 1,
+                    textTransform: 'uppercase', fontWeight: 700,
+                  }}>{c.l}</div>
+                </button>
+              );
+            })}
+          </div>
+
+          <InputLineB label={'⑤ ' + t.bedrag} value={bedrag} onChange={setBedrag} suffix="€" placeholder="0,00"/>
+          <InputLineB label={lang === 'nl' ? '⑥ Omschrijving' : '⑥ Description'}
+            value={note} onChange={setNote} placeholder={lang === 'nl' ? 'bv. Autokeuring' : 'e.g. Inspection'}/>
+
+          <Perf/>
+          <ReceiptRow label={lang === 'nl' ? 'In de kas' : 'To the fund'}
+            value={fmtMoney(Number((bedrag||'0').replace(',','.')))} big accent/>
+
+          <div style={{ textAlign: 'center', padding: '14px 0 4px' }}>
+            <Stamp rotate={-4} color={paperB.green}>{t.inDeKas}</Stamp>
+          </div>
+        </div>
+      </div>
+    </TearableSheet>
+  );
+}
+
+// ═══════════ Reservation sheet ═══════════
+function ReserveSheet({ open, onClose, onSaved, lang }) {
+  const t = strings[lang];
+  const [car, setCar] = React.useState('JF');
+  const [driver, setDriver] = React.useState('Roeland');
+  const [from, setFrom] = React.useState('2026-04-24');
+  const [to, setTo] = React.useState('2026-04-26');
+  const [reason, setReason] = React.useState('');
+
+  React.useEffect(() => {
+    if (open) {
+      setCar('JF'); setDriver('Roeland');
+      setFrom('2026-04-24'); setTo('2026-04-26'); setReason('');
+    }
+  }, [open]);
+
+  const days = Math.max(1, Math.round((new Date(to) - new Date(from)) / 86400000) + 1);
+  const conflict = findConflict(car, from, to);
+
+  return (
+    <TearableSheet open={open} onClose={onClose} onSaved={onSaved} lang={lang}
+      submitLabel={t.reserveOpslaan}>
+      <div style={{ padding: '16px 16px 0' }}>
+        <div style={{
+          background: paperB.paper, padding: '24px 20px',
+          boxShadow: '0 2px 8px rgba(0,0,0,0.08), 0 10px 30px rgba(0,0,0,0.06)',
+        }}>
+          {/* Title */}
+          <div style={{ textAlign: 'center', marginBottom: 6 }}>
+            <div style={{
+              fontFamily: paperB.fontSerif, fontSize: 28, fontWeight: 700,
+              color: paperB.ink, letterSpacing: -0.5,
+            }}>{lang === 'nl' ? 'Reserveren' : 'Reserve'}</div>
+            <div style={{
+              fontFamily: paperB.fontMono, fontSize: 10, color: paperB.inkDim,
+              letterSpacing: 2, textTransform: 'uppercase', marginTop: 2,
+            }}>{t.coop}</div>
+          </div>
+          <Perf/>
+
+          {/* Car + driver (re-use picker, no date here) */}
+          <div style={{
+            fontFamily: paperB.fontMono, fontSize: 10, color: paperB.inkDim,
+            letterSpacing: 1.5, textTransform: 'uppercase', marginBottom: 8,
+          }}>① {t.wagen}</div>
+          <CarPicker value={car} onChange={setCar}/>
+
+          <div style={{
+            fontFamily: paperB.fontMono, fontSize: 10, color: paperB.inkDim,
+            letterSpacing: 1.5, textTransform: 'uppercase', marginBottom: 8, marginTop: 16,
+          }}>② {t.bestuurder}</div>
+          <PersonPicker value={driver} onChange={setDriver}/>
+
+          {/* Date range — ticket */}
+          <div style={{
+            margin: '18px 0 10px', background: paperB.paperDeep,
+            padding: '14px 14px', position: 'relative',
+            border: `1.5px solid ${paperB.ink}`,
+          }}>
+            <div style={{
+              position: 'absolute', left: -7, top: '50%', transform: 'translateY(-50%)',
+              width: 12, height: 12, borderRadius: 6,
+              background: paperB.paper, border: `1.5px solid ${paperB.ink}`,
+            }}/>
+            <div style={{
+              position: 'absolute', right: -7, top: '50%', transform: 'translateY(-50%)',
+              width: 12, height: 12, borderRadius: 6,
+              background: paperB.paper, border: `1.5px solid ${paperB.ink}`,
+            }}/>
+            <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontFamily: paperB.fontMono, fontSize: 9, color: paperB.inkDim, letterSpacing: 2 }}>③ {t.van}</div>
+                <input type="date" value={from} onChange={e => setFrom(e.target.value)} style={{
+                  fontFamily: paperB.fontSerif, fontSize: 20, color: paperB.ink,
+                  fontWeight: 700, background: 'transparent', border: 'none',
+                  padding: 0, outline: 'none', width: '100%',
+                }}/>
+              </div>
+              <div style={{ fontFamily: paperB.fontMono, fontSize: 18, color: paperB.accent, fontWeight: 700 }}>→</div>
+              <div style={{ flex: 1, textAlign: 'right' }}>
+                <div style={{ fontFamily: paperB.fontMono, fontSize: 9, color: paperB.inkDim, letterSpacing: 2 }}>④ {t.tot}</div>
+                <input type="date" value={to} onChange={e => setTo(e.target.value)} style={{
+                  fontFamily: paperB.fontSerif, fontSize: 20, color: paperB.ink,
+                  fontWeight: 700, background: 'transparent', border: 'none',
+                  padding: 0, outline: 'none', width: '100%', textAlign: 'right',
+                }}/>
+              </div>
+            </div>
+            <Perf margin="10px 0"/>
+            <div style={{
+              fontFamily: paperB.fontMono, fontSize: 11, color: paperB.ink,
+              textAlign: 'center', letterSpacing: 1.5, fontWeight: 700,
+            }}>{days} {days === 1 ? t.day : t.days}</div>
+          </div>
+
+          <InputLineB label={'⑤ ' + t.reden} value={reason} onChange={setReason}
+            placeholder={lang === 'nl' ? 'bv. weekend kust' : 'e.g. weekend trip'}/>
+
+          {conflict && (
+            <div style={{
+              margin: '12px 0 4px', padding: '12px 14px',
+              background: `repeating-linear-gradient(45deg, ${paperB.paper} 0 6px, ${paperB.paperDeep} 6px 10px)`,
+              border: `1.5px dashed ${paperB.amber}`,
+            }}>
+              <div style={{
+                fontFamily: paperB.fontMono, fontSize: 10, letterSpacing: 1.5,
+                textTransform: 'uppercase', fontWeight: 700, color: paperB.amber,
+                marginBottom: 4,
+              }}>▲ {t.conflictWarn}</div>
+              <div style={{
+                fontFamily: paperB.fontSerif, fontSize: 14, color: paperB.ink, lineHeight: 1.3,
+              }}>
+                <b>{conflict.who}</b> — {conflict.reason}
+                <div style={{
+                  fontFamily: paperB.fontMono, fontSize: 10, color: paperB.inkDim,
+                  letterSpacing: 1, marginTop: 2,
+                }}>
+                  {fmtDate(conflict.from, lang)}{conflict.from !== conflict.to && <> → {fmtDate(conflict.to, lang)}</>}
+                  {' '}· {t[conflict.status]}
+                </div>
+              </div>
+              <div style={{
+                fontFamily: paperB.fontSerif, fontSize: 11, fontStyle: 'italic',
+                color: paperB.inkDim, marginTop: 6, lineHeight: 1.4,
+              }}>{t.conflictSub}</div>
+            </div>
+          )}
+
+          <div style={{ textAlign: 'center', padding: '10px 0 4px' }}>
+            <Stamp rotate={-3} color={conflict ? paperB.amber : paperB.green}>
+              {conflict ? t.pendingBadge : t.waitingOwner}
+            </Stamp>
+          </div>
+        </div>
+      </div>
+    </TearableSheet>
+  );
+}
+
+Object.assign(window, { TearableSheet, UnifiedTop, TripSheet, FuelSheet, ExpenseSheet, ReserveSheet });

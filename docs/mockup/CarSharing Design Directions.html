@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>CarSharing — Design Directions</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Instrument+Serif&family=Fraunces:wght@500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Courier+Prime:wght@400;700&display=swap" rel="stylesheet"/>
+<style>
+  html, body { margin: 0; padding: 0; background: #f0eee9; }
+  body { font-family: "Inter", -apple-system, BlinkMacSystemFont, system-ui, sans-serif; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+<script type="text/babel" src="design-canvas.jsx"></script>
+<script type="text/babel" src="ios-frame.jsx"></script>
+<script type="text/babel" src="direction-a-dashboard.jsx"></script>
+<script type="text/babel" src="direction-b-receipt.jsx"></script>
+<script type="text/babel" src="direction-c-swipe.jsx"></script>
+
+<script type="text/babel">
+const FRAME_W = 390;
+const FRAME_H = 844;
+
+function Frame({ label, dark, children }) {
+  return (
+    <DCArtboard label={label} width={FRAME_W} height={FRAME_H}
+      style={{ background: 'transparent', boxShadow: 'none', borderRadius: 0, overflow: 'visible' }}>
+      <IOSDevice width={FRAME_W} height={FRAME_H} dark={dark}>
+        {children}
+      </IOSDevice>
+    </DCArtboard>
+  );
+}
+
+function DirectionHeader({ name, tagline, swatches, fonts }) {
+  return (
+    <div style={{
+      padding: '0 60px 20px',
+      display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between',
+      gap: 40,
+    }}>
+      <div style={{ flex: 1 }}>
+        <div style={{
+          fontSize: 12, color: 'rgba(60,50,40,0.6)',
+          letterSpacing: 2, textTransform: 'uppercase', fontWeight: 600,
+        }}>{name}</div>
+        <div style={{
+          fontFamily: '"Instrument Serif", Georgia, serif',
+          fontSize: 34, lineHeight: 1.05, color: 'rgba(40,30,20,0.9)',
+          letterSpacing: -0.5, marginTop: 4, maxWidth: 520,
+        }}>{tagline}</div>
+      </div>
+      <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+        {swatches.map((s, i) => (
+          <div key={i} title={s} style={{
+            width: 32, height: 32, borderRadius: 16, background: s,
+            boxShadow: '0 1px 3px rgba(0,0,0,0.12)',
+          }}/>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function Intro() {
+  return (
+    <div style={{
+      padding: '0 60px 40px', maxWidth: 900,
+    }}>
+      <div style={{
+        fontSize: 12, color: 'rgba(60,50,40,0.6)',
+        letterSpacing: 2, textTransform: 'uppercase', fontWeight: 600,
+      }}>Autodelen · PWA redesign</div>
+      <div style={{
+        fontFamily: '"Instrument Serif", Georgia, serif',
+        fontSize: 56, lineHeight: 1, color: 'rgba(30,22,16,0.92)',
+        letterSpacing: -1, marginTop: 8,
+      }}>Three ways to make car‑sharing feel like home.</div>
+      <div style={{
+        fontSize: 16, lineHeight: 1.6, color: 'rgba(60,50,40,0.75)',
+        marginTop: 20, maxWidth: 740,
+      }}>
+        The current app is a spreadsheet in disguise. Your users are
+        family &amp; friends — including kids learning what a car really costs —
+        so the redesign should feel <em>warm, honest, and a bit delightful</em>,
+        never corporate.
+        <br/><br/>
+        Three directions below, each shown on the three screens you picked:
+        <strong> new trip</strong>, <strong>fuel fill-up</strong>, and
+        <strong> reservation</strong>. Each explores a different visual world,
+        layout logic, and interaction vocabulary. Pick one, mix two — all of the
+        components port back to your Next.js + Tailwind + Radix stack.
+      </div>
+    </div>
+  );
+}
+
+function App() {
+  return (
+    <DesignCanvas>
+      <div style={{ padding: '20px 0 40px' }}>
+        <Intro/>
+      </div>
+
+      {/* Direction A */}
+      <DirectionHeader
+        name="Direction A · Dashboard on Wheels"
+        tagline="A premium cockpit. Amber dials, deep navy, monospace — the odometer becomes the hero."
+        swatches={['#0d1117','#161b22','#ffa726','#60a5fa','#c084fc']}
+      />
+      <DCSection title="" subtitle="Instrument‑cluster metaphor · haptic‑scroll odometer · glowing gauge that fills as you enter end‑km">
+        <Frame label="A.1 · Nieuwe rit" dark><ScreenA_Trip/></Frame>
+        <Frame label="A.2 · Tankbeurt" dark><ScreenA_Fuel/></Frame>
+        <Frame label="A.3 · Reservering" dark><ScreenA_Reserve/></Frame>
+      </DCSection>
+
+      {/* Direction B */}
+      <DirectionHeader
+        name="Direction B · Receipt"
+        tagline="Each record is a paper receipt. Honest, editorial, transparent — the whole app is a ledger you can hold."
+        swatches={['#f5f0e6','#ebe3d2','#1a1a1a','#c44536','#5a7a3c']}
+      />
+      <DCSection title="" subtitle="Thermal‑receipt cards · perforated tear‑offs · rubber‑stamp confirmations · serif + monospace">
+        <Frame label="B.1 · Rit afstempelen"><ScreenB_Trip/></Frame>
+        <Frame label="B.2 · Tankbon"><ScreenB_Fuel/></Frame>
+        <Frame label="B.3 · Reserveren"><ScreenB_Reserve/></Frame>
+      </DCSection>
+
+      {/* Direction C */}
+      <DirectionHeader
+        name="Direction C · Swipe to Share"
+        tagline="Playful, modern, candy‑colored. Every car gets its own identity. Swipe gestures everywhere."
+        swatches={['#d9f05a','#b9d9ff','#ffd1b5','#d9c8ff','#ff6b5b']}
+      />
+      <DCSection title="" subtitle="One color per car · scroll‑wheel odometers · scan‑receipt w/ OCR · swipe‑to‑submit · editorial serif headlines">
+        <Frame label="C.1 · Nieuwe rit"><ScreenC_Trip/></Frame>
+        <Frame label="C.2 · Tankbeurt"><ScreenC_Fuel/></Frame>
+        <Frame label="C.3 · Reserveren"><ScreenC_Reserve/></Frame>
+      </DCSection>
+
+      <div style={{ padding: '0 60px 40px', maxWidth: 760 }}>
+        <div style={{
+          fontSize: 12, color: 'rgba(60,50,40,0.6)',
+          letterSpacing: 2, textTransform: 'uppercase', fontWeight: 600,
+        }}>What to look at</div>
+        <div style={{
+          fontSize: 15, lineHeight: 1.65, color: 'rgba(60,50,40,0.8)', marginTop: 12,
+        }}>
+          <strong>Direction A</strong> is the boldest visually but also the most technical
+          — great for car‑enthusiast owners, maybe intimidating for casual users.
+          <br/><br/>
+          <strong>Direction B</strong> leans hardest into your democratic, transparent
+          brand story — "every trip is a receipt the whole co‑op can read". Calmest to use.
+          <br/><br/>
+          <strong>Direction C</strong> is the most conventional modern‑app pattern
+          (Linear / Revolut / Monzo vibes) — friendliest for kids &amp; non‑tech users,
+          and the easiest to extend with new features later.
+          <br/><br/>
+          Next step: pick one and I'll expand it into the full flow (dashboard,
+          list views, edit states, empty states, onboarding) and hand back
+          Tailwind component code that drops into your existing Next.js app.
+        </div>
+      </div>
+    </DesignCanvas>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+</body>
+</html>

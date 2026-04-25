@@ -22,6 +22,19 @@ interface PaymentAgg {
   paid_amount: number;
 }
 
+export function getEarliestYear(db: Database.Database): number {
+  const row = db.prepare(`
+    SELECT MIN(earliest) as year FROM (
+      SELECT MIN(CAST(strftime('%Y', date) AS INTEGER)) as earliest FROM trips
+      UNION ALL
+      SELECT MIN(CAST(strftime('%Y', date) AS INTEGER)) FROM fuel_fillups
+      UNION ALL
+      SELECT MIN(CAST(strftime('%Y', date) AS INTEGER)) FROM expenses
+    )
+  `).get() as { year: number | null };
+  return row.year ?? new Date().getFullYear();
+}
+
 export function getDashboard(db: Database.Database, year: number): DashboardRow[] {
   const yearStr = String(year);
 

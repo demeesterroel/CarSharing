@@ -2,7 +2,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useDashboard } from "@/hooks/use-dashboard";
+import { useDashboard, useEarliestDashboardYear } from "@/hooks/use-dashboard";
 import { useTrips } from "@/hooks/use-trips";
 import { useFuelFillups } from "@/hooks/use-fuel-fillups";
 import { useReservations } from "@/hooks/use-reservations";
@@ -64,8 +64,11 @@ function CarStamp({ code }: { code: string }) {
 }
 
 // ── Balance Receipt ───────────────────────────────────────────────
-function BalanceReceipt({ year, personName }: { year: number; personName: string }) {
+function BalanceReceipt({ personName }: { personName: string }) {
   const t = useT();
+  const currentYear = new Date().getFullYear();
+  const [year, setYear] = useState(currentYear);
+  const { data: earliestYear = currentYear } = useEarliestDashboardYear();
   const { data: rows = [] } = useDashboard(year);
   const myRow = rows.find((r) => r.person_name === personName);
   if (!myRow) return null;
@@ -75,6 +78,37 @@ function BalanceReceipt({ year, personName }: { year: number; personName: string
 
   return (
     <div style={{ padding: "18px 16px 0" }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 0, marginBottom: 8 }}>
+        <button
+          onClick={() => setYear((y) => y - 1)}
+          disabled={year <= earliestYear}
+          style={{
+            padding: "6px 14px", background: "transparent", border: `1.5px solid ${paper.ink}`,
+            borderRight: "none", fontFamily: fontMono, fontSize: 10, fontWeight: 700,
+            color: year <= earliestYear ? paper.inkMute : paper.ink,
+            cursor: year <= earliestYear ? "default" : "pointer", letterSpacing: 1,
+          }}>
+          ← {year - 1}
+        </button>
+        <div style={{
+          padding: "6px 18px", background: paper.ink, color: paper.paper,
+          fontFamily: fontMono, fontSize: 10, fontWeight: 700, letterSpacing: 2,
+          border: `1.5px solid ${paper.ink}`,
+        }}>
+          {year}
+        </div>
+        <button
+          onClick={() => setYear((y) => y + 1)}
+          disabled={year >= currentYear}
+          style={{
+            padding: "6px 14px", background: "transparent", border: `1.5px solid ${paper.ink}`,
+            borderLeft: "none", fontFamily: fontMono, fontSize: 10, fontWeight: 700,
+            color: year >= currentYear ? paper.inkMute : paper.ink,
+            cursor: year >= currentYear ? "default" : "pointer", letterSpacing: 1,
+          }}>
+          {year + 1} →
+        </button>
+      </div>
       <div style={{
         background: paper.paper, padding: "20px 18px 22px",
         boxShadow: "0 1px 2px rgba(0,0,0,0.05), 0 8px 24px rgba(0,0,0,0.07)",
@@ -393,7 +427,6 @@ export default function DashboardPage() {
   const t = useT();
   const { data: me } = useMe();
   const router = useRouter();
-  const year = new Date().getFullYear();
   const [sheet, setSheet] = useState<SheetType>(null);
 
   // Edit state
@@ -480,7 +513,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Balance */}
-      <BalanceReceipt year={year} personName={me?.personName ?? ""} />
+      <BalanceReceipt personName={me?.personName ?? ""} />
 
       {/* Car locations */}
       <CarLocations trips={trips} onTripClick={setEditTrip} />

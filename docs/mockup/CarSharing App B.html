@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+<meta name="theme-color" content="#f5f0e6"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="default"/>
+<title>Autodelen — Coöperatieve Antwerpen</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Courier+Prime:wght@400;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<style>
+  html, body { margin: 0; padding: 0; background: #ebe3d2; font-family: 'Inter', system-ui, sans-serif; overscroll-behavior: none; }
+  * { box-sizing: border-box; }
+  input[type="date"] { font-family: inherit; color-scheme: light; }
+  @keyframes popIn {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; }
+  }
+  @keyframes stampDrop {
+    0%   { transform: translate(-50%, -50%) rotate(-8deg) scale(2.4); opacity: 0; }
+    60%  { transform: translate(-50%, -50%) rotate(-8deg) scale(0.94); opacity: 1; }
+    100% { transform: translate(-50%, -50%) rotate(-8deg) scale(1); opacity: 1; }
+  }
+  /* Install hint banner */
+  .install-hint {
+    position: fixed; left: 50%; bottom: 80px; transform: translateX(-50%);
+    background: #1a1a1a; color: #f5f0e6;
+    padding: 10px 16px; z-index: 100;
+    font-family: 'Courier Prime', monospace; font-size: 11px;
+    letter-spacing: 1.5px; text-transform: uppercase;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.25);
+    display: none;
+  }
+  /* Full-bleed app on mobile; frame it only on very wide viewports */
+  #root {
+    min-height: 100vh; min-height: 100dvh;
+    max-width: 480px; margin: 0 auto;
+    background: #ebe3d2;
+    box-shadow: 0 0 0 1px rgba(0,0,0,0.05);
+    position: relative;
+  }
+  @media (min-width: 900px) {
+    body {
+      background: repeating-linear-gradient(0deg, #e8e2d4 0 2px, #e2dcce 2px 3px);
+      min-height: 100vh;
+      display: flex; align-items: center; justify-content: center;
+      padding: 20px;
+    }
+    #root {
+      min-height: 820px; max-height: 90vh;
+      box-shadow: 0 30px 70px rgba(0,0,0,0.15), 0 0 0 1px rgba(0,0,0,0.08);
+      border-radius: 24px; overflow-y: auto; overflow-x: hidden;
+    }
+  }
+</style>
+</head>
+<body>
+<div id="root" data-screen-label="CarSharing"></div>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+<script type="text/babel" src="b-data.jsx"></script>
+<script type="text/babel" src="b-shared.jsx"></script>
+<script type="text/babel" src="b-dashboard.jsx"></script>
+<script type="text/babel" src="b-sheets.jsx"></script>
+<script type="text/babel" src="b-pages.jsx"></script>
+<script type="text/babel" src="b-admin.jsx"></script>
+<script type="text/babel" src="b-admin2.jsx"></script>
+<script type="text/babel" src="b-admin3.jsx"></script>
+
+<script type="text/babel">
+// Mockup personas — quick-switch for prototype testing
+const DEMO_PERSONAS = [
+  { name: 'Roeland',  username: 'roeland',  password: 'roeland',  isAdmin: true,  icon: '✦', sub: { nl: 'admin + eigenaar JF & LEW', en: 'admin + owner JF & LEW' } },
+  { name: 'Malvina',  username: 'malvina',  password: 'malvina',  isAdmin: false, icon: '◉', sub: { nl: 'eigenaar ETH',              en: 'owner of ETH' } },
+  { name: 'Susanna',  username: 'susanna',  password: 'susanna',  isAdmin: false, icon: '◐', sub: { nl: 'gewoon lid',                 en: 'regular member' } },
+];
+
+function RoleSwitcher({ person, onSwitch, lang }) {
+  return (
+    <div style={{
+      position: 'sticky', top: 0, zIndex: 50,
+      background: paperB.ink, color: paperB.paper,
+      padding: '8px 10px 10px',
+      borderBottom: `2px dashed ${paperB.paperDark}`,
+    }}>
+      <div style={{
+        display: 'flex', alignItems: 'center',
+        fontFamily: paperB.fontMono, fontSize: 8, letterSpacing: 2,
+        textTransform: 'uppercase', color: paperB.paperDark, marginBottom: 6,
+      }}>
+        <span style={{ flex: 1 }}>⚙ {lang === 'nl' ? 'Preview · rol-switcher' : 'Preview · role switcher'}</span>
+        <span style={{ opacity: 0.5 }}>{lang === 'nl' ? 'niet-functioneel' : 'demo only'}</span>
+      </div>
+      <div style={{ display: 'flex', gap: 6 }}>
+        {DEMO_PERSONAS.map(p => {
+          const sel = p.name === person.name;
+          return (
+            <button key={p.name} onClick={() => onSwitch(p)} style={{
+              flex: 1, padding: '8px 6px',
+              background: sel ? paperB.paper : 'transparent',
+              color: sel ? paperB.ink : paperB.paper,
+              border: `1.5px ${sel ? 'solid' : 'dashed'} ${paperB.paperDark}`,
+              fontFamily: paperB.fontMono, cursor: 'pointer',
+              display: 'flex', flexDirection: 'column', alignItems: 'center',
+              gap: 2, lineHeight: 1.1,
+            }}>
+              <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: 2, textTransform: 'uppercase' }}>
+                {p.icon} {p.name}
+              </div>
+              <div style={{ fontSize: 8, letterSpacing: 0.5, opacity: sel ? 0.7 : 0.55 }}>
+                {p.sub[lang]}
+              </div>
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function App() {
+  const [lang, setLang]   = React.useState(() => localStorage.getItem('cs-lang') || 'nl');
+  const [tab, setTab]     = React.useState(() => localStorage.getItem('cs-tab') || 'dashboard');
+  const [sheet, setSheet] = React.useState(null);
+  const [prefill, setPrefill] = React.useState(null);
+
+  // Active persona — default Roeland
+  const [person, setPerson] = React.useState(DEMO_PERSONAS[0]);
+
+  React.useEffect(() => { localStorage.setItem('cs-lang', lang); }, [lang]);
+  React.useEffect(() => { localStorage.setItem('cs-tab', tab); }, [tab]);
+
+  const me   = person.name;
+  const caps = roleCaps(person);
+  const role = caps.isAdmin ? 'admin' : caps.isOwner ? 'owner' : 'user';
+  const ctx  = { role, me, caps, person };
+
+  const handleSwitch = (p) => {
+    setPerson(p);
+    // Kick out of admin-only tabs when switching to non-admin
+    const newCaps = roleCaps(p);
+    if (tab === 'admin' && !newCaps.canSeeBeheer) setTab('dashboard');
+    localStorage.removeItem('cs-admin-tab');
+  };
+
+  // Install hint for iOS Safari users — dismissable
+  const [showInstall, setShowInstall] = React.useState(() => {
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+    const inStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
+    const dismissed = localStorage.getItem('cs-install-dismissed');
+    return isIOS && !inStandalone && !dismissed;
+  });
+
+  const renderPage = () => {
+    switch (tab) {
+      case 'trips':   return <AllTripsPage lang={lang} setLang={setLang}/>;
+      case 'fuel':    return <AllFuelPage  lang={lang} setLang={setLang}/>;
+      case 'reserve': return <ReservePage  lang={lang} setLang={setLang}
+        onNew={(pf) => { setPrefill(pf); setSheet('reserve'); }}/>;
+      case 'kosten':  return <ExpensesPage lang={lang} setLang={setLang}/>;
+      case 'admin':   return <AdminPage    lang={lang} setLang={setLang}/>;
+      default: return <Dashboard lang={lang} setLang={setLang} onNavigate={setTab}/>;
+    }
+  };
+
+  return (
+    <RoleContext.Provider value={ctx}>
+      <RoleSwitcher person={person} onSwitch={handleSwitch} lang={lang}/>
+      {renderPage()}
+      <FAB lang={lang} onPick={(s) => { setPrefill(null); setSheet(s); }}/>
+      <BottomNav tab={tab} setTab={setTab} lang={lang}/>
+
+      <TripSheet    open={sheet === 'trip'}    lang={lang} onClose={() => { setSheet(null); setPrefill(null); }}/>
+      <FuelSheet    open={sheet === 'fuel'}    lang={lang} onClose={() => { setSheet(null); setPrefill(null); }}/>
+      <ExpenseSheet open={sheet === 'expense'} lang={lang} onClose={() => { setSheet(null); setPrefill(null); }}/>
+      <ReserveSheet open={sheet === 'reserve'} lang={lang} prefill={prefill}
+        onClose={() => { setSheet(null); setPrefill(null); }}/>
+
+      {showInstall && (
+        <div className="install-hint" style={{ display: 'block' }} onClick={() => { setShowInstall(false); localStorage.setItem('cs-install-dismissed', '1'); }}>
+          {lang === 'nl' ? '↗ Voeg toe aan beginscherm · tik om te sluiten' : '↗ Add to home screen · tap to dismiss'}
+        </div>
+      )}
+    </RoleContext.Provider>
+  );
+}
+
+const waitFor = () => {
+  if (!window.Dashboard || !window.AllTripsPage || !window.TripSheet || !window.BottomNav || !window.AdminPage) {
+    return setTimeout(waitFor, 30);
+  }
+  ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+};
+waitFor();
+</script>
+</body>
+</html>

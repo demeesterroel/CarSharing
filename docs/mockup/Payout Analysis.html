@@ -1,0 +1,462 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Payout Analysis — Co-op</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,700;9..144,900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --paper: #F4EFE4;
+    --paperDeep: #EDE5D4;
+    --paperDark: #D9CFB8;
+    --ink: #1A1A1A;
+    --inkDim: #5A5449;
+    --inkMute: #8A8174;
+    --accent: #C4371F;   /* red ink */
+    --amber: #C8871F;
+    --green: #4A6B3E;
+    --blue: #2E4A6B;
+    --serif: 'Fraunces', Georgia, serif;
+    --mono: 'JetBrains Mono', ui-monospace, monospace;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: var(--paperDeep); }
+  body {
+    font-family: var(--serif);
+    color: var(--ink);
+    background:
+      repeating-linear-gradient(180deg, transparent 0 31px, rgba(0,0,0,0.035) 31px 32px),
+      var(--paper);
+    line-height: 1.6;
+  }
+  .page { max-width: 780px; margin: 0 auto; padding: 64px 48px 96px; }
+  @media (max-width: 640px) { .page { padding: 32px 22px 64px; } }
+
+  /* Header */
+  .header { border-bottom: 2px solid var(--ink); padding-bottom: 28px; margin-bottom: 36px; position: relative; }
+  .eyebrow {
+    font-family: var(--mono); font-size: 10px; letter-spacing: 3px;
+    text-transform: uppercase; color: var(--inkDim); font-weight: 700;
+    margin-bottom: 12px;
+  }
+  h1 {
+    font-family: var(--serif); font-weight: 900; font-size: 56px;
+    line-height: 1.02; letter-spacing: -1.5px; margin: 0 0 14px;
+    text-wrap: balance;
+  }
+  @media (max-width: 640px) { h1 { font-size: 40px; } }
+  .subtitle {
+    font-family: var(--serif); font-style: italic; font-size: 20px;
+    color: var(--inkDim); max-width: 560px; line-height: 1.4;
+  }
+  .meta {
+    font-family: var(--mono); font-size: 10px; letter-spacing: 2px;
+    text-transform: uppercase; color: var(--inkMute);
+    display: flex; justify-content: space-between; margin-top: 24px;
+  }
+  .stamp {
+    position: absolute; top: -12px; right: -8px;
+    padding: 6px 14px; border: 2.5px solid var(--accent); color: var(--accent);
+    font-family: var(--mono); font-size: 11px; font-weight: 700;
+    letter-spacing: 2px; text-transform: uppercase;
+    transform: rotate(-6deg); opacity: 0.9;
+  }
+
+  /* Section titles */
+  h2 {
+    font-family: var(--serif); font-weight: 700; font-size: 28px;
+    letter-spacing: -0.5px; margin: 56px 0 4px; line-height: 1.15;
+  }
+  .section-num {
+    font-family: var(--mono); font-size: 11px; letter-spacing: 3px;
+    color: var(--accent); font-weight: 700; text-transform: uppercase;
+    margin-top: 48px;
+  }
+  h3 {
+    font-family: var(--serif); font-weight: 700; font-size: 18px;
+    margin: 28px 0 8px; line-height: 1.3;
+  }
+  p { font-size: 17px; margin: 12px 0; text-wrap: pretty; }
+  p.lead { font-size: 19px; line-height: 1.55; color: var(--ink); }
+
+  b, strong { font-weight: 700; }
+  em { font-style: italic; color: var(--inkDim); }
+
+  /* Pullquote */
+  .pull {
+    margin: 28px 0; padding: 16px 22px; border-left: 3px solid var(--accent);
+    font-family: var(--serif); font-style: italic; font-size: 20px;
+    line-height: 1.4; color: var(--ink);
+  }
+
+  /* Finding box */
+  .finding {
+    background: var(--paper); padding: 18px 22px 16px;
+    border-left: 4px solid var(--amber);
+    margin: 20px 0;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+  }
+  .finding .label {
+    font-family: var(--mono); font-size: 10px; letter-spacing: 2px;
+    text-transform: uppercase; color: var(--amber); font-weight: 700;
+    margin-bottom: 4px;
+  }
+  .finding.good { border-color: var(--green); }
+  .finding.good .label { color: var(--green); }
+  .finding.bad { border-color: var(--accent); }
+  .finding.bad .label { color: var(--accent); }
+
+  /* Data table */
+  .data {
+    margin: 18px 0 12px; border-collapse: collapse; width: 100%;
+    font-family: var(--mono); font-size: 13px;
+  }
+  .data th {
+    text-align: left; font-weight: 700; padding: 8px 10px 6px;
+    border-bottom: 1.5px solid var(--ink);
+    font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase;
+    color: var(--inkDim);
+  }
+  .data td {
+    padding: 6px 10px; border-bottom: 1px dotted var(--paperDark);
+  }
+  .data td.n { text-align: right; font-variant-numeric: tabular-nums; }
+  .data tr.total td { border-top: 1.5px solid var(--ink); border-bottom: none;
+    font-weight: 700; padding-top: 10px; font-size: 14px; }
+  .loss { color: var(--accent); font-weight: 700; }
+  .gain { color: var(--green); font-weight: 700; }
+  .neutral { color: var(--inkDim); }
+
+  /* Sparkline year row */
+  .years {
+    display: grid; grid-template-columns: 60px 1fr 90px;
+    gap: 10px; align-items: center;
+    margin: 6px 0; font-family: var(--mono); font-size: 12px;
+  }
+  .years .year { color: var(--inkDim); letter-spacing: 1px; }
+  .years .bar-wrap { height: 18px; position: relative; background: var(--paperDeep); }
+  .years .bar-wrap::before {
+    content: ''; position: absolute; left: 50%; top: 0; bottom: 0;
+    width: 1px; background: var(--ink); opacity: 0.3;
+  }
+  .years .bar {
+    position: absolute; top: 2px; bottom: 2px; left: 50%;
+  }
+  .years .bar.neg { background: var(--accent); transform-origin: right; }
+  .years .bar.pos { background: var(--green); transform-origin: left; }
+  .years .val { text-align: right; font-variant-numeric: tabular-nums; font-weight: 700; }
+
+  /* Proposal step */
+  .step {
+    display: grid; grid-template-columns: 52px 1fr; gap: 18px;
+    margin: 28px 0 22px;
+  }
+  .step .num {
+    font-family: var(--serif); font-size: 44px; font-weight: 900;
+    color: var(--accent); line-height: 0.9;
+  }
+  .step h3 { margin-top: 4px; }
+
+  /* Perforation */
+  .perf { border: 0; border-top: 1.5px dashed var(--ink); margin: 40px 0; }
+
+  /* Callout card */
+  .card {
+    background: var(--paper); padding: 24px 26px; margin: 24px 0;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    border-top: 2px solid var(--ink);
+  }
+  .card h3 { margin-top: 0; }
+
+  /* Little chip */
+  .chip {
+    display: inline-block; padding: 2px 8px;
+    font-family: var(--mono); font-size: 10px; letter-spacing: 1px;
+    text-transform: uppercase; font-weight: 700;
+    background: var(--ink); color: var(--paper);
+  }
+  .chip.ghost { background: transparent; color: var(--ink); border: 1.5px dashed var(--ink); }
+  .chip.accent { background: var(--accent); }
+  .chip.green { background: var(--green); }
+
+  /* Scroll anchor links */
+  .toc {
+    background: var(--paper); padding: 18px 22px;
+    border-left: 3px solid var(--ink);
+    margin: 32px 0;
+  }
+  .toc h4 {
+    font-family: var(--mono); font-size: 10px; letter-spacing: 2px;
+    text-transform: uppercase; color: var(--inkDim); margin: 0 0 10px;
+    font-weight: 700;
+  }
+  .toc ol {
+    margin: 0; padding-left: 22px; font-size: 15px; line-height: 1.8;
+  }
+  .toc a { color: var(--ink); text-decoration: none; border-bottom: 1px dotted var(--inkMute); }
+  .toc a:hover { border-color: var(--ink); }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <header class="header">
+    <div class="eyebrow">Co-op autodelen · Analyse</div>
+    <h1>Who's actually losing money?</h1>
+    <div class="subtitle">A diagnosis of the yearly payout flow — and a concrete redesign that makes the answer obvious all year round.</div>
+    <div class="meta">
+      <span>Based on 8 years of data · 2018–2025</span>
+      <span>2026 plan</span>
+    </div>
+    <div class="stamp">Draft</div>
+  </header>
+
+  <p class="lead">You asked a direct question: <em>"I never really knew if Malvina and I were losing money or making money."</em> Your data gives a direct answer — and shows exactly where the current process fails.</p>
+
+  <div class="toc">
+    <h4>What's in this document</h4>
+    <ol>
+      <li><a href="#diagnosis">What the numbers say</a> — 8 years, per owner, per car</li>
+      <li><a href="#problems">Why the current flow hides the answer</a></li>
+      <li><a href="#redesign">The redesign: three shifts</a></li>
+      <li><a href="#flow">What the new yearly flow looks like</a></li>
+    </ol>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════ -->
+  <div class="section-num" id="diagnosis">§ 1</div>
+  <h2>What the numbers actually say</h2>
+
+  <p>I computed <b>revenue − (fuel + extra costs)</b> for every car, every year. This is the number that lands in the owner's pocket before fixed costs (insurance, tax, inspection, depreciation). It answers your question directly.</p>
+
+  <div class="card">
+    <h3>Owner net, 2018 – 2025</h3>
+    <p style="font-size:15px; color:var(--inkDim); margin-top:-4px;">Sum of yearly (revenue − fuel − extra costs) per owner. Does <em>not</em> yet deduct fixed costs like insurance.</p>
+
+    <table class="data">
+      <thead>
+        <tr><th>Owner</th><th>Cars</th><th class="n">8-year total</th><th class="n">Per year avg.</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><b>Roeland</b></td>
+          <td>Bessy · Jean-Francois · Lewis</td>
+          <td class="n loss">− € 2.592</td>
+          <td class="n loss">− € 324</td>
+        </tr>
+        <tr>
+          <td><b>Malvina</b></td>
+          <td>Ethel</td>
+          <td class="n loss">− € 2.171</td>
+          <td class="n loss">− € 271</td>
+        </tr>
+        <tr class="total">
+          <td colspan="2">Co-op total</td>
+          <td class="n loss">− € 4.763</td>
+          <td class="n loss">− € 595 / year</td>
+        </tr>
+      </tbody>
+    </table>
+    <p style="font-size:14px; color:var(--inkDim); font-style: italic; margin-bottom: 0;">Both of you have been <b>undercharging</b> for 8 years. The co-op has collectively subsidised its own members by roughly € 4.800, and that's before a single euro of insurance, tax, or depreciation gets counted.</p>
+  </div>
+
+  <p>It gets sharper when you look per car per year. This chart shows the net delta for each car, each year. <span class="chip green">green</span> = revenue covered costs · <span class="chip accent">red</span> = owner subsidised.</p>
+
+  <h3 style="margin-top:32px;">Bessy (Roeland)</h3>
+  <div class="years"><span class="year">2020</span><div class="bar-wrap"><div class="bar neg" style="right:50%; width:8%;"></div></div><span class="val loss">− 83</span></div>
+  <div class="years"><span class="year">2021</span><div class="bar-wrap"><div class="bar pos" style="left:50%; width:14%;"></div></div><span class="val gain">+ 401</span></div>
+  <div class="years"><span class="year">2022</span><div class="bar-wrap"><div class="bar neg" style="right:50%; width:96%;"></div></div><span class="val loss">− 3.412</span></div>
+  <div class="years"><span class="year">2023</span><div class="bar-wrap"><div class="bar neg" style="right:50%; width:33%;"></div></div><span class="val loss">− 1.007</span></div>
+  <div class="years"><span class="year">2024</span><div class="bar-wrap"><div class="bar neg" style="right:50%; width:82%;"></div></div><span class="val loss">− 2.842</span></div>
+  <div class="years"><span class="year">2025</span><div class="bar-wrap"><div class="bar pos" style="left:50%; width:52%;"></div></div><span class="val gain">+ 1.652</span></div>
+
+  <h3 style="margin-top:28px;">Jean-Francois (Roeland)</h3>
+  <div class="years"><span class="year">2018</span><div class="bar-wrap"><div class="bar pos" style="left:50%; width:33%;"></div></div><span class="val gain">+ 1.072</span></div>
+  <div class="years"><span class="year">2019</span><div class="bar-wrap"><div class="bar pos" style="left:50%; width:52%;"></div></div><span class="val gain">+ 1.787</span></div>
+  <div class="years"><span class="year">2020</span><div class="bar-wrap"><div class="bar pos" style="left:50%; width:10%;"></div></div><span class="val gain">+ 249</span></div>
+  <div class="years"><span class="year">2021</span><div class="bar-wrap"><div class="bar pos" style="left:50%; width:10%;"></div></div><span class="val gain">+ 231</span></div>
+  <div class="years"><span class="year">2022</span><div class="bar-wrap"><div class="bar neg" style="right:50%; width:80%;"></div></div><span class="val loss">− 2.762</span></div>
+  <div class="years"><span class="year">2023</span><div class="bar-wrap"><div class="bar pos" style="left:50%; width:26%;"></div></div><span class="val gain">+ 833</span></div>
+  <div class="years"><span class="year">2024</span><div class="bar-wrap"><div class="bar pos" style="left:50%; width:50%;"></div></div><span class="val gain">+ 1.670</span></div>
+  <div class="years"><span class="year">2025</span><div class="bar-wrap"><div class="bar neg" style="right:50%; width:12%;"></div></div><span class="val loss">− 380</span></div>
+
+  <h3 style="margin-top:28px;">Ethel (Malvina)</h3>
+  <div class="years"><span class="year">2018</span><div class="bar-wrap"><div class="bar neg" style="right:50%; width:22%;"></div></div><span class="val loss">− 724</span></div>
+  <div class="years"><span class="year">2019</span><div class="bar-wrap"><div class="bar neg" style="right:50%; width:3%;"></div></div><span class="val loss">− 99</span></div>
+  <div class="years"><span class="year">2020</span><div class="bar-wrap"><div class="bar pos" style="left:50%; width:12%;"></div></div><span class="val gain">+ 399</span></div>
+  <div class="years"><span class="year">2021</span><div class="bar-wrap"><div class="bar pos" style="left:50%; width:3%;"></div></div><span class="val gain">+ 76</span></div>
+  <div class="years"><span class="year">2022</span><div class="bar-wrap"><div class="bar neg" style="right:50%; width:45%;"></div></div><span class="val loss">− 1.514</span></div>
+  <div class="years"><span class="year">2023</span><div class="bar-wrap"><div class="bar pos" style="left:50%; width:4%;"></div></div><span class="val gain">+ 112</span></div>
+  <div class="years"><span class="year">2024</span><div class="bar-wrap"><div class="bar pos" style="left:50%; width:4%;"></div></div><span class="val gain">+ 117</span></div>
+  <div class="years"><span class="year">2025</span><div class="bar-wrap"><div class="bar pos" style="left:50%; width:4%;"></div></div><span class="val gain">+ 99</span></div>
+
+  <div class="finding bad">
+    <div class="label">▲ The big finding</div>
+    <p style="margin:0;"><b>Bessy is the villain.</b> Jean-Francois has been profitable 6 out of 8 years. Ethel hovers near zero. But Bessy cost Roeland <b>€ 5.292 over 4 bad years</b> (2022–2024) because €0,30/km simply doesn't cover an old car that needs repairs more than it gets driven. In 2024 Bessy cost <b>€ 1,41 per kilometre</b> while you were charging € 0,30.</p>
+  </div>
+
+  <div class="finding">
+    <div class="label">⚠ The pattern</div>
+    <p style="margin:0;">Every year one car lands in a big repair hole — 2022 was catastrophic across all three. You set km-prices by <em>gut feel</em> at the start of a year based on last year's usage, but <em>unexpected repairs</em> are precisely what breaks the budget. Fuel is predictable; breakdowns are not.</p>
+  </div>
+
+  <hr class="perf"/>
+
+  <!-- ═══════════════════════════════════════════════ -->
+  <div class="section-num" id="problems">§ 2</div>
+  <h2>Why the current flow hides this</h2>
+
+  <p>I went back through your process and identified <b>four specific failures</b> that caused you to not know the answer to your own question:</p>
+
+  <div class="step">
+    <div class="num">1</div>
+    <div>
+      <h3>The owner's fixed costs never enter the math.</h3>
+      <p>Your yearly dashboard settles <em>between members</em> — who paid fuel, who drove km, does that balance. But <b>insurance, tax, inspection, and depreciation</b> are paid by you and Malvina from your own wallets, and never show up as a debt the co-op owes you. So the question "did I break even?" is literally unanswerable in the current spreadsheet — the inputs aren't there.</p>
+      <p class="chip accent" style="margin-top:8px;">This is the root cause</p>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="num">2</div>
+    <div>
+      <h3>The km-price is guessed in January, judged in December.</h3>
+      <p>You set € 0,30/km for Bessy based on a <em>hunch</em> about last year's usage. Then Bessy needed a € 1.250 keuring in October. You don't find out the price was wrong until you run the dashboard 3 months later — too late to fix that year, and the loss has already happened.</p>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="num">3</div>
+    <div>
+      <h3>There is no moment in the year where the question "are costs covered?" is asked out loud.</h3>
+      <p>The co-op operates on trust and casual tracking all year. Then, at settlement, everyone sees a number telling them what they owe <em>each other</em>. No one sees: "This year, Bessy earned € 578 and cost € 3.420. Roeland is carrying € 2.842 of that alone." The question is invisible, so the answer is invisible.</p>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="num">4</div>
+    <div>
+      <h3>The output is addressed to members, not to owners.</h3>
+      <p>Your current payout flow produces 12 rows of "member X pays Roeland € Y". Great for a well-functioning year; useless for diagnosing whether the <em>underlying prices</em> were right. There's no two-line summary that says <b>"Roeland, your cars made or lost this much this year after everything."</b></p>
+    </div>
+  </div>
+
+  <div class="pull">"The system tells you who-owes-whom — but never tells the owner whether the whole enterprise is sustainable."</div>
+
+  <hr class="perf"/>
+
+  <!-- ═══════════════════════════════════════════════ -->
+  <div class="section-num" id="redesign">§ 3</div>
+  <h2>The redesign — three shifts</h2>
+
+  <p class="lead">The fix isn't one feature — it's three conceptual changes that need to land together.</p>
+
+  <div class="card">
+    <div class="chip green">Shift 1</div>
+    <h3 style="margin-top:10px;">Model fixed costs explicitly.</h3>
+    <p>Every car gets a <b>yearly fixed cost profile</b>: insurance + tax + inspection + a chosen depreciation. This is entered once per year per car. It doesn't change how members pay (they still pay per km) — it changes how the co-op <b>reimburses the owner</b>.</p>
+    <p>Two new numbers now exist for every car:</p>
+    <ul>
+      <li><b>Kostprijs per km</b> = (yearly fixed + expected variable) ÷ expected km. This is the real break-even price.</li>
+      <li><b>Owner net</b> = trip revenue − fuel − extra costs − fixed costs. This is what actually lands in the owner's account.</li>
+    </ul>
+    <p style="margin-bottom:0;">These two numbers are what answer your question.</p>
+  </div>
+
+  <div class="card">
+    <div class="chip green">Shift 2</div>
+    <h3 style="margin-top:10px;">Make the question visible continuously, not at year-end.</h3>
+    <p>The <b>co-op admin dashboard</b> should always show, for each car, a running "year-to-date owner net" tile. Red stamp if losing money, green if covering costs. No new inputs required — just a running sum of data already being captured.</p>
+    <p>This turns a once-a-year panic moment ("oh, the keuring broke Bessy") into a rolling signal. If in August Bessy is already at − € 1.500, you can either:</p>
+    <ul>
+      <li>raise the km-price mid-year (with clear narrative: <em>"Bessy had a € 1.250 repair, price goes from € 0,30 → € 0,38"</em>),</li>
+      <li>or consciously accept the loss and not be surprised.</li>
+    </ul>
+    <p style="margin-bottom:0;">Either way, you <b>know</b>.</p>
+  </div>
+
+  <div class="card">
+    <div class="chip green">Shift 3</div>
+    <h3 style="margin-top:10px;">The yearly settlement becomes two separate conversations.</h3>
+    <p>Right now it's one confusing conversation ("let's close the books"). Split it:</p>
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap: 16px; margin-top: 12px;">
+      <div style="background:var(--paperDeep); padding:14px 16px;">
+        <div class="chip ghost">Act 1</div>
+        <h4 style="font-family:var(--serif); margin: 8px 0 4px;">Member settlement</h4>
+        <p style="font-size:14px; margin:0;">Each member pays for their trips, reclaims fuel / costs they advanced. Strictly member ↔ co-op fund. Ends with the fund holding a pot of money.</p>
+      </div>
+      <div style="background:var(--paperDeep); padding:14px 16px;">
+        <div class="chip ghost">Act 2</div>
+        <h4 style="font-family:var(--serif); margin: 8px 0 4px;">Owner payout</h4>
+        <p style="font-size:14px; margin:0;">The fund pays each owner: trip revenue − unreimbursed fuel/costs − the fixed costs they carried. The surplus/deficit is the answer to your question.</p>
+      </div>
+    </div>
+    <p style="margin-bottom:0; margin-top: 14px;">Because these are now distinct events, each one has a <b>clear success criterion</b>. Members stop arguing about insurance they never see; owners see whether the prices they set were right.</p>
+  </div>
+
+  <hr class="perf"/>
+
+  <!-- ═══════════════════════════════════════════════ -->
+  <div class="section-num" id="flow">§ 4</div>
+  <h2>What the new yearly flow looks like</h2>
+
+  <p>Four events across the year, each with <b>one simple question it answers</b>:</p>
+
+  <div class="step">
+    <div class="num">▸</div>
+    <div>
+      <h3>January — Price setting (with assistant)</h3>
+      <p>For each car, the admin opens the <b>km-rate assistant</b>. It shows last year's actual costs, breaks them down per km, adds fixed costs, suggests a cost-covering price. Owner can override — but now override is a <em>conscious choice</em> with a visible shortfall number, not a guess.</p>
+      <p><b>Answer:</b> "If usage stays similar, will this price cover costs? Yes / no, and by how much."</p>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="num">▸</div>
+    <div>
+      <h3>All year — Rolling owner-net tile</h3>
+      <p>Always visible on admin dashboard. A tile per car: current revenue minus current costs minus pro-rated fixed costs. Red stamp if off-track.</p>
+      <p><b>Answer:</b> "Right now, is each car on or off track?"</p>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="num">▸</div>
+    <div>
+      <h3>December — Member settlement</h3>
+      <p>The existing dashboard, unchanged in spirit: every member gets one clear row — pay this, or receive this.</p>
+      <p><b>Answer:</b> "What does each member owe, and what do they get back?"</p>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="num">▸</div>
+    <div>
+      <h3>December — Owner payout</h3>
+      <p>A new statement, one card per car. Revenue on top. Fuel, costs, fixed costs subtracted. One bottom number: <b>net to owner</b>. Plus a one-line explanation: <em>"Bessy was profitable this year because usage went up and no repairs happened"</em> or <em>"Ethel lost € 600 because of an unexpected gearbox"</em>.</p>
+      <p><b>Answer:</b> <b>Exactly the question you've been asking for 8 years.</b></p>
+    </div>
+  </div>
+
+  <hr class="perf"/>
+
+  <div class="card" style="border-top-color: var(--green);">
+    <div class="chip green">TL;DR</div>
+    <h3 style="margin-top:10px;">What changes, practically</h3>
+    <ol style="font-size:16px; line-height:1.7;">
+      <li>Add a "fixed costs per car per year" input (4 fields · 2 cars now, 3 next year · ~3 minutes).</li>
+      <li>Compute and show <b>owner net</b> as a first-class number on the dashboard — not buried in the settlement.</li>
+      <li>Split settlement into two cards: member pay-up, owner pay-out. Stop mixing them.</li>
+      <li>Show the km-price assistant every January so pricing is never a blind guess again.</li>
+    </ol>
+    <p style="margin-bottom:0;"><b>None of this requires a new behaviour from members.</b> They still log trips, advance fuel, pay at year-end. The change is entirely in how the data you already collect is <b>surfaced</b>, and in the addition of fixed costs.</p>
+  </div>
+
+  <p style="margin-top: 48px; font-family: var(--mono); font-size: 11px; letter-spacing: 1.5px; color: var(--inkMute); text-align: center; text-transform: uppercase;">— End of analysis · ready to translate into screens —</p>
+
+</div>
+</body>
+</html>

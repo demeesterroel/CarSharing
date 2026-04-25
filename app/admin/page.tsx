@@ -7,6 +7,7 @@ import { useT } from "@/components/locale-provider";
 import type { CarPnL, KmGap, ZeroKmTrip, MonthlyCarKm, PersonContribution, CarYearKm, CarPriceHistory } from "@/lib/queries/admin";
 import type { DashboardRow, Reservation, Car, Person, FixedCostItem, FixedCostCategory } from "@/types";
 import { useCars, useUpdateCar } from "@/hooks/use-cars";
+import { useEarliestDashboardYear } from "@/hooks/use-dashboard";
 import { toast } from "sonner";
 
 // ── Fixed cost helpers ────────────────────────────────────────
@@ -1404,6 +1405,7 @@ function DataHygiene({ year }: { year: number }) {
 function Settlement({ year: currentYear }: { year: number }) {
   const t = useT();
   const [year, setYear] = useState(currentYear);
+  const { data: earliestYear = currentYear } = useEarliestDashboardYear();
   const { data } = useAdminSummary(year);
   const allRows = data?.settlement ?? [];
   const rows = allRows.filter((r) => r.trip_count > 0 || r.fuel_count > 0 || r.expense_amount !== 0);
@@ -1415,10 +1417,12 @@ function Settlement({ year: currentYear }: { year: number }) {
       <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 0, marginBottom: 12 }}>
         <button
           onClick={() => setYear((y) => y - 1)}
+          disabled={year <= earliestYear}
           style={{
             padding: "6px 14px", background: "transparent", border: `1.5px solid ${paper.ink}`,
             borderRight: "none", fontFamily: fontMono, fontSize: 10, fontWeight: 700,
-            color: paper.ink, cursor: "pointer", letterSpacing: 1,
+            color: year <= earliestYear ? paper.inkMute : paper.ink,
+            cursor: year <= earliestYear ? "default" : "pointer", letterSpacing: 1,
           }}>
           ← {year - 1}
         </button>
@@ -1491,6 +1495,7 @@ function Settlement({ year: currentYear }: { year: number }) {
 function OwnerPayout({ year: currentYear }: { year: number }) {
   const t = useT();
   const [year, setYear] = useState(currentYear);
+  const { data: earliestYear = currentYear } = useEarliestDashboardYear();
   const { data } = useAdminSummary(year);
   const cars = data?.carPnL ?? [];
 
@@ -1505,10 +1510,12 @@ function OwnerPayout({ year: currentYear }: { year: number }) {
       <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 0, marginBottom: 12 }}>
         <button
           onClick={() => setYear((y) => y - 1)}
+          disabled={year <= earliestYear}
           style={{
             padding: "6px 14px", background: "transparent", border: `1.5px solid ${paper.ink}`,
             borderRight: "none", fontFamily: fontMono, fontSize: 10, fontWeight: 700,
-            color: paper.ink, cursor: "pointer", letterSpacing: 1,
+            color: year <= earliestYear ? paper.inkMute : paper.ink,
+            cursor: year <= earliestYear ? "default" : "pointer", letterSpacing: 1,
           }}>
           ← {year - 1}
         </button>

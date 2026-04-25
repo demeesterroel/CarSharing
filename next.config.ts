@@ -6,6 +6,7 @@ const withPWA = withPWAInit({
   register: true,
   workboxOptions: { skipWaiting: true },
   disable: process.env.NODE_ENV === "development",
+  publicExcludes: ["!icons/source.svg"],
 });
 
 const nextConfig: NextConfig = {

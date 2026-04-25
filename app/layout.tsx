@@ -19,7 +19,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Autodelen — Coöperatieve Antwerpen",
+  title: "AutoDelen — Coöperatieve Antwerpen",
   description: "Eerlijk autodelen voor familie en vrienden",
   manifest: "/manifest.json",
   appleWebApp: {

@@ -65,12 +65,15 @@ export interface CarPnL {
 
 export interface KmGap {
   car_short: string;
+  car_id: number;
   after_trip_id: number;
   after_date: string;
   after_end: number;
+  after_person: string;
   before_trip_id: number;
   before_date: string;
   before_start: number;
+  before_person: string;
   missing_km: number;
 }
 
@@ -229,9 +232,10 @@ export function getKmGaps(db: Database.Database): KmGap[] {
 
   for (const car of cars) {
     const trips = db.prepare(`
-      SELECT id, date, start_odometer, end_odometer
-      FROM trips WHERE car_id=? ORDER BY date ASC, end_odometer ASC
-    `).all(car.id) as { id: number; date: string; start_odometer: number; end_odometer: number }[];
+      SELECT t.id, t.date, t.start_odometer, t.end_odometer, p.name AS person_name
+      FROM trips t JOIN people p ON p.id = t.person_id
+      WHERE t.car_id=? ORDER BY t.date ASC, t.end_odometer ASC
+    `).all(car.id) as { id: number; date: string; start_odometer: number; end_odometer: number; person_name: string }[];
 
     for (let i = 1; i < trips.length; i++) {
       const prev = trips[i - 1];
@@ -239,12 +243,15 @@ export function getKmGaps(db: Database.Database): KmGap[] {
       if (cur.start_odometer > prev.end_odometer + 1) {
         gaps.push({
           car_short: car.short,
+          car_id: car.id,
           after_trip_id: prev.id,
           after_date: prev.date,
           after_end: prev.end_odometer,
+          after_person: prev.person_name,
           before_trip_id: cur.id,
           before_date: cur.date,
           before_start: cur.start_odometer,
+          before_person: cur.person_name,
           missing_km: cur.start_odometer - prev.end_odometer,
         });
       }

@@ -1,5 +1,6 @@
 "use client";
-import { useState } from "react";
+import { Suspense } from "react";
+import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import { toast } from "sonner";
 import * as Dialog from "@radix-ui/react-dialog";
 import { PageHeader } from "@/components/page-header";
@@ -8,6 +9,8 @@ import { Fab } from "@/components/fab";
 import { TripForm } from "./trip-form";
 import { useTrips, useCreateTrip, useUpdateTrip, useDeleteTrip } from "@/hooks/use-trips";
 import { useMe } from "@/hooks/use-me";
+import { useQueryParam } from "@/hooks/use-query-param";
+import { YearSelect } from "@/components/year-select";
 import type { Trip } from "@/types";
 import { paper, fontMono, fontSerif, fmtMoney, fmtYearMonth } from "@/lib/paper-theme";
 import { useT } from "@/components/locale-provider";
@@ -23,24 +26,63 @@ const sheetStyle: React.CSSProperties = {
   background: paper.paperDeep, zIndex: 50, overflowY: "auto",
 };
 
-export default function TripsPage() {
+function TripsContent() {
   const t = useT();
   const { data: trips = [], isLoading } = useTrips();
   const { data: me } = useMe();
   const createTrip = useCreateTrip();
   const updateTrip = useUpdateTrip();
   const deleteTrip = useDeleteTrip();
-  const [adding, setAdding] = useState(false);
-  const [editing, setEditing] = useState<Trip | null>(null);
-  const [filter, setFilter] = useState<"all" | "mine">("all");
-  const [carFilter, setCarFilter] = useState<string | null>(null);
 
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const pathname = usePathname();
+
+  // Filter params (replace — no extra history entries)
+  const [mineParam, setMineParam] = useQueryParam("mine", "");
+  const [carFilter, setCarFilter] = useQueryParam("car", "");
+  const [yearFilter, setYearFilter] = useQueryParam("year", "");
+
+  // Modal params (push — history entries for back-button support)
+  const actionParam = searchParams.get("action");
+  const editIdParam = searchParams.get("edit");
+
+  const adding = actionParam === "add";
+  const editingId = editIdParam ? Number(editIdParam) : null;
+  const editing = !isLoading && editingId ? trips.find((tr) => tr.id === editingId) ?? null : null;
+
+  const isMine = mineParam === "true";
   const canFilter = me?.personId != null;
   const cars = Array.from(new Set(trips.map((tr) => tr.car_short).filter((s): s is string => !!s))).sort();
+  const years = Array.from(new Set(trips.map((tr) => tr.date.slice(0, 4)))).sort().reverse();
 
   const visible = trips
-    .filter((tr) => filter === "mine" && canFilter ? tr.person_id === me!.personId : true)
-    .filter((tr) => carFilter ? tr.car_short === carFilter : true);
+    .filter((tr) => isMine && canFilter ? tr.person_id === me!.personId : true)
+    .filter((tr) => carFilter ? tr.car_short === carFilter : true)
+    .filter((tr) => yearFilter ? tr.date.startsWith(yearFilter) : true);
+
+  const openAdd = () => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("action", "add");
+    router.push(`${pathname}?${params.toString()}`, { scroll: false });
+  };
+
+  const openEdit = (trip: Trip) => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("edit", String(trip.id));
+    router.push(`${pathname}?${params.toString()}`, { scroll: false });
+  };
+
+  const closeModal = () => router.back();
+
+  const filterBtnStyle = (active: boolean): React.CSSProperties => ({
+    padding: "5px 12px",
+    background: active ? paper.ink : "transparent",
+    color: active ? paper.paper : paper.inkDim,
+    border: `1.5px solid ${paper.ink}`,
+    fontFamily: fontMono, fontSize: 9, fontWeight: 700, letterSpacing: 2,
+    textTransform: "uppercase", cursor: "pointer",
+  });
 
   if (isLoading) return (
     <div style={{ background: paper.paperDeep, minHeight: "100dvh" }}>
@@ -54,43 +96,40 @@ export default function TripsPage() {
       <PageHeader title={t("page.trips")} />
 
       <div style={{ padding: "10px 16px 8px", borderBottom: `1px solid ${paper.paperDark}`, display: "flex", flexDirection: "column", gap: 6 }}>
-        {/* Mine / All row */}
-        {canFilter && (
-          <div style={{ display: "flex", gap: 0 }}>
-            {(["mine", "all"] as const).map((v, i, arr) => (
-              <button
-                key={v}
-                onClick={() => setFilter(v)}
-                style={{
-                  padding: "5px 12px",
-                  background: filter === v ? paper.ink : "transparent",
-                  color: filter === v ? paper.paper : paper.inkDim,
-                  border: `1.5px solid ${paper.ink}`,
-                  borderRight: i < arr.length - 1 ? "none" : `1.5px solid ${paper.ink}`,
-                  fontFamily: fontMono, fontSize: 9, fontWeight: 700, letterSpacing: 2,
-                  textTransform: "uppercase", cursor: "pointer",
-                }}
-              >
-                {v === "all" ? t("filter.all") : t("filter.mine")}
-              </button>
-            ))}
+        {(canFilter || years.length > 1) && (
+          <div style={{ display: "flex", alignItems: "center" }}>
+            {canFilter && (
+              <div style={{ display: "flex", gap: 0 }}>
+                {(["mine", "all"] as const).map((v, i, arr) => (
+                  <button
+                    key={v}
+                    onClick={() => setMineParam(v === "mine" ? "true" : "")}
+                    style={{
+                      ...filterBtnStyle(v === "mine" ? isMine : !isMine),
+                      borderRight: i < arr.length - 1 ? "none" : `1.5px solid ${paper.ink}`,
+                    }}
+                  >
+                    {v === "all" ? t("filter.all") : t("filter.mine")}
+                  </button>
+                ))}
+              </div>
+            )}
+            {years.length > 1 && (
+              <div style={{ marginLeft: "auto" }}>
+                <YearSelect value={yearFilter} onChange={setYearFilter} years={years} allLabel={t("filter.all")} />
+              </div>
+            )}
           </div>
         )}
-        {/* Car filter row */}
         {cars.length > 1 && (
           <div style={{ display: "flex", gap: 0 }}>
             {[null, ...cars].map((car, i, arr) => (
               <button
                 key={car ?? "__all"}
-                onClick={() => setCarFilter(car)}
+                onClick={() => setCarFilter(car ?? "")}
                 style={{
-                  padding: "5px 12px",
-                  background: carFilter === car ? paper.ink : "transparent",
-                  color: carFilter === car ? paper.paper : paper.inkDim,
-                  border: `1.5px solid ${paper.ink}`,
+                  ...filterBtnStyle(carFilter === (car ?? "")),
                   borderRight: i < arr.length - 1 ? "none" : `1.5px solid ${paper.ink}`,
-                  fontFamily: fontMono, fontSize: 9, fontWeight: 700, letterSpacing: 2,
-                  textTransform: "uppercase", cursor: "pointer",
                 }}
               >
                 {car ?? t("filter.all")}
@@ -109,7 +148,7 @@ export default function TripsPage() {
         renderItem={(trip) => (
           <button
             key={trip.id}
-            onClick={() => setEditing(trip)}
+            onClick={() => openEdit(trip)}
             style={{
               width: "100%", display: "flex", alignItems: "center", gap: 12,
               padding: "12px 14px", marginBottom: 8,
@@ -151,7 +190,7 @@ export default function TripsPage() {
         </div>
       )}
 
-      <Dialog.Root open={adding} onOpenChange={setAdding}>
+      <Dialog.Root open={adding} onOpenChange={(open) => { if (!open) closeModal(); }}>
         <Dialog.Portal>
           <Dialog.Overlay style={overlayStyle} />
           <Dialog.Content style={sheetStyle} aria-describedby={undefined}>
@@ -160,16 +199,16 @@ export default function TripsPage() {
             </Dialog.Title>
             <TripForm
               onSubmit={(data) => createTrip.mutate(data as any, {
-                onSuccess: () => { setAdding(false); toast.success(t("toast.trip_saved")); },
+                onSuccess: () => { closeModal(); toast.success(t("toast.trip_saved")); },
                 onError: (e) => toast.error(e.message),
               })}
-              onCancel={() => setAdding(false)}
+              onCancel={closeModal}
             />
           </Dialog.Content>
         </Dialog.Portal>
       </Dialog.Root>
 
-      <Dialog.Root open={!!editing} onOpenChange={(o) => !o && setEditing(null)}>
+      <Dialog.Root open={!!editing} onOpenChange={(open) => { if (!open) closeModal(); }}>
         <Dialog.Portal>
           <Dialog.Overlay style={overlayStyle} />
           <Dialog.Content style={sheetStyle} aria-describedby={undefined}>
@@ -180,12 +219,12 @@ export default function TripsPage() {
               <TripForm
                 defaultValues={editing}
                 onSubmit={(data) => updateTrip.mutate({ id: editing.id, ...data } as any, {
-                  onSuccess: () => { setEditing(null); toast.success(t("toast.saved")); },
+                  onSuccess: () => { closeModal(); toast.success(t("toast.saved")); },
                   onError: (e) => toast.error(e.message),
                 })}
-                onCancel={() => setEditing(null)}
+                onCancel={closeModal}
                 onDelete={() => deleteTrip.mutate(editing.id, {
-                  onSuccess: () => { setEditing(null); toast.success(t("toast.trip_deleted")); },
+                  onSuccess: () => { closeModal(); toast.success(t("toast.trip_deleted")); },
                   onError: (e) => toast.error(e.message),
                 })}
               />
@@ -194,7 +233,11 @@ export default function TripsPage() {
         </Dialog.Portal>
       </Dialog.Root>
 
-      <Fab onClick={() => setAdding(true)} label={t("page.trip_add")} />
+      <Fab onClick={openAdd} label={t("page.trip_add")} />
     </div>
   );
+}
+
+export default function TripsPage() {
+  return <Suspense><TripsContent /></Suspense>;
 }

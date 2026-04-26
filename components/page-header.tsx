@@ -3,6 +3,7 @@ import { useRouter } from "next/navigation";
 import { paper, fontMono, fontSerif } from "@/lib/paper-theme";
 import { useT } from "@/components/locale-provider";
 import { LangSwitcher } from "./lang-switcher";
+import { OfflineBadge } from "./offline-badge";
 
 interface Props {
   title: string;
@@ -46,6 +47,7 @@ export function PageHeader({ title, subtitle, right }: Props) {
           {t("brand.tagline")}
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <OfflineBadge />
           {right}
           <LangSwitcher />
           <button

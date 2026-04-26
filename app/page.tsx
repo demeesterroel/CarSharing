@@ -35,16 +35,24 @@ function Perf({ margin = "12px 0" }: { margin?: string }) {
 function ReceiptRow({
   label, value, big, color, href,
 }: { label: string; value: string; big?: boolean; color?: string; href?: string }) {
+  const [hovered, setHovered] = useState(false);
   const c = color ?? paper.ink;
   const inner = (
     <div style={{
       display: "flex", justifyContent: "space-between", alignItems: "baseline",
       fontFamily: fontMono, padding: "4px 0",
+      ...(href ? {
+        margin: "0 -8px", padding: "4px 8px",
+        background: hovered ? "rgba(0,0,0,0.05)" : "transparent",
+        borderRadius: 2,
+        transition: "background 0.1s",
+      } : {}),
     }}>
       <span style={{
         textTransform: "uppercase", letterSpacing: 1,
         fontSize: big ? 11 : 10, color: paper.inkDim,
         whiteSpace: "nowrap", marginRight: 12,
+        ...(href && hovered ? { textDecoration: "underline", textDecorationColor: paper.inkDim } : {}),
       }}>
         {label}
       </span>
@@ -55,7 +63,12 @@ function ReceiptRow({
   );
   if (href) {
     return (
-      <Link href={href} style={{ textDecoration: "none", display: "block" }}>
+      <Link
+        href={href}
+        style={{ textDecoration: "none", display: "block" }}
+        onMouseEnter={() => setHovered(true)}
+        onMouseLeave={() => setHovered(false)}
+      >
         {inner}
       </Link>
     );

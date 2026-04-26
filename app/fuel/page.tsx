@@ -93,20 +93,51 @@ function FuelContent() {
       <PageHeader title={t("page.fuel")} />
 
       <div style={{ padding: "10px 16px 8px", borderBottom: `1px solid ${paper.paperDark}`, display: "flex", flexDirection: "column", gap: 6 }}>
-        {canFilter && (
-          <div style={{ display: "flex", gap: 0 }}>
-            {(["mine", "all"] as const).map((v, i, arr) => (
-              <button
-                key={v}
-                onClick={() => setMineParam(v === "mine" ? "true" : "")}
-                style={{
-                  ...filterBtnStyle(v === "mine" ? isMine : !isMine),
-                  borderRight: i < arr.length - 1 ? "none" : `1.5px solid ${paper.ink}`,
-                }}
-              >
-                {v === "all" ? t("filter.all") : t("filter.mine")}
-              </button>
-            ))}
+        {(canFilter || years.length > 1) && (
+          <div style={{ display: "flex", alignItems: "center" }}>
+            {canFilter && (
+              <div style={{ display: "flex", gap: 0 }}>
+                {(["mine", "all"] as const).map((v, i, arr) => (
+                  <button
+                    key={v}
+                    onClick={() => setMineParam(v === "mine" ? "true" : "")}
+                    style={{
+                      ...filterBtnStyle(v === "mine" ? isMine : !isMine),
+                      borderRight: i < arr.length - 1 ? "none" : `1.5px solid ${paper.ink}`,
+                    }}
+                  >
+                    {v === "all" ? t("filter.all") : t("filter.mine")}
+                  </button>
+                ))}
+              </div>
+            )}
+            {years.length > 1 && (
+              <div style={{ position: "relative", marginLeft: "auto" }}>
+                <select
+                  value={yearFilter}
+                  onChange={(e) => setYearFilter(e.target.value)}
+                  style={{
+                    fontFamily: fontMono, fontSize: 9, fontWeight: 700, letterSpacing: 2,
+                    textTransform: "uppercase",
+                    background: yearFilter ? paper.ink : "transparent",
+                    color: yearFilter ? paper.paper : paper.inkDim,
+                    border: `1.5px solid ${paper.ink}`,
+                    padding: "5px 24px 5px 12px",
+                    cursor: "pointer",
+                    appearance: "none",
+                    outline: "none",
+                  }}
+                >
+                  <option value="">{t("filter.all")}</option>
+                  {years.map((y) => <option key={y} value={y}>{y}</option>)}
+                </select>
+                <span style={{
+                  position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)",
+                  pointerEvents: "none", fontFamily: fontMono, fontSize: 9,
+                  color: yearFilter ? paper.paper : paper.inkDim,
+                }}>▾</span>
+              </div>
+            )}
           </div>
         )}
         {cars.length > 1 && (
@@ -121,22 +152,6 @@ function FuelContent() {
                 }}
               >
                 {car ?? t("filter.all")}
-              </button>
-            ))}
-          </div>
-        )}
-        {years.length > 1 && (
-          <div style={{ display: "flex", gap: 0, flexWrap: "wrap" }}>
-            {["", ...years].map((y, i, arr) => (
-              <button
-                key={y || "__all"}
-                onClick={() => setYearFilter(y)}
-                style={{
-                  ...filterBtnStyle(yearFilter === y),
-                  borderRight: i < arr.length - 1 ? "none" : `1.5px solid ${paper.ink}`,
-                }}
-              >
-                {y || t("filter.all")}
               </button>
             ))}
           </div>

@@ -10,6 +10,7 @@ import { ExpenseForm } from "./expense-form";
 import { useExpenses, useCreateExpense, useUpdateExpense, useDeleteExpense } from "@/hooks/use-expenses";
 import { useMe } from "@/hooks/use-me";
 import { useQueryParam } from "@/hooks/use-query-param";
+import { YearSelect } from "@/components/year-select";
 import type { Expense } from "@/types";
 import { paper, fontMono, fontSerif, fmtMoney, fmtYearMonth } from "@/lib/paper-theme";
 import { useT } from "@/components/locale-provider";
@@ -112,30 +113,8 @@ function ExpensesContent() {
               </div>
             )}
             {years.length > 1 && (
-              <div style={{ position: "relative", marginLeft: "auto" }}>
-                <select
-                  value={yearFilter}
-                  onChange={(e) => setYearFilter(e.target.value)}
-                  style={{
-                    fontFamily: fontMono, fontSize: 9, fontWeight: 700, letterSpacing: 2,
-                    textTransform: "uppercase",
-                    background: yearFilter ? paper.ink : "transparent",
-                    color: yearFilter ? paper.paper : paper.inkDim,
-                    border: `1.5px solid ${paper.ink}`,
-                    padding: "5px 24px 5px 12px",
-                    cursor: "pointer",
-                    appearance: "none",
-                    outline: "none",
-                  }}
-                >
-                  <option value="">{t("filter.all")}</option>
-                  {years.map((y) => <option key={y} value={y}>{y}</option>)}
-                </select>
-                <span style={{
-                  position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)",
-                  pointerEvents: "none", fontFamily: fontMono, fontSize: 9,
-                  color: yearFilter ? paper.paper : paper.inkDim,
-                }}>▾</span>
+              <div style={{ marginLeft: "auto" }}>
+                <YearSelect value={yearFilter} onChange={setYearFilter} years={years} allLabel={t("filter.all")} />
               </div>
             )}
           </div>

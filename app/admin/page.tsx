@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import { useQueryParam } from "@/hooks/use-query-param";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { PageHeader } from "@/components/page-header";
 import { paper, fontMono, fontSerif, fmtMoney } from "@/lib/paper-theme";
@@ -1628,7 +1629,8 @@ function OwnerPayout({ year: currentYear }: { year: number }) {
 export default function AdminPage() {
   const t = useT();
   const year = new Date().getFullYear();
-  const [sub, setSub] = useState("inbox");
+  const [sub, setSubParam] = useQueryParam("tab", "inbox");
+  const setSub = (value: string) => setSubParam(value);
   const { data } = useAdminSummary(year);
   const { data: reservations = [] } = useReservations();
   const pendingCount = reservations.filter((r) => r.status === "pending").length;

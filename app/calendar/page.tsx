@@ -1,7 +1,9 @@
 "use client";
-import { Suspense, useMemo, useState } from "react";
+import { Suspense, useEffect, useMemo, useState } from "react";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
+import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { useOnlineState } from "@/lib/offline/online-state";
 import { PageHeader } from "@/components/page-header";
 import { ReservationForm } from "./reservation-form";
 import {
@@ -178,6 +180,16 @@ function CalendarContent() {
   const editing = !isLoading && editIdParam
     ? reservations.find((r) => r.id === Number(editIdParam)) ?? null
     : null;
+
+  // Refetch reservations whenever the new-reservation sheet opens online —
+  // the conflict warning needs to see the freshest server state.
+  const qc = useQueryClient();
+  const { online } = useOnlineState();
+  useEffect(() => {
+    if (sheet === "add" && online) {
+      qc.invalidateQueries({ queryKey: ["reservations"] });
+    }
+  }, [sheet, online, qc]);
 
   const [prefillCarId, setPrefillCarId] = useState<number | undefined>();
   const [prefillFrom, setPrefillFrom] = useState<string | undefined>();

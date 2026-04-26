@@ -179,7 +179,7 @@ function BalanceReceipt({ personName }: { personName: string }) {
         {myRow.paid_amount !== 0 ? (
           <ReceiptRow
             label={t("dashboard.paid_label")}
-            value={`− ${fmtMoney(myRow.paid_amount)}`}
+            value={`${myRow.paid_amount >= 0 ? "−" : "+"} ${fmtMoney(Math.abs(myRow.paid_amount))}`}
           />
         ) : (
           <ReceiptRow

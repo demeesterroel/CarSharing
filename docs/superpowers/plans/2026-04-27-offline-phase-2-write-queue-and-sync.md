@@ -20,7 +20,19 @@
 
 - **ID strategy:** Server keeps integer autoincrement `id` as the primary key (don't break existing FK relationships). Add `client_id TEXT UNIQUE` as a secondary identifier for idempotency. Optimistic rows use the `client_id` as their React Query identity until the real `id` arrives.
 - **Conflict policy:** Last-write-wins, with a soft check. Each mutable row has `updated_at`. Client sends `If-Unmodified-Since`-style header (`X-Expected-Updated-At`) on PUT. If server's `updated_at` is newer, return 409. On 409, drop the queued item and toast the user. No automatic merge.
-- **Mutation scope:** `trips`, `fuel_fillups`, `expenses`, `reservations`. `people` and `cars` are admin-only and rarer — out of scope for Phase 2 (admin can be required to be online; document this).
+- **Mutation scope (priority-ordered):**
+  - **Primary — full offline write support:**
+    - `trips` — the highest-frequency action; logging a trip in the field is the canonical offline use case.
+    - `fuel_fillups` — second-most-frequent; often filled in at the pump where signal is unreliable.
+  - **Secondary — full offline write support:**
+    - `expenses` — member-initiated extra-cost logging.
+    - `reservations` — booking the car for a future window (the create/edit/delete flow only).
+  - **Read-only offline (writes require connection):**
+    - **Reservation status changes** (admin confirm/reject) — confirming a booking offline could mislead users about availability.
+    - **Admin screens** under `/admin/*` (inbox, member management, settlement, payouts, hygiene gap-assignment, owner break-even tooling).
+    - **Owner screens** (car management, fixed costs, price history, expected-km).
+    - **People & cars CRUD** (admin-only forms).
+  - **Rationale:** the offline experience targets the *member* in the field. Admin and owner workflows are deliberate and benefit from the consistency of a live server; making them write-offline introduces failure modes (e.g. queued reservation confirms creating phantom availability) that aren't worth the complexity for a use case that almost always happens at a desk.
 - **Library choices:** `idb` (5 KB, well-maintained, typed wrapper). No Dexie, no Replicache, no full sync engine.
 - **Drain trigger:** primary path is the `online` event (works in all browsers). Background Sync API is registered as a fallback for cases where the tab is closed before reconnect; we accept that Safari ignores Background Sync.
 - **No background fetcher worker:** the drainer runs in the page context, not the SW. Simpler, easier to reason about React Query invalidation. The only thing the SW does is fire the Background Sync event back to a focused client.
@@ -65,15 +77,20 @@
 
 ## Build sequence
 
-This is a thicker plan than Phase 1. Order matters:
+This is a thicker plan than Phase 1. Order matters and follows the priority pattern (trips → fuel → expenses → reservations) so the high-value member workflows are working end-to-end before we touch the secondary ones:
 
 1. **Schema first** (Task 1–2) so server can be built against it.
-2. **Server idempotency** (Task 3–6) — one resource at a time, fully tested.
-3. **Client UUID** + **outbox** + **sync engine** (Task 7–10) — the offline machinery, still without UI hooks.
-4. **Mutation hooks integration** (Task 11–14) — one entity at a time.
-5. **UI feedback** (Task 15–16) — pending badge in lists, queued count in offline badge.
-6. **End-to-end QA** (Task 17).
-7. **PR** (Task 18).
+2. **Server idempotency, primary scope** (Task 3–4) — trips end-to-end (POST idempotent, PUT conflict-checked, DELETE idempotent), fully tested.
+3. **Server idempotency, primary scope cont.** (Task 5) — fuel, mirror of trips.
+4. **Server idempotency, secondary scope** (Task 6) — expenses + reservations (member create/edit/delete only; the `/api/reservations/[id]/status` admin endpoint stays untouched and online-only).
+5. **Client UUID** + **outbox** + **sync engine** (Task 7–10) — the offline machinery, still without UI hooks.
+6. **Mutation hooks, primary scope** (Task 11–12) — trips, then fuel. After Task 12 the highest-value offline path is shippable on its own if needed.
+7. **Mutation hooks, secondary scope** (Task 13–14) — expenses, reservations.
+8. **UI feedback** (Task 15–16) — pending badge in lists, queued count in offline badge.
+9. **End-to-end QA** (Task 17).
+10. **PR** (Task 18).
+
+If at any point this branch grows uncomfortably large, it's safe to ship after Task 12 (primary scope only), open #20 follow-up issues for secondary scope, and merge in two waves. The architectural pieces (outbox, drainer, optimistic helpers) don't change between waves.
 
 ---
 
@@ -1472,6 +1489,7 @@ Watch for the migration to apply on container start. Verify on production by add
 
 - **Multi-device sync / real-time:** out of scope; this is single-device offline.
 - **CRDT-based merging:** unnecessary at this concurrency level.
-- **Admin operations offline (cars, members):** require online connectivity. Document in user help text.
-- **Reservation status changes offline:** the social contract here is that confirming a reservation should be deliberate and online; queueing confirms could mislead users.
+- **Admin & owner offline writes:** all `/admin/*` workflows (inbox, settlement, payouts, hygiene gap-assignment, member CRUD, car CRUD, fixed-cost editing, price history) require connectivity. Surface this as a polite hint in the page header when an admin opens an admin screen offline (e.g. `OFFLINE — admin features require connection`).
+- **Reservation status changes offline:** confirming or rejecting a booking is an admin action with cross-member visibility consequences; queueing it could mislead users about availability.
 - **Outbox eviction / age-based GC:** can be added later as a maintenance hook; not needed in Phase 2.
+- **Per-resource priority differences in the runtime:** all four scoped resources share the same outbox, drainer, and optimistic helpers. The "primary vs secondary" split only governs *implementation order*, not runtime behavior.

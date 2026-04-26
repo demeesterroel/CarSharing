@@ -1,4 +1,5 @@
 "use client";
+import { Suspense } from "react";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import { toast } from "sonner";
 import * as Dialog from "@radix-ui/react-dialog";
@@ -24,7 +25,7 @@ const sheetStyle: React.CSSProperties = {
   background: paper.paperDeep, zIndex: 50, overflowY: "auto",
 };
 
-export default function FuelPage() {
+function FuelContent() {
   const t = useT();
   const { data: fillups = [], isLoading } = useFuelFillups();
   const { data: me } = useMe();
@@ -236,4 +237,8 @@ export default function FuelPage() {
       <Fab onClick={openAdd} label={t("page.fuel_add")} />
     </div>
   );
+}
+
+export default function FuelPage() {
+  return <Suspense><FuelContent /></Suspense>;
 }

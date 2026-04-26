@@ -1,5 +1,5 @@
 "use client";
-import { useMemo, useState } from "react";
+import { Suspense, useMemo, useState } from "react";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/page-header";
@@ -154,7 +154,7 @@ function ResRow({
 }
 
 // ── Main page ─────────────────────────────────────────────────
-export default function CalendarPage() {
+function CalendarContent() {
   const t = useT();
   const today = new Date().toISOString().slice(0, 10);
 
@@ -349,4 +349,8 @@ export default function CalendarPage() {
       </BottomSheet>
     </div>
   );
+}
+
+export default function CalendarPage() {
+  return <Suspense><CalendarContent /></Suspense>;
 }

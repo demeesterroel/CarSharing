@@ -1,4 +1,5 @@
 "use client";
+import { Suspense } from "react";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import { toast } from "sonner";
 import * as Dialog from "@radix-ui/react-dialog";
@@ -24,7 +25,7 @@ const sheetStyle: React.CSSProperties = {
   background: paper.paperDeep, zIndex: 50, overflowY: "auto",
 };
 
-export default function TripsPage() {
+function TripsContent() {
   const t = useT();
   const { data: trips = [], isLoading } = useTrips();
   const { data: me } = useMe();
@@ -244,4 +245,8 @@ export default function TripsPage() {
       <Fab onClick={openAdd} label={t("page.trip_add")} />
     </div>
   );
+}
+
+export default function TripsPage() {
+  return <Suspense><TripsContent /></Suspense>;
 }

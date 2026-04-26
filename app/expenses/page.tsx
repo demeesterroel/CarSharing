@@ -1,4 +1,5 @@
 "use client";
+import { Suspense } from "react";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import { toast } from "sonner";
 import * as Dialog from "@radix-ui/react-dialog";
@@ -24,7 +25,7 @@ const sheetStyle: React.CSSProperties = {
   background: paper.paperDeep, zIndex: 50, overflowY: "auto",
 };
 
-export default function ExpensesPage() {
+function ExpensesContent() {
   const t = useT();
   const { data: expenses = [], isLoading } = useExpenses();
   const { data: me } = useMe();
@@ -236,4 +237,8 @@ export default function ExpensesPage() {
       <Fab onClick={openAdd} label={t("page.expense_add")} />
     </div>
   );
+}
+
+export default function ExpensesPage() {
+  return <Suspense><ExpensesContent /></Suspense>;
 }

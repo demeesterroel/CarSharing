@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import { useQueryParam } from "@/hooks/use-query-param";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { PageHeader } from "@/components/page-header";
@@ -1626,7 +1626,7 @@ function OwnerPayout({ year: currentYear }: { year: number }) {
 }
 
 // ── Main Admin Page ───────────────────────────────────────────
-export default function AdminPage() {
+function AdminContent() {
   const t = useT();
   const year = new Date().getFullYear();
   const [sub, setSub] = useQueryParam("tab", "inbox");
@@ -1674,4 +1674,8 @@ export default function AdminPage() {
       {sub === "payout"  && <OwnerPayout year={year} />}
     </div>
   );
+}
+
+export default function AdminPage() {
+  return <Suspense><AdminContent /></Suspense>;
 }

@@ -94,6 +94,27 @@ export function OnlineStateProvider({ children }: { children: React.ReactNode })
     };
   }, [online]);
 
+  // Recovery heartbeat — runs when offline to detect network return even when
+  // the browser doesn't fire the 'online' event (e.g. DevTools SW offline checkbox).
+  useEffect(() => {
+    if (online) return;
+    let cancelled = false;
+    const id = setInterval(async () => {
+      if (heartbeatRunningRef.current) return;
+      heartbeatRunningRef.current = true;
+      try {
+        const ok = await heartbeat();
+        if (!cancelled && ok) setOnline(true);
+      } finally {
+        heartbeatRunningRef.current = false;
+      }
+    }, 5_000);
+    return () => {
+      cancelled = true;
+      clearInterval(id);
+    };
+  }, [online]);
+
   // Tick `now` once a minute so staleness recomputes without remounts.
   useEffect(() => {
     const id = setInterval(() => setNow(Date.now()), STALENESS_TICK_MS);

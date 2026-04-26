@@ -152,6 +152,9 @@ const withPWA = withPWAInit({
         handler: "NetworkFirst",
         options: {
           cacheName: "pages-rsc-prefetch",
+          // ignoreSearch: URL params are client-side state only (sheets, filters);
+          // the server renders the same RSC shell regardless of query params.
+          matchOptions: { ignoreSearch: true },
           expiration: { maxEntries: 32, maxAgeSeconds: ONE_DAY },
         },
       },
@@ -163,6 +166,7 @@ const withPWA = withPWAInit({
         handler: "NetworkFirst",
         options: {
           cacheName: "pages-rsc",
+          matchOptions: { ignoreSearch: true },
           expiration: { maxEntries: 32, maxAgeSeconds: ONE_DAY },
         },
       },
@@ -172,6 +176,7 @@ const withPWA = withPWAInit({
         handler: "NetworkFirst",
         options: {
           cacheName: "pages",
+          matchOptions: { ignoreSearch: true },
           expiration: { maxEntries: 32, maxAgeSeconds: ONE_DAY },
         },
       },

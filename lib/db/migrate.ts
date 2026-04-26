@@ -23,7 +23,15 @@ export function runMigrations(db: Database.Database): void {
   for (const filename of files) {
     if (applied.has(filename)) continue;
     const sql = readFileSync(path.join(migrationsDir, filename), "utf-8");
-    db.exec(sql);
+    // Disable FK enforcement during migration so data migrations (INSERT/UPDATE
+    // referencing real IDs) don't fail against an empty test DB or partial state.
+    const fkWasOn = (db.pragma("foreign_keys", { simple: true }) as number) === 1;
+    if (fkWasOn) db.pragma("foreign_keys = OFF");
+    try {
+      db.exec(sql);
+    } finally {
+      if (fkWasOn) db.pragma("foreign_keys = ON");
+    }
     db.prepare("INSERT INTO _migrations (filename) VALUES (?)").run(filename);
     console.log(`[db] migration applied: ${filename}`);
   }

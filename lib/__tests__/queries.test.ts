@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import Database from "better-sqlite3";
-import { applySchema } from "../schema.sql";
+import { runMigrations } from "../db/migrate";
 import { getPeople, insertPerson, getPersonById } from "../queries/people";
 import { getCars, insertCar } from "../queries/cars";
 import { insertTrip, getTrips } from "../queries/trips";
@@ -12,7 +12,7 @@ import { insertPayment } from "../queries/payments";
 function makeDb() {
   const db = new Database(":memory:");
   db.pragma("foreign_keys = ON");
-  applySchema(db);
+  runMigrations(db);
   return db;
 }
 

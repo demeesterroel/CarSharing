@@ -1,7 +1,7 @@
 import Database from "better-sqlite3";
 import path from "path";
 import { readFileSync } from "fs";
-import { applySchema } from "../lib/schema.sql.js";
+import { runMigrations } from "../lib/db/migrate.js";
 import { calcTripAmount, calcPricePerLiter, calcPaymentYear } from "../lib/formulas.js";
 
 const DB_PATH = process.env.DB_PATH ?? path.join(process.cwd(), "data", "autodelen.db");
@@ -10,7 +10,7 @@ const JSON_PATH = path.join(process.cwd(), "docs", "data", "car_sharing.json");
 const db = new Database(DB_PATH);
 db.pragma("journal_mode = WAL");
 db.pragma("foreign_keys = ON");
-applySchema(db);
+runMigrations(db);
 
 const data = JSON.parse(readFileSync(JSON_PATH, "utf-8"));
 

@@ -51,8 +51,18 @@ export function PickCalendar({ reservations, carId, excludeId, from, to, onRange
     );
   }
 
+  // A day is blocked only if it's strictly inside a reservation (not on its boundary).
+  // Boundary days (start/end) can be shared between consecutive reservations.
+  function isBlockedDay(day: string): boolean {
+    return reservations.some(
+      (r) => r.car_id === carId && r.status !== "rejected" &&
+        !(excludeId && r.id === excludeId) &&
+        day > r.start_date && day < r.end_date
+    );
+  }
+
   function handleCell(day: string) {
-    if (getReservation(day)) return;
+    if (isBlockedDay(day)) return;
     if (!pickFrom) { setPickFrom(day); return; }
     const newFrom = pickFrom <= day ? pickFrom : day;
     const newTo   = pickFrom <= day ? day : pickFrom;
@@ -142,7 +152,7 @@ export function PickCalendar({ reservations, carId, excludeId, from, to, onRange
                   background: bg, color: fg, border,
                   fontFamily: fontMono, fontSize: 9,
                   minHeight: 44, position: "relative",
-                  cursor: res ? "default" : "pointer",
+                  cursor: isBlockedDay(day) ? "default" : "pointer",
                 }}
               >
                 <div style={{ fontSize: 8, opacity: 0.75 }}>{dayNames[d.getUTCDay()]}</div>

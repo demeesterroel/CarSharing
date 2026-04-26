@@ -15,6 +15,7 @@ interface FuelAgg {
 }
 interface ExpenseAgg {
   person_id: number;
+  expense_count: number;
   expense_amount: number;
 }
 interface PaymentAgg {
@@ -69,6 +70,7 @@ export function getDashboard(db: Database.Database, year: number): DashboardRow[
   const expenseRows = db
     .prepare(`
       SELECT person_id,
+             COUNT(*)                AS expense_count,
              COALESCE(SUM(amount),0) AS expense_amount
       FROM expenses
       WHERE strftime('%Y', date) = ?
@@ -115,6 +117,7 @@ export function getDashboard(db: Database.Database, year: number): DashboardRow[
       trip_km: t?.trip_km ?? 0,
       fuel_count: f?.fuel_count ?? 0,
       fuel_liters: f?.fuel_liters ?? 0,
+      expense_count: e?.expense_count ?? 0,
       trip_amount,
       fuel_amount,
       expense_amount,

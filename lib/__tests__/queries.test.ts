@@ -8,6 +8,7 @@ import { getLastCarState } from "../queries/car-state";
 import { insertFuelFillup } from "../queries/fuel-fillups";
 import { getDashboard } from "../queries/dashboard";
 import { insertPayment } from "../queries/payments";
+import { insertExpense } from "../queries/expenses";
 
 function makeDb() {
   const db = new Database(":memory:");
@@ -178,5 +179,15 @@ describe("getDashboard", () => {
     const rows = getDashboard(db, 2026);
     expect(rows[0].paid_amount).toBeCloseTo(10);
     expect(rows[0].balance).toBeCloseTo(-15);
+  });
+
+  it("counts expenses in expense_count", () => {
+    const db = makeDb();
+    const pid = insertPerson(db, { name: "Z", ...basePerson });
+    const cid = insertCar(db, { short: "C", name: "C", price_per_km: 0.25, brand: null, color: null });
+    insertExpense(db, { person_id: pid, car_id: cid, date: "2026-02-01", amount: 30, description: "oil", category: null });
+    insertExpense(db, { person_id: pid, car_id: cid, date: "2026-03-01", amount: 15, description: "wash", category: null });
+    const rows = getDashboard(db, 2026);
+    expect(rows[0].expense_count).toBe(2);
   });
 });

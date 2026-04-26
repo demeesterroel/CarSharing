@@ -130,6 +130,7 @@ export interface DashboardRow {
   trip_km: number;
   fuel_count: number;
   fuel_liters: number;
+  expense_count: number;
   trip_amount: number;     // negative (cost charged)
   fuel_amount: number;     // positive (fuel paid)
   expense_amount: number;  // positive (expenses paid)

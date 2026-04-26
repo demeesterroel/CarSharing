@@ -8,6 +8,7 @@ import { useT } from "@/components/locale-provider";
 import type { CarPnL, KmGap, ZeroKmTrip, MonthlyCarKm, PersonContribution, CarYearKm, CarPriceHistory } from "@/lib/queries/admin";
 import type { DashboardRow, Reservation, Car, Person, FixedCostItem, FixedCostCategory } from "@/types";
 import { useCars, useUpdateCar } from "@/hooks/use-cars";
+import { useCreateTrip } from "@/hooks/use-trips";
 import { useEarliestDashboardYear } from "@/hooks/use-dashboard";
 import { toast } from "sonner";
 
@@ -147,13 +148,13 @@ function SubNav({ items, active, onSelect }: { items: { key: string; label: stri
   );
 }
 
-function Card({ children, style }: { children: React.ReactNode; style?: React.CSSProperties }) {
+function Card({ children, style, onClick }: { children: React.ReactNode; style?: React.CSSProperties; onClick?: () => void }) {
   return (
     <div style={{
       background: paper.paper, padding: "18px 16px", marginBottom: 12,
       boxShadow: "0 1px 2px rgba(0,0,0,0.05), 0 4px 16px rgba(0,0,0,0.06)",
       ...style,
-    }}>
+    }} onClick={onClick}>
       {children}
     </div>
   );
@@ -1327,16 +1328,46 @@ function YearGroup({ year, children }: { year: string; children: React.ReactNode
 
 function DataHygiene({ year }: { year: number }) {
   const t = useT();
+  const qc = useQueryClient();
   const { data } = useAdminSummary(year);
+  const { data: people = [] } = usePeople();
+  const createTrip = useCreateTrip();
   const gaps = data?.kmGaps ?? [];
   const zeroKmTrips = data?.zeroKmTrips ?? [];
+  const [expandedGap, setExpandedGap] = useState<string | null>(null);
+
+  const gapKey = (gap: KmGap) => `${gap.car_short}-${gap.after_trip_id}-${gap.before_trip_id}`;
+
+  const activeMembers = people.filter((p) => p.active);
+
+  const assignGap = (gap: KmGap, personId: number) => {
+    const d1 = new Date(gap.after_date);
+    const d2 = new Date(gap.before_date);
+    const date = new Date((d1.getTime() + d2.getTime()) / 2).toISOString().slice(0, 10);
+    createTrip.mutate(
+      { person_id: personId, car_id: gap.car_id, date, start_odometer: gap.after_end, end_odometer: gap.before_start, location: null },
+      {
+        onSuccess: () => {
+          qc.invalidateQueries({ queryKey: ["admin-summary"] });
+          setExpandedGap(null);
+          toast.success(t("admin.gap_assigned"));
+        },
+        onError: (e) => toast.error(e.message),
+      },
+    );
+  };
 
   const gapsByYear = groupByYear(gaps);
   const zeroByYear = groupByYear(zeroKmTrips);
 
   return (
     <div style={{ padding: "16px" }}>
-      <SectionLabel>{t("admin.km_gaps_title")}</SectionLabel>
+      <SectionLabel>
+        <span>{t("admin.km_gaps_title")}</span>
+        {gaps.length > 0 && (
+          <span style={{ float: "right", color: paper.accent }}>{gaps.length} {t("admin.gaps_count")}</span>
+        )}
+      </SectionLabel>
 
       {gaps.length === 0 ? (
         <Card>
@@ -1350,25 +1381,77 @@ function DataHygiene({ year }: { year: number }) {
       ) : (
         gapsByYear.map(([yr, items]) => (
           <YearGroup key={yr} year={yr}>
-            {items.map((gap, i) => (
-              <Card key={i} style={{ borderLeft: `3px solid ${paper.accent}`, marginBottom: 8 }}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
-                  <div style={{ fontFamily: fontMono, fontSize: 11, fontWeight: 700, color: paper.ink }}>{gap.car_short}</div>
-                  <div style={{ fontFamily: fontMono, fontSize: 10, fontWeight: 700, color: paper.accent }}>
-                    {t("admin.km_missing", { km: gap.missing_km.toLocaleString("nl-BE") })}
+            {items.map((gap) => {
+              const key = gapKey(gap);
+              const expanded = expandedGap === key;
+              return (
+                <Card
+                  key={key}
+                  style={{ borderLeft: `3px solid ${paper.accent}`, marginBottom: 8, cursor: "pointer", paddingBottom: expanded ? 14 : 18 }}
+                  onClick={() => setExpandedGap(expanded ? null : key)}
+                >
+                  <div style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
+                    <div style={{
+                      fontFamily: fontMono, fontSize: 10, fontWeight: 700, letterSpacing: 1,
+                      background: paper.ink, color: paper.paper,
+                      padding: "4px 7px", flexShrink: 0, alignSelf: "flex-start",
+                    }}>
+                      {gap.car_short}
+                    </div>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontFamily: fontSerif, fontSize: 16, fontWeight: 700, color: paper.ink, lineHeight: 1.1 }}>
+                        {gap.missing_km.toLocaleString("nl-BE")} km {t("admin.km_missing_suffix")}
+                      </div>
+                      <div style={{ fontFamily: fontMono, fontSize: 9, color: paper.inkDim, letterSpacing: 1, marginTop: 3 }}>
+                        {gap.after_date} – {gap.before_date}
+                      </div>
+                      <div style={{ marginTop: 8 }}>
+                        <div style={{ fontFamily: fontMono, fontSize: 10, color: paper.inkDim }}>
+                          ↑ {gap.after_end.toLocaleString("nl-BE")} km ({gap.after_person})
+                        </div>
+                        <div style={{ fontFamily: fontMono, fontSize: 10, color: paper.accent, fontWeight: 700 }}>
+                          ? ...{gap.missing_km.toLocaleString("nl-BE")} km gap...
+                        </div>
+                        <div style={{ fontFamily: fontMono, fontSize: 10, color: paper.inkDim }}>
+                          ↓ {gap.before_start.toLocaleString("nl-BE")} km ({gap.before_person})
+                        </div>
+                      </div>
+                    </div>
                   </div>
-                </div>
-                <div style={{ fontFamily: fontMono, fontSize: 10, color: paper.inkDim }}>
-                  {t("admin.after_trip", { date: gap.after_date, odometer: gap.after_end.toLocaleString("nl-BE") })}
-                </div>
-                <div style={{ fontFamily: fontMono, fontSize: 10, color: paper.inkDim }}>
-                  {t("admin.before_trip", { date: gap.before_date, odometer: gap.before_start.toLocaleString("nl-BE") })}
-                </div>
-                <div style={{ fontFamily: fontMono, fontSize: 9, color: paper.inkMute, marginTop: 6 }}>
-                  {t("admin.trip_ref", { a: gap.after_trip_id, b: gap.before_trip_id })}
-                </div>
-              </Card>
-            ))}
+
+                  {expanded && (
+                    <div
+                      style={{ marginTop: 14, borderTop: `1px dashed ${paper.paperDark}`, paddingTop: 12 }}
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <div style={{ fontFamily: fontMono, fontSize: 9, color: paper.inkDim, letterSpacing: 2, textTransform: "uppercase", marginBottom: 8 }}>
+                        {t("admin.assign_to")}
+                      </div>
+                      <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                        {activeMembers.map((person) => (
+                          <button
+                            key={person.id}
+                            onClick={() => assignGap(gap, person.id)}
+                            disabled={createTrip.isPending}
+                            style={{
+                              fontFamily: fontMono, fontSize: 9, fontWeight: 700,
+                              letterSpacing: 1, textTransform: "uppercase",
+                              padding: "5px 10px",
+                              background: "transparent", color: paper.ink,
+                              border: `1.5px dashed ${paper.ink}`,
+                              cursor: "pointer",
+                              opacity: createTrip.isPending ? 0.5 : 1,
+                            }}
+                          >
+                            {person.name.split(" ")[0]}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </Card>
+              );
+            })}
           </YearGroup>
         ))
       )}

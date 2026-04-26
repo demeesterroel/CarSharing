@@ -15,7 +15,7 @@ export function useQueryParam(
   const setValue = useCallback(
     (newValue: string) => {
       const params = new URLSearchParams(searchParams.toString());
-      if (!newValue || newValue === defaultValue) {
+      if (newValue === defaultValue) {
         params.delete(key);
       } else {
         params.set(key, newValue);

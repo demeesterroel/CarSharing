@@ -1629,8 +1629,7 @@ function OwnerPayout({ year: currentYear }: { year: number }) {
 export default function AdminPage() {
   const t = useT();
   const year = new Date().getFullYear();
-  const [sub, setSubParam] = useQueryParam("tab", "inbox");
-  const setSub = (value: string) => setSubParam(value);
+  const [sub, setSub] = useQueryParam("tab", "inbox");
   const { data } = useAdminSummary(year);
   const { data: reservations = [] } = useReservations();
   const pendingCount = reservations.filter((r) => r.status === "pending").length;

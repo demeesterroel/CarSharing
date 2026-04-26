@@ -380,4 +380,12 @@ export const en: Messages = {
   "admin.username_label": "Username",
   "admin.is_admin_label": "Admin",
   "admin.no_username": "No login yet",
+
+  // Offline indicator
+  "offline.label": "OFFLINE",
+  "offline.stale_suffix": "data >1h old",
+  "offline.tooltip_fresh": "You are offline. Data was recently synced.",
+  "offline.tooltip_stale": "You are offline and the data is over an hour old.",
+  "form.offline_start_km_hint": "Offline — start KM is from last sync.",
+  "form.offline_reservation_hint": "Offline — verify availability when reconnected.",
 };

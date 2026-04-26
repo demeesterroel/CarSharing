@@ -1,5 +1,6 @@
 "use client";
 import { useMemo, useState } from "react";
+import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/page-header";
 import { ReservationForm } from "./reservation-form";
@@ -165,8 +166,19 @@ export default function CalendarPage() {
 
   const activeCars = cars.filter((c) => c.active);
 
-  const [sheet, setSheet] = useState<"add" | "edit" | null>(null);
-  const [editing, setEditing] = useState<Reservation | null>(null);
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const pathname = usePathname();
+
+  const actionParam = searchParams.get("action");
+  const editIdParam = searchParams.get("edit");
+
+  const sheet: "add" | "edit" | null =
+    actionParam === "reserve" ? "add" : editIdParam ? "edit" : null;
+  const editing = !isLoading && editIdParam
+    ? reservations.find((r) => r.id === Number(editIdParam)) ?? null
+    : null;
+
   const [prefillCarId, setPrefillCarId] = useState<number | undefined>();
   const [prefillFrom, setPrefillFrom] = useState<string | undefined>();
   const [prefillTo, setPrefillTo] = useState<string | undefined>();
@@ -183,7 +195,17 @@ export default function CalendarPage() {
     setPrefillCarId(carId);
     setPrefillFrom(from);
     setPrefillTo(to);
-    setSheet("add");
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("action", "reserve");
+    router.push(`${pathname}?${params.toString()}`, { scroll: false });
+  };
+
+  const closeSheet = () => router.back();
+
+  const openEdit = (r: Reservation) => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("edit", String(r.id));
+    router.push(`${pathname}?${params.toString()}`, { scroll: false });
   };
 
   if (isLoading) return (
@@ -234,7 +256,14 @@ export default function CalendarPage() {
         }}>
           <span>{t("calendar.upcoming")}</span>
           <button
-            onClick={() => { setPrefillCarId(undefined); setPrefillFrom(undefined); setPrefillTo(undefined); setSheet("add"); }}
+            onClick={() => {
+              setPrefillCarId(undefined);
+              setPrefillFrom(undefined);
+              setPrefillTo(undefined);
+              const params = new URLSearchParams(searchParams.toString());
+              params.set("action", "reserve");
+              router.push(`${pathname}?${params.toString()}`, { scroll: false });
+            }}
             style={{
               padding: "5px 12px", background: paper.ink, color: paper.paper,
               border: "none", cursor: "pointer",
@@ -252,12 +281,12 @@ export default function CalendarPage() {
           </div>
         )}
         {upcoming.map((r) => (
-          <ResRow key={r.id} r={r} onClick={() => { setEditing(r); setSheet("edit"); }} />
+          <ResRow key={r.id} r={r} onClick={() => openEdit(r)} />
         ))}
       </div>
 
       {/* Add sheet */}
-      <BottomSheet open={sheet === "add"} onClose={() => setSheet(null)}>
+      <BottomSheet open={sheet === "add"} onClose={() => closeSheet()}>
         <div style={{ padding: "16px 20px 0", fontFamily: fontSerif, fontSize: 20, fontWeight: 700, color: paper.ink }}>
           {t("page.reservation_add")}
         </div>
@@ -269,16 +298,16 @@ export default function CalendarPage() {
           } : undefined}
           onSubmit={(data) =>
             createR.mutate(data, {
-              onSuccess: () => { setSheet(null); toast.success(t("toast.reservation_saved")); },
+              onSuccess: () => { closeSheet(); toast.success(t("toast.reservation_saved")); },
               onError: (e) => toast.error(e.message),
             })
           }
-          onCancel={() => setSheet(null)}
+          onCancel={() => closeSheet()}
         />
       </BottomSheet>
 
       {/* Edit sheet */}
-      <BottomSheet open={sheet === "edit" && !!editing} onClose={() => setSheet(null)}>
+      <BottomSheet open={sheet === "edit" && !!editing} onClose={() => closeSheet()}>
         <div style={{ padding: "16px 20px 0", fontFamily: fontSerif, fontSize: 20, fontWeight: 700, color: paper.ink }}>
           {t("page.reservation_edit")}
         </div>
@@ -290,18 +319,18 @@ export default function CalendarPage() {
                 updateR.mutate(
                   { id: editing.id, ...data },
                   {
-                    onSuccess: () => { setSheet(null); toast.success(t("toast.saved")); },
+                    onSuccess: () => { closeSheet(); toast.success(t("toast.saved")); },
                     onError: (e) => toast.error(e.message),
                   }
                 )
               }
-              onCancel={() => setSheet(null)}
+              onCancel={() => closeSheet()}
             />
             <div style={{ padding: "0 16px 24px" }}>
               <button
                 onClick={() =>
                   deleteR.mutate(editing.id, {
-                    onSuccess: () => { setSheet(null); toast.success(t("toast.deleted")); },
+                    onSuccess: () => { closeSheet(); toast.success(t("toast.deleted")); },
                     onError: (e) => toast.error(e.message),
                   })
                 }

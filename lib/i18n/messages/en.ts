@@ -210,6 +210,18 @@ export const en: Messages = {
   "dashboard.pending_badge": "Pending",
   "dashboard.car_locations": "Car locations",
   "dashboard.last_seen": "Last trip",
+  "dashboard.receipt_title": "YOUR {year}",
+  "dashboard.your": "Your",
+  "dashboard.noun_trip": "trip",
+  "dashboard.noun_trips": "trips",
+  "dashboard.noun_fillup": "fill-up",
+  "dashboard.noun_fillups": "fill-ups",
+  "dashboard.noun_expense": "expense",
+  "dashboard.noun_expenses": "expenses",
+  "dashboard.total_label": "Total",
+  "dashboard.paid_label": "Paid",
+  "dashboard.not_yet_paid": "Not yet paid",
+  "dashboard.balance_label": "Balance",
 
   // Reservation status
   "reservation.pending": "Pending",

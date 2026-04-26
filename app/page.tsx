@@ -33,15 +33,19 @@ function Perf({ margin = "12px 0" }: { margin?: string }) {
 }
 
 function ReceiptRow({
-  label, value, big, color,
-}: { label: string; value: string; big?: boolean; color?: string }) {
+  label, value, big, color, href,
+}: { label: string; value: string; big?: boolean; color?: string; href?: string }) {
   const c = color ?? paper.ink;
-  return (
+  const inner = (
     <div style={{
       display: "flex", justifyContent: "space-between", alignItems: "baseline",
       fontFamily: fontMono, padding: "4px 0",
     }}>
-      <span style={{ textTransform: "uppercase", letterSpacing: 1, fontSize: big ? 11 : 10, color: paper.inkDim, whiteSpace: "nowrap", marginRight: 12 }}>
+      <span style={{
+        textTransform: "uppercase", letterSpacing: 1,
+        fontSize: big ? 11 : 10, color: paper.inkDim,
+        whiteSpace: "nowrap", marginRight: 12,
+      }}>
         {label}
       </span>
       <span style={{ fontWeight: big ? 700 : 600, fontSize: big ? 17 : 13, whiteSpace: "nowrap", color: c }}>
@@ -49,6 +53,14 @@ function ReceiptRow({
       </span>
     </div>
   );
+  if (href) {
+    return (
+      <Link href={href} style={{ textDecoration: "none", display: "block" }}>
+        {inner}
+      </Link>
+    );
+  }
+  return inner;
 }
 
 function CarStamp({ code }: { code: string }) {
@@ -73,11 +85,20 @@ function BalanceReceipt({ personName }: { personName: string }) {
   const myRow = rows.find((r) => r.person_name === personName);
   if (!myRow) return null;
 
-  const positive = myRow.balance >= 0;
-  const stampColor = positive ? paper.green : paper.accent;
+  const pl = (n: number, s: string, p: string) => (n === 1 ? s : p);
+  const yours = t("dashboard.your");
+
+  const tripLabel = `${yours} ${myRow.trip_count} ${pl(myRow.trip_count, t("dashboard.noun_trip"), t("dashboard.noun_trips"))}, ${fmtKm(myRow.trip_km)} km`;
+  const fuelLabel = `${yours} ${myRow.fuel_count} ${pl(myRow.fuel_count, t("dashboard.noun_fillup"), t("dashboard.noun_fillups"))}, ${myRow.fuel_liters.toFixed(0)} L`;
+  const expenseLabel = `${yours} ${myRow.expense_count} ${pl(myRow.expense_count, t("dashboard.noun_expense"), t("dashboard.noun_expenses"))}`;
+
+  const totalPositive = myRow.total_amount >= 0;
+  const settled = Math.abs(myRow.balance) <= 0.05;
+  const balanceColor = settled ? paper.green : paper.accent;
 
   return (
     <div style={{ padding: "18px 16px 0" }}>
+      {/* Year navigation */}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 0, marginBottom: 8 }}>
         <button
           onClick={() => setYear((y) => y - 1)}
@@ -109,55 +130,91 @@ function BalanceReceipt({ personName }: { personName: string }) {
           {year + 1} →
         </button>
       </div>
+
+      {/* Receipt card */}
       <div style={{
         background: paper.paper, padding: "20px 18px 22px",
         boxShadow: "0 1px 2px rgba(0,0,0,0.05), 0 8px 24px rgba(0,0,0,0.07)",
       }}>
+        {/* Title */}
         <div style={{
           fontFamily: fontMono, fontSize: 11, color: paper.ink,
           letterSpacing: 3, textTransform: "uppercase", textAlign: "center", fontWeight: 700,
-        }}>— {t("dashboard.year_balance", { year })} —</div>
+        }}>
+          — {t("dashboard.receipt_title", { year })} —
+        </div>
         <Perf margin="10px 0 12px" />
 
-        <ReceiptRow label={t("dashboard.your_trips")}       value={`− ${fmtMoney(Math.abs(myRow.trip_amount))}`} color={paper.accent} />
-        <ReceiptRow label={t("dashboard.your_fuel")}        value={fmtMoney(myRow.fuel_amount)}                  color={paper.green} />
-        <ReceiptRow label={t("dashboard.your_maintenance")} value={fmtMoney(myRow.expense_amount)}              color={paper.green} />
+        {/* Activity lines */}
+        <ReceiptRow
+          href={`/trips?mine=true&year=${year}`}
+          label={tripLabel}
+          value={`− ${fmtMoney(Math.abs(myRow.trip_amount))}`}
+          color={paper.accent}
+        />
+        <ReceiptRow
+          href={`/fuel?mine=true&year=${year}`}
+          label={fuelLabel}
+          value={`+ ${fmtMoney(myRow.fuel_amount)}`}
+          color={paper.green}
+        />
+        <ReceiptRow
+          href={`/expenses?mine=true&year=${year}`}
+          label={expenseLabel}
+          value={`+ ${fmtMoney(myRow.expense_amount)}`}
+          color={paper.green}
+        />
 
+        {/* Total */}
         <Perf margin="10px 0" />
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", padding: "4px 0" }}>
-          <div style={{ fontFamily: fontMono, fontSize: 10, letterSpacing: 2, textTransform: "uppercase", color: paper.inkDim, whiteSpace: "nowrap", marginRight: 12 }}>
-            {positive ? t("dashboard.credit_label") : t("dashboard.debit_label")}
-          </div>
-          <div style={{ fontFamily: fontSerif, fontSize: 34, fontWeight: 700, color: stampColor, letterSpacing: -1, lineHeight: 1, whiteSpace: "nowrap" }}>
-            {positive ? "+ " : "− "}{fmtMoney(Math.abs(myRow.balance))}
-          </div>
-        </div>
+        <ReceiptRow
+          label={t("dashboard.total_label")}
+          value={`${totalPositive ? "+" : "−"} ${fmtMoney(Math.abs(myRow.total_amount))}`}
+          color={totalPositive ? paper.green : paper.accent}
+          big
+        />
 
-        <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 12 }}>
-          <div style={{
-            display: "inline-block", padding: "6px 14px",
-            border: `2.5px solid ${stampColor}`, borderRadius: 4, color: stampColor,
-            fontFamily: fontMono, fontSize: 11, fontWeight: 700,
-            letterSpacing: 2, textTransform: "uppercase",
-            transform: "rotate(-5deg)", opacity: 0.9,
-          }}>
-            {positive ? t("dashboard.stamp_credit") : t("dashboard.stamp_debit")}
-          </div>
-        </div>
+        {/* Payment row — always shown */}
+        <Perf margin="10px 0" />
+        {myRow.paid_amount !== 0 ? (
+          <ReceiptRow
+            label={t("dashboard.paid_label")}
+            value={`− ${fmtMoney(myRow.paid_amount)}`}
+          />
+        ) : (
+          <ReceiptRow
+            label={t("dashboard.not_yet_paid")}
+            value="—"
+            color={paper.inkMute}
+          />
+        )}
 
-        <Perf margin="16px 0 12px" />
-        <div style={{ display: "flex", gap: 8 }}>
-          {[
-            { n: String(myRow.trip_count), l: t("dashboard.stat_trips") },
-            { n: String(myRow.trip_km),    l: "km" },
-            { n: String(myRow.fuel_count), l: t("dashboard.stat_fuel") },
-          ].map((x, i) => (
-            <div key={i} style={{ flex: 1, textAlign: "center" }}>
-              <div style={{ fontFamily: fontSerif, fontSize: 22, fontWeight: 700, color: paper.ink, lineHeight: 1 }}>{x.n}</div>
-              <div style={{ fontFamily: fontMono, fontSize: 9, color: paper.inkDim, letterSpacing: 1.5, textTransform: "uppercase", marginTop: 4 }}>{x.l}</div>
+        {/* Balance row — only when a payment has been recorded */}
+        {myRow.paid_amount !== 0 && (
+          <>
+            <Perf margin="10px 0" />
+            <div style={{
+              display: "flex", justifyContent: "space-between", alignItems: "baseline",
+              padding: "4px 0",
+            }}>
+              <span style={{
+                fontFamily: fontMono, fontSize: 10, letterSpacing: 2,
+                textTransform: "uppercase", color: paper.inkDim,
+                whiteSpace: "nowrap", marginRight: 12,
+              }}>
+                {t("dashboard.balance_label")}
+              </span>
+              <span style={{
+                fontFamily: fontSerif, fontSize: 28, fontWeight: 700,
+                color: balanceColor, letterSpacing: -1, lineHeight: 1, whiteSpace: "nowrap",
+              }}>
+                {settled
+                  ? `€ 0.00 ✓`
+                  : `${myRow.balance >= 0 ? "+" : "−"} ${fmtMoney(Math.abs(myRow.balance))}`}
+              </span>
             </div>
-          ))}
-        </div>
+          </>
+        )}
       </div>
     </div>
   );

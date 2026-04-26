@@ -208,6 +208,18 @@ export const nl = {
   "dashboard.pending_badge": "Aanvraag",
   "dashboard.car_locations": "Wagenlocaties",
   "dashboard.last_seen": "Laatste rit",
+  "dashboard.receipt_title": "JOUW {year}",
+  "dashboard.your": "Jouw",
+  "dashboard.noun_trip": "rit",
+  "dashboard.noun_trips": "ritten",
+  "dashboard.noun_fillup": "tankbeurt",
+  "dashboard.noun_fillups": "tankbeurten",
+  "dashboard.noun_expense": "uitgave",
+  "dashboard.noun_expenses": "uitgaven",
+  "dashboard.total_label": "Totaal",
+  "dashboard.paid_label": "Betaald",
+  "dashboard.not_yet_paid": "Nog niet betaald",
+  "dashboard.balance_label": "Saldo",
 
   // Reservation status
   "reservation.pending": "Aanvraag",

@@ -32,6 +32,9 @@ COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static    ./.next/static
 COPY --from=builder --chown=nextjs:nodejs /app/public          ./public
 
+# SQL migration files — applied automatically on first DB access at startup
+COPY --from=builder --chown=nextjs:nodejs /app/migrations      ./migrations
+
 # better-sqlite3 is marked serverExternal, so standalone doesn't bundle it —
 # copy the pruned node_modules so `require("better-sqlite3")` resolves at runtime.
 COPY --from=builder --chown=nextjs:nodejs /app/node_modules/better-sqlite3 ./node_modules/better-sqlite3

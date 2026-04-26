@@ -1,6 +1,6 @@
 import Database from "better-sqlite3";
 import path from "path";
-import { applySchema } from "./schema.sql";
+import { runMigrations } from "./db/migrate";
 
 const DB_PATH = process.env.DB_PATH ?? path.join(process.cwd(), "data", "autodelen.db");
 
@@ -11,7 +11,7 @@ export function getDb(): Database.Database {
     _db = new Database(DB_PATH);
     _db.pragma("journal_mode = WAL");
     _db.pragma("foreign_keys = ON");
-    applySchema(_db);
+    runMigrations(_db);
   }
   return _db;
 }

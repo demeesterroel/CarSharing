@@ -6,6 +6,19 @@ import { useT, useLocale } from "@/components/locale-provider";
 
 const DAYS_NL = ["zo", "ma", "di", "wo", "do", "vr", "za"];
 const DAYS_EN = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
+const MONTHS_NL = ["jan", "feb", "mrt", "apr", "mei", "jun", "jul", "aug", "sep", "okt", "nov", "dec"];
+const MONTHS_EN = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+function monthRange(first: string, last: string, locale: string): string {
+  const months = locale === "nl" ? MONTHS_NL : MONTHS_EN;
+  const d0 = new Date(`${first}T00:00:00Z`);
+  const d1 = new Date(`${last}T00:00:00Z`);
+  const m0 = d0.getUTCMonth(), y0 = d0.getUTCFullYear();
+  const m1 = d1.getUTCMonth(), y1 = d1.getUTCFullYear();
+  if (m0 === m1 && y0 === y1) return `${months[m0]} ${y0}`;
+  if (y0 === y1) return `${months[m0]} – ${months[m1]} ${y1}`;
+  return `${months[m0]} ${y0} – ${months[m1]} ${y1}`;
+}
 
 function addDays(date: string, n: number): string {
   const d = new Date(`${date}T00:00:00Z`);
@@ -86,23 +99,30 @@ export function PickCalendar({ reservations, carId, excludeId, from, to, onRange
       <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 8 }}>
         <div style={{
           flex: 1, padding: "4px 10px",
-          border: `1.5px dashed ${paper.accent}`,
+          border: `1.5px dashed ${pickFrom ? paper.accent : paper.inkMute}`,
           background: paper.paperDeep,
           fontFamily: fontMono, fontSize: 10, letterSpacing: 1, color: paper.ink,
           display: "flex", justifyContent: "space-between", alignItems: "center",
           minHeight: 28,
-          visibility: pickFrom ? "visible" : "hidden",
         }}>
-          <span>● {pickFrom && t("calendar.pick_start", { date: fmtDate(pickFrom, locale as "nl" | "en") })}</span>
-          <button
-            type="button"
-            onClick={() => setPickFrom(null)}
-            style={{
-              border: "none", background: "transparent",
-              fontFamily: fontMono, fontSize: 12, cursor: "pointer",
-              color: paper.inkDim, lineHeight: 1, padding: 0,
-            }}
-          >✕</button>
+          {pickFrom ? (
+            <>
+              <span>● {t("calendar.pick_start", { date: fmtDate(pickFrom, locale as "nl" | "en") })}</span>
+              <button
+                type="button"
+                onClick={() => setPickFrom(null)}
+                style={{
+                  border: "none", background: "transparent",
+                  fontFamily: fontMono, fontSize: 12, cursor: "pointer",
+                  color: paper.inkDim, lineHeight: 1, padding: 0,
+                }}
+              >✕</button>
+            </>
+          ) : (
+            <span style={{ color: paper.inkDim }}>
+              {monthRange(days[0], days[13], locale)}
+            </span>
+          )}
         </div>
         <button type="button" onClick={() => setWeekOffset((o) => o - 1)} style={navBtn}>‹</button>
         <button type="button" onClick={() => setWeekOffset((o) => o + 1)} style={navBtn}>›</button>

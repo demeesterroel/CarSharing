@@ -1,7 +1,9 @@
 "use client";
 import { useState } from "react";
+import { toast } from "sonner";
 import { paper, fontMono } from "@/lib/paper-theme";
 import { t } from "@/lib/i18n";
+import { useOnlineState } from "@/lib/offline/online-state";
 
 const CHIT_DEFS = [
   { key: "expense", labelKey: "fab.expense" as const, emoji: "🧾", rotate:  2 },
@@ -17,9 +19,14 @@ interface Props {
 }
 
 export function Fab({ onClick, label }: Props) {
+  const { online } = useOnlineState();
+  const handleClick = () => {
+    if (!online) { toast.error(t("offline.mutation_blocked")); return; }
+    onClick();
+  };
   return (
     <button
-      onClick={onClick}
+      onClick={handleClick}
       aria-label={label ?? t("action.add")}
       style={{
         position: "fixed",
@@ -27,11 +34,11 @@ export function Fab({ onClick, label }: Props) {
         bottom: 86,
         width: 56,
         height: 56,
-        background: paper.ink,
+        background: online ? paper.ink : paper.inkMute,
         color: paper.paper,
         border: "none",
         borderRadius: 0,
-        cursor: "pointer",
+        cursor: online ? "pointer" : "default",
         fontFamily: fontMono,
         fontSize: 28,
         fontWeight: 700,
@@ -41,6 +48,7 @@ export function Fab({ onClick, label }: Props) {
         alignItems: "center",
         justifyContent: "center",
         zIndex: 20,
+        opacity: online ? 1 : 0.45,
       }}
     >
       +
@@ -50,6 +58,7 @@ export function Fab({ onClick, label }: Props) {
 
 export function MultiFab({ onPick }: { onPick: (action: string) => void }) {
   const [open, setOpen] = useState(false);
+  const { online } = useOnlineState();
 
   return (
     <div style={{
@@ -104,14 +113,17 @@ export function MultiFab({ onPick }: { onPick: (action: string) => void }) {
       ))}
 
       <button
-        onClick={() => setOpen((o) => !o)}
+        onClick={() => {
+          if (!online) { toast.error(t("offline.mutation_blocked")); return; }
+          setOpen((o) => !o);
+        }}
         style={{
           width: 60,
           height: 60,
-          background: paper.ink,
+          background: online ? paper.ink : paper.inkMute,
           color: paper.paper,
           border: "none",
-          cursor: "pointer",
+          cursor: online ? "pointer" : "default",
           fontFamily: fontMono,
           fontSize: 34,
           fontWeight: 700,
@@ -122,6 +134,7 @@ export function MultiFab({ onPick }: { onPick: (action: string) => void }) {
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
+          opacity: online ? 1 : 0.45,
         }}
       >
         +

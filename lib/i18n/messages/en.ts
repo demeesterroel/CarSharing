@@ -387,6 +387,7 @@ export const en: Messages = {
   "offline.tooltip_fresh": "You are offline. Data was recently synced.",
   "offline.tooltip_stale": "You are offline and the data is over an hour old.",
   "offline.admin_unavailable": "Admin is not available without a connection.",
+  "offline.mutation_blocked": "Saving is not available without a connection.",
   "form.offline_start_km_hint": "Offline — start KM is from last sync.",
   "form.offline_reservation_hint": "Offline — verify availability when reconnected.",
 };

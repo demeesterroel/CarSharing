@@ -385,6 +385,7 @@ export const nl = {
   "offline.tooltip_fresh": "Je bent offline. Gegevens zijn recent gesynchroniseerd.",
   "offline.tooltip_stale": "Je bent offline en de gegevens zijn ouder dan een uur.",
   "offline.admin_unavailable": "Admin niet beschikbaar zonder verbinding.",
+  "offline.mutation_blocked": "Opslaan niet mogelijk zonder verbinding.",
   "form.offline_start_km_hint": "Offline — start KM is van laatste sync.",
   "form.offline_reservation_hint": "Offline — controleer beschikbaarheid bij verbinding.",
 } as const;

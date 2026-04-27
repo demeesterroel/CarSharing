@@ -204,6 +204,7 @@ function CalendarContent() {
   );
 
   const handlePickDone = (carId: number, from: string, to: string) => {
+    if (!online) { toast.error(t("offline.mutation_blocked")); return; }
     setPrefillCarId(carId);
     setPrefillFrom(from);
     setPrefillTo(to);
@@ -269,6 +270,7 @@ function CalendarContent() {
           <span>{t("calendar.upcoming")}</span>
           <button
             onClick={() => {
+              if (!online) { toast.error(t("offline.mutation_blocked")); return; }
               setPrefillCarId(undefined);
               setPrefillFrom(undefined);
               setPrefillTo(undefined);
@@ -277,10 +279,11 @@ function CalendarContent() {
               router.push(`${pathname}?${params.toString()}`, { scroll: false });
             }}
             style={{
-              padding: "5px 12px", background: paper.ink, color: paper.paper,
-              border: "none", cursor: "pointer",
+              padding: "5px 12px", background: online ? paper.ink : paper.inkMute, color: paper.paper,
+              border: "none", cursor: online ? "pointer" : "default",
               fontFamily: fontMono, fontSize: 9, fontWeight: 700,
               letterSpacing: 1.5, textTransform: "uppercase",
+              opacity: online ? 1 : 0.45,
             }}
           >
             + {t("page.reservation_add")}

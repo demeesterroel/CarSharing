@@ -4,6 +4,7 @@ import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 import { CarToggle } from "@/components/car-toggle";
 import { LocationPicker } from "@/components/location-picker";
 import { calcTripAmount } from "@/lib/formulas";
@@ -132,11 +133,16 @@ export function TripForm({ defaultValues, onSubmit, onCancel, onDelete }: Props)
         <div style={{ fontFamily: fontMono, fontSize: 10, fontWeight: 700, letterSpacing: 3, color: paper.inkDim, textTransform: "uppercase" }}>
           ① {t("form.log_trip")}
         </div>
-        <button type="submit" style={{
-          fontFamily: fontMono, fontSize: 9, fontWeight: 700, letterSpacing: 2,
-          textTransform: "uppercase", background: paper.accent, color: "#fff",
-          border: "none", padding: "8px 14px", cursor: "pointer",
-        }}>
+        <button
+          type={online ? "submit" : "button"}
+          onClick={!online ? () => toast.error(t("offline.mutation_blocked")) : undefined}
+          style={{
+            fontFamily: fontMono, fontSize: 9, fontWeight: 700, letterSpacing: 2,
+            textTransform: "uppercase", background: paper.accent, color: "#fff",
+            border: "none", padding: "8px 14px", cursor: online ? "pointer" : "default",
+            opacity: online ? 1 : 0.45,
+          }}
+        >
           {t("action.save_trip")}
         </button>
       </div>

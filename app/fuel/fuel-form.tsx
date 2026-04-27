@@ -1,5 +1,6 @@
 "use client";
 import { useEffect } from "react";
+import { toast } from "sonner";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -11,6 +12,7 @@ import { usePeople } from "@/hooks/use-people";
 import { useCars } from "@/hooks/use-cars";
 import { useLastCarState } from "@/hooks/use-car-state";
 import { useMe } from "@/hooks/use-me";
+import { useOnlineState } from "@/lib/offline/online-state";
 import type { FuelFillup, FuelFillupInput } from "@/types";
 import { t } from "@/lib/i18n";
 import { paper, fontMono, fontSerif } from "@/lib/paper-theme";
@@ -49,6 +51,7 @@ export function FuelForm({ defaultValues, onSubmit, onCancel, onDelete }: Props)
   const { data: people = [] } = usePeople();
   const { data: cars = [] } = useCars();
   const { data: me } = useMe();
+  const { online } = useOnlineState();
   const isAddMode = !defaultValues?.id;
   const isAdmin = me?.isAdmin ?? false;
 
@@ -122,11 +125,16 @@ export function FuelForm({ defaultValues, onSubmit, onCancel, onDelete }: Props)
         <div style={{ fontFamily: fontMono, fontSize: 10, fontWeight: 700, letterSpacing: 3, color: paper.inkDim, textTransform: "uppercase" }}>
           ⛽ {t("form.fuel_receipt")}
         </div>
-        <button type="submit" style={{
-          fontFamily: fontMono, fontSize: 9, fontWeight: 700, letterSpacing: 2,
-          textTransform: "uppercase", background: paper.green, color: "#fff",
-          border: "none", padding: "8px 14px", cursor: "pointer",
-        }}>
+        <button
+          type={online ? "submit" : "button"}
+          onClick={!online ? () => toast.error(t("offline.mutation_blocked")) : undefined}
+          style={{
+            fontFamily: fontMono, fontSize: 9, fontWeight: 700, letterSpacing: 2,
+            textTransform: "uppercase", background: paper.green, color: "#fff",
+            border: "none", padding: "8px 14px", cursor: online ? "pointer" : "default",
+            opacity: online ? 1 : 0.45,
+          }}
+        >
           {t("action.save_receipt")}
         </button>
       </div>

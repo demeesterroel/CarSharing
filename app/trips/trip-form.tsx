@@ -115,7 +115,13 @@ export function TripForm({ defaultValues, onSubmit, onCancel, onDelete }: Props)
   const pctLong  = Math.round(discLong * 100);
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} style={{ background: paper.paperDeep }}>
+    <form
+      onSubmit={(e) => {
+        if (!online) { e.preventDefault(); toast.error(t("offline.mutation_blocked")); return; }
+        handleSubmit(onSubmit)(e);
+      }}
+      style={{ background: paper.paperDeep }}
+    >
       {/* Top bar */}
       <div style={{
         display: "flex", alignItems: "center", justifyContent: "space-between",
@@ -133,16 +139,12 @@ export function TripForm({ defaultValues, onSubmit, onCancel, onDelete }: Props)
         <div style={{ fontFamily: fontMono, fontSize: 10, fontWeight: 700, letterSpacing: 3, color: paper.inkDim, textTransform: "uppercase" }}>
           ① {t("form.log_trip")}
         </div>
-        <button
-          type={online ? "submit" : "button"}
-          onClick={!online ? () => toast.error(t("offline.mutation_blocked")) : undefined}
-          style={{
-            fontFamily: fontMono, fontSize: 9, fontWeight: 700, letterSpacing: 2,
-            textTransform: "uppercase", background: paper.accent, color: "#fff",
-            border: "none", padding: "8px 14px", cursor: online ? "pointer" : "default",
-            opacity: online ? 1 : 0.45,
-          }}
-        >
+        <button type="submit" style={{
+          fontFamily: fontMono, fontSize: 9, fontWeight: 700, letterSpacing: 2,
+          textTransform: "uppercase", background: paper.accent, color: "#fff",
+          border: "none", padding: "8px 14px", cursor: online ? "pointer" : "default",
+          opacity: online ? 1 : 0.45,
+        }}>
           {t("action.save_trip")}
         </button>
       </div>

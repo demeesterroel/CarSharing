@@ -108,7 +108,13 @@ export function FuelForm({ defaultValues, onSubmit, onCancel, onDelete }: Props)
   }
 
   return (
-    <form onSubmit={handleSubmit(handleSubmitForm)} style={{ background: paper.paperDeep }}>
+    <form
+      onSubmit={(e) => {
+        if (!online) { e.preventDefault(); toast.error(t("offline.mutation_blocked")); return; }
+        handleSubmit(handleSubmitForm)(e);
+      }}
+      style={{ background: paper.paperDeep }}
+    >
       {/* Top bar */}
       <div style={{
         display: "flex", alignItems: "center", justifyContent: "space-between",
@@ -125,16 +131,12 @@ export function FuelForm({ defaultValues, onSubmit, onCancel, onDelete }: Props)
         <div style={{ fontFamily: fontMono, fontSize: 10, fontWeight: 700, letterSpacing: 3, color: paper.inkDim, textTransform: "uppercase" }}>
           ⛽ {t("form.fuel_receipt")}
         </div>
-        <button
-          type={online ? "submit" : "button"}
-          onClick={!online ? () => toast.error(t("offline.mutation_blocked")) : undefined}
-          style={{
-            fontFamily: fontMono, fontSize: 9, fontWeight: 700, letterSpacing: 2,
-            textTransform: "uppercase", background: paper.green, color: "#fff",
-            border: "none", padding: "8px 14px", cursor: online ? "pointer" : "default",
-            opacity: online ? 1 : 0.45,
-          }}
-        >
+        <button type="submit" style={{
+          fontFamily: fontMono, fontSize: 9, fontWeight: 700, letterSpacing: 2,
+          textTransform: "uppercase", background: paper.green, color: "#fff",
+          border: "none", padding: "8px 14px", cursor: online ? "pointer" : "default",
+          opacity: online ? 1 : 0.45,
+        }}>
           {t("action.save_receipt")}
         </button>
       </div>

@@ -103,7 +103,13 @@ export function ReservationForm({ defaultValues, onSubmit, onCancel }: Props) {
   }
 
   return (
-    <form onSubmit={handleSubmit(handleFormSubmit)} style={{ background: paper.paperDeep }}>
+    <form
+      onSubmit={(e) => {
+        if (!online) { e.preventDefault(); toast.error(t("offline.mutation_blocked")); return; }
+        handleSubmit(handleFormSubmit)(e);
+      }}
+      style={{ background: paper.paperDeep }}
+    >
       {/* Top bar */}
       <div style={{
         display: "flex", alignItems: "center", justifyContent: "space-between",
@@ -118,16 +124,12 @@ export function ReservationForm({ defaultValues, onSubmit, onCancel }: Props) {
           border: "none", cursor: "pointer", color: paper.ink, padding: "0 4px", lineHeight: 1,
         }}>×</button>
         <div />
-        <button
-          type={online ? "submit" : "button"}
-          onClick={!online ? () => toast.error(t("offline.mutation_blocked")) : undefined}
-          style={{
-            fontFamily: fontMono, fontSize: 9, fontWeight: 700, letterSpacing: 2,
-            textTransform: "uppercase", background: isAdmin ? paper.blue : paper.accent, color: "#fff",
-            border: "none", padding: "8px 14px", cursor: online ? "pointer" : "default",
-            opacity: online ? 1 : 0.45,
-          }}
-        >
+        <button type="submit" style={{
+          fontFamily: fontMono, fontSize: 9, fontWeight: 700, letterSpacing: 2,
+          textTransform: "uppercase", background: isAdmin ? paper.blue : paper.accent, color: "#fff",
+          border: "none", padding: "8px 14px", cursor: online ? "pointer" : "default",
+          opacity: online ? 1 : 0.45,
+        }}>
           {isAdmin ? t("action.confirm_reservation") : t("action.request_reservation")}
         </button>
       </div>

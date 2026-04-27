@@ -1,9 +1,11 @@
 "use client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { toast } from "sonner";
 import { paper, fontMono } from "@/lib/paper-theme";
 import { useT } from "@/components/locale-provider";
 import { useMe } from "@/hooks/use-me";
+import { useOnlineState } from "@/lib/offline/online-state";
 
 const BASE_TABS = [
   { href: "/",         labelKey: "nav.dashboard" as const,        icon: "◉" },
@@ -19,6 +21,7 @@ export function BottomTabBar() {
   const t = useT();
   const pathname = usePathname();
   const { data: me } = useMe();
+  const { online } = useOnlineState();
 
   if (pathname === "/login" || pathname.startsWith("/invite")) return null;
 
@@ -43,11 +46,16 @@ export function BottomTabBar() {
     >
       {tabs.map(({ href, labelKey, icon }) => {
         const active = href === "/" ? pathname === "/" : pathname.startsWith(href);
+        const offlineBlocked = !online && href === "/admin";
         return (
           <Link
             key={href}
-            href={href}
+            href={offlineBlocked ? "#" : href}
             aria-current={active ? "page" : undefined}
+            onClick={offlineBlocked ? (e) => {
+              e.preventDefault();
+              toast.error(t("offline.admin_unavailable"));
+            } : undefined}
             style={{
               flex: 1,
               padding: "10px 2px 12px",
@@ -57,10 +65,11 @@ export function BottomTabBar() {
               gap: 3,
               fontFamily: fontMono,
               background: active ? paper.ink : "transparent",
-              color: active ? paper.paper : paper.ink,
+              color: active ? paper.paper : offlineBlocked ? paper.inkMute : paper.ink,
               textDecoration: "none",
               minWidth: 0,
-              cursor: "pointer",
+              cursor: offlineBlocked ? "default" : "pointer",
+              opacity: offlineBlocked ? 0.45 : 1,
             }}
           >
             <span style={{ fontSize: 15, lineHeight: 1 }}>{icon}</span>

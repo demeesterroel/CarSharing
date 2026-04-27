@@ -3,6 +3,8 @@ import { useEffect } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 import { CarToggle } from "@/components/car-toggle";
 import { LocationPicker } from "@/components/location-picker";
 import { calcTripAmount } from "@/lib/formulas";
@@ -10,6 +12,7 @@ import { usePeople } from "@/hooks/use-people";
 import { useCars } from "@/hooks/use-cars";
 import { useLastCarState } from "@/hooks/use-car-state";
 import { useMe } from "@/hooks/use-me";
+import { useOnlineState } from "@/lib/offline/online-state";
 import type { Trip } from "@/types";
 import { t } from "@/lib/i18n";
 import { paper, fontMono, fontSerif, fmtMoney } from "@/lib/paper-theme";
@@ -80,6 +83,16 @@ export function TripForm({ defaultValues, onSubmit, onCancel, onDelete }: Props)
   const amount = shortAmount + longAmount;
 
   const { data: lastState } = useLastCarState(carId);
+  const qc = useQueryClient();
+  const { online } = useOnlineState();
+
+  // Force a fresh fetch of the selected car's last state whenever the form
+  // opens online or the car changes. Stale start_km is the one offline-related
+  // staleness that can corrupt data, so we always re-pull when we can.
+  useEffect(() => {
+    if (!isAddMode || !carId || !online) return;
+    qc.invalidateQueries({ queryKey: ["car-state", carId] });
+  }, [isAddMode, carId, online, qc]);
 
   useEffect(() => {
     if (!isAddMode || !carId || !lastState) return;
@@ -102,7 +115,13 @@ export function TripForm({ defaultValues, onSubmit, onCancel, onDelete }: Props)
   const pctLong  = Math.round(discLong * 100);
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} style={{ background: paper.paperDeep }}>
+    <form
+      onSubmit={(e) => {
+        if (!online) { e.preventDefault(); toast.error(t("offline.mutation_blocked")); return; }
+        handleSubmit(onSubmit)(e);
+      }}
+      style={{ background: paper.paperDeep }}
+    >
       {/* Top bar */}
       <div style={{
         display: "flex", alignItems: "center", justifyContent: "space-between",
@@ -123,7 +142,8 @@ export function TripForm({ defaultValues, onSubmit, onCancel, onDelete }: Props)
         <button type="submit" style={{
           fontFamily: fontMono, fontSize: 9, fontWeight: 700, letterSpacing: 2,
           textTransform: "uppercase", background: paper.accent, color: "#fff",
-          border: "none", padding: "8px 14px", cursor: "pointer",
+          border: "none", padding: "8px 14px", cursor: online ? "pointer" : "default",
+          opacity: online ? 1 : 0.45,
         }}>
           {t("action.save_trip")}
         </button>
@@ -194,6 +214,14 @@ export function TripForm({ defaultValues, onSubmit, onCancel, onDelete }: Props)
                 if (!current || Number(current) === 0) setValue("end_odometer", startVal);
               }}
             />
+            {!online && isAddMode && (
+              <div style={{
+                fontFamily: fontMono, fontSize: 8, color: paper.amber,
+                letterSpacing: 1, marginTop: 2, textTransform: "uppercase",
+              }}>
+                {t("form.offline_start_km_hint")}
+              </div>
+            )}
           </div>
           <div style={{ textAlign: "center", flexShrink: 0, padding: "0 8px" }}>
             <div style={{ fontFamily: fontMono, fontSize: 10, color: paper.inkMute, letterSpacing: 1, marginBottom: 2 }}>

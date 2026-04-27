@@ -378,6 +378,16 @@ export const nl = {
   "admin.username_label": "Gebruikersnaam",
   "admin.is_admin_label": "Admin",
   "admin.no_username": "Nog geen login",
+
+  // Offline indicator
+  "offline.label": "OFFLINE",
+  "offline.stale_suffix": "ouder dan 1u",
+  "offline.tooltip_fresh": "Je bent offline. Gegevens zijn recent gesynchroniseerd.",
+  "offline.tooltip_stale": "Je bent offline en de gegevens zijn ouder dan een uur.",
+  "offline.admin_unavailable": "Admin niet beschikbaar zonder verbinding.",
+  "offline.mutation_blocked": "Opslaan niet mogelijk zonder verbinding.",
+  "form.offline_start_km_hint": "Offline — start KM is van laatste sync.",
+  "form.offline_reservation_hint": "Offline — controleer beschikbaarheid bij verbinding.",
 } as const;
 
 export type MessageKey = keyof typeof nl;

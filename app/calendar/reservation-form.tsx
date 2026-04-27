@@ -1,5 +1,6 @@
 "use client";
 import { useEffect } from "react";
+import { toast } from "sonner";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -7,6 +8,7 @@ import { CarToggle } from "@/components/car-toggle";
 import { usePeople } from "@/hooks/use-people";
 import { useCars } from "@/hooks/use-cars";
 import { useMe } from "@/hooks/use-me";
+import { useOnlineState } from "@/lib/offline/online-state";
 import { useReservations } from "@/hooks/use-reservations";
 import type { Reservation, ReservationInput } from "@/types";
 import { useT, useLocale } from "@/components/locale-provider";
@@ -49,6 +51,7 @@ export function ReservationForm({ defaultValues, onSubmit, onCancel }: Props) {
   const { data: people = [] } = usePeople();
   const { data: cars = [] } = useCars();
   const { data: me } = useMe();
+  const { online } = useOnlineState();
   const { data: reservations = [] } = useReservations();
   const isAdmin = me?.isAdmin ?? false;
   const today = new Date().toISOString().slice(0, 10);
@@ -100,7 +103,13 @@ export function ReservationForm({ defaultValues, onSubmit, onCancel }: Props) {
   }
 
   return (
-    <form onSubmit={handleSubmit(handleFormSubmit)} style={{ background: paper.paperDeep }}>
+    <form
+      onSubmit={(e) => {
+        if (!online) { e.preventDefault(); toast.error(t("offline.mutation_blocked")); return; }
+        handleSubmit(handleFormSubmit)(e);
+      }}
+      style={{ background: paper.paperDeep }}
+    >
       {/* Top bar */}
       <div style={{
         display: "flex", alignItems: "center", justifyContent: "space-between",
@@ -118,7 +127,8 @@ export function ReservationForm({ defaultValues, onSubmit, onCancel }: Props) {
         <button type="submit" style={{
           fontFamily: fontMono, fontSize: 9, fontWeight: 700, letterSpacing: 2,
           textTransform: "uppercase", background: isAdmin ? paper.blue : paper.accent, color: "#fff",
-          border: "none", padding: "8px 14px", cursor: "pointer",
+          border: "none", padding: "8px 14px", cursor: online ? "pointer" : "default",
+          opacity: online ? 1 : 0.45,
         }}>
           {isAdmin ? t("action.confirm_reservation") : t("action.request_reservation")}
         </button>

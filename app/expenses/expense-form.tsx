@@ -1,5 +1,6 @@
 "use client";
 import { useEffect } from "react";
+import { toast } from "sonner";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -7,6 +8,7 @@ import { CarToggle } from "@/components/car-toggle";
 import { usePeople } from "@/hooks/use-people";
 import { useCars } from "@/hooks/use-cars";
 import { useMe } from "@/hooks/use-me";
+import { useOnlineState } from "@/lib/offline/online-state";
 import type { Expense, ExpenseCategory, ExpenseInput } from "@/types";
 import { useT } from "@/components/locale-provider";
 import { paper, fontMono, fontSerif } from "@/lib/paper-theme";
@@ -46,6 +48,7 @@ export function ExpenseForm({ defaultValues, onSubmit, onCancel, onDelete }: Pro
   const { data: people = [] } = usePeople();
   const { data: cars = [] } = useCars();
   const { data: me } = useMe();
+  const { online } = useOnlineState();
   const isAddMode = !defaultValues?.id;
   const isAdmin = me?.isAdmin ?? false;
 
@@ -71,7 +74,13 @@ export function ExpenseForm({ defaultValues, onSubmit, onCancel, onDelete }: Pro
   }, [me, isAddMode, setValue, getValues]);
 
   return (
-    <form onSubmit={handleSubmit(onSubmit as any)} style={{ background: paper.paperDeep }}>
+    <form
+      onSubmit={(e) => {
+        if (!online) { e.preventDefault(); toast.error(t("offline.mutation_blocked")); return; }
+        handleSubmit(onSubmit as any)(e);
+      }}
+      style={{ background: paper.paperDeep }}
+    >
       {/* Top bar */}
       <div style={{
         display: "flex", alignItems: "center", justifyContent: "space-between",
@@ -91,7 +100,8 @@ export function ExpenseForm({ defaultValues, onSubmit, onCancel, onDelete }: Pro
         <button type="submit" style={{
           fontFamily: fontMono, fontSize: 9, fontWeight: 700, letterSpacing: 2,
           textTransform: "uppercase", background: paper.inkDim, color: "#fff",
-          border: "none", padding: "8px 14px", cursor: "pointer",
+          border: "none", padding: "8px 14px", cursor: online ? "pointer" : "default",
+          opacity: online ? 1 : 0.45,
         }}>
           {t("action.save_cost")}
         </button>

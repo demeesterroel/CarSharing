@@ -1,7 +1,9 @@
 "use client";
-import { Suspense, useMemo, useState } from "react";
+import { Suspense, useEffect, useMemo, useState } from "react";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
+import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { useOnlineState } from "@/lib/offline/online-state";
 import { PageHeader } from "@/components/page-header";
 import { ReservationForm } from "./reservation-form";
 import {
@@ -179,6 +181,16 @@ function CalendarContent() {
     ? reservations.find((r) => r.id === Number(editIdParam)) ?? null
     : null;
 
+  // Refetch reservations whenever the new-reservation sheet opens online —
+  // the conflict warning needs to see the freshest server state.
+  const qc = useQueryClient();
+  const { online } = useOnlineState();
+  useEffect(() => {
+    if (sheet === "add" && online) {
+      qc.invalidateQueries({ queryKey: ["reservations"] });
+    }
+  }, [sheet, online, qc]);
+
   const [prefillCarId, setPrefillCarId] = useState<number | undefined>();
   const [prefillFrom, setPrefillFrom] = useState<string | undefined>();
   const [prefillTo, setPrefillTo] = useState<string | undefined>();
@@ -192,6 +204,7 @@ function CalendarContent() {
   );
 
   const handlePickDone = (carId: number, from: string, to: string) => {
+    if (!online) { toast.error(t("offline.mutation_blocked")); return; }
     setPrefillCarId(carId);
     setPrefillFrom(from);
     setPrefillTo(to);
@@ -257,6 +270,7 @@ function CalendarContent() {
           <span>{t("calendar.upcoming")}</span>
           <button
             onClick={() => {
+              if (!online) { toast.error(t("offline.mutation_blocked")); return; }
               setPrefillCarId(undefined);
               setPrefillFrom(undefined);
               setPrefillTo(undefined);
@@ -265,10 +279,11 @@ function CalendarContent() {
               router.push(`${pathname}?${params.toString()}`, { scroll: false });
             }}
             style={{
-              padding: "5px 12px", background: paper.ink, color: paper.paper,
-              border: "none", cursor: "pointer",
+              padding: "5px 12px", background: online ? paper.ink : paper.inkMute, color: paper.paper,
+              border: "none", cursor: online ? "pointer" : "default",
               fontFamily: fontMono, fontSize: 9, fontWeight: 700,
               letterSpacing: 1.5, textTransform: "uppercase",
+              opacity: online ? 1 : 0.45,
             }}
           >
             + {t("page.reservation_add")}

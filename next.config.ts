@@ -143,21 +143,10 @@ const withPWA = withPWAInit({
       },
 
       // ---- Next.js RSC + page navigations ----
-      {
-        urlPattern: ({ request, url, sameOrigin }) =>
-          sameOrigin &&
-          request.headers.get("RSC") === "1" &&
-          request.headers.get("Next-Router-Prefetch") === "1" &&
-          !url.pathname.startsWith("/api/"),
-        handler: "NetworkFirst",
-        options: {
-          cacheName: "pages-rsc-prefetch",
-          // ignoreSearch: URL params are client-side state only (sheets, filters);
-          // the server renders the same RSC shell regardless of query params.
-          matchOptions: { ignoreSearch: true },
-          expiration: { maxEntries: 32, maxAgeSeconds: ONE_DAY },
-        },
-      },
+      // Prefetch RSC and navigation RSC share one cache so that a link
+      // prefetch (Next-Router-Prefetch: 1) populates the same entries that
+      // a soft navigation lookup will hit. ignoreSearch lets a cached /trips
+      // entry serve /trips?edit=ID — all search params are client-side state.
       {
         urlPattern: ({ request, url, sameOrigin }) =>
           sameOrigin &&

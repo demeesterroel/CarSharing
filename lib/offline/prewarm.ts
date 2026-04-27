@@ -10,9 +10,8 @@ export interface CriticalEndpoint {
 }
 
 export const CRITICAL_ENDPOINTS: readonly CriticalEndpoint[] = [
-  { queryKey: ["dashboard"],    url: "/api/dashboard" },
   { queryKey: ["trips"],        url: "/api/trips" },
-  { queryKey: ["fuel"],         url: "/api/fuel" },
+  { queryKey: ["fuel-fillups"], url: "/api/fuel" },
   { queryKey: ["expenses"],     url: "/api/expenses" },
   { queryKey: ["reservations"], url: "/api/reservations" },
   { queryKey: ["people"],       url: "/api/people" },

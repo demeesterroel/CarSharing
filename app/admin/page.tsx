@@ -4,6 +4,7 @@ import { paper, fontMono, fontSerif } from "@/lib/paper-theme";
 import { useT } from "@/components/locale-provider";
 import { useReservations, Card, Perf } from "./_shared";
 import { toast } from "sonner";
+import { CarBadge } from "@/components/car-badge";
 
 // ── INBOX ─────────────────────────────────────────────────────
 export default function AdminInboxPage() {
@@ -40,10 +41,7 @@ export default function AdminInboxPage() {
       {pending.map((r) => (
         <Card key={r.id}>
           <div style={{ display: "flex", alignItems: "flex-start", gap: 12, marginBottom: 12 }}>
-            <div style={{
-              padding: "8px 10px", background: paper.ink, color: paper.paper,
-              fontFamily: fontMono, fontSize: 13, fontWeight: 700, letterSpacing: 2, flexShrink: 0,
-            }}>{r.car_short}</div>
+            <CarBadge short={r.car_short ?? "?"} style={{ padding: "8px 10px", fontSize: 13 }} />
             <div style={{ flex: 1 }}>
               <div style={{ fontFamily: fontSerif, fontSize: 16, fontWeight: 700, color: paper.ink }}>{r.person_name}</div>
               <div style={{ fontFamily: fontMono, fontSize: 10, color: paper.inkDim, letterSpacing: 1, marginTop: 2 }}>

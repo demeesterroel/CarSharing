@@ -18,6 +18,7 @@ import { paper, fontMono, fontSerif } from "@/lib/paper-theme";
 import { useT } from "@/components/locale-provider";
 import { ReservationCard } from "@/components/reservation-card";
 import { PickCalendar } from "@/components/pick-calendar";
+import { CarBadge } from "@/components/car-badge";
 
 // ── Bottom Sheet ──────────────────────────────────────────────
 function BottomSheet({
@@ -74,12 +75,7 @@ function CarTimeline({
       boxShadow: "0 1px 2px rgba(0,0,0,0.04)",
     }}>
       <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10 }}>
-        <div style={{
-          padding: "5px 8px", background: car.active ? paper.ink : paper.inkMute, color: paper.paper,
-          fontFamily: fontMono, fontSize: 11, fontWeight: 700, letterSpacing: 2, minWidth: 40, textAlign: "center",
-        }}>
-          {car.short}
-        </div>
+        <CarBadge short={car.short} active={!!car.active} style={{ padding: "5px 8px" }} />
         <div style={{ fontFamily: fontSerif, fontSize: 16, fontWeight: 700, color: paper.ink }}>
           {car.name}
         </div>

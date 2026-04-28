@@ -7,6 +7,7 @@ import type { KmGap, ZeroKmTrip } from "@/lib/queries/admin";
 import { useAdminSummary, usePeople, Card } from "../_shared";
 import { useCreateTrip } from "@/hooks/use-trips";
 import { toast } from "sonner";
+import { CarBadge } from "@/components/car-badge";
 
 // ── Helpers ───────────────────────────────────────────────────
 function groupByYear<T extends { date?: string; after_date?: string }>(items: T[]): [string, T[]][] {
@@ -109,13 +110,7 @@ export default function AdminHygienePage() {
                   onClick={() => setExpandedGap(expanded ? null : key)}
                 >
                   <div style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
-                    <div style={{
-                      fontFamily: fontMono, fontSize: 10, fontWeight: 700, letterSpacing: 1,
-                      background: paper.ink, color: paper.paper,
-                      padding: "4px 7px", flexShrink: 0, alignSelf: "flex-start",
-                    }}>
-                      {gap.car_short}
-                    </div>
+                    <CarBadge short={gap.car_short} style={{ padding: "4px 7px", alignSelf: "flex-start" }} />
                     <div style={{ flex: 1 }}>
                       <div style={{ fontFamily: fontSerif, fontSize: 16, fontWeight: 700, color: paper.ink, lineHeight: 1.1 }}>
                         {gap.missing_km.toLocaleString("nl-BE")} km {t("admin.km_missing_suffix")}

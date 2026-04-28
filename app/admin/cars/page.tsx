@@ -6,15 +6,17 @@ import type { CarPnL, MonthlyCarKm, PersonContribution, CarYearKm, CarPriceHisto
 import type { Car } from "@/types";
 import type { FixedCostItem } from "@/types";
 import { useCars, useUpdateCar } from "@/hooks/use-cars";
+import { usePeople } from "@/hooks/use-people";
 import { useAdminSummary, beMetrics, Card, Row, Perf, FixedCostEditor } from "../_shared";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
 // ── Car Edit Form ─────────────────────────────────────────────
-function CarEditForm({ car, onSave, onCancel }: {
+function CarEditForm({ car, onSave, onCancel, people }: {
   car: Car;
   onSave: (data: Partial<Car>) => void;
   onCancel: () => void;
+  people: { id: number; name: string }[];
 }) {
   const t = useT();
   const [name, setName] = useState(car.name);
@@ -72,7 +74,12 @@ function CarEditForm({ car, onSave, onCancel }: {
       </div>
       <div style={{ marginBottom: 12 }}>
         <label style={labelStyle}>{t("form.owner")}</label>
-        <input value={owner} onChange={(e) => setOwner(e.target.value)} style={inputStyle} />
+        <select value={owner} onChange={(e) => setOwner(e.target.value)} style={inputStyle}>
+          <option value="">—</option>
+          {people.map((p) => (
+            <option key={p.id} value={p.name}>{p.name}</option>
+          ))}
+        </select>
       </div>
 
       <div style={{ marginBottom: 12 }}>
@@ -655,6 +662,7 @@ function FleetTiles() {
   const year = new Date().getFullYear();
   const { data } = useAdminSummary(year);
   const { data: cars = [] } = useCars();
+  const { data: people = [] } = usePeople();
   const updateCar = useUpdateCar();
   const [editing, setEditing] = useState<number | null>(null);
   const [breakEvenCar, setBreakEvenCar] = useState<number | null>(null);
@@ -717,6 +725,7 @@ function FleetTiles() {
             )
           }
           onCancel={() => setEditing(null)}
+          people={people}
         />
       );
     }

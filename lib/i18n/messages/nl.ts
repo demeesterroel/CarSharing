@@ -379,6 +379,14 @@ export const nl = {
   "admin.is_admin_label": "Admin",
   "admin.no_username": "Nog geen login",
 
+  // Cloaking
+  "cloak.viewing_as": "Kijken als {name} ({role})",
+  "cloak.exit": "Stop met kijken",
+  "cloak.button": "Bekijk als lid",
+  "cloak.role_member": "lid",
+  "cloak.role_admin": "admin",
+  "cloak.role_owner": "eigenaar",
+
   // Offline indicator
   "offline.label": "OFFLINE",
   "offline.stale_suffix": "ouder dan 1u",

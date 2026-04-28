@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useRouter } from "next/navigation";
 import { paper, fontMono, fontSerif } from "@/lib/paper-theme";
 import { useT } from "@/components/locale-provider";
 import type { Person } from "@/types";
@@ -8,7 +9,15 @@ import { usePeople, Card } from "../_shared";
 import { toast } from "sonner";
 
 // ── Person Card ───────────────────────────────────────────────
-function PersonCard({ person, onSave }: { person: Person; onSave: (p: Person) => void }) {
+function PersonCard({
+  person,
+  onSave,
+  onCloak,
+}: {
+  person: Person;
+  onSave: (p: Person) => void;
+  onCloak?: (personId: number) => void;
+}) {
   const t = useT();
   const [disc, setDisc] = useState(person.discount);
   const [discLong, setDiscLong] = useState(person.discount_long);
@@ -60,7 +69,26 @@ function PersonCard({ person, onSave }: { person: Person; onSave: (p: Person) =>
   return (
     <Card>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
-        <div style={{ fontFamily: fontSerif, fontSize: 17, fontWeight: 700, color: paper.ink }}>{person.name}</div>
+        <button
+          onClick={onCloak ? () => onCloak(person.id) : undefined}
+          style={{
+            background: "none", border: "none", padding: 0,
+            cursor: onCloak ? "pointer" : "default",
+            display: "flex", alignItems: "baseline", gap: 8, textAlign: "left",
+          }}
+        >
+          <span style={{ fontFamily: fontSerif, fontSize: 17, fontWeight: 700, color: paper.ink }}>
+            {person.name}
+          </span>
+          {onCloak && (
+            <span style={{
+              fontFamily: fontMono, fontSize: 8, fontWeight: 700, letterSpacing: 1.5,
+              textTransform: "uppercase", color: paper.amber, whiteSpace: "nowrap",
+            }}>
+              ← view as
+            </span>
+          )}
+        </button>
         <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
           {isAdmin && (
             <div style={{
@@ -184,6 +212,7 @@ export default function AdminLedenPage() {
   const t = useT();
   const { data: people = [] } = usePeople();
   const qc = useQueryClient();
+  const router = useRouter();
 
   const savePerson = useMutation({
     mutationFn: async (p: Person) => {
@@ -200,13 +229,24 @@ export default function AdminLedenPage() {
     onSuccess: () => { qc.invalidateQueries({ queryKey: ["people"] }); toast.success(t("toast.saved")); },
   });
 
+  async function handleCloak(personId: number) {
+    const res = await fetch("/api/auth/cloak", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ personId }),
+    });
+    if (!res.ok) return;
+    qc.invalidateQueries({ queryKey: ["me"] });
+    router.push("/");
+  }
+
   const active = people.filter((p) => p.active);
   const inactive = people.filter((p) => !p.active);
 
   return (
     <div style={{ padding: "16px" }}>
       {active.map((person) => (
-        <PersonCard key={person.id} person={person} onSave={(p) => savePerson.mutate(p)} />
+        <PersonCard key={person.id} person={person} onSave={(p) => savePerson.mutate(p)} onCloak={handleCloak} />
       ))}
       {inactive.length > 0 && (
         <>

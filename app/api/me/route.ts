@@ -11,6 +11,21 @@ export async function GET(req: Request) {
     return NextResponse.json(null);
   }
 
+  const cloaked = session.cloakedAs;
+
+  if (cloaked) {
+    // While cloaked, return the cloaked person's identity.
+    // isOwner is computed from their name; isAdmin reflects their actual role.
+    const cloakedOwner = isOwner(getDb(), cloaked.personName);
+    return NextResponse.json({
+      personId: cloaked.personId,
+      personName: cloaked.personName,
+      isAdmin: cloaked.isAdmin,
+      isOwner: cloakedOwner,
+      isCloaked: true,
+    });
+  }
+
   let owner = false;
   if (session.personName) {
     owner = isOwner(getDb(), session.personName);
@@ -21,5 +36,6 @@ export async function GET(req: Request) {
     personName: session.personName ?? null,
     isAdmin: session.isAdmin ?? false,
     isOwner: owner,
+    isCloaked: false,
   });
 }

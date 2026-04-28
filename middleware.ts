@@ -45,6 +45,11 @@ export async function middleware(req: NextRequest) {
     }
   }
 
+  // While cloaking, block /admin/* entirely (redirect to dashboard)
+  if (session.cloakedAs && (pathname === "/admin" || pathname.startsWith("/admin/"))) {
+    return NextResponse.redirect(new URL("/", req.url));
+  }
+
   return res;
 }
 

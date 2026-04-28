@@ -5,6 +5,7 @@ export interface Me {
   personName: string | null;
   isAdmin: boolean;
   isOwner: boolean;
+  isCloaked: boolean;
 }
 
 export function useMe() {

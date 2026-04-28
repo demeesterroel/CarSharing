@@ -12,8 +12,9 @@ import { useMe } from "@/hooks/use-me";
 import { useQueryParam } from "@/hooks/use-query-param";
 import { YearSelect } from "@/components/year-select";
 import type { Trip } from "@/types";
-import { paper, fontMono, fontSerif, fmtMoney, fmtYearMonth, fmtDate } from "@/lib/paper-theme";
-import { useT, useLocale } from "@/components/locale-provider";
+import { paper, fontMono, fmtYearMonth } from "@/lib/paper-theme";
+import { useT } from "@/components/locale-provider";
+import { TripCard } from "@/components/trip-card";
 
 const overlayStyle: React.CSSProperties = {
   position: "fixed", inset: 0, background: "rgba(0,0,0,0.45)", zIndex: 49,
@@ -28,7 +29,6 @@ const sheetStyle: React.CSSProperties = {
 
 function TripsContent() {
   const t = useT();
-  const { locale } = useLocale();
   const { data: trips = [], isLoading } = useTrips();
   const { data: me } = useMe();
   const createTrip = useCreateTrip();
@@ -147,41 +147,7 @@ function TripsContent() {
         getGroupTotal={(items) => items.reduce((s, trip) => s + trip.km, 0)}
         totalSuffix="km"
         renderItem={(trip) => (
-          <button
-            key={trip.id}
-            onClick={() => openEdit(trip)}
-            style={{
-              width: "100%", display: "flex", alignItems: "center", gap: 12,
-              padding: "12px 14px", marginBottom: 8,
-              background: paper.paper, border: "none", cursor: "pointer", textAlign: "left",
-              borderLeft: `3px solid ${paper.accent}`,
-              boxShadow: "0 1px 2px rgba(0,0,0,0.04)",
-            }}
-          >
-            <div style={{
-              padding: "6px 8px", background: paper.ink, color: paper.paper,
-              fontFamily: fontMono, fontSize: 11, fontWeight: 700, letterSpacing: 2, flexShrink: 0, minWidth: 42, textAlign: "center",
-            }}>
-              {trip.car_short}
-            </div>
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{
-                fontFamily: fontSerif, fontSize: 15, fontWeight: 600, lineHeight: 1.2,
-                whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis",
-                color: (!trip.location && !trip.gps_coords && trip.parking) ? paper.inkDim : paper.ink,
-                fontStyle: (!trip.location && !trip.gps_coords && trip.parking) ? "italic" : "normal",
-              }}>
-                {trip.location ?? trip.gps_coords ?? trip.parking ?? "—"}
-              </div>
-              <div style={{ fontFamily: fontMono, fontSize: 10, color: paper.inkDim, letterSpacing: 1, marginTop: 2 }}>
-                {trip.person_name} · {fmtDate(trip.date, locale)} · {trip.start_odometer.toLocaleString("nl-BE")} → {trip.end_odometer.toLocaleString("nl-BE")}
-              </div>
-            </div>
-            <div style={{ textAlign: "right", flexShrink: 0 }}>
-              <div style={{ fontFamily: fontMono, fontSize: 14, fontWeight: 700, color: paper.accent }}>{fmtMoney(trip.amount)}</div>
-              <div style={{ fontFamily: fontMono, fontSize: 10, color: paper.inkDim }}>{trip.km} km</div>
-            </div>
-          </button>
+          <TripCard key={trip.id} trip={trip} onClick={() => openEdit(trip)} />
         )}
       />
 

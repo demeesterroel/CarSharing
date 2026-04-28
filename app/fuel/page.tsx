@@ -12,8 +12,9 @@ import { useMe } from "@/hooks/use-me";
 import { useQueryParam } from "@/hooks/use-query-param";
 import { YearSelect } from "@/components/year-select";
 import type { FuelFillup } from "@/types";
-import { paper, fontMono, fontSerif, fmtMoney, fmtYearMonth, fmtDate } from "@/lib/paper-theme";
-import { useT, useLocale } from "@/components/locale-provider";
+import { paper, fontMono, fmtYearMonth } from "@/lib/paper-theme";
+import { useT } from "@/components/locale-provider";
+import { FuelCard } from "@/components/fuel-card";
 
 const overlayStyle: React.CSSProperties = {
   position: "fixed", inset: 0, background: "rgba(0,0,0,0.45)", zIndex: 49,
@@ -28,7 +29,6 @@ const sheetStyle: React.CSSProperties = {
 
 function FuelContent() {
   const t = useT();
-  const { locale } = useLocale();
   const { data: fillups = [], isLoading } = useFuelFillups();
   const { data: me } = useMe();
   const createF = useCreateFuelFillup();
@@ -145,38 +145,7 @@ function FuelContent() {
         getGroupTotal={(items) => items.reduce((s, f) => s + f.amount, 0)}
         totalSuffix="€"
         renderItem={(f) => (
-          <button
-            key={f.id}
-            onClick={() => openEdit(f)}
-            style={{
-              width: "100%", display: "flex", alignItems: "center", gap: 12,
-              padding: "12px 14px", marginBottom: 8,
-              background: paper.paper, border: "none", cursor: "pointer", textAlign: "left",
-              borderLeft: `3px solid ${paper.green}`,
-              boxShadow: "0 1px 2px rgba(0,0,0,0.04)",
-            }}
-          >
-            <div style={{
-              padding: "6px 8px", background: paper.ink, color: paper.paper,
-              fontFamily: fontMono, fontSize: 11, fontWeight: 700, letterSpacing: 2, flexShrink: 0, minWidth: 42, textAlign: "center",
-            }}>
-              {f.car_short}
-            </div>
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ fontFamily: fontSerif, fontSize: 15, fontWeight: 600, lineHeight: 1.2, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-                ⛽ {f.location ?? t("dashboard.fillup_label")}
-              </div>
-              <div style={{ fontFamily: fontMono, fontSize: 10, color: paper.inkDim, letterSpacing: 1, marginTop: 2 }}>
-                {f.person_name} · {fmtDate(f.date, locale)} · {f.liters.toFixed(1)}L
-              </div>
-            </div>
-            <div style={{ textAlign: "right", flexShrink: 0 }}>
-              <div style={{ fontFamily: fontMono, fontSize: 14, fontWeight: 700, color: paper.green }}>{fmtMoney(f.amount)}</div>
-              {f.price_per_liter && (
-                <div style={{ fontFamily: fontMono, fontSize: 10, color: paper.inkDim }}>€{f.price_per_liter.toFixed(3)}/L</div>
-              )}
-            </div>
-          </button>
+          <FuelCard key={f.id} fuel={f} onClick={() => openEdit(f)} />
         )}
       />
 

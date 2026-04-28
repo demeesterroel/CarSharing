@@ -18,6 +18,10 @@ import { ReservationForm } from "@/app/calendar/reservation-form";
 import { toast } from "sonner";
 import { useT } from "@/components/locale-provider";
 import { LangSwitcher } from "@/components/lang-switcher";
+import { TripCard } from "@/components/trip-card";
+import { FuelCard } from "@/components/fuel-card";
+import { ExpenseCard } from "@/components/expense-card";
+import { ReservationCard } from "@/components/reservation-card";
 import { useMe } from "@/hooks/use-me";
 import {
   useCreateTrip, useUpdateTrip, useDeleteTrip,
@@ -74,18 +78,6 @@ function ReceiptRow({
     );
   }
   return inner;
-}
-
-function CarStamp({ code }: { code: string }) {
-  return (
-    <div style={{
-      padding: "6px 8px", textAlign: "center",
-      border: `1.5px solid ${paper.ink}`,
-      background: paper.ink, color: paper.paper,
-      fontFamily: fontMono, fontSize: 11, fontWeight: 700, letterSpacing: 2,
-      display: "inline-block", minWidth: 42, flexShrink: 0,
-    }}>{code}</div>
-  );
 }
 
 // ── Balance Receipt ───────────────────────────────────────────────
@@ -290,7 +282,13 @@ function CarLocations({ trips, onTripClick }: { trips: Trip[]; onTripClick: (tri
                 cursor: "pointer",
               }}
             >
-              <CarStamp code={short} />
+              <div style={{
+                padding: "6px 8px", textAlign: "center",
+                border: `1.5px solid ${paper.ink}`,
+                background: paper.ink, color: paper.paper,
+                fontFamily: fontMono, fontSize: 11, fontWeight: 700, letterSpacing: 2,
+                display: "inline-block", minWidth: 42, flexShrink: 0,
+              }}>{short}</div>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{
                   fontFamily: fontSerif, fontSize: 14, fontWeight: 600, lineHeight: 1.2,
@@ -310,128 +308,6 @@ function CarLocations({ trips, onTripClick }: { trips: Trip[]; onTripClick: (tri
         })}
       </div>
     </div>
-  );
-}
-
-// ── Activity strips ───────────────────────────────────────────
-function TripStrip({ trip, onClick }: { trip: Trip; onClick?: () => void }) {
-  return (
-    <button onClick={onClick} style={{
-      width: "100%", textAlign: "left", appearance: "none",
-      background: paper.paper, padding: "12px 14px", marginBottom: 8,
-      display: "flex", alignItems: "center", gap: 12,
-      borderTop: "none", borderRight: "none", borderBottom: "none",
-      borderLeft: `3px solid ${paper.accent}`,
-      boxShadow: "0 1px 2px rgba(0,0,0,0.04)",
-      cursor: onClick ? "pointer" : "default",
-    }}>
-      <CarStamp code={trip.car_short ?? "?"} />
-      <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{
-          fontFamily: fontSerif, fontSize: 15, color: (!trip.location && !trip.gps_coords && trip.parking) ? paper.inkDim : paper.ink,
-          fontStyle: (!trip.location && !trip.gps_coords && trip.parking) ? "italic" : "normal",
-          fontWeight: 600, lineHeight: 1.2, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis",
-        }}>
-          {trip.location ?? trip.gps_coords ?? trip.parking ?? "—"}
-        </div>
-        <div style={{ fontFamily: fontMono, fontSize: 10, color: paper.inkDim, letterSpacing: 1, marginTop: 2 }}>
-          {trip.person_name} · {fmtDate(trip.date)} · {trip.start_odometer.toLocaleString("nl-BE")} → {trip.end_odometer.toLocaleString("nl-BE")}
-        </div>
-      </div>
-      <div style={{ textAlign: "right", flexShrink: 0 }}>
-        <div style={{ fontFamily: fontMono, fontSize: 14, fontWeight: 700, color: paper.accent, whiteSpace: "nowrap" }}>
-          {fmtMoney(trip.amount)}
-        </div>
-        <div style={{ fontFamily: fontMono, fontSize: 10, color: paper.inkDim }}>{trip.km} km</div>
-      </div>
-    </button>
-  );
-}
-
-const stripButton: React.CSSProperties = {
-  width: "100%", textAlign: "left", appearance: "none",
-  background: paper.paper, padding: "12px 14px", marginBottom: 8,
-  display: "flex", alignItems: "center", gap: 12,
-  borderTop: "none", borderRight: "none", borderBottom: "none",
-  boxShadow: "0 1px 2px rgba(0,0,0,0.04)", cursor: "pointer",
-};
-
-function FuelStrip({ fuel, onClick }: { fuel: FuelFillup; onClick?: () => void }) {
-  const t = useT();
-  return (
-    <button onClick={onClick} style={{ ...stripButton, borderLeft: `3px solid ${paper.green}` }}>
-      <CarStamp code={fuel.car_short ?? "?"} />
-      <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ fontFamily: fontSerif, fontSize: 15, color: paper.ink, fontWeight: 600, lineHeight: 1.2, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-          ⛽ {fuel.location ?? t("dashboard.fillup_label")}
-        </div>
-        <div style={{ fontFamily: fontMono, fontSize: 10, color: paper.inkDim, letterSpacing: 1, marginTop: 2 }}>
-          {fuel.person_name} · {fmtDate(fuel.date)} · {fuel.liters.toFixed(1)}L
-        </div>
-      </div>
-      <div style={{ textAlign: "right", flexShrink: 0 }}>
-        <div style={{ fontFamily: fontMono, fontSize: 14, fontWeight: 700, color: paper.green, whiteSpace: "nowrap" }}>
-          {fmtMoney(fuel.amount)}
-        </div>
-        {fuel.price_per_liter && (
-          <div style={{ fontFamily: fontMono, fontSize: 10, color: paper.inkDim }}>€{fuel.price_per_liter.toFixed(3)}/L</div>
-        )}
-      </div>
-    </button>
-  );
-}
-
-function ExpenseStrip({ expense, onClick }: { expense: Expense; onClick?: () => void }) {
-  const t = useT();
-  return (
-    <button onClick={onClick} style={{ ...stripButton, borderLeft: `3px solid ${paper.green}` }}>
-      <CarStamp code={expense.car_short ?? "?"} />
-      <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ fontFamily: fontSerif, fontSize: 15, color: paper.ink, fontWeight: 600, lineHeight: 1.2, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-          {expense.description ?? t("dashboard.maintenance_label")}
-        </div>
-        <div style={{ fontFamily: fontMono, fontSize: 10, color: paper.inkDim, letterSpacing: 1, marginTop: 2 }}>
-          {expense.person_name} · {fmtDate(expense.date)}
-        </div>
-      </div>
-      <div style={{ textAlign: "right" }}>
-        <div style={{ fontFamily: fontMono, fontSize: 14, fontWeight: 700, color: paper.green, whiteSpace: "nowrap" }}>
-          {fmtMoney(expense.amount)}
-        </div>
-      </div>
-    </button>
-  );
-}
-
-function ReservationStrip({ r, onClick }: { r: Reservation; onClick?: () => void }) {
-  const isPending = r.status === "pending";
-  const days = Math.round((new Date(`${r.end_date}T00:00:00Z`).getTime() - new Date(`${r.start_date}T00:00:00Z`).getTime()) / 86400000) + 1;
-  return (
-    <button onClick={onClick} style={{
-      ...stripButton,
-      background: isPending
-        ? `repeating-linear-gradient(-45deg, ${paper.paperDeep}, ${paper.paperDeep} 4px, ${paper.paper} 4px, ${paper.paper} 10px)`
-        : paper.paper,
-      borderLeft: `3px ${isPending ? "dashed" : "solid"} ${isPending ? paper.amber : paper.green}`,
-    }}>
-      <CarStamp code={r.car_short ?? "?"} />
-      <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ fontFamily: fontSerif, fontSize: 15, color: paper.ink, fontWeight: 600, lineHeight: 1.2 }}>
-          {r.person_name}
-        </div>
-        <div style={{ fontFamily: fontMono, fontSize: 10, color: paper.inkDim, letterSpacing: 1, marginTop: 2 }}>
-          {fmtDate(r.start_date)}{r.start_date !== r.end_date ? ` → ${fmtDate(r.end_date)}` : ""}
-        </div>
-      </div>
-      <div style={{ textAlign: "right", flexShrink: 0 }}>
-        <div style={{ fontFamily: fontMono, fontSize: 14, fontWeight: 700, color: paper.ink, whiteSpace: "nowrap" }}>
-          {days}d
-        </div>
-        <div style={{ fontFamily: fontMono, fontSize: 10, fontWeight: 700, color: isPending ? paper.amber : paper.green }}>
-          {isPending ? "?" : "✓"}
-        </div>
-      </div>
-    </button>
   );
 }
 
@@ -605,7 +481,7 @@ export default function DashboardPage() {
             {t("state.empty_trips")}
           </div>
         ) : (
-          recentTrips.map((trip) => <TripStrip key={trip.id} trip={trip} onClick={() => setEditTrip(trip)} />)
+          recentTrips.map((trip) => <TripCard key={trip.id} trip={trip} onClick={() => setEditTrip(trip)} />)
         )}
       </div>
 
@@ -617,7 +493,7 @@ export default function DashboardPage() {
             {t("state.empty_fuel")}
           </div>
         ) : (
-          recentFuel.map((f) => <FuelStrip key={f.id} fuel={f} onClick={() => setEditFuel(f)} />)
+          recentFuel.map((f) => <FuelCard key={f.id} fuel={f} onClick={() => setEditFuel(f)} />)
         )}
       </div>
 
@@ -629,7 +505,7 @@ export default function DashboardPage() {
             {t("state.empty_expenses")}
           </div>
         ) : (
-          recentExpenses.map((e) => <ExpenseStrip key={e.id} expense={e} onClick={() => setEditExpense(e)} />)
+          recentExpenses.map((e) => <ExpenseCard key={e.id} expense={e} onClick={() => setEditExpense(e)} />)
         )}
       </div>
 
@@ -638,7 +514,7 @@ export default function DashboardPage() {
         <>
           <SectionHeader title={t("dashboard.upcoming")} href="/calendar" />
           <div style={{ padding: "0 16px" }}>
-            {upcoming.map((r) => <ReservationStrip key={r.id} r={r} onClick={() => setEditReservation(r)} />)}
+            {upcoming.map((r) => <ReservationCard key={r.id} reservation={r} onClick={() => setEditReservation(r)} />)}
           </div>
         </>
       )}

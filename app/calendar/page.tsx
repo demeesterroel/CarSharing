@@ -14,8 +14,9 @@ import {
 } from "@/hooks/use-reservations";
 import { useCars } from "@/hooks/use-cars";
 import type { Reservation, Car } from "@/types";
-import { paper, fontMono, fontSerif, fmtDate } from "@/lib/paper-theme";
-import { useT, useLocale } from "@/components/locale-provider";
+import { paper, fontMono, fontSerif } from "@/lib/paper-theme";
+import { useT } from "@/components/locale-provider";
+import { ReservationCard } from "@/components/reservation-card";
 import { PickCalendar } from "@/components/pick-calendar";
 
 // ── Bottom Sheet ──────────────────────────────────────────────
@@ -92,65 +93,6 @@ function CarTimeline({
         onRangePick={(from, to) => onPickDone(car.id, from, to)}
       />
     </div>
-  );
-}
-
-// ── Reservation list item ─────────────────────────────────────
-function ResRow({
-  r,
-  onClick,
-}: {
-  r: Reservation;
-  onClick: () => void;
-}) {
-  const { locale } = useLocale();
-  const isPending = r.status === "pending";
-  const days = Math.round((new Date(`${r.end_date}T00:00:00Z`).getTime() - new Date(`${r.start_date}T00:00:00Z`).getTime()) / 86400000) + 1;
-
-  return (
-    <button
-      onClick={onClick}
-      style={{
-        width: "100%", display: "flex", alignItems: "center", gap: 12,
-        padding: "11px 14px", marginBottom: 8,
-        background: isPending
-          ? `repeating-linear-gradient(45deg, ${paper.paper} 0 6px, ${paper.paperDeep} 6px 10px)`
-          : paper.paper,
-        border: "none",
-        borderLeft: `3px ${isPending ? "dashed" : "solid"} ${isPending ? paper.amber : paper.green}`,
-        boxShadow: "0 1px 2px rgba(0,0,0,0.04)",
-        cursor: "pointer", textAlign: "left",
-      }}
-    >
-      <div style={{
-        padding: "5px 7px", background: paper.ink, color: paper.paper,
-        fontFamily: fontMono, fontSize: 11, fontWeight: 700, letterSpacing: 2,
-        flexShrink: 0, minWidth: 38, textAlign: "center",
-      }}>
-        {r.car_short}
-      </div>
-      <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ fontFamily: fontSerif, fontSize: 15, fontWeight: 600, color: paper.ink, lineHeight: 1.2 }}>
-          {r.person_name}
-        </div>
-        <div style={{ fontFamily: fontMono, fontSize: 10, color: paper.inkDim, letterSpacing: 1, marginTop: 2 }}>
-          {fmtDate(r.start_date, locale as "nl" | "en")}{r.start_date !== r.end_date ? ` → ${fmtDate(r.end_date, locale as "nl" | "en")}` : ""}
-        </div>
-        {r.note && (
-          <div style={{ fontFamily: fontMono, fontSize: 10, color: paper.inkMute, marginTop: 2 }}>
-            {r.note}
-          </div>
-        )}
-      </div>
-      <div style={{ textAlign: "right", flexShrink: 0 }}>
-        <div style={{ fontFamily: fontMono, fontSize: 14, fontWeight: 700, color: paper.ink, whiteSpace: "nowrap" }}>
-          {days}d
-        </div>
-        <div style={{ fontFamily: fontMono, fontSize: 10, fontWeight: 700, color: isPending ? paper.amber : paper.green }}>
-          {isPending ? "?" : "✓"}
-        </div>
-      </div>
-    </button>
   );
 }
 
@@ -295,7 +237,7 @@ function CalendarContent() {
           </div>
         )}
         {upcoming.map((r) => (
-          <ResRow key={r.id} r={r} onClick={() => openEdit(r)} />
+          <ReservationCard key={r.id} reservation={r} onClick={() => openEdit(r)} />
         ))}
       </div>
 

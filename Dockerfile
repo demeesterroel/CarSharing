@@ -1,11 +1,10 @@
 # syntax=docker/dockerfile:1
 
-# Stage 1 — builder: compile native modules and build Next.js
-FROM node:20-alpine AS builder
+# Stage 1 — builder: build Next.js
+# node:20-slim (Debian/glibc) lets better-sqlite3 use its pre-built binary,
+# so no python/make/g++ toolchain is needed.
+FROM node:20-slim AS builder
 WORKDIR /app
-
-# better-sqlite3 builds from source on alpine; it needs python/make/g++
-RUN apk add --no-cache python3 make g++
 
 COPY package.json package-lock.json ./
 RUN npm ci
@@ -13,19 +12,19 @@ RUN npm ci
 COPY . .
 RUN npm run build
 
-# Prune dev dependencies; keeps the compiled better-sqlite3 .node binary
+# Prune dev dependencies
 RUN npm prune --omit=dev
 
 # Stage 2 — runner: minimal image, no build toolchain
-FROM node:20-alpine AS runner
+FROM node:20-slim AS runner
 WORKDIR /app
 ENV NODE_ENV=production \
     PORT=3000 \
     HOSTNAME=0.0.0.0
 
 # Non-root user
-RUN addgroup --system --gid 1001 nodejs && \
-    adduser  --system --uid 1001 nextjs
+RUN groupadd --system --gid 1001 nodejs && \
+    useradd  --system --uid 1001 -g nodejs nextjs
 
 # Standalone server bundle + static assets + public files
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./

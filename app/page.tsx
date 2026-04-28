@@ -420,14 +420,11 @@ function ReservationStrip({ r, onClick }: { r: Reservation; onClick?: () => void
           {fmtDate(r.start_date)}{r.start_date !== r.end_date ? ` → ${fmtDate(r.end_date)}` : ""}
         </div>
       </div>
-      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", flexShrink: 0, gap: 3 }}>
-        <div style={{ fontFamily: fontMono, fontSize: 11, fontWeight: 700, color: paper.ink }}>
+      <div style={{ textAlign: "right", flexShrink: 0 }}>
+        <div style={{ fontFamily: fontMono, fontSize: 14, fontWeight: 700, color: paper.ink, whiteSpace: "nowrap" }}>
           {days}d
         </div>
-        <div style={{
-          fontFamily: fontMono, fontSize: 9, fontWeight: 700,
-          color: isPending ? paper.amber : paper.green,
-        }}>
+        <div style={{ fontFamily: fontMono, fontSize: 10, fontWeight: 700, color: isPending ? paper.amber : paper.green }}>
           {isPending ? "?" : "✓"}
         </div>
       </div>

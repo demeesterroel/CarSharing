@@ -210,11 +210,12 @@ function Inbox() {
 }
 
 // ── 2. CAR LIST (accordion) ───────────────────────────────────
-function CarRow({ car, expanded, onToggle, onSave }: {
+function CarRow({ car, expanded, onToggle, onSave, people }: {
   car: Car;
   expanded: boolean;
   onToggle: () => void;
   onSave: (data: Partial<Car>) => void;
+  people: { id: number; name: string }[];
 }) {
   const t = useT();
   const [name, setName] = useState(car.name);
@@ -314,7 +315,12 @@ function CarRow({ car, expanded, onToggle, onSave }: {
 
           <div style={{ marginBottom: 14 }}>
             <label style={labelStyle}>{t("form.owner")}</label>
-            <input value={owner} onChange={(e) => setOwner(e.target.value)} style={inputStyle} />
+            <select value={owner} onChange={(e) => setOwner(e.target.value)} style={inputStyle}>
+              <option value="">—</option>
+              {people.map((p) => (
+                <option key={p.id} value={p.name}>{p.name}</option>
+              ))}
+            </select>
           </div>
 
           {/* Deactivate / activate */}
@@ -362,6 +368,7 @@ function CarRow({ car, expanded, onToggle, onSave }: {
 function CarList() {
   const t = useT();
   const { data: cars = [] } = useCars();
+  const { data: people = [] } = usePeople();
   const updateCar = useUpdateCar();
   const [expanded, setExpanded] = useState<number | null>(null);
 
@@ -391,6 +398,7 @@ function CarList() {
           expanded={expanded === car.id}
           onToggle={() => toggle(car.id)}
           onSave={(patch) => handleSave(car, patch)}
+          people={people}
         />
       ))}
       {inactive.length > 0 && (
@@ -409,6 +417,7 @@ function CarList() {
               expanded={expanded === car.id}
               onToggle={() => toggle(car.id)}
               onSave={(patch) => handleSave(car, patch)}
+              people={people}
             />
           ))}
         </>

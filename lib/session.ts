@@ -14,7 +14,7 @@ export interface SessionData {
 }
 
 export const sessionOptions: SessionOptions = {
-  cookieName: "autodelen_session",
+  cookieName: "carsharing_session",
   password: process.env.SESSION_PASSWORD as string,
   cookieOptions: {
     httpOnly: true,

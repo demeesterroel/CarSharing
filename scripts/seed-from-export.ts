@@ -4,7 +4,7 @@ import { readFileSync } from "fs";
 import { runMigrations } from "../lib/db/migrate.js";
 import { calcTripAmount, calcPricePerLiter, calcPaymentYear } from "../lib/formulas.js";
 
-const DB_PATH = process.env.DB_PATH ?? path.join(process.cwd(), "data", "autodelen.db");
+const DB_PATH = process.env.DB_PATH ?? path.join(process.cwd(), "data", "carsharing.db");
 const JSON_PATH = path.join(process.cwd(), "docs", "data", "car_sharing.json");
 
 const db = new Database(DB_PATH);

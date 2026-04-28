@@ -5,6 +5,7 @@ import { getPersonById, createInviteToken } from "@/lib/queries/people";
 import { getIronSession } from "iron-session";
 import { sessionOptions, type SessionData } from "@/lib/session";
 import { json, readId } from "@/lib/api";
+import { env } from "@/lib/env";
 
 export const POST = json(async (req, ctx) => {
   const session = await getIronSession<SessionData>(req, NextResponse.next(), sessionOptions);
@@ -20,7 +21,7 @@ export const POST = json(async (req, ctx) => {
   const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
   createInviteToken(getDb(), id, token, expiresAt);
 
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || `${new URL(req.url).origin}`;
+  const baseUrl = env.NEXT_PUBLIC_BASE_URL ?? `${new URL(req.url).origin}`;
   const url = `${baseUrl}/invite/${token}`;
   return NextResponse.json({ url });
 });

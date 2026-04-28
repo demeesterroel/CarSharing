@@ -10,7 +10,7 @@ COPY package.json package-lock.json ./
 RUN npm ci
 
 COPY . .
-RUN npm run build
+RUN SESSION_PASSWORD=build-placeholder npm run build
 
 # Prune dev dependencies
 RUN npm prune --omit=dev

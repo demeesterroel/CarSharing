@@ -3,7 +3,7 @@ import { randomBytes } from "crypto";
 import path from "path";
 
 const DB_PATH = process.env.DB_PATH ?? path.join(process.cwd(), "data", "carsharing.db");
-const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL ?? "https://autodelen.demeester.eu";
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL ?? "https://autodelen.bluette.be";
 const DAYS = 7;
 
 const nameArg = process.argv[2];

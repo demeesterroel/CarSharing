@@ -4,20 +4,20 @@ import type { Reservation } from "@/types";
 import { paper, fontMono, fmtDate } from "@/lib/paper-theme";
 import { useT, useLocale } from "@/components/locale-provider";
 
-const DAYS_NL = ["zo", "ma", "di", "wo", "do", "vr", "za"];
-const DAYS_EN = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
-const MONTHS_NL = ["jan", "feb", "mrt", "apr", "mei", "jun", "jul", "aug", "sep", "okt", "nov", "dec"];
-const MONTHS_EN = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+function shortMonth(iso: string, locale: string): string {
+  return new Date(`${iso}T00:00:00Z`)
+    .toLocaleDateString(locale, { month: "short", timeZone: "UTC" })
+    .replace(/\.$/, "");
+}
 
 function monthRange(first: string, last: string, locale: string): string {
-  const months = locale === "nl" ? MONTHS_NL : MONTHS_EN;
-  const d0 = new Date(`${first}T00:00:00Z`);
-  const d1 = new Date(`${last}T00:00:00Z`);
-  const m0 = d0.getUTCMonth(), y0 = d0.getUTCFullYear();
-  const m1 = d1.getUTCMonth(), y1 = d1.getUTCFullYear();
-  if (m0 === m1 && y0 === y1) return `${months[m0]} ${y0}`;
-  if (y0 === y1) return `${months[m0]} – ${months[m1]} ${y1}`;
-  return `${months[m0]} ${y0} – ${months[m1]} ${y1}`;
+  const m0 = shortMonth(first, locale);
+  const m1 = shortMonth(last, locale);
+  const y0 = new Date(`${first}T00:00:00Z`).getUTCFullYear();
+  const y1 = new Date(`${last}T00:00:00Z`).getUTCFullYear();
+  if (m0 === m1 && y0 === y1) return `${m0} ${y0}`;
+  if (y0 === y1) return `${m0} – ${m1} ${y1}`;
+  return `${m0} ${y0} – ${m1} ${y1}`;
 }
 
 function addDays(date: string, n: number): string {
@@ -46,7 +46,6 @@ interface Props {
 export function PickCalendar({ reservations, carId, excludeId, from, to, onRangePick, initialOffset = 0 }: Props) {
   const t = useT();
   const { locale } = useLocale();
-  const dayNames = locale === "nl" ? DAYS_NL : DAYS_EN;
   const [pickFrom, setPickFrom] = useState<string | null>(null);
   const [weekOffset, setWeekOffset] = useState(initialOffset);
 
@@ -55,6 +54,10 @@ export function PickCalendar({ reservations, carId, excludeId, from, to, onRange
   const today = new Date().toISOString().slice(0, 10);
   const stripStart = addDays(mondayOf(today), weekOffset * 7);
   const days = Array.from({ length: 14 }, (_, i) => addDays(stripStart, i));
+  // Derive short weekday labels from Intl — no hardcoded arrays needed.
+  const dayNames = days.slice(0, 7).map((d) =>
+    new Date(`${d}T00:00:00Z`).toLocaleDateString(locale, { weekday: "short", timeZone: "UTC" }).replace(/\.$/, "")
+  );
 
   function getReservation(day: string): Reservation | undefined {
     return reservations.find(

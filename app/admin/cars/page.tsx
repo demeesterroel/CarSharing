@@ -77,7 +77,7 @@ function CarRow({ car, expanded, onToggle, onSave, people }: {
           fontFamily: fontMono, fontSize: 11, fontWeight: 700,
           color: paper.ink, flexShrink: 0,
         }}>
-          €{car.price_per_km.toFixed(3)}/km
+          €{car.price_per_km.toFixed(2)}/km
         </div>
       </div>
 
@@ -362,7 +362,7 @@ function RateAssistant({ car, fullCar, historicalKm, variablePerKm, year, onSave
           {t("rate.suggested")}
         </div>
         <div style={{ fontFamily: fontSerif, fontSize: 38, fontWeight: 700, color: paper.green, lineHeight: 1, marginBottom: 2 }}>
-          € {suggestedRate.toFixed(3)}
+          € {suggestedRate.toFixed(2)}
         </div>
         <div style={{ fontFamily: fontMono, fontSize: 9, color: paper.inkDim, letterSpacing: 1, marginBottom: 8 }}>
           {t("rate.per_km_others")}
@@ -417,7 +417,7 @@ function PriceHistoryStrip({ history }: { history: CarPriceHistory[] }) {
             }}>
               <span style={{ color: paper.inkDim }}>{h.effective_from}</span>
               <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                <span style={{ fontWeight: 700 }}>€ {h.price_per_km.toFixed(3)} / km</span>
+                <span style={{ fontWeight: 700 }}>€ {h.price_per_km.toFixed(2)} / km</span>
                 {i === 0 && (
                   <span style={{
                     fontFamily: fontMono, fontSize: 7, fontWeight: 700, letterSpacing: 1,
@@ -520,15 +520,15 @@ function BreakEvenCard({ car, fullCar, monthlyKm, contributions, historicalKm, p
           </div>
           <input
             type="range"
-            min={minRate.toFixed(3)}
-            max={maxRate.toFixed(3)}
+            min={minRate.toFixed(2)}
+            max={maxRate.toFixed(2)}
             step="0.005"
             value={whatIfRate}
             onChange={(e) => setWhatIfRate(parseFloat(e.target.value))}
             style={{ width: "100%", accentColor: whatIfBurden === 0 ? paper.green : paper.accent }}
           />
           <div style={{ display: "flex", justifyContent: "space-between", fontFamily: fontMono, fontSize: 11, marginTop: 4 }}>
-            <span style={{ color: paper.inkDim }}>€ {whatIfRate.toFixed(3)} / km</span>
+            <span style={{ color: paper.inkDim }}>€ {whatIfRate.toFixed(2)} / km</span>
             <span style={{ color: whatIfBurden === 0 ? paper.green : paper.accent, fontWeight: 700 }}>
               {t("breakeven.projected_burden")}: {fmtMoney(whatIfBurden)}
             </span>

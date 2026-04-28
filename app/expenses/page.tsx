@@ -12,8 +12,9 @@ import { useMe } from "@/hooks/use-me";
 import { useQueryParam } from "@/hooks/use-query-param";
 import { YearSelect } from "@/components/year-select";
 import type { Expense } from "@/types";
-import { paper, fontMono, fontSerif, fmtMoney, fmtYearMonth, fmtDate } from "@/lib/paper-theme";
-import { useT, useLocale } from "@/components/locale-provider";
+import { paper, fontMono, fmtYearMonth } from "@/lib/paper-theme";
+import { useT } from "@/components/locale-provider";
+import { ExpenseCard } from "@/components/expense-card";
 
 const overlayStyle: React.CSSProperties = {
   position: "fixed", inset: 0, background: "rgba(0,0,0,0.45)", zIndex: 49,
@@ -28,7 +29,6 @@ const sheetStyle: React.CSSProperties = {
 
 function ExpensesContent() {
   const t = useT();
-  const { locale } = useLocale();
   const { data: expenses = [], isLoading } = useExpenses();
   const { data: me } = useMe();
   const createE = useCreateExpense();
@@ -145,38 +145,7 @@ function ExpensesContent() {
         getGroupTotal={(items) => items.reduce((s, e) => s + e.amount, 0)}
         totalSuffix="€"
         renderItem={(e) => (
-          <button
-            key={e.id}
-            onClick={() => openEdit(e)}
-            style={{
-              width: "100%", display: "flex", alignItems: "center", gap: 12,
-              padding: "12px 14px", marginBottom: 8,
-              background: paper.paper, border: "none", cursor: "pointer", textAlign: "left",
-              borderLeft: `3px solid ${paper.green}`,
-              boxShadow: "0 1px 2px rgba(0,0,0,0.04)",
-            }}
-          >
-            <div style={{
-              padding: "6px 8px", background: paper.ink, color: paper.paper,
-              fontFamily: fontMono, fontSize: 11, fontWeight: 700, letterSpacing: 2, flexShrink: 0, minWidth: 42, textAlign: "center",
-            }}>
-              {e.car_short}
-            </div>
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{
-                fontFamily: fontSerif, fontSize: 15, fontWeight: 600, lineHeight: 1.2,
-                whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis",
-              }}>
-                {e.description ?? "—"}
-              </div>
-              <div style={{ fontFamily: fontMono, fontSize: 10, color: paper.inkDim, letterSpacing: 1, marginTop: 2 }}>
-                {e.person_name} · {fmtDate(e.date, locale)}
-              </div>
-            </div>
-            <div style={{ textAlign: "right", flexShrink: 0 }}>
-              <div style={{ fontFamily: fontMono, fontSize: 14, fontWeight: 700, color: paper.green }}>{fmtMoney(e.amount)}</div>
-            </div>
-          </button>
+          <ExpenseCard key={e.id} expense={e} onClick={() => openEdit(e)} />
         )}
       />
 

@@ -14,8 +14,8 @@ import {
 } from "@/hooks/use-reservations";
 import { useCars } from "@/hooks/use-cars";
 import type { Reservation, Car } from "@/types";
-import { paper, fontMono, fontSerif } from "@/lib/paper-theme";
-import { useT } from "@/components/locale-provider";
+import { paper, fontMono, fontSerif, fmtDate } from "@/lib/paper-theme";
+import { useT, useLocale } from "@/components/locale-provider";
 import { PickCalendar } from "@/components/pick-calendar";
 
 // ── Bottom Sheet ──────────────────────────────────────────────
@@ -103,9 +103,9 @@ function ResRow({
   r: Reservation;
   onClick: () => void;
 }) {
+  const { locale } = useLocale();
   const isPending = r.status === "pending";
-  const statusColor = r.status === "confirmed" ? paper.green
-    : r.status === "rejected" ? paper.accent : paper.amber;
+  const days = Math.round((new Date(`${r.end_date}T00:00:00Z`).getTime() - new Date(`${r.start_date}T00:00:00Z`).getTime()) / 86400000) + 1;
 
   return (
     <button
@@ -117,7 +117,7 @@ function ResRow({
           ? `repeating-linear-gradient(45deg, ${paper.paper} 0 6px, ${paper.paperDeep} 6px 10px)`
           : paper.paper,
         border: "none",
-        borderLeft: `3px ${isPending ? "dashed" : "solid"} ${statusColor}`,
+        borderLeft: `3px ${isPending ? "dashed" : "solid"} ${isPending ? paper.amber : paper.green}`,
         boxShadow: "0 1px 2px rgba(0,0,0,0.04)",
         cursor: "pointer", textAlign: "left",
       }}
@@ -134,7 +134,7 @@ function ResRow({
           {r.person_name}
         </div>
         <div style={{ fontFamily: fontMono, fontSize: 10, color: paper.inkDim, letterSpacing: 1, marginTop: 2 }}>
-          {r.start_date}{r.start_date !== r.end_date ? ` → ${r.end_date}` : ""}
+          {fmtDate(r.start_date, locale as "nl" | "en")}{r.start_date !== r.end_date ? ` → ${fmtDate(r.end_date, locale as "nl" | "en")}` : ""}
         </div>
         {r.note && (
           <div style={{ fontFamily: fontMono, fontSize: 10, color: paper.inkMute, marginTop: 2 }}>
@@ -142,14 +142,13 @@ function ResRow({
           </div>
         )}
       </div>
-      <div style={{
-        padding: "3px 6px",
-        background: statusColor,
-        color: paper.paper,
-        fontFamily: fontMono, fontSize: 9, fontWeight: 700,
-        letterSpacing: 1, textTransform: "uppercase", flexShrink: 0,
-      }}>
-        {r.status === "confirmed" ? "✓" : r.status === "rejected" ? "✗" : "?"}
+      <div style={{ textAlign: "right", flexShrink: 0 }}>
+        <div style={{ fontFamily: fontMono, fontSize: 14, fontWeight: 700, color: paper.ink, whiteSpace: "nowrap" }}>
+          {days}d
+        </div>
+        <div style={{ fontFamily: fontMono, fontSize: 10, fontWeight: 700, color: isPending ? paper.amber : paper.green }}>
+          {isPending ? "?" : "✓"}
+        </div>
       </div>
     </button>
   );

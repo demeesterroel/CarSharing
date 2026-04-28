@@ -100,7 +100,7 @@ function TripsContent() {
           <div style={{ display: "flex", alignItems: "center" }}>
             {canFilter && (
               <div style={{ display: "flex", gap: 0 }}>
-                {(["mine", "all"] as const).map((v, i, arr) => (
+                {(["all", "mine"] as const).map((v, i, arr) => (
                   <button
                     key={v}
                     onClick={() => setMineParam(v === "mine" ? "true" : "")}

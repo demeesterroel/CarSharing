@@ -1,14 +1,7 @@
-import { z } from "zod";
 import { getDb } from "@/lib/db";
 import { getPaymentById, updatePayment, deletePayment } from "@/lib/queries/payments";
 import { json, readBody, readId, notFound } from "@/lib/api";
-
-const PaymentSchema = z.object({
-  person_id: z.number().int().positive(),
-  date: z.string().min(10),
-  amount: z.number().positive(),
-  note: z.string().nullable().optional().transform((v) => v ?? null),
-});
+import { paymentSchema } from "@/lib/schemas/payment";
 
 export const GET = json(async (_req, ctx) => {
   const id = await readId(ctx);
@@ -19,7 +12,7 @@ export const GET = json(async (_req, ctx) => {
 
 export const PUT = json(async (req, ctx) => {
   const id = await readId(ctx);
-  const body = await readBody(req, PaymentSchema);
+  const body = await readBody(req, paymentSchema);
   updatePayment(getDb(), id, body);
   return { ok: true };
 });

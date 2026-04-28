@@ -30,6 +30,7 @@ import {
   useCreateReservation, useUpdateReservation, useDeleteReservation,
 } from "./dashboard-hooks";
 import { useCars } from "@/hooks/use-cars";
+import { CarBadge } from "@/components/car-badge";
 
 // ── Primitives ────────────────────────────────────────────────────
 function Perf({ margin = "12px 0" }: { margin?: string }) {
@@ -282,13 +283,7 @@ function CarLocations({ trips, onTripClick }: { trips: Trip[]; onTripClick: (tri
                 cursor: "pointer",
               }}
             >
-              <div style={{
-                padding: "6px 8px", textAlign: "center",
-                border: `1.5px solid ${paper.ink}`,
-                background: paper.ink, color: paper.paper,
-                fontFamily: fontMono, fontSize: 11, fontWeight: 700, letterSpacing: 2,
-                display: "inline-block", minWidth: 42, flexShrink: 0,
-              }}>{short}</div>
+              <CarBadge short={short} />
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{
                   fontFamily: fontSerif, fontSize: 14, fontWeight: 600, lineHeight: 1.2,

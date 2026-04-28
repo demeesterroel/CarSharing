@@ -2,6 +2,7 @@
 import type { Reservation } from "@/types";
 import { paper, fontMono, fontSerif, fmtDate } from "@/lib/paper-theme";
 import { useLocale } from "@/components/locale-provider";
+import { CarBadge } from "@/components/car-badge";
 
 export interface ReservationCardProps {
   reservation: Reservation;
@@ -27,11 +28,7 @@ export function ReservationCard({ reservation, onClick }: ReservationCardProps) 
       textAlign: "left",
       appearance: "none",
     }}>
-      <div style={{
-        padding: "6px 8px", background: paper.ink, color: paper.paper,
-        fontFamily: fontMono, fontSize: 11, fontWeight: 700, letterSpacing: 2,
-        display: "inline-block", minWidth: 42, flexShrink: 0, textAlign: "center",
-      }}>{reservation.car_short ?? "?"}</div>
+      <CarBadge short={reservation.car_short ?? "?"} />
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ fontFamily: fontSerif, fontSize: 15, fontWeight: 600, color: paper.ink, lineHeight: 1.2 }}>
           {reservation.person_name}

@@ -2,6 +2,7 @@
 import type { Trip } from "@/types";
 import { paper, fontMono, fontSerif, fmtMoney, fmtDate } from "@/lib/paper-theme";
 import { useLocale } from "@/components/locale-provider";
+import { CarBadge } from "@/components/car-badge";
 
 export interface TripCardProps {
   trip: Trip;
@@ -20,11 +21,7 @@ export function TripCard({ trip, onClick }: TripCardProps) {
       boxShadow: "0 1px 2px rgba(0,0,0,0.04)",
       cursor: onClick ? "pointer" : "default",
     }}>
-      <div style={{
-        padding: "6px 8px", background: paper.ink, color: paper.paper,
-        fontFamily: fontMono, fontSize: 11, fontWeight: 700, letterSpacing: 2,
-        display: "inline-block", minWidth: 42, flexShrink: 0, textAlign: "center",
-      }}>{trip.car_short ?? "?"}</div>
+      <CarBadge short={trip.car_short ?? "?"} />
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{
           fontFamily: fontSerif, fontSize: 15, color: (!trip.location && !trip.gps_coords && trip.parking) ? paper.inkDim : paper.ink,

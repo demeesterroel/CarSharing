@@ -9,14 +9,16 @@ import { usePeople } from "@/hooks/use-people";
 import { useAdminSummary, beMetrics, Card, Row, Perf } from "../_shared";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { CarBadge } from "@/components/car-badge";
 
 // ── Car Row (accordion) ───────────────────────────────────────
-function CarRow({ car, expanded, onToggle, onSave, people }: {
+function CarRow({ car, expanded, onToggle, onSave, people, isSaving }: {
   car: Car;
   expanded: boolean;
   onToggle: () => void;
   onSave: (data: Partial<Car>) => void;
   people: { id: number; name: string }[];
+  isSaving?: boolean;
 }) {
   const t = useT();
   const [name, setName] = useState(car.name);
@@ -32,6 +34,10 @@ function CarRow({ car, expanded, onToggle, onSave, people }: {
     setOwner(car.owner_name ?? "");
   }
 
+  const dirty = name !== car.name || price !== car.price_per_km || owner !== (car.owner_name ?? "");
+
+  const reset = () => { setName(car.name); setPrice(car.price_per_km); setOwner(car.owner_name ?? ""); };
+
   const inputStyle: React.CSSProperties = {
     width: "100%", padding: "6px 8px", fontFamily: fontMono, fontSize: 11,
     border: `1px solid ${paper.paperDark}`, background: paper.paperDeep,
@@ -42,12 +48,36 @@ function CarRow({ car, expanded, onToggle, onSave, people }: {
     textTransform: "uppercase", display: "block", marginBottom: 3,
   };
 
+  // Inactive: name + activate only
+  if (!isActive) {
+    return (
+      <div style={{
+        background: paper.paper, marginBottom: 6, opacity: 0.55,
+        boxShadow: "0 1px 2px rgba(0,0,0,0.05), 0 4px 16px rgba(0,0,0,0.06)",
+        borderLeft: "3px solid transparent",
+        display: "flex", alignItems: "center", padding: "12px 14px",
+      }}>
+        <CarBadge short={car.short} active={false} />
+        <div style={{ flex: 1 }} />
+        <button
+          disabled={isSaving}
+          onClick={() => onSave({ active: 1 })}
+          style={{
+            padding: "5px 12px", background: paper.green, color: paper.paper,
+            border: "none", cursor: isSaving ? "default" : "pointer", opacity: isSaving ? 0.6 : 1,
+            fontFamily: fontMono, fontSize: 9, fontWeight: 700, letterSpacing: 1.5, textTransform: "uppercase",
+          }}>
+          {isSaving ? "…" : t("admin.activate")}
+        </button>
+      </div>
+    );
+  }
+
   return (
     <div style={{
       background: paper.paper, marginBottom: 6,
       boxShadow: "0 1px 2px rgba(0,0,0,0.05), 0 4px 16px rgba(0,0,0,0.06)",
       borderLeft: expanded ? `3px solid ${paper.blue}` : `3px solid transparent`,
-      opacity: isActive ? 1 : 0.55,
     }}>
       {/* Collapsed header — click to toggle */}
       <div
@@ -60,13 +90,7 @@ function CarRow({ car, expanded, onToggle, onSave, people }: {
           padding: "12px 14px", cursor: "pointer", userSelect: "none",
         }}
       >
-        <div style={{
-          padding: "4px 8px", background: isActive ? paper.ink : paper.inkMute, color: paper.paper,
-          fontFamily: fontMono, fontSize: 11, fontWeight: 700,
-          letterSpacing: 2, flexShrink: 0, minWidth: 40, textAlign: "center",
-        }}>
-          {car.short}
-        </div>
+        <CarBadge short={car.short} active={isActive} />
         <div style={{
           flex: 1, fontFamily: fontSerif, fontSize: 14, fontWeight: 600, color: paper.ink,
           overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
@@ -104,19 +128,19 @@ function CarRow({ car, expanded, onToggle, onSave, people }: {
           </div>
           <div style={{ marginBottom: 12 }}>
             <button
-              onClick={() => onSave({ name, price_per_km: price, owner_name: owner || null, active: isActive ? 0 : 1 })}
+              disabled={isSaving}
+              onClick={() => onSave({ name, price_per_km: price, owner_name: owner || null, active: 0 })}
               style={{
-                width: "100%", padding: "8px", background: "transparent",
-                color: isActive ? paper.accent : paper.green,
-                border: `1.5px solid ${isActive ? paper.accent : paper.green}`,
-                cursor: "pointer", fontFamily: fontMono, fontSize: 9,
-                fontWeight: 700, letterSpacing: 1.5, textTransform: "uppercase",
+                width: "100%", padding: "8px",
+                background: paper.accent, color: paper.paper, border: "none",
+                cursor: isSaving ? "default" : "pointer", opacity: isSaving ? 0.6 : 1,
+                fontFamily: fontMono, fontSize: 9, fontWeight: 700, letterSpacing: 1.5, textTransform: "uppercase",
               }}>
-              {isActive ? t("admin.deactivate") : t("admin.activate")}
+              {isSaving ? "…" : t("admin.deactivate")}
             </button>
           </div>
           <div style={{ display: "flex", gap: 8 }}>
-            <button onClick={onToggle} style={{
+            <button onClick={() => { reset(); onToggle(); }} style={{
               flex: 1, padding: "9px", background: "transparent", color: paper.inkDim,
               border: `1px solid ${paper.paperDark}`, cursor: "pointer",
               fontFamily: fontMono, fontSize: 9, fontWeight: 700, letterSpacing: 1.5, textTransform: "uppercase",
@@ -124,13 +148,16 @@ function CarRow({ car, expanded, onToggle, onSave, people }: {
               {t("action.cancel")}
             </button>
             <button
+              disabled={!dirty || isSaving}
               onClick={() => onSave({ name, price_per_km: price, owner_name: owner || null, active: car.active })}
               style={{
-                flex: 2, padding: "9px", background: paper.ink, color: paper.paper,
-                border: "none", cursor: "pointer", fontFamily: fontMono, fontSize: 9,
-                fontWeight: 700, letterSpacing: 2, textTransform: "uppercase",
+                flex: 2, padding: "9px",
+                background: dirty && !isSaving ? paper.ink : paper.paperDark,
+                color: dirty && !isSaving ? paper.paper : paper.inkMute,
+                border: "none", cursor: dirty && !isSaving ? "pointer" : "default",
+                fontFamily: fontMono, fontSize: 9, fontWeight: 700, letterSpacing: 2, textTransform: "uppercase",
               }}>
-              {t("action.save")}
+              {isSaving ? "…" : t("action.save")}
             </button>
           </div>
         </div>
@@ -571,6 +598,7 @@ function FleetTiles() {
   const { data: people = [] } = usePeople();
   const updateCar = useUpdateCar();
   const [expanded, setExpanded] = useState<number | null>(null);
+  const [savingId, setSavingId] = useState<number | null>(null);
   const [breakEvenCar, setBreakEvenCar] = useState<number | null>(null);
 
   const pnl = data?.carPnL ?? [];
@@ -583,9 +611,13 @@ function FleetTiles() {
   const toggle = (id: number) => setExpanded((prev) => (prev === id ? null : id));
 
   const handleSave = (car: Car, patch: Partial<Car>) => {
+    setSavingId(car.id);
     updateCar.mutate(
       { ...car, ...patch } as Car & { id: number },
-      { onSuccess: () => { setExpanded(null); toast.success(t("toast.saved")); } }
+      {
+        onSuccess: () => { setExpanded(null); toast.success(t("toast.saved")); },
+        onSettled: () => setSavingId(null),
+      }
     );
   };
 
@@ -629,6 +661,7 @@ function FleetTiles() {
       onToggle={() => toggle(car.id)}
       onSave={(patch) => handleSave(car, patch)}
       people={people}
+      isSaving={savingId === car.id}
     />
   );
 

@@ -12,8 +12,8 @@ import { useMe } from "@/hooks/use-me";
 import { useQueryParam } from "@/hooks/use-query-param";
 import { YearSelect } from "@/components/year-select";
 import type { FuelFillup } from "@/types";
-import { paper, fontMono, fontSerif, fmtMoney, fmtYearMonth } from "@/lib/paper-theme";
-import { useT } from "@/components/locale-provider";
+import { paper, fontMono, fontSerif, fmtMoney, fmtYearMonth, fmtDate } from "@/lib/paper-theme";
+import { useT, useLocale } from "@/components/locale-provider";
 
 const overlayStyle: React.CSSProperties = {
   position: "fixed", inset: 0, background: "rgba(0,0,0,0.45)", zIndex: 49,
@@ -28,6 +28,7 @@ const sheetStyle: React.CSSProperties = {
 
 function FuelContent() {
   const t = useT();
+  const { locale } = useLocale();
   const { data: fillups = [], isLoading } = useFuelFillups();
   const { data: me } = useMe();
   const createF = useCreateFuelFillup();
@@ -162,11 +163,11 @@ function FuelContent() {
               {f.car_short}
             </div>
             <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ fontFamily: fontSerif, fontSize: 15, fontWeight: 600, lineHeight: 1.2 }}>
-                {f.liters?.toFixed(2)} L
+              <div style={{ fontFamily: fontSerif, fontSize: 15, fontWeight: 600, lineHeight: 1.2, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                ⛽ {f.location ?? t("dashboard.fillup_label")}
               </div>
               <div style={{ fontFamily: fontMono, fontSize: 10, color: paper.inkDim, letterSpacing: 1, marginTop: 2 }}>
-                {f.person_name} · {f.date}{f.odometer ? ` · ${f.odometer.toLocaleString("nl-BE")} km` : ""}
+                {f.person_name} · {fmtDate(f.date, locale)} · {f.liters.toFixed(1)}L
               </div>
             </div>
             <div style={{ textAlign: "right", flexShrink: 0 }}>

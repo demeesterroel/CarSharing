@@ -12,8 +12,8 @@ import { useMe } from "@/hooks/use-me";
 import { useQueryParam } from "@/hooks/use-query-param";
 import { YearSelect } from "@/components/year-select";
 import type { Expense } from "@/types";
-import { paper, fontMono, fontSerif, fmtMoney, fmtYearMonth } from "@/lib/paper-theme";
-import { useT } from "@/components/locale-provider";
+import { paper, fontMono, fontSerif, fmtMoney, fmtYearMonth, fmtDate } from "@/lib/paper-theme";
+import { useT, useLocale } from "@/components/locale-provider";
 
 const overlayStyle: React.CSSProperties = {
   position: "fixed", inset: 0, background: "rgba(0,0,0,0.45)", zIndex: 49,
@@ -28,6 +28,7 @@ const sheetStyle: React.CSSProperties = {
 
 function ExpensesContent() {
   const t = useT();
+  const { locale } = useLocale();
   const { data: expenses = [], isLoading } = useExpenses();
   const { data: me } = useMe();
   const createE = useCreateExpense();
@@ -169,7 +170,7 @@ function ExpensesContent() {
                 {e.description ?? "—"}
               </div>
               <div style={{ fontFamily: fontMono, fontSize: 10, color: paper.inkDim, letterSpacing: 1, marginTop: 2 }}>
-                {e.person_name} · {e.date}
+                {e.person_name} · {fmtDate(e.date, locale)}
               </div>
             </div>
             <div style={{ textAlign: "right", flexShrink: 0 }}>

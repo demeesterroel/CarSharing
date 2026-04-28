@@ -14,8 +14,8 @@ import {
 } from "@/hooks/use-reservations";
 import { useCars } from "@/hooks/use-cars";
 import type { Reservation, Car } from "@/types";
-import { paper, fontMono, fontSerif } from "@/lib/paper-theme";
-import { useT } from "@/components/locale-provider";
+import { paper, fontMono, fontSerif, fmtDate } from "@/lib/paper-theme";
+import { useT, useLocale } from "@/components/locale-provider";
 import { PickCalendar } from "@/components/pick-calendar";
 
 // ── Bottom Sheet ──────────────────────────────────────────────
@@ -103,6 +103,7 @@ function ResRow({
   r: Reservation;
   onClick: () => void;
 }) {
+  const { locale } = useLocale();
   const isPending = r.status === "pending";
   const statusColor = r.status === "confirmed" ? paper.green
     : r.status === "rejected" ? paper.accent : paper.amber;
@@ -134,7 +135,7 @@ function ResRow({
           {r.person_name}
         </div>
         <div style={{ fontFamily: fontMono, fontSize: 10, color: paper.inkDim, letterSpacing: 1, marginTop: 2 }}>
-          {r.start_date}{r.start_date !== r.end_date ? ` → ${r.end_date}` : ""}
+          {fmtDate(r.start_date, locale)}{r.start_date !== r.end_date ? ` → ${fmtDate(r.end_date, locale)}` : ""}
         </div>
         {r.note && (
           <div style={{ fontFamily: fontMono, fontSize: 10, color: paper.inkMute, marginTop: 2 }}>

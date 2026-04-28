@@ -12,8 +12,8 @@ import { useMe } from "@/hooks/use-me";
 import { useQueryParam } from "@/hooks/use-query-param";
 import { YearSelect } from "@/components/year-select";
 import type { Trip } from "@/types";
-import { paper, fontMono, fontSerif, fmtMoney, fmtYearMonth } from "@/lib/paper-theme";
-import { useT } from "@/components/locale-provider";
+import { paper, fontMono, fontSerif, fmtMoney, fmtYearMonth, fmtDate } from "@/lib/paper-theme";
+import { useT, useLocale } from "@/components/locale-provider";
 
 const overlayStyle: React.CSSProperties = {
   position: "fixed", inset: 0, background: "rgba(0,0,0,0.45)", zIndex: 49,
@@ -28,6 +28,7 @@ const sheetStyle: React.CSSProperties = {
 
 function TripsContent() {
   const t = useT();
+  const { locale } = useLocale();
   const { data: trips = [], isLoading } = useTrips();
   const { data: me } = useMe();
   const createTrip = useCreateTrip();
@@ -173,7 +174,7 @@ function TripsContent() {
                 {trip.location ?? trip.gps_coords ?? trip.parking ?? "—"}
               </div>
               <div style={{ fontFamily: fontMono, fontSize: 10, color: paper.inkDim, letterSpacing: 1, marginTop: 2 }}>
-                {trip.person_name} · {trip.date} · {trip.start_odometer.toLocaleString("nl-BE")} → {trip.end_odometer.toLocaleString("nl-BE")}
+                {trip.person_name} · {fmtDate(trip.date, locale)} · {trip.start_odometer.toLocaleString("nl-BE")} → {trip.end_odometer.toLocaleString("nl-BE")}
               </div>
             </div>
             <div style={{ textAlign: "right", flexShrink: 0 }}>

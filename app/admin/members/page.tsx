@@ -69,7 +69,26 @@ function PersonCard({
   return (
     <Card>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
-        <div style={{ fontFamily: fontSerif, fontSize: 17, fontWeight: 700, color: paper.ink }}>{person.name}</div>
+        <button
+          onClick={onCloak ? () => onCloak(person.id) : undefined}
+          style={{
+            background: "none", border: "none", padding: 0,
+            cursor: onCloak ? "pointer" : "default",
+            display: "flex", alignItems: "baseline", gap: 8, textAlign: "left",
+          }}
+        >
+          <span style={{ fontFamily: fontSerif, fontSize: 17, fontWeight: 700, color: paper.ink }}>
+            {person.name}
+          </span>
+          {onCloak && (
+            <span style={{
+              fontFamily: fontMono, fontSize: 8, fontWeight: 700, letterSpacing: 1.5,
+              textTransform: "uppercase", color: paper.amber, whiteSpace: "nowrap",
+            }}>
+              ← view as
+            </span>
+          )}
+        </button>
         <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
           {isAdmin && (
             <div style={{
@@ -183,17 +202,6 @@ function PersonCard({
           }}>
           {t("admin.deactivate")}
         </button>
-        {onCloak && (
-          <button
-            onClick={() => onCloak(person.id)}
-            style={{
-              padding: "10px 14px", background: "transparent", color: paper.blue,
-              border: `1px solid ${paper.blue}`, cursor: "pointer",
-              fontFamily: fontMono, fontSize: 9, letterSpacing: 1.5, textTransform: "uppercase",
-            }}>
-            👁
-          </button>
-        )}
       </div>
     </Card>
   );

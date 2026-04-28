@@ -32,6 +32,8 @@ function CarRow({ car, expanded, onToggle, onSave, people }: {
     setOwner(car.owner_name ?? "");
   }
 
+  const dirty = name !== car.name || price !== car.price_per_km || owner !== (car.owner_name ?? "");
+
   const inputStyle: React.CSSProperties = {
     width: "100%", padding: "6px 8px", fontFamily: fontMono, fontSize: 11,
     border: `1px solid ${paper.paperDark}`, background: paper.paperDeep,
@@ -106,9 +108,10 @@ function CarRow({ car, expanded, onToggle, onSave, people }: {
             <button
               onClick={() => onSave({ name, price_per_km: price, owner_name: owner || null, active: isActive ? 0 : 1 })}
               style={{
-                width: "100%", padding: "8px", background: "transparent",
-                color: isActive ? paper.accent : paper.green,
-                border: `1.5px solid ${isActive ? paper.accent : paper.green}`,
+                width: "100%", padding: "8px",
+                background: isActive ? paper.accent : paper.green,
+                color: paper.paper,
+                border: "none",
                 cursor: "pointer", fontFamily: fontMono, fontSize: 9,
                 fontWeight: 700, letterSpacing: 1.5, textTransform: "uppercase",
               }}>
@@ -124,10 +127,14 @@ function CarRow({ car, expanded, onToggle, onSave, people }: {
               {t("action.cancel")}
             </button>
             <button
+              disabled={!dirty}
               onClick={() => onSave({ name, price_per_km: price, owner_name: owner || null, active: car.active })}
               style={{
-                flex: 2, padding: "9px", background: paper.ink, color: paper.paper,
-                border: "none", cursor: "pointer", fontFamily: fontMono, fontSize: 9,
+                flex: 2, padding: "9px",
+                background: dirty ? paper.ink : paper.paperDark,
+                color: dirty ? paper.paper : paper.inkMute,
+                border: "none", cursor: dirty ? "pointer" : "default",
+                fontFamily: fontMono, fontSize: 9,
                 fontWeight: 700, letterSpacing: 2, textTransform: "uppercase",
               }}>
               {t("action.save")}

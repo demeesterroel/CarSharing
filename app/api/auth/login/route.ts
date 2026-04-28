@@ -4,13 +4,9 @@ import { sessionOptions, type SessionData } from "@/lib/session";
 import { verifyCredentials } from "@/lib/auth";
 import { getDb } from "@/lib/db";
 import { getPersonByUsername, isOwner } from "@/lib/queries/people";
+import { env } from "@/lib/env";
 
 export async function POST(req: Request) {
-  if (!process.env.SESSION_PASSWORD) {
-    console.error("SESSION_PASSWORD env var is not set");
-    return NextResponse.json({ error: "server_misconfiguration" }, { status: 500 });
-  }
-
   let body: { username?: unknown; password?: unknown };
   try {
     body = await req.json();
@@ -44,7 +40,7 @@ export async function POST(req: Request) {
     }
   } else {
     // Env-var fallback for initial/legacy setup
-    const { AUTH_USERNAME, AUTH_PASSWORD_HASH } = process.env;
+    const { AUTH_USERNAME, AUTH_PASSWORD_HASH } = env;
     if (AUTH_USERNAME && AUTH_PASSWORD_HASH) {
       authenticated = await verifyCredentials(
         { username, password },

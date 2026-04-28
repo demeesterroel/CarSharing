@@ -369,10 +369,13 @@ function FuelStrip({ fuel, onClick }: { fuel: FuelFillup; onClick?: () => void }
           {fuel.person_name} · {fmtDate(fuel.date)} · {fuel.liters.toFixed(1)}L
         </div>
       </div>
-      <div style={{ textAlign: "right" }}>
+      <div style={{ textAlign: "right", flexShrink: 0 }}>
         <div style={{ fontFamily: fontMono, fontSize: 14, fontWeight: 700, color: paper.green, whiteSpace: "nowrap" }}>
           {fmtMoney(fuel.amount)}
         </div>
+        {fuel.price_per_liter && (
+          <div style={{ fontFamily: fontMono, fontSize: 10, color: paper.inkDim }}>€{fuel.price_per_liter.toFixed(3)}/L</div>
+        )}
       </div>
     </button>
   );

@@ -401,35 +401,36 @@ function ExpenseStrip({ expense, onClick }: { expense: Expense; onClick?: () => 
 }
 
 function ReservationStrip({ r, onClick }: { r: Reservation; onClick?: () => void }) {
-  const t = useT();
   const isPending = r.status === "pending";
+  const days = Math.round((new Date(`${r.end_date}T00:00:00Z`).getTime() - new Date(`${r.start_date}T00:00:00Z`).getTime()) / 86400000) + 1;
   return (
     <button onClick={onClick} style={{
       ...stripButton,
       background: isPending
         ? `repeating-linear-gradient(-45deg, ${paper.paperDeep}, ${paper.paperDeep} 4px, ${paper.paper} 4px, ${paper.paper} 10px)`
         : paper.paper,
-      borderLeft: `3px dashed ${paper.blue}`,
+      borderLeft: `3px ${isPending ? "dashed" : "solid"} ${isPending ? paper.amber : paper.green}`,
     }}>
       <CarStamp code={r.car_short ?? "?"} />
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ fontFamily: fontSerif, fontSize: 15, color: paper.ink, fontWeight: 600, lineHeight: 1.2 }}>
-          {r.note ?? r.person_name}
+          {r.person_name}
         </div>
         <div style={{ fontFamily: fontMono, fontSize: 10, color: paper.inkDim, letterSpacing: 1, marginTop: 2 }}>
-          {r.person_name} · {fmtDate(r.start_date)}
-          {r.start_date !== r.end_date ? ` → ${fmtDate(r.end_date)}` : ""}
+          {fmtDate(r.start_date)}{r.start_date !== r.end_date ? ` → ${fmtDate(r.end_date)}` : ""}
         </div>
       </div>
-      {isPending && (
-        <div style={{
-          fontFamily: fontMono, fontSize: 8, fontWeight: 700,
-          color: paper.amber, letterSpacing: 1, textTransform: "uppercase",
-          border: `1px solid ${paper.amber}`, padding: "2px 6px",
-        }}>
-          {t("dashboard.pending_badge")}
+      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", flexShrink: 0, gap: 3 }}>
+        <div style={{ fontFamily: fontMono, fontSize: 11, fontWeight: 700, color: paper.ink }}>
+          {days}d
         </div>
-      )}
+        <div style={{
+          fontFamily: fontMono, fontSize: 9, fontWeight: 700,
+          color: isPending ? paper.amber : paper.green,
+        }}>
+          {isPending ? "?" : "✓"}
+        </div>
+      </div>
     </button>
   );
 }

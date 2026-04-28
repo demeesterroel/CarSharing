@@ -14,4 +14,12 @@ const envSchema = z.object({
   AUTH_PASSWORD_HASH: z.string().optional(),
 });
 
-export const env = envSchema.parse(process.env);
+type Env = z.infer<typeof envSchema>;
+let _env: Env | undefined;
+
+export const env = new Proxy({} as Env, {
+  get(_, key: string) {
+    if (!_env) _env = envSchema.parse(process.env);
+    return _env[key as keyof Env];
+  },
+});

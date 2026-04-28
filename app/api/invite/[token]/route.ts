@@ -36,8 +36,10 @@ export async function POST(
   }
 
   const hash = await bcrypt.hash(parsed.data.password, 12);
-  setPasswordHash(db, record.person_id, hash);
-  deleteInviteToken(db, token);
+  db.transaction((args: { personId: number; hash: string; token: string }) => {
+    setPasswordHash(db, args.personId, args.hash);
+    deleteInviteToken(db, args.token);
+  })({ personId: record.person_id, hash, token });
 
   const person = getPersonById(db, record.person_id);
   if (!person) return NextResponse.json({ error: "not_found" }, { status: 404 });

@@ -28,11 +28,13 @@ export function runMigrations(db: Database.Database): void {
     const fkWasOn = (db.pragma("foreign_keys", { simple: true }) as number) === 1;
     if (fkWasOn) db.pragma("foreign_keys = OFF");
     try {
-      db.exec(sql);
+      db.transaction((args: { sql: string; filename: string }) => {
+        db.exec(args.sql);
+        db.prepare("INSERT INTO _migrations (filename) VALUES (?)").run(args.filename);
+      })({ sql, filename });
     } finally {
       if (fkWasOn) db.pragma("foreign_keys = ON");
     }
-    db.prepare("INSERT INTO _migrations (filename) VALUES (?)").run(filename);
     console.log(`[db] migration applied: ${filename}`);
   }
 }

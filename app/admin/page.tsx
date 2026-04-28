@@ -41,7 +41,7 @@ export default function AdminInboxPage() {
       {pending.map((r) => (
         <Card key={r.id}>
           <div style={{ display: "flex", alignItems: "flex-start", gap: 12, marginBottom: 12 }}>
-            <CarBadge short={r.car_short ?? "?"} style={{ padding: "8px 10px" }} />
+            <CarBadge short={r.car_short ?? "?"} />
             <div style={{ flex: 1 }}>
               <div style={{ fontFamily: fontSerif, fontSize: 16, fontWeight: 700, color: paper.ink }}>{r.person_name}</div>
               <div style={{ fontFamily: fontMono, fontSize: 10, color: paper.inkDim, letterSpacing: 1, marginTop: 2 }}>

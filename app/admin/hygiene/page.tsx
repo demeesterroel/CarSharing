@@ -110,7 +110,7 @@ export default function AdminHygienePage() {
                   onClick={() => setExpandedGap(expanded ? null : key)}
                 >
                   <div style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
-                    <CarBadge short={gap.car_short} style={{ padding: "4px 7px", alignSelf: "flex-start" }} />
+                    <CarBadge short={gap.car_short} />
                     <div style={{ flex: 1 }}>
                       <div style={{ fontFamily: fontSerif, fontSize: 16, fontWeight: 700, color: paper.ink, lineHeight: 1.1 }}>
                         {gap.missing_km.toLocaleString("nl-BE")} km {t("admin.km_missing_suffix")}

@@ -75,7 +75,7 @@ function CarTimeline({
       boxShadow: "0 1px 2px rgba(0,0,0,0.04)",
     }}>
       <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10 }}>
-        <CarBadge short={car.short} active={!!car.active} style={{ padding: "5px 8px" }} />
+        <CarBadge short={car.short} active={!!car.active} />
         <div style={{ fontFamily: fontSerif, fontSize: 16, fontWeight: 700, color: paper.ink }}>
           {car.name}
         </div>

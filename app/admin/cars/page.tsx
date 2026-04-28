@@ -57,7 +57,7 @@ function CarRow({ car, expanded, onToggle, onSave, people, isSaving }: {
         borderLeft: "3px solid transparent",
         display: "flex", alignItems: "center", padding: "12px 14px",
       }}>
-        <CarBadge short={car.short} active={false} style={{ padding: "4px 8px" }} />
+        <CarBadge short={car.short} active={false} />
         <div style={{ flex: 1 }} />
         <button
           disabled={isSaving}
@@ -90,7 +90,7 @@ function CarRow({ car, expanded, onToggle, onSave, people, isSaving }: {
           padding: "12px 14px", cursor: "pointer", userSelect: "none",
         }}
       >
-        <CarBadge short={car.short} active={isActive} style={{ padding: "4px 8px" }} />
+        <CarBadge short={car.short} active={isActive} />
         <div style={{
           flex: 1, fontFamily: fontSerif, fontSize: 14, fontWeight: 600, color: paper.ink,
           overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",

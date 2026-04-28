@@ -9,12 +9,13 @@ import { usePeople } from "../_shared";
 import { toast } from "sonner";
 
 // ── Person Row (accordion) ────────────────────────────────────
-function PersonRow({ person, expanded, onToggle, onSave, onCloak }: {
+function PersonRow({ person, expanded, onToggle, onSave, onCloak, isSaving }: {
   person: Person;
   expanded: boolean;
   onToggle: () => void;
   onSave: (p: Person) => void;
   onCloak?: (personId: number) => void;
+  isSaving?: boolean;
 }) {
   const t = useT();
   const [disc, setDisc] = useState(person.discount);
@@ -37,6 +38,8 @@ function PersonRow({ person, expanded, onToggle, onSave, onCloak }: {
     discLong !== person.discount_long ||
     username !== (person.username ?? "") ||
     isAdmin !== (person.is_admin === 1);
+
+  const reset = () => { setDisc(person.discount); setDiscLong(person.discount_long); setUsername(person.username ?? ""); setIsAdmin(person.is_admin === 1); };
 
   const isActive = !!person.active;
   const hasDiscount = person.discount > 0 || person.discount_long > 0;
@@ -69,13 +72,14 @@ function PersonRow({ person, expanded, onToggle, onSave, onCloak }: {
           {person.name}
         </div>
         <button
+          disabled={isSaving}
           onClick={() => onSave({ ...person, active: 1 })}
           style={{
             padding: "5px 12px", background: paper.green, color: paper.paper,
-            border: "none", cursor: "pointer",
+            border: "none", cursor: isSaving ? "default" : "pointer", opacity: isSaving ? 0.6 : 1,
             fontFamily: fontMono, fontSize: 9, fontWeight: 700, letterSpacing: 1.5, textTransform: "uppercase",
           }}>
-          {t("admin.activate")}
+          {isSaving ? "…" : t("admin.activate")}
         </button>
       </div>
     );
@@ -98,11 +102,11 @@ function PersonRow({ person, expanded, onToggle, onSave, onCloak }: {
           padding: "12px 14px", cursor: "pointer", userSelect: "none",
         }}
       >
-        {/* Name + ← view as */}
+        {/* Name + ← view as + username */}
         <div style={{ flex: 1, display: "flex", alignItems: "baseline", gap: 8, minWidth: 0 }}>
           <span style={{
             fontFamily: fontSerif, fontSize: 15, fontWeight: 700, color: paper.ink,
-            overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
+            whiteSpace: "nowrap",
           }}>
             {person.name}
           </span>
@@ -118,17 +122,15 @@ function PersonRow({ person, expanded, onToggle, onSave, onCloak }: {
               ← view as
             </button>
           )}
+          {person.username && (
+            <span style={{
+              fontFamily: fontMono, fontSize: 10, color: paper.inkDim,
+              whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis",
+            }}>
+              {person.username}
+            </span>
+          )}
         </div>
-
-        {/* Username */}
-        {person.username && (
-          <div style={{
-            fontFamily: fontMono, fontSize: 10, color: paper.inkDim, flexShrink: 0,
-            overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: 90,
-          }}>
-            {person.username}
-          </div>
-        )}
 
         {/* Discount badge */}
         {hasDiscount && (
@@ -216,20 +218,21 @@ function PersonRow({ person, expanded, onToggle, onSave, onCloak }: {
           {/* Deactivate */}
           <div style={{ marginBottom: 12 }}>
             <button
+              disabled={isSaving}
               onClick={() => onSave({ ...person, discount: disc, discount_long: discLong, active: 0 })}
               style={{
                 width: "100%", padding: "8px",
                 background: paper.accent, color: paper.paper,
-                border: "none", cursor: "pointer",
+                border: "none", cursor: isSaving ? "default" : "pointer", opacity: isSaving ? 0.6 : 1,
                 fontFamily: fontMono, fontSize: 9, fontWeight: 700, letterSpacing: 1.5, textTransform: "uppercase",
               }}>
-              {t("admin.deactivate")}
+              {isSaving ? "…" : t("admin.deactivate")}
             </button>
           </div>
 
           {/* Cancel / Save */}
           <div style={{ display: "flex", gap: 8 }}>
-            <button onClick={onToggle} style={{
+            <button onClick={() => { reset(); onToggle(); }} style={{
               flex: 1, padding: "9px", background: "transparent", color: paper.inkDim,
               border: `1px solid ${paper.paperDark}`, cursor: "pointer",
               fontFamily: fontMono, fontSize: 9, fontWeight: 700, letterSpacing: 1.5, textTransform: "uppercase",
@@ -237,16 +240,16 @@ function PersonRow({ person, expanded, onToggle, onSave, onCloak }: {
               {t("action.cancel")}
             </button>
             <button
-              disabled={!dirty}
+              disabled={!dirty || isSaving}
               onClick={() => onSave({ ...person, discount: disc, discount_long: discLong, username: username || null, is_admin: isAdmin ? 1 : 0 })}
               style={{
                 flex: 2, padding: "9px",
-                background: dirty ? paper.ink : paper.paperDark,
-                color: dirty ? paper.paper : paper.inkMute,
-                border: "none", cursor: dirty ? "pointer" : "default",
+                background: dirty && !isSaving ? paper.ink : paper.paperDark,
+                color: dirty && !isSaving ? paper.paper : paper.inkMute,
+                border: "none", cursor: dirty && !isSaving ? "pointer" : "default",
                 fontFamily: fontMono, fontSize: 9, fontWeight: 700, letterSpacing: 2, textTransform: "uppercase",
               }}>
-              {t("action.save")}
+              {isSaving ? "…" : t("action.save")}
             </button>
           </div>
         </div>
@@ -262,6 +265,7 @@ export default function AdminLedenPage() {
   const qc = useQueryClient();
   const router = useRouter();
   const [expanded, setExpanded] = useState<number | null>(null);
+  const [savingId, setSavingId] = useState<number | null>(null);
 
   const toggle = (id: number) => setExpanded((prev) => (prev === id ? null : id));
 
@@ -277,6 +281,8 @@ export default function AdminLedenPage() {
       });
       if (!res.ok) throw new Error("Failed");
     },
+    onMutate: (p) => setSavingId(p.id),
+    onSettled: () => setSavingId(null),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["people"] });
       setExpanded(null);
@@ -308,6 +314,7 @@ export default function AdminLedenPage() {
           onToggle={() => toggle(person.id)}
           onSave={(p) => savePerson.mutate(p)}
           onCloak={handleCloak}
+          isSaving={savingId === person.id}
         />
       ))}
       {inactive.length > 0 && (
@@ -326,6 +333,7 @@ export default function AdminLedenPage() {
               expanded={false}
               onToggle={() => {}}
               onSave={(p) => savePerson.mutate(p)}
+              isSaving={savingId === person.id}
             />
           ))}
         </>

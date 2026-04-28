@@ -11,8 +11,8 @@ const BASE_TABS = [
   { href: "/",         labelKey: "nav.dashboard" as const,        icon: "◉" },
   { href: "/trips",    labelKey: "nav.trips" as const,             icon: "↦" },
   { href: "/fuel",     labelKey: "nav.fuel" as const,              icon: "⛽" },
-  { href: "/calendar", labelKey: "nav.tab.reservations" as const,  icon: "▦" },
   { href: "/expenses", labelKey: "nav.tab.expenses" as const,      icon: "₪" },
+  { href: "/calendar", labelKey: "nav.tab.reservations" as const,  icon: "▦" },
 ];
 
 const ADMIN_TAB = { href: "/admin", labelKey: "nav.admin" as const, icon: "✎" };

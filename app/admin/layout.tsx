@@ -17,10 +17,10 @@ function SubNav() {
 
   const SUB_PAGES = [
     { href: "/admin",         label: t("admin.sub_inbox") + (pendingCount > 0 ? ` (${pendingCount})` : "") },
-    { href: "/admin/wagens",  label: t("admin.sub_cars") },
-    { href: "/admin/leden",   label: t("admin.sub_members") },
-    { href: "/admin/hygiene", label: t("admin.sub_data") },
-    { href: "/admin/afrek",   label: t("admin.sub_settlement") },
+    { href: "/admin/cars",       label: t("admin.sub_cars") },
+    { href: "/admin/members",    label: t("admin.sub_members") },
+    { href: "/admin/hygiene",    label: t("admin.sub_data") },
+    { href: "/admin/settlement", label: t("admin.sub_settlement") },
     { href: "/admin/payout",  label: t("admin.sub_payout") },
   ];
 

@@ -4,8 +4,21 @@ import type { Reservation } from "@/types";
 import { paper, fontMono, fmtDate } from "@/lib/paper-theme";
 import { useT, useLocale } from "@/components/locale-provider";
 
-const DAYS_NL = ["zo", "ma", "di", "wo", "do", "vr", "za"];
-const DAYS_EN = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
+function shortMonth(iso: string, locale: string): string {
+  return new Date(`${iso}T00:00:00Z`)
+    .toLocaleDateString(locale, { month: "short", timeZone: "UTC" })
+    .replace(/\.$/, "");
+}
+
+function monthRange(first: string, last: string, locale: string): string {
+  const m0 = shortMonth(first, locale);
+  const m1 = shortMonth(last, locale);
+  const y0 = new Date(`${first}T00:00:00Z`).getUTCFullYear();
+  const y1 = new Date(`${last}T00:00:00Z`).getUTCFullYear();
+  if (m0 === m1 && y0 === y1) return `${m0} ${y0}`;
+  if (y0 === y1) return `${m0} – ${m1} ${y1}`;
+  return `${m0} ${y0} – ${m1} ${y1}`;
+}
 
 function addDays(date: string, n: number): string {
   const d = new Date(`${date}T00:00:00Z`);
@@ -33,7 +46,6 @@ interface Props {
 export function PickCalendar({ reservations, carId, excludeId, from, to, onRangePick, initialOffset = 0 }: Props) {
   const t = useT();
   const { locale } = useLocale();
-  const dayNames = locale === "nl" ? DAYS_NL : DAYS_EN;
   const [pickFrom, setPickFrom] = useState<string | null>(null);
   const [weekOffset, setWeekOffset] = useState(initialOffset);
 
@@ -42,6 +54,10 @@ export function PickCalendar({ reservations, carId, excludeId, from, to, onRange
   const today = new Date().toISOString().slice(0, 10);
   const stripStart = addDays(mondayOf(today), weekOffset * 7);
   const days = Array.from({ length: 14 }, (_, i) => addDays(stripStart, i));
+  // Derive short weekday labels from Intl — no hardcoded arrays needed.
+  const dayNames = days.slice(0, 7).map((d) =>
+    new Date(`${d}T00:00:00Z`).toLocaleDateString(locale, { weekday: "short", timeZone: "UTC" }).replace(/\.$/, "")
+  );
 
   function getReservation(day: string): Reservation | undefined {
     return reservations.find(
@@ -86,23 +102,30 @@ export function PickCalendar({ reservations, carId, excludeId, from, to, onRange
       <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 8 }}>
         <div style={{
           flex: 1, padding: "4px 10px",
-          border: `1.5px dashed ${paper.accent}`,
+          border: `1.5px dashed ${pickFrom ? paper.accent : paper.inkMute}`,
           background: paper.paperDeep,
           fontFamily: fontMono, fontSize: 10, letterSpacing: 1, color: paper.ink,
           display: "flex", justifyContent: "space-between", alignItems: "center",
           minHeight: 28,
-          visibility: pickFrom ? "visible" : "hidden",
         }}>
-          <span>● {pickFrom && t("calendar.pick_start", { date: fmtDate(pickFrom, locale as "nl" | "en") })}</span>
-          <button
-            type="button"
-            onClick={() => setPickFrom(null)}
-            style={{
-              border: "none", background: "transparent",
-              fontFamily: fontMono, fontSize: 12, cursor: "pointer",
-              color: paper.inkDim, lineHeight: 1, padding: 0,
-            }}
-          >✕</button>
+          {pickFrom ? (
+            <>
+              <span>● {t("calendar.pick_start", { date: fmtDate(pickFrom, locale as "nl" | "en") })}</span>
+              <button
+                type="button"
+                onClick={() => setPickFrom(null)}
+                style={{
+                  border: "none", background: "transparent",
+                  fontFamily: fontMono, fontSize: 12, cursor: "pointer",
+                  color: paper.inkDim, lineHeight: 1, padding: 0,
+                }}
+              >✕</button>
+            </>
+          ) : (
+            <span style={{ color: paper.inkDim }}>
+              {monthRange(days[0], days[13], locale)}
+            </span>
+          )}
         </div>
         <button type="button" onClick={() => setWeekOffset((o) => o - 1)} style={navBtn}>‹</button>
         <button type="button" onClick={() => setWeekOffset((o) => o + 1)} style={navBtn}>›</button>

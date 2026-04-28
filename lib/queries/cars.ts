@@ -16,26 +16,30 @@ function recordPriceHistory(db: Database.Database, carId: number, price: number)
 }
 
 export function insertCar(db: Database.Database, data: CarInput): number {
-  const result = db
-    .prepare("INSERT INTO cars (short,name,price_per_km,brand,color,owner_name,long_threshold,fixed_costs_json) VALUES (?,?,?,?,?,?,?,?)")
-    .run(
-      data.short, data.name, data.price_per_km, data.brand ?? null, data.color ?? null,
-      data.owner_name ?? null, data.long_threshold ?? 500, data.fixed_costs_json ?? null,
-    );
-  const newId = result.lastInsertRowid as number;
-  recordPriceHistory(db, newId, data.price_per_km);
-  return newId;
+  return db.transaction((d: CarInput) => {
+    const result = db
+      .prepare("INSERT INTO cars (short,name,price_per_km,brand,color,owner_name,long_threshold,fixed_costs_json) VALUES (?,?,?,?,?,?,?,?)")
+      .run(
+        d.short, d.name, d.price_per_km, d.brand ?? null, d.color ?? null,
+        d.owner_name ?? null, d.long_threshold ?? 500, d.fixed_costs_json ?? null,
+      );
+    const newId = result.lastInsertRowid as number;
+    recordPriceHistory(db, newId, d.price_per_km);
+    return newId;
+  })(data);
 }
 
 export function updateCar(db: Database.Database, id: number, data: CarInput): void {
-  const current = getCarById(db, id);
-  if (current && Math.abs(data.price_per_km - current.price_per_km) >= 0.0001) {
-    recordPriceHistory(db, id, data.price_per_km);
-  }
-  db.prepare("UPDATE cars SET short=?,name=?,price_per_km=?,brand=?,color=?,owner_name=?,long_threshold=?,fixed_costs_json=?,active=?,expected_km=? WHERE id=?")
-    .run(
-      data.short, data.name, data.price_per_km, data.brand ?? null, data.color ?? null,
-      data.owner_name ?? null, data.long_threshold ?? 500, data.fixed_costs_json ?? null,
-      data.active ?? 1, data.expected_km ?? null, id,
-    );
+  db.transaction((args: { id: number; data: CarInput }) => {
+    const current = getCarById(db, args.id);
+    if (current && Math.abs(args.data.price_per_km - current.price_per_km) >= 0.0001) {
+      recordPriceHistory(db, args.id, args.data.price_per_km);
+    }
+    db.prepare("UPDATE cars SET short=?,name=?,price_per_km=?,brand=?,color=?,owner_name=?,long_threshold=?,fixed_costs_json=?,active=?,expected_km=? WHERE id=?")
+      .run(
+        args.data.short, args.data.name, args.data.price_per_km, args.data.brand ?? null, args.data.color ?? null,
+        args.data.owner_name ?? null, args.data.long_threshold ?? 500, args.data.fixed_costs_json ?? null,
+        args.data.active ?? 1, args.data.expected_km ?? null, args.id,
+      );
+  })({ id, data });
 }

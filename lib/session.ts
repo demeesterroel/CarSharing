@@ -5,6 +5,12 @@ export interface SessionData {
   personId?: number;
   personName?: string;
   isAdmin?: boolean;
+  /** Set while an admin is impersonating another person. */
+  cloakedAs?: {
+    personId: number;
+    personName: string;
+    isAdmin: boolean;
+  };
 }
 
 export const sessionOptions: SessionOptions = {

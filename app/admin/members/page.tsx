@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useRouter } from "next/navigation";
 import { paper, fontMono, fontSerif } from "@/lib/paper-theme";
 import { useT } from "@/components/locale-provider";
 import type { Person } from "@/types";
@@ -8,7 +9,15 @@ import { usePeople, Card } from "../_shared";
 import { toast } from "sonner";
 
 // ── Person Card ───────────────────────────────────────────────
-function PersonCard({ person, onSave }: { person: Person; onSave: (p: Person) => void }) {
+function PersonCard({
+  person,
+  onSave,
+  onCloak,
+}: {
+  person: Person;
+  onSave: (p: Person) => void;
+  onCloak?: (personId: number) => void;
+}) {
   const t = useT();
   const [disc, setDisc] = useState(person.discount);
   const [discLong, setDiscLong] = useState(person.discount_long);
@@ -174,6 +183,17 @@ function PersonCard({ person, onSave }: { person: Person; onSave: (p: Person) =>
           }}>
           {t("admin.deactivate")}
         </button>
+        {onCloak && (
+          <button
+            onClick={() => onCloak(person.id)}
+            style={{
+              padding: "10px 14px", background: "transparent", color: paper.blue,
+              border: `1px solid ${paper.blue}`, cursor: "pointer",
+              fontFamily: fontMono, fontSize: 9, letterSpacing: 1.5, textTransform: "uppercase",
+            }}>
+            👁
+          </button>
+        )}
       </div>
     </Card>
   );
@@ -184,6 +204,7 @@ export default function AdminLedenPage() {
   const t = useT();
   const { data: people = [] } = usePeople();
   const qc = useQueryClient();
+  const router = useRouter();
 
   const savePerson = useMutation({
     mutationFn: async (p: Person) => {
@@ -200,13 +221,24 @@ export default function AdminLedenPage() {
     onSuccess: () => { qc.invalidateQueries({ queryKey: ["people"] }); toast.success(t("toast.saved")); },
   });
 
+  async function handleCloak(personId: number) {
+    const res = await fetch("/api/auth/cloak", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ personId }),
+    });
+    if (!res.ok) return;
+    qc.invalidateQueries({ queryKey: ["me"] });
+    router.push("/");
+  }
+
   const active = people.filter((p) => p.active);
   const inactive = people.filter((p) => !p.active);
 
   return (
     <div style={{ padding: "16px" }}>
       {active.map((person) => (
-        <PersonCard key={person.id} person={person} onSave={(p) => savePerson.mutate(p)} />
+        <PersonCard key={person.id} person={person} onSave={(p) => savePerson.mutate(p)} onCloak={handleCloak} />
       ))}
       {inactive.length > 0 && (
         <>

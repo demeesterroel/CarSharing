@@ -381,6 +381,14 @@ export const en: Messages = {
   "admin.is_admin_label": "Admin",
   "admin.no_username": "No login yet",
 
+  // Cloaking
+  "cloak.viewing_as": "Viewing as {name} ({role})",
+  "cloak.exit": "Exit cloaking",
+  "cloak.button": "View as member",
+  "cloak.role_member": "member",
+  "cloak.role_admin": "admin",
+  "cloak.role_owner": "owner",
+
   // Offline indicator
   "offline.label": "OFFLINE",
   "offline.stale_suffix": "data >1h old",

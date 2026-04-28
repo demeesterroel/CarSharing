@@ -3,6 +3,7 @@ import { Fraunces, Inter } from "next/font/google";
 import "./globals.css";
 import { Providers } from "./providers";
 import { BottomTabBar } from "@/components/bottom-tab-bar";
+import { CloakBanner } from "@/components/cloak-banner";
 import { LocaleProvider } from "@/components/locale-provider";
 
 const fraunces = Fraunces({
@@ -69,6 +70,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               paddingBottom: 72,
             }}
           >
+            <CloakBanner />
             {children}
           </div>
           <BottomTabBar />

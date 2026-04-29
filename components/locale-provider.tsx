@@ -31,6 +31,7 @@ export function LocaleProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const handleSetLocale = (l: Locale) => {
+    localStorage.setItem(STORAGE_KEY, l);
     setModuleLocale(l);
     setLocaleState(l);
   };

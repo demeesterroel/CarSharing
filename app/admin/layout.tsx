@@ -1,5 +1,5 @@
 "use client";
-import { Suspense, useState, useEffect } from "react";
+import { Suspense } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { PageHeader } from "@/components/page-header";
@@ -12,15 +12,13 @@ function SubNav() {
   const pathname = usePathname();
   const { data: reservations = [] } = useReservations();
   const pendingCount = reservations.filter((r) => r.status === "pending").length;
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => setMounted(true), []);
 
   const year = new Date().getFullYear();
 
   const SUB_PAGES = [
     {
       href: "/admin",
-      label: t("admin.sub_inbox") + (mounted && pendingCount > 0 ? ` (${pendingCount})` : ""),
+      label: t("admin.sub_inbox") + (pendingCount > 0 ? ` (${pendingCount})` : ""),
     },
     { href: "/admin/cars", label: t("admin.sub_cars") },
     { href: "/admin/members", label: t("admin.sub_members") },

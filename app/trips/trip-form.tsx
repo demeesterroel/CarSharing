@@ -1,6 +1,6 @@
 "use client";
 import { useEffect } from "react";
-import { useForm, Controller } from "react-hook-form";
+import { useForm, useWatch, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useQueryClient } from "@tanstack/react-query";
@@ -91,7 +91,6 @@ export function TripForm({ defaultValues, onSubmit, onCancel, onDelete }: Props)
     register,
     handleSubmit,
     control,
-    watch,
     setValue,
     getValues,
     formState: { errors },
@@ -108,12 +107,10 @@ export function TripForm({ defaultValues, onSubmit, onCancel, onDelete }: Props)
     },
   });
 
-  const [start, end, personId, carId] = watch([
-    "start_odometer",
-    "end_odometer",
-    "person_id",
-    "car_id",
-  ]);
+  const [start, end, personId, carId] = useWatch({
+    control,
+    name: ["start_odometer", "end_odometer", "person_id", "car_id"],
+  });
   const km = Math.max(0, (Number(end) || 0) - (Number(start) || 0));
   const person = people.find((p) => p.id === personId);
   const car = cars.find((c) => c.id === carId);

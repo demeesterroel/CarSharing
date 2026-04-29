@@ -1,7 +1,7 @@
 "use client";
 import { useEffect } from "react";
 import { toast } from "sonner";
-import { useForm, Controller } from "react-hook-form";
+import { useForm, useWatch, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { CarToggle } from "@/components/car-toggle";
@@ -60,7 +60,7 @@ export function ExpenseForm({ defaultValues, onSubmit, onCancel, onDelete }: Pro
   const isAddMode = !defaultValues?.id;
   const isAdmin = me?.isAdmin ?? false;
 
-  const { register, handleSubmit, control, watch, setValue, getValues } = useForm<
+  const { register, handleSubmit, control, setValue, getValues } = useForm<
     FormInput,
     unknown,
     FormData
@@ -76,7 +76,7 @@ export function ExpenseForm({ defaultValues, onSubmit, onCancel, onDelete }: Pro
     },
   });
 
-  const [personId, category] = watch(["person_id", "category"]);
+  const [personId, category] = useWatch({ control, name: ["person_id", "category"] });
   const person = people.find((p) => p.id === personId);
 
   useEffect(() => {

@@ -1,5 +1,5 @@
 "use client";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import type { Person } from "@/types";
@@ -29,13 +29,15 @@ export function PersonForm({ defaultValues, onSubmit, onCancel }: Props) {
   const {
     register,
     handleSubmit,
-    watch,
+    control,
     setValue,
     formState: { errors },
   } = useForm<FormInput, unknown, FormData>({
     resolver: zodResolver(schema),
     defaultValues: { discount: 0, discount_long: 0, active: 1, ...defaultValues },
   });
+
+  const activeValue = useWatch({ control, name: "active" });
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 p-4">
@@ -66,7 +68,7 @@ export function PersonForm({ defaultValues, onSubmit, onCancel }: Props) {
         <input
           type="checkbox"
           id="active"
-          checked={watch("active") === 1}
+          checked={activeValue === 1}
           onChange={(e) => setValue("active", e.target.checked ? 1 : 0)}
           className="rounded"
         />

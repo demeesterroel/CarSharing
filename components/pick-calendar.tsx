@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import type { Reservation } from "@/types";
 import { paper, fontMono, fmtDate } from "@/lib/paper-theme";
 import { useT, useLocale } from "@/components/locale-provider";
@@ -56,10 +56,6 @@ export function PickCalendar({
   const { locale } = useLocale();
   const [pickFrom, setPickFrom] = useState<string | null>(null);
   const [weekOffset, setWeekOffset] = useState(initialOffset);
-
-  useEffect(() => {
-    setPickFrom(null);
-  }, [from, to]);
 
   const today = new Date().toISOString().slice(0, 10);
   const stripStart = addDays(mondayOf(today), weekOffset * 7);

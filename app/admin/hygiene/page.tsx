@@ -4,7 +4,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { paper, fontMono, fontSerif } from "@/lib/paper-theme";
 import { useT } from "@/components/locale-provider";
 import type { KmGap, ZeroKmTrip } from "@/lib/queries/admin";
-import { useAdminSummary, usePeople, Card } from "../_shared";
+import { useAdminSummary, useOwnerCarShorts, usePeople, Card } from "../_shared";
 import { useCreateTrip } from "@/hooks/use-trips";
 import { toast } from "sonner";
 import { CarBadge } from "@/components/car-badge";
@@ -78,8 +78,13 @@ export default function AdminHygienePage() {
   const { data } = useAdminSummary(year);
   const { data: people = [] } = usePeople();
   const createTrip = useCreateTrip();
-  const gaps = data?.kmGaps ?? [];
-  const zeroKmTrips = data?.zeroKmTrips ?? [];
+  const ownerCarShorts = useOwnerCarShorts();
+  const gaps = (data?.kmGaps ?? []).filter(
+    (g) => !ownerCarShorts || ownerCarShorts.has(g.car_short)
+  );
+  const zeroKmTrips = (data?.zeroKmTrips ?? []).filter(
+    (z) => !ownerCarShorts || ownerCarShorts.has(z.car_short)
+  );
   const [expandedGap, setExpandedGap] = useState<string | null>(null);
 
   const gapKey = (gap: KmGap) => `${gap.car_short}-${gap.after_trip_id}-${gap.before_trip_id}`;

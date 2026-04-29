@@ -1,8 +1,8 @@
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Car } from "lucide-react";
 import { t } from "@/lib/i18n";
+import { paper, fontMono, fontSerif } from "@/lib/paper-theme";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -34,46 +34,163 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
-      <div className="w-full max-w-sm">
-        <div className="flex flex-col items-center mb-8 gap-3">
-          <div className="w-14 h-14 rounded-xl border-2 border-blue-600 flex items-center justify-center">
-            <Car className="w-7 h-7 text-blue-600" />
-          </div>
-          <h1 className="text-2xl font-semibold">{t("brand.app")}</h1>
+    <div
+      style={{
+        minHeight: "100dvh",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        background: paper.paperDeep,
+        padding: "16px",
+      }}
+    >
+      <div style={{ width: "100%", maxWidth: 380 }}>
+        {/* Branding */}
+        <div
+          style={{
+            textAlign: "center",
+            marginBottom: 32,
+          }}
+        >
+          <h1
+            style={{
+              fontFamily: fontSerif,
+              fontSize: 28,
+              fontWeight: 700,
+              color: paper.ink,
+              margin: 0,
+              lineHeight: 1.2,
+            }}
+          >
+            {t("brand.app")}
+          </h1>
+          <p
+            style={{
+              fontFamily: fontMono,
+              fontSize: 11,
+              color: paper.inkDim,
+              marginTop: 6,
+              letterSpacing: 1,
+            }}
+          >
+            {t("brand.tagline")}
+          </p>
         </div>
 
+        {/* Card */}
         <form
           onSubmit={handleSubmit}
-          className="bg-white rounded-2xl shadow-sm border p-6 space-y-4"
+          style={{
+            background: paper.paper,
+            padding: "40px 32px",
+            boxShadow: "0 1px 2px rgba(0,0,0,0.05), 0 4px 16px rgba(0,0,0,0.06)",
+          }}
         >
-          <div>
-            <label className="block text-sm font-medium mb-1">{t("form.name")}</label>
+          {/* Username field */}
+          <div style={{ marginBottom: 20 }}>
+            <label
+              style={{
+                display: "block",
+                fontFamily: fontMono,
+                fontSize: 10,
+                letterSpacing: 1.5,
+                textTransform: "uppercase",
+                color: paper.inkDim,
+                marginBottom: 6,
+              }}
+            >
+              {t("form.name")}
+            </label>
             <input
               type="text"
               autoComplete="username"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
               required
+              style={{
+                width: "100%",
+                padding: "10px 12px",
+                border: "1px solid " + paper.paperDark,
+                background: paper.paperDeep,
+                fontFamily: fontMono,
+                fontSize: 13,
+                color: paper.ink,
+                outline: "none",
+                appearance: "none",
+                boxSizing: "border-box",
+              }}
             />
           </div>
-          <div>
-            <label className="block text-sm font-medium mb-1">{t("form.password")}</label>
+
+          {/* Password field */}
+          <div style={{ marginBottom: 24 }}>
+            <label
+              style={{
+                display: "block",
+                fontFamily: fontMono,
+                fontSize: 10,
+                letterSpacing: 1.5,
+                textTransform: "uppercase",
+                color: paper.inkDim,
+                marginBottom: 6,
+              }}
+            >
+              {t("form.password")}
+            </label>
             <input
               type="password"
               autoComplete="current-password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
               required
+              style={{
+                width: "100%",
+                padding: "10px 12px",
+                border: "1px solid " + paper.paperDark,
+                background: paper.paperDeep,
+                fontFamily: fontMono,
+                fontSize: 13,
+                color: paper.ink,
+                outline: "none",
+                appearance: "none",
+                boxSizing: "border-box",
+              }}
             />
           </div>
-          {error && <p className="text-sm text-red-600">{error}</p>}
+
+          {/* Error message */}
+          {error && (
+            <p
+              style={{
+                fontFamily: fontMono,
+                fontSize: 11,
+                color: "#c0392b",
+                marginBottom: 16,
+                marginTop: 0,
+              }}
+            >
+              {error}
+            </p>
+          )}
+
+          {/* Submit button */}
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-blue-600 text-white rounded-lg py-2.5 text-sm font-medium disabled:opacity-60"
+            style={{
+              width: "100%",
+              background: loading ? paper.inkDim : paper.ink,
+              color: paper.paper,
+              fontFamily: fontMono,
+              fontSize: 10,
+              letterSpacing: 2,
+              textTransform: "uppercase",
+              padding: "14px",
+              border: "none",
+              cursor: loading ? "not-allowed" : "pointer",
+              outline: "none",
+              appearance: "none",
+            }}
           >
             {loading ? t("state.loading") : t("action.login")}
           </button>

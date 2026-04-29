@@ -1,5 +1,5 @@
 "use client";
-import React, { createContext, useContext, useState, useEffect } from "react";
+import React, { createContext, useContext, useState } from "react";
 import { setLocale as setModuleLocale, t, type Locale } from "@/lib/i18n";
 
 const STORAGE_KEY = "carsharing_locale";
@@ -15,16 +15,14 @@ const LocaleContext = createContext<LocaleContextValue>({
 });
 
 export function LocaleProvider({ children }: { children: React.ReactNode }) {
-  const [locale, setLocaleState] = useState<Locale>("nl");
-
-  useEffect(() => {
+  const [locale, setLocaleState] = useState<Locale>(() => {
     const stored = localStorage.getItem(STORAGE_KEY) as Locale | null;
     const active = stored === "en" || stored === "nl" ? stored : "nl";
     if (active !== "nl") {
       setModuleLocale(active);
-      setLocaleState(active);
     }
-  }, []);
+    return active;
+  });
 
   const handleSetLocale = (l: Locale) => {
     setModuleLocale(l);

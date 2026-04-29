@@ -1,7 +1,7 @@
 "use client";
 import { useEffect } from "react";
 import { toast } from "sonner";
-import { useForm, Controller } from "react-hook-form";
+import { useForm, useWatch, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { CarToggle } from "@/components/car-toggle";
@@ -66,7 +66,7 @@ export function ReservationForm({ defaultValues, onSubmit, onCancel }: Props) {
   const isAdmin = me?.isAdmin ?? false;
   const today = new Date().toISOString().slice(0, 10);
 
-  const { register, handleSubmit, control, watch, setValue, getValues } = useForm<
+  const { register, handleSubmit, control, setValue, getValues } = useForm<
     FormInput,
     unknown,
     FormData
@@ -95,12 +95,10 @@ export function ReservationForm({ defaultValues, onSubmit, onCancel }: Props) {
     return Math.max(0, Math.floor(ms / (7 * 86400000)));
   })();
 
-  const [startDate, endDate, carId, personId] = watch([
-    "start_date",
-    "end_date",
-    "car_id",
-    "person_id",
-  ]);
+  const [startDate, endDate, carId, personId] = useWatch({
+    control,
+    name: ["start_date", "end_date", "car_id", "person_id"],
+  });
   const person = people.find((p) => p.id === personId);
   const dayCount = startDate && endDate && endDate >= startDate ? diffDays(startDate, endDate) : 1;
 

@@ -1,0 +1,28 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - name: Lint
+        run: npm run lint
+      - name: Unit tests with coverage
+        run: npm run test:coverage
+      - name: Check coverage threshold
+        run: |
+          # Extract line coverage % from coverage-summary.json
+          COVERAGE=$(node -e "const c=require('./coverage/coverage-summary.json').total; console.log(Math.floor(c.lines.pct))")
+          echo "Line coverage: $COVERAGE%"
+          if [ "$COVERAGE" -lt 80 ]; then
+            echo "Coverage $COVERAGE% is below threshold of 80% (informational only — threshold will be enforced once coverage improves)"
+          fi

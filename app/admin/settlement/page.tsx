@@ -1,7 +1,6 @@
 "use client";
 import { useState } from "react";
 import { useQueryClient, useMutation } from "@tanstack/react-query";
-import Link from "next/link";
 import { paper, fontMono, fontSerif, fmtMoney } from "@/lib/paper-theme";
 import { useT } from "@/components/locale-provider";
 import { useEarliestDashboardYear } from "@/hooks/use-dashboard";

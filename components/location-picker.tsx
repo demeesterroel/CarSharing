@@ -233,6 +233,7 @@ export function LocationPicker({ address, coords, onAddressChange, onCoordsChang
         <button
           type="button"
           onClick={captureGPS}
+          aria-label={t("location.use_gps")}
           style={{
             fontFamily: fontMono,
             fontSize: 9,
@@ -255,7 +256,8 @@ export function LocationPicker({ address, coords, onAddressChange, onCoordsChang
             onClick={() => {
               onCoordsChange(null);
             }}
-            title="Wis GPS pin"
+            title={t("action.clear_gps")}
+            aria-label={t("action.clear_gps")}
             style={{
               fontFamily: fontMono,
               fontSize: 11,

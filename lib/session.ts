@@ -1,6 +1,7 @@
 import type { SessionOptions } from "iron-session";
 import { env } from "./env";
 
+/** Shape of the iron-session payload stored in the encrypted cookie. */
 export interface SessionData {
   authenticated: boolean;
   personId?: number;
@@ -14,6 +15,7 @@ export interface SessionData {
   };
 }
 
+/** iron-session configuration: cookie name, encryption password, and cookie attributes. */
 export const sessionOptions: SessionOptions = {
   cookieName: "carsharing_session",
   password: env.SESSION_PASSWORD,

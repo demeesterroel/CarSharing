@@ -12,10 +12,12 @@ export class HttpError extends Error {
   }
 }
 
+/** Throws an HttpError with status 404. */
 export function notFound(msg = "Not found"): never {
   throw new HttpError(404, msg);
 }
 
+/** Throws an HttpError with status 400. */
 export function badRequest(msg = "Bad request"): never {
   throw new HttpError(400, msg);
 }
@@ -27,6 +29,7 @@ type Handler<T> = (
 
 const MUTATING_METHODS = ["POST", "PUT", "PATCH", "DELETE"];
 
+/** Wraps a route handler with rate limiting, CSRF validation, and JSON response formatting. */
 export function json<T>(handler: Handler<T>) {
   return async (req: Request, ctx: { params: Promise<Record<string, string>> }) => {
     const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown";
@@ -67,11 +70,22 @@ export function json<T>(handler: Handler<T>) {
   };
 }
 
+/**
+ * Parses and validates the JSON request body against a Zod schema.
+ * @param req - Incoming request.
+ * @param schema - Zod schema to validate against.
+ * @returns Parsed and validated body.
+ */
 export async function readBody<T>(req: Request, schema: ZodSchema<T>): Promise<T> {
   const raw = await req.json().catch(() => badRequest("Invalid JSON"));
   return schema.parse(raw);
 }
 
+/**
+ * Resolves and validates the `id` route parameter as a positive integer.
+ * @param ctx - Route context containing the awaitable params.
+ * @returns Numeric id.
+ */
 export async function readId(ctx: { params: Promise<Record<string, string>> }): Promise<number> {
   const { id } = await ctx.params;
   const n = Number(id);

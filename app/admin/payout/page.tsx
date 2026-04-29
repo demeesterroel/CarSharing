@@ -15,13 +15,15 @@ export default function AdminPayoutPage() {
   const currentYear = new Date().getFullYear();
   const [year, setYear] = useState(currentYear);
 
+  const { data: earliestYear = currentYear } = useEarliestDashboardYear();
+  const { data } = useAdminSummary(year);
+
   useEffect(() => {
     if (me && !me.isAdmin) router.replace("/admin");
   }, [me, router]);
 
   if (!me?.isAdmin) return null;
-  const { data: earliestYear = currentYear } = useEarliestDashboardYear();
-  const { data } = useAdminSummary(year);
+
   const cars = data?.carPnL ?? [];
 
   const byOwner: Record<string, typeof cars> = {};

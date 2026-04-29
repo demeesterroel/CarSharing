@@ -452,13 +452,11 @@ export default function AdminLedenPage() {
   const qc = useQueryClient();
   const router = useRouter();
   const [expanded, setExpanded] = useState<number | null>(null);
+  const [savingId, setSavingId] = useState<number | null>(null);
 
   useEffect(() => {
     if (me && !me.isAdmin) router.replace("/admin");
   }, [me, router]);
-
-  if (!me?.isAdmin) return null;
-  const [savingId, setSavingId] = useState<number | null>(null);
 
   const toggle = (id: number) => setExpanded((prev) => (prev === id ? null : id));
 
@@ -497,6 +495,8 @@ export default function AdminLedenPage() {
     qc.invalidateQueries({ queryKey: ["me"] });
     router.push("/");
   }
+
+  if (!me?.isAdmin) return null;
 
   const active = people.filter((p) => p.active);
   const inactive = people.filter((p) => !p.active);

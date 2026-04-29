@@ -43,11 +43,12 @@ export async function requireAdminOrOwner(req: Request) {
   const { sessionOptions } = await import("./session");
   const session = await getIronSession<SessionData>(req, NextResponse.next(), sessionOptions);
   if (session.isAdmin) return session;
-  if (!session.personName) forbidden();
+  const name = session.personName;
+  if (!name) forbidden();
   // isOwner is not stored in the session — check DB at runtime
   const { getDb } = await import("./db");
   const { isOwner } = await import("./queries/people");
-  if (!isOwner(getDb(), session.personName!)) forbidden();
+  if (!isOwner(getDb(), name)) forbidden();
   return session;
 }
 

@@ -46,9 +46,11 @@ async function heartbeat(): Promise<boolean> {
 }
 
 export function OnlineStateProvider({ children }: { children: React.ReactNode }) {
-  const [online, setOnline] = useState<boolean>(() =>
-    typeof navigator === "undefined" ? true : navigator.onLine
-  );
+  const [online, setOnline] = useState<boolean>(true);
+
+  useEffect(() => {
+    setOnline(navigator.onLine);
+  }, []);
   const [lastSyncAt, setLastSyncAt] = useState<number | null>(null);
   const [now, setNow] = useState(() => Date.now());
   const heartbeatRunningRef = useRef(false);

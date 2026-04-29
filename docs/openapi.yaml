@@ -1,0 +1,495 @@
+openapi: "3.0.3"
+info:
+  title: CarSharing API
+  version: "1.0.0"
+  description: Internal REST API for the CarSharing Next.js application.
+
+servers:
+  - url: /api
+
+security:
+  - cookieAuth: []
+
+components:
+  securitySchemes:
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: carsharing_session
+
+  schemas:
+    Error:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: string
+
+    OkResponse:
+      type: object
+      required: [ok]
+      properties:
+        ok:
+          type: boolean
+          example: true
+
+    CreatedResponse:
+      type: object
+      required: [id]
+      properties:
+        id:
+          type: integer
+          example: 42
+
+    MeResponse:
+      type: object
+      properties:
+        personId:
+          type: integer
+          nullable: true
+        personName:
+          type: string
+          nullable: true
+        isAdmin:
+          type: boolean
+        isOwner:
+          type: boolean
+        isCloaked:
+          type: boolean
+
+    Car:
+      type: object
+      required: [id, short, name, price_per_km]
+      properties:
+        id:
+          type: integer
+        short:
+          type: string
+          maxLength: 10
+        name:
+          type: string
+        price_per_km:
+          type: number
+          format: float
+        brand:
+          type: string
+          nullable: true
+        color:
+          type: string
+          nullable: true
+        owner_name:
+          type: string
+          nullable: true
+        long_threshold:
+          type: integer
+          default: 500
+        fixed_costs_json:
+          type: string
+          nullable: true
+        active:
+          type: integer
+          enum: [0, 1]
+          default: 1
+        expected_km:
+          type: integer
+          nullable: true
+
+    CarInput:
+      type: object
+      required: [short, name, price_per_km]
+      properties:
+        short:
+          type: string
+          minLength: 1
+          maxLength: 10
+        name:
+          type: string
+          minLength: 1
+        price_per_km:
+          type: number
+          format: float
+        brand:
+          type: string
+          nullable: true
+        color:
+          type: string
+          nullable: true
+        owner_name:
+          type: string
+          nullable: true
+        long_threshold:
+          type: integer
+          default: 500
+        fixed_costs_json:
+          type: string
+          nullable: true
+        active:
+          type: integer
+          enum: [0, 1]
+          default: 1
+        expected_km:
+          type: integer
+          nullable: true
+
+    Trip:
+      type: object
+      required: [id, person_id, car_id, date, start_odometer, end_odometer, km, amount]
+      properties:
+        id:
+          type: integer
+        person_id:
+          type: integer
+        car_id:
+          type: integer
+        date:
+          type: string
+          format: date
+        start_odometer:
+          type: integer
+        end_odometer:
+          type: integer
+        km:
+          type: integer
+        amount:
+          type: number
+          format: float
+        location:
+          type: string
+          nullable: true
+        parking:
+          type: string
+          nullable: true
+        gps_coords:
+          type: string
+          nullable: true
+        person_name:
+          type: string
+        car_short:
+          type: string
+        updated_at:
+          type: string
+          format: date-time
+
+    TripInput:
+      type: object
+      required: [person_id, car_id, date, start_odometer, end_odometer]
+      properties:
+        person_id:
+          type: integer
+        car_id:
+          type: integer
+        date:
+          type: string
+          format: date
+          pattern: '^\d{4}-\d{2}-\d{2}$'
+        start_odometer:
+          type: integer
+          minimum: 0
+        end_odometer:
+          type: integer
+          minimum: 0
+        location:
+          type: string
+          nullable: true
+        parking:
+          type: string
+          nullable: true
+        gps_coords:
+          type: string
+          nullable: true
+        client_id:
+          type: string
+          nullable: true
+          description: Client-generated idempotency key.
+
+    Reservation:
+      type: object
+      required: [id, person_id, car_id, start_date, end_date, status]
+      properties:
+        id:
+          type: integer
+        person_id:
+          type: integer
+        car_id:
+          type: integer
+        start_date:
+          type: string
+          format: date
+        end_date:
+          type: string
+          format: date
+        status:
+          type: string
+          enum: [pending, confirmed, rejected]
+        note:
+          type: string
+          nullable: true
+        person_name:
+          type: string
+        car_short:
+          type: string
+        updated_at:
+          type: string
+          format: date-time
+
+    ReservationInput:
+      type: object
+      required: [person_id, car_id, start_date, end_date]
+      properties:
+        person_id:
+          type: integer
+        car_id:
+          type: integer
+        start_date:
+          type: string
+          format: date
+        end_date:
+          type: string
+          format: date
+        note:
+          type: string
+          nullable: true
+        status:
+          type: string
+          enum: [pending, confirmed, rejected]
+          default: pending
+        client_id:
+          type: string
+          nullable: true
+          description: Client-generated idempotency key.
+
+    DashboardRow:
+      type: object
+      required: [person_id, person_name, year]
+      properties:
+        person_id:
+          type: integer
+        person_name:
+          type: string
+        year:
+          type: integer
+        trip_count:
+          type: integer
+        trip_km:
+          type: number
+        trip_amount:
+          type: number
+        fuel_count:
+          type: integer
+        fuel_liters:
+          type: number
+        fuel_amount:
+          type: number
+        expense_count:
+          type: integer
+        expense_amount:
+          type: number
+        total_amount:
+          type: number
+        paid_amount:
+          type: number
+        balance:
+          type: number
+
+paths:
+  /auth/login:
+    post:
+      summary: Log in with username and password.
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [username, password]
+              properties:
+                username:
+                  type: string
+                password:
+                  type: string
+                  format: password
+      responses:
+        "200":
+          description: Login successful; session cookie is set.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OkResponse"
+        "401":
+          description: Invalid credentials.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /auth/logout:
+    post:
+      summary: Destroy the current session.
+      responses:
+        "200":
+          description: Session destroyed.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OkResponse"
+
+  /me:
+    get:
+      summary: Return the currently authenticated user, or null if unauthenticated.
+      security: []
+      responses:
+        "200":
+          description: Current user info (null body when not logged in).
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: "#/components/schemas/MeResponse"
+                  - type: "null"
+
+  /trips:
+    get:
+      summary: List all trips ordered by date descending.
+      responses:
+        "200":
+          description: Array of trips.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Trip"
+    post:
+      summary: Record a new trip.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TripInput"
+      responses:
+        "201":
+          description: Trip created.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CreatedResponse"
+        "400":
+          description: Validation error.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "403":
+          description: CSRF token missing or invalid.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /reservations:
+    get:
+      summary: List all reservations ordered by start_date descending.
+      responses:
+        "200":
+          description: Array of reservations.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Reservation"
+    post:
+      summary: Create a new reservation.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ReservationInput"
+      responses:
+        "201":
+          description: Reservation created.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CreatedResponse"
+        "400":
+          description: Validation error.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "403":
+          description: CSRF token missing or invalid.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /cars:
+    get:
+      summary: List all cars ordered by short name.
+      responses:
+        "200":
+          description: Array of cars.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Car"
+    post:
+      summary: Add a new car.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CarInput"
+      responses:
+        "201":
+          description: Car created.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CreatedResponse"
+        "400":
+          description: Validation error.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "403":
+          description: CSRF token missing or invalid.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /dashboard:
+    get:
+      summary: Return per-person annual summary (trips, fuel, expenses, balance).
+      parameters:
+        - name: year
+          in: query
+          schema:
+            type: integer
+            example: 2025
+          description: Calendar year to summarise; defaults to the current year.
+      responses:
+        "200":
+          description: Array of dashboard rows, one per person.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/DashboardRow"
+        "400":
+          description: Invalid year parameter.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"

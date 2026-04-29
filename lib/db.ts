@@ -6,6 +6,11 @@ import { env } from "./env";
 
 let _db: Database.Database | null = null;
 
+/**
+ * Returns the singleton SQLite database connection, initialising it on first call.
+ * Enables WAL mode, foreign keys, and runs pending migrations automatically.
+ * @returns The shared `better-sqlite3` database instance.
+ */
 export function getDb(): Database.Database {
   if (!_db) {
     _db = new Database(env.DB_PATH);

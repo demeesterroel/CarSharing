@@ -11,6 +11,12 @@ interface StoredCredentials {
   passwordHash: string;
 }
 
+/**
+ * Verifies login credentials using constant-time comparisons to prevent timing attacks.
+ * @param input - Supplied username and password.
+ * @param stored - Stored username and bcrypt password hash.
+ * @returns `true` if both username and password match.
+ */
 // Both comparisons always run regardless of whether the username matched.
 // Bailing out early on a username mismatch would leak which field was wrong
 // via response timing.

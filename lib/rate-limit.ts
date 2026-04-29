@@ -6,6 +6,12 @@ export interface RateLimitOptions {
   windowMs: number;
 }
 
+/**
+ * Checks an in-memory sliding-window rate limit for the given key.
+ * @param key - Unique identifier (e.g. `"<ip>:<pathname>"`).
+ * @param options - `max` requests allowed within `windowMs` milliseconds.
+ * @returns `{ ok: true }` when under the limit, or `{ ok: false, retryAfter }` in seconds when exceeded.
+ */
 export function checkRateLimit(
   key: string,
   options: RateLimitOptions

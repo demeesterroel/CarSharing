@@ -58,7 +58,11 @@ function PersonRow({
 
   const handleInvite = async () => {
     try {
-      const res = await fetch(`/api/people/${person.id}/invite`, { method: "POST" });
+      const csrfToken = document.cookie.match(/csrf-token=([^;]+)/)?.[1] ?? "";
+      const res = await fetch(`/api/people/${person.id}/invite`, {
+        method: "POST",
+        headers: { "x-csrf-token": csrfToken },
+      });
       if (!res.ok) throw new Error();
       const { url } = await res.json();
       await navigator.clipboard.writeText(url);

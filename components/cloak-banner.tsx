@@ -18,7 +18,7 @@ export function CloakBanner() {
 
   async function handleExit() {
     await fetch("/api/auth/uncloak", { method: "POST" });
-    qc.invalidateQueries({ queryKey: ["me"] });
+    qc.removeQueries({ queryKey: ["me"] });
     router.push("/admin");
   }
 

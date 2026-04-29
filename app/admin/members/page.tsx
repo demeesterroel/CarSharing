@@ -492,7 +492,7 @@ export default function AdminLedenPage() {
       body: JSON.stringify({ personId }),
     });
     if (!res.ok) return;
-    qc.invalidateQueries({ queryKey: ["me"] });
+    qc.removeQueries({ queryKey: ["me"] });
     router.push("/");
   }
 

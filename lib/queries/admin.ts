@@ -54,6 +54,7 @@ export interface CarPnL {
   trip_count: number;
   trip_km: number;
   trip_revenue: number;
+  owner_trip_amount: number; // trips by the car's owner on their own car
   fuel_count: number;
   fuel_amount: number;
   expense_count: number;
@@ -156,6 +157,17 @@ export function getCarPnL(db: Database.Database, year: number): CarPnL[] {
       )
       .get(car.id, prevYearStr) as { km: number };
 
+    const ownerTrips = car.owner_name
+      ? (db
+          .prepare(
+            `SELECT COALESCE(SUM(t.amount), 0) AS amt
+             FROM trips t
+             JOIN people p ON p.id = t.person_id
+             WHERE t.car_id = ? AND strftime('%Y', t.date) = ? AND p.name = ?`
+          )
+          .get(car.id, yearStr, car.owner_name) as { amt: number })
+      : { amt: 0 };
+
     const variable_total = fuel.amt + exp.amt;
     const total_cost = variable_total + fixed_total;
     const net_to_owner = trips.rev - total_cost;
@@ -173,6 +185,7 @@ export function getCarPnL(db: Database.Database, year: number): CarPnL[] {
       trip_count: trips.cnt,
       trip_km: trips.km,
       trip_revenue: trips.rev,
+      owner_trip_amount: ownerTrips.amt,
       fuel_count: fuel.cnt,
       fuel_amount: fuel.amt,
       expense_count: exp.cnt,

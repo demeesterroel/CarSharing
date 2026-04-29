@@ -2,7 +2,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { paper, fontMono, fontSerif } from "@/lib/paper-theme";
 import { useT } from "@/components/locale-provider";
-import { useReservations, Card, Perf } from "./_shared";
+import { useReservations, useOwnerCarShorts, Card, Perf } from "./_shared";
 import { toast } from "sonner";
 import { CarBadge } from "@/components/car-badge";
 
@@ -11,7 +11,10 @@ export default function AdminInboxPage() {
   const t = useT();
   const qc = useQueryClient();
   const { data: reservations = [] } = useReservations();
-  const pending = reservations.filter((r) => r.status === "pending");
+  const ownerCarShorts = useOwnerCarShorts();
+  const pending = reservations
+    .filter((r) => r.status === "pending")
+    .filter((r) => !ownerCarShorts || ownerCarShorts.has(r.car_short ?? ""));
 
   const approve = useMutation({
     mutationFn: async ({ id, status }: { id: number; status: "confirmed" | "rejected" }) => {

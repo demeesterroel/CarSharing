@@ -91,6 +91,8 @@ import type {
   CarPriceHistory,
 } from "@/lib/queries/admin";
 import type { DashboardRow, Reservation, Person } from "@/types";
+import { useMe } from "@/hooks/use-me";
+import { useCars } from "@/hooks/use-cars";
 
 export interface AdminSummary {
   carPnL: CarPnL[];
@@ -134,6 +136,19 @@ export function usePeople() {
       return res.json();
     },
   });
+}
+
+/**
+ * Returns the set of car_short values owned by the current user,
+ * or null if the user is an admin (meaning no filter should be applied).
+ */
+export function useOwnerCarShorts(): Set<string> | null {
+  const { data: me } = useMe();
+  const { data: cars = [] } = useCars();
+  if (!me || me.isAdmin) return null;
+  return new Set(
+    cars.filter((c) => c.owner_name === me.personName).map((c) => c.short)
+  );
 }
 
 // ── Fleet economics helpers ───────────────────────────────────

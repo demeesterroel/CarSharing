@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.1](https://github.com/demeesterroel/CarSharing/compare/carsharing-v1.2.0...carsharing-v1.2.1) (2026-04-29)
+
+
+### 🐛 Bug fixes
+
+* **members:** use apiFetch for savePerson and handleCloak to include CSRF token ([#77](https://github.com/demeesterroel/CarSharing/issues/77)) ([e8d9c78](https://github.com/demeesterroel/CarSharing/commit/e8d9c785643328623a0ffbcfe2f5202b56977586))
+
 ## [1.2.0](https://github.com/demeesterroel/CarSharing/compare/carsharing-v1.1.2...carsharing-v1.2.0) (2026-04-29)
 
 

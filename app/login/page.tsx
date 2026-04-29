@@ -2,12 +2,14 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
-import { t } from "@/lib/i18n";
+import { useT } from "@/components/locale-provider";
+import { LangSwitcher } from "@/components/lang-switcher";
 import { paper, fontMono, fontSerif } from "@/lib/paper-theme";
 
 export default function LoginPage() {
   const router = useRouter();
   const qc = useQueryClient();
+  const t = useT();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -78,6 +80,9 @@ export default function LoginPage() {
           >
             {t("brand.tagline")}
           </p>
+          <div style={{ display: "flex", justifyContent: "center", marginTop: 16 }}>
+            <LangSwitcher />
+          </div>
         </div>
 
         {/* Card */}

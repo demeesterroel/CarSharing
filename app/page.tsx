@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useDashboard, useEarliestDashboardYear } from "@/hooks/use-dashboard";
@@ -662,12 +662,11 @@ export default function DashboardPage() {
   const recentFuel = fillups.slice(0, 3);
   const recentExpenses = expenses.slice(0, 3);
 
-  const [todayFmt, setTodayFmt] = useState("");
-  useEffect(() => {
-    setTodayFmt(
-      new Date().toLocaleDateString("nl-BE", { weekday: "short", day: "numeric", month: "short" })
-    );
-  }, []);
+  const todayFmt = useMemo(
+    () =>
+      new Date().toLocaleDateString("nl-BE", { weekday: "short", day: "numeric", month: "short" }),
+    []
+  );
 
   const sheetStyle: React.CSSProperties = {
     position: "fixed",

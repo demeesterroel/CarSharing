@@ -8,6 +8,7 @@ import { useT } from "@/components/locale-provider";
 import type { Person } from "@/types";
 import { usePeople } from "../_shared";
 import { toast } from "sonner";
+import { apiFetch } from "@/lib/api/client";
 
 // ── Person Row (accordion) ────────────────────────────────────
 function PersonRow({
@@ -462,7 +463,7 @@ export default function AdminLedenPage() {
 
   const savePerson = useMutation({
     mutationFn: async (p: Person) => {
-      const res = await fetch(`/api/people/${p.id}`, {
+      await apiFetch(`/api/people/${p.id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -474,7 +475,6 @@ export default function AdminLedenPage() {
           is_admin: p.is_admin,
         }),
       });
-      if (!res.ok) throw new Error("Failed");
     },
     onMutate: (p) => setSavingId(p.id),
     onSettled: () => setSavingId(null),
@@ -486,12 +486,11 @@ export default function AdminLedenPage() {
   });
 
   async function handleCloak(personId: number) {
-    const res = await fetch("/api/auth/cloak", {
+    await apiFetch("/api/auth/cloak", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ personId }),
     });
-    if (!res.ok) return;
     window.location.href = "/";
   }
 

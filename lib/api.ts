@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z, ZodError, type ZodSchema } from "zod";
 import { validateCsrfToken } from "./csrf";
+import { checkRateLimit } from "./rate-limit";
 
 export class HttpError extends Error {
   constructor(
@@ -28,6 +29,19 @@ const MUTATING_METHODS = ["POST", "PUT", "PATCH", "DELETE"];
 
 export function json<T>(handler: Handler<T>) {
   return async (req: Request, ctx: { params: Promise<Record<string, string>> }) => {
+    const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown";
+    const pathname = new URL(req.url).pathname;
+    const isLogin = pathname === "/api/auth/login";
+    const rl = checkRateLimit(
+      `${ip}:${pathname}`,
+      isLogin ? { max: 5, windowMs: 15 * 60 * 1000 } : { max: 120, windowMs: 60 * 1000 }
+    );
+    if (!rl.ok) {
+      return NextResponse.json(
+        { error: "Too many requests" },
+        { status: 429, headers: { "Retry-After": String(rl.retryAfter) } }
+      );
+    }
     try {
       if (MUTATING_METHODS.includes(req.method ?? "")) {
         if (!validateCsrfToken(req as NextRequest)) {

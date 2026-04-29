@@ -22,6 +22,20 @@ export function badRequest(msg = "Bad request"): never {
   throw new HttpError(400, msg);
 }
 
+/** Throws an HttpError with status 403. */
+export function forbidden(msg = "Forbidden"): never {
+  throw new HttpError(403, msg);
+}
+
+/** Reads the session from the request and throws 403 if the user is not an admin. */
+export async function requireAdmin(req: Request) {
+  const { getIronSession } = await import("iron-session");
+  const { sessionOptions } = await import("./session");
+  const session = await getIronSession(req, NextResponse.next(), sessionOptions);
+  if (!session.isAdmin) forbidden();
+  return session;
+}
+
 type Handler<T> = (
   req: Request,
   ctx: { params: Promise<Record<string, string>> }

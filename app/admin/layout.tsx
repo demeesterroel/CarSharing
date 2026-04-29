@@ -6,16 +6,20 @@ import { PageHeader } from "@/components/page-header";
 import { paper, fontMono } from "@/lib/paper-theme";
 import { useT } from "@/components/locale-provider";
 import { useReservations } from "./_shared";
+import { useMe } from "@/hooks/use-me";
+
+const OWNER_PAGES = ["/admin", "/admin/hygiene", "/admin/settlement"];
 
 function SubNav() {
   const t = useT();
   const pathname = usePathname();
   const { data: reservations = [] } = useReservations();
+  const { data: me } = useMe();
   const pendingCount = reservations.filter((r) => r.status === "pending").length;
 
   const year = new Date().getFullYear();
 
-  const SUB_PAGES = [
+  const ALL_PAGES = [
     {
       href: "/admin",
       label: t("admin.sub_inbox") + (pendingCount > 0 ? ` (${pendingCount})` : ""),
@@ -26,6 +30,8 @@ function SubNav() {
     { href: "/admin/settlement", label: t("admin.sub_settlement") },
     { href: "/admin/payout", label: t("admin.sub_payout") },
   ];
+
+  const SUB_PAGES = me?.isAdmin ? ALL_PAGES : ALL_PAGES.filter((p) => OWNER_PAGES.includes(p.href));
 
   return (
     <>

@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.1.1](https://github.com/demeesterroel/CarSharing/compare/carsharing-v1.1.0...carsharing-v1.1.1) (2026-04-29)
+
+
+### 🐛 Bug fixes
+
+* **auth:** owners can only access their allowed admin pages ([#63](https://github.com/demeesterroel/CarSharing/issues/63)) ([#68](https://github.com/demeesterroel/CarSharing/issues/68)) ([964774d](https://github.com/demeesterroel/CarSharing/commit/964774dec4390fba3ab6a930ae15401ed8f197d4))
+* **build:** add SessionData type to requireAdmin for TypeScript compatibility ([e25c704](https://github.com/demeesterroel/CarSharing/commit/e25c7045595337db975c2e972658fba3f7d2f485))
+* **build:** remove SESSION_PASSWORD placeholder from Dockerfile; add versioned Docker tags on release ([7341836](https://github.com/demeesterroel/CarSharing/commit/73418365e33df64f96f3e8dd9de82ea17d056d34))
+
 ## [1.1.0](https://github.com/demeesterroel/CarSharing/compare/carsharing-v1.0.0...carsharing-v1.1.0) (2026-04-29)
 
 

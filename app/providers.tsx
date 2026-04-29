@@ -1,9 +1,12 @@
 "use client";
 import { QueryClient, QueryClientProvider, useQuery } from "@tanstack/react-query";
 import { Toaster } from "sonner";
-import { useState } from "react";
-import { OnlineStateProvider } from "@/lib/offline/online-state";
+import { toast } from "sonner";
+import { useState, useEffect } from "react";
+import { OnlineStateProvider, useOnlineState } from "@/lib/offline/online-state";
 import { useBootPrewarm } from "@/lib/offline/prewarm";
+import { useSyncEngine } from "@/lib/offline/sync-engine";
+import { useT } from "@/components/locale-provider";
 
 function BootPrewarm() {
   // useMe is the auth signal. Read it here so prewarm gates on auth.
@@ -17,6 +20,20 @@ function BootPrewarm() {
     staleTime: 5 * 60 * 1000,
   });
   useBootPrewarm(isFetched && data?.personId != null);
+  const { setPendingCount } = useOnlineState();
+  useSyncEngine({ setPendingCount });
+  return null;
+}
+
+function ConflictListener() {
+  const t = useT();
+  useEffect(() => {
+    const handler = (e: Event) => {
+      toast.error(t("offline.conflict_toast"));
+    };
+    window.addEventListener("offline-conflict", handler);
+    return () => window.removeEventListener("offline-conflict", handler);
+  }, [t]);
   return null;
 }
 
@@ -26,6 +43,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
     <QueryClientProvider client={client}>
       <OnlineStateProvider>
         <BootPrewarm />
+        <ConflictListener />
         {children}
         <Toaster position="bottom-center" />
       </OnlineStateProvider>

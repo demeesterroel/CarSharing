@@ -3,6 +3,7 @@ import type { Reservation } from "@/types";
 import { paper, fontMono, fontSerif, fmtDate } from "@/lib/paper-theme";
 import { useLocale } from "@/components/locale-provider";
 import { CarBadge } from "@/components/car-badge";
+import { PendingBadge } from "@/components/pending-badge";
 
 export interface ReservationCardProps {
   reservation: Reservation;
@@ -54,6 +55,7 @@ export function ReservationCard({ reservation, onClick }: ReservationCardProps) 
           }}
         >
           {reservation.person_name}
+          {reservation.id < 0 && <PendingBadge />}
         </div>
         <div
           style={{

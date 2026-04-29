@@ -3,6 +3,7 @@ import type { Trip } from "@/types";
 import { paper, fontMono, fontSerif, fmtMoney, fmtDate } from "@/lib/paper-theme";
 import { useLocale } from "@/components/locale-provider";
 import { CarBadge } from "@/components/car-badge";
+import { PendingBadge } from "@/components/pending-badge";
 
 export interface TripCardProps {
   trip: Trip;
@@ -48,6 +49,7 @@ export function TripCard({ trip, onClick }: TripCardProps) {
           }}
         >
           {trip.location ?? trip.gps_coords ?? trip.parking ?? "—"}
+          {trip.id < 0 && <PendingBadge />}
         </div>
         <div
           style={{

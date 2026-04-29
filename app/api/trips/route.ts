@@ -1,6 +1,16 @@
+import { NextResponse } from "next/server";
 import { getTrips, insertTrip } from "@/lib/queries/trips";
 import { tripSchema } from "@/lib/schemas/trip";
-import { listHandler, createHandler } from "@/lib/api/crud-handler";
+import { listHandler } from "@/lib/api/crud-handler";
+import { json, readBody } from "@/lib/api";
+import { getDb } from "@/lib/db";
 
 export const GET = listHandler(getTrips);
-export const POST = createHandler(tripSchema, insertTrip);
+
+export const POST = json(async (req: Request) => {
+  const raw = await req.json();
+  const data = tripSchema.parse(raw);
+  const client_id = typeof raw.client_id === "string" ? raw.client_id : null;
+  const id = insertTrip(getDb(), { ...data, client_id });
+  return NextResponse.json({ id }, { status: 201 });
+});

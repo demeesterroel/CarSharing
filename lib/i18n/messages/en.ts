@@ -399,4 +399,11 @@ export const en: Messages = {
   "offline.mutation_blocked": "Saving is not available without a connection.",
   "form.offline_start_km_hint": "Offline — start KM is from last sync.",
   "form.offline_reservation_hint": "Offline — verify availability when reconnected.",
+
+  // Offline queue & sync
+  "offline.pending": "Sync",
+  "offline.pending_tooltip": "Will sync when you're back online.",
+  "offline.queued_suffix": "{count} pending",
+  "offline.tooltip_syncing": "Syncing…",
+  "offline.conflict_toast": "Edit conflict — refresh and retry.",
 };

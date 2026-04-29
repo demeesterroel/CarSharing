@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.2](https://github.com/demeesterroel/CarSharing/compare/carsharing-v1.1.1...carsharing-v1.1.2) (2026-04-29)
+
+
+### 🐛 Bug fixes
+
+* **lint:** exclude .worktrees from ESLint to prevent scanning generated .next build files ([6c31bc9](https://github.com/demeesterroel/CarSharing/commit/6c31bc9e08347372966212ec71598727c387a489))
+
 ## [1.1.1](https://github.com/demeesterroel/CarSharing/compare/carsharing-v1.1.0...carsharing-v1.1.1) (2026-04-29)
 
 

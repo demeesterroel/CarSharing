@@ -7,11 +7,22 @@ describe("runMigrations", () => {
     const db = new Database(":memory:");
     runMigrations(db);
     const tables = db
-      .prepare("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' ORDER BY name")
+      .prepare(
+        "SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' ORDER BY name"
+      )
       .all()
       .map((r: any) => r.name);
     expect(tables).toEqual([
-      "_migrations", "car_price_history", "cars", "expenses", "fuel_fillups", "invite_tokens", "payments", "people", "reservations", "trips"
+      "_migrations",
+      "car_price_history",
+      "cars",
+      "expenses",
+      "fuel_fillups",
+      "invite_tokens",
+      "payments",
+      "people",
+      "reservations",
+      "trips",
     ]);
   });
 
@@ -20,16 +31,21 @@ describe("runMigrations", () => {
     db.pragma("foreign_keys = ON");
     runMigrations(db);
     expect(() =>
-      db.prepare(
-        "INSERT INTO trips (person_id,car_id,date,start_odometer,end_odometer,km,amount) VALUES (999,999,'2026-01-01',0,0,0,0)"
-      ).run()
+      db
+        .prepare(
+          "INSERT INTO trips (person_id,car_id,date,start_odometer,end_odometer,km,amount) VALUES (999,999,'2026-01-01',0,0,0,0)"
+        )
+        .run()
     ).toThrow();
   });
 
   it("records applied migrations in _migrations", () => {
     const db = new Database(":memory:");
     runMigrations(db);
-    const applied = db.prepare("SELECT filename FROM _migrations ORDER BY filename").pluck().all() as string[];
+    const applied = db
+      .prepare("SELECT filename FROM _migrations ORDER BY filename")
+      .pluck()
+      .all() as string[];
     expect(applied).toContain("0001_initial_schema.sql");
   });
 

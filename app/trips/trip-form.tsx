@@ -17,19 +17,33 @@ import type { Trip } from "@/types";
 import { t } from "@/lib/i18n";
 import { paper, fontMono, fontSerif, fmtMoney } from "@/lib/paper-theme";
 
-const schema = z.object({
-  person_id: z.number({ error: t("validation.person_required") }),
-  car_id: z.number({ error: t("validation.car_required") }),
-  date: z.string().min(1),
-  start_odometer: z.coerce.number().int().min(0),
-  end_odometer: z.coerce.number().int().min(0),
-  location: z.string().nullable().optional().transform((v) => v ?? null),
-  gps_coords: z.string().nullable().optional().transform((v) => v ?? null),
-  parking: z.string().nullable().optional().transform((v) => v ?? null),
-}).refine((d) => d.end_odometer >= d.start_odometer, {
-  path: ["end_odometer"],
-  message: t("validation.end_gte_start"),
-});
+const schema = z
+  .object({
+    person_id: z.number({ error: t("validation.person_required") }),
+    car_id: z.number({ error: t("validation.car_required") }),
+    date: z.string().min(1),
+    start_odometer: z.coerce.number().int().min(0),
+    end_odometer: z.coerce.number().int().min(0),
+    location: z
+      .string()
+      .nullable()
+      .optional()
+      .transform((v) => v ?? null),
+    gps_coords: z
+      .string()
+      .nullable()
+      .optional()
+      .transform((v) => v ?? null),
+    parking: z
+      .string()
+      .nullable()
+      .optional()
+      .transform((v) => v ?? null),
+  })
+  .refine((d) => d.end_odometer >= d.start_odometer, {
+    path: ["end_odometer"],
+    message: t("validation.end_gte_start"),
+  });
 type FormInput = z.input<typeof schema>;
 type FormData = z.output<typeof schema>;
 
@@ -41,16 +55,29 @@ interface Props {
 }
 
 const label: React.CSSProperties = {
-  fontFamily: fontMono, fontSize: 9, fontWeight: 700, letterSpacing: 2,
-  textTransform: "uppercase", color: paper.inkMute, display: "block", marginBottom: 4,
+  fontFamily: fontMono,
+  fontSize: 9,
+  fontWeight: 700,
+  letterSpacing: 2,
+  textTransform: "uppercase",
+  color: paper.inkMute,
+  display: "block",
+  marginBottom: 4,
 };
 const dashedBox: React.CSSProperties = {
-  border: `1.5px dashed ${paper.paperDark}`, padding: "12px 14px",
+  border: `1.5px dashed ${paper.paperDark}`,
+  padding: "12px 14px",
 };
 const bigInput: React.CSSProperties = {
-  fontFamily: fontSerif, fontSize: 28, fontWeight: 700, color: paper.ink,
-  background: "transparent", border: "none", outline: "none",
-  width: "100%", padding: 0,
+  fontFamily: fontSerif,
+  fontSize: 28,
+  fontWeight: 700,
+  color: paper.ink,
+  background: "transparent",
+  border: "none",
+  outline: "none",
+  width: "100%",
+  padding: 0,
 };
 
 export function TripForm({ defaultValues, onSubmit, onCancel, onDelete }: Props) {
@@ -60,16 +87,33 @@ export function TripForm({ defaultValues, onSubmit, onCancel, onDelete }: Props)
   const isAddMode = !defaultValues?.id;
   const isAdmin = me?.isAdmin ?? false;
 
-  const { register, handleSubmit, control, watch, setValue, getValues, formState: { errors } } = useForm<FormInput, unknown, FormData>({
+  const {
+    register,
+    handleSubmit,
+    control,
+    watch,
+    setValue,
+    getValues,
+    formState: { errors },
+  } = useForm<FormInput, unknown, FormData>({
     resolver: zodResolver(schema),
     defaultValues: {
       date: new Date().toISOString().slice(0, 10),
-      start_odometer: 0, end_odometer: 0, location: null, gps_coords: null, parking: null,
+      start_odometer: 0,
+      end_odometer: 0,
+      location: null,
+      gps_coords: null,
+      parking: null,
       ...defaultValues,
     },
   });
 
-  const [start, end, personId, carId] = watch(["start_odometer", "end_odometer", "person_id", "car_id"]);
+  const [start, end, personId, carId] = watch([
+    "start_odometer",
+    "end_odometer",
+    "person_id",
+    "car_id",
+  ]);
   const km = Math.max(0, (Number(end) || 0) - (Number(start) || 0));
   const person = people.find((p) => p.id === personId);
   const car = cars.find((c) => c.id === carId);
@@ -79,7 +123,7 @@ export function TripForm({ defaultValues, onSubmit, onCancel, onDelete }: Props)
   const disc = person?.discount ?? 0;
   const discLong = person?.discount_long ?? 0;
   const shortAmount = car ? car.price_per_km * shortKm * (1 - disc) : 0;
-  const longAmount  = car ? car.price_per_km * longKm  * (1 - discLong) : 0;
+  const longAmount = car ? car.price_per_km * longKm * (1 - discLong) : 0;
   const amount = shortAmount + longAmount;
 
   const { data: lastState } = useLastCarState(carId);
@@ -112,92 +156,197 @@ export function TripForm({ defaultValues, onSubmit, onCancel, onDelete }: Props)
 
   const startReg = register("start_odometer");
   const pctShort = Math.round(disc * 100);
-  const pctLong  = Math.round(discLong * 100);
+  const pctLong = Math.round(discLong * 100);
 
   return (
     <form
       onSubmit={(e) => {
-        if (!online) { e.preventDefault(); toast.error(t("offline.mutation_blocked")); return; }
+        if (!online) {
+          e.preventDefault();
+          toast.error(t("offline.mutation_blocked"));
+          return;
+        }
         handleSubmit(onSubmit)(e);
       }}
       style={{ background: paper.paperDeep }}
     >
       {/* Top bar */}
-      <div style={{
-        display: "flex", alignItems: "center", justifyContent: "space-between",
-        padding: "0 16px", height: 52,
-        borderBottom: `1.5px solid ${paper.paperDark}`,
-        background: paper.paper,
-        position: "sticky", top: 0, zIndex: 10,
-        borderRadius: "14px 14px 0 0",
-      }}>
-        <button type="button" onClick={onCancel} style={{
-          fontFamily: fontMono, fontSize: 16, fontWeight: 700, background: "transparent",
-          border: "none", cursor: "pointer", color: paper.ink, padding: "0 4px",
-          lineHeight: 1,
-        }}>×</button>
-        <div style={{ fontFamily: fontMono, fontSize: 10, fontWeight: 700, letterSpacing: 3, color: paper.inkDim, textTransform: "uppercase" }}>
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          padding: "0 16px",
+          height: 52,
+          borderBottom: `1.5px solid ${paper.paperDark}`,
+          background: paper.paper,
+          position: "sticky",
+          top: 0,
+          zIndex: 10,
+          borderRadius: "14px 14px 0 0",
+        }}
+      >
+        <button
+          type="button"
+          onClick={onCancel}
+          style={{
+            fontFamily: fontMono,
+            fontSize: 16,
+            fontWeight: 700,
+            background: "transparent",
+            border: "none",
+            cursor: "pointer",
+            color: paper.ink,
+            padding: "0 4px",
+            lineHeight: 1,
+          }}
+        >
+          ×
+        </button>
+        <div
+          style={{
+            fontFamily: fontMono,
+            fontSize: 10,
+            fontWeight: 700,
+            letterSpacing: 3,
+            color: paper.inkDim,
+            textTransform: "uppercase",
+          }}
+        >
           ① {t("form.log_trip")}
         </div>
-        <button type="submit" style={{
-          fontFamily: fontMono, fontSize: 9, fontWeight: 700, letterSpacing: 2,
-          textTransform: "uppercase", background: paper.accent, color: "#fff",
-          border: "none", padding: "8px 14px", cursor: online ? "pointer" : "default",
-          opacity: online ? 1 : 0.45,
-        }}>
+        <button
+          type="submit"
+          style={{
+            fontFamily: fontMono,
+            fontSize: 9,
+            fontWeight: 700,
+            letterSpacing: 2,
+            textTransform: "uppercase",
+            background: paper.accent,
+            color: "#fff",
+            border: "none",
+            padding: "8px 14px",
+            cursor: online ? "pointer" : "default",
+            opacity: online ? 1 : 0.45,
+          }}
+        >
           {t("action.save_trip")}
         </button>
       </div>
 
       {/* Car tabs */}
-      <Controller name="car_id" control={control}
-        render={({ field }) => <CarToggle cars={cars} value={field.value} onChange={field.onChange} />}
+      <Controller
+        name="car_id"
+        control={control}
+        render={({ field }) => (
+          <CarToggle cars={cars} value={field.value} onChange={field.onChange} />
+        )}
       />
 
       {/* Driver + Date row */}
       <div style={{ display: "flex", borderBottom: `1.5px dashed ${paper.paperDark}` }}>
-        <div style={{ flex: 1, padding: "10px 14px", borderRight: `1.5px dashed ${paper.paperDark}` }}>
+        <div
+          style={{ flex: 1, padding: "10px 14px", borderRight: `1.5px dashed ${paper.paperDark}` }}
+        >
           <span style={label}>{t("form.driver")}</span>
           {isAdmin ? (
             <select
               value={personId ?? ""}
               onChange={(e) => setValue("person_id", Number(e.target.value))}
-              style={{ fontFamily: fontSerif, fontSize: 17, fontWeight: 600, color: paper.ink, background: "transparent", border: "none", outline: "none", width: "100%", padding: 0, cursor: "pointer" }}
+              style={{
+                fontFamily: fontSerif,
+                fontSize: 17,
+                fontWeight: 600,
+                color: paper.ink,
+                background: "transparent",
+                border: "none",
+                outline: "none",
+                width: "100%",
+                padding: 0,
+                cursor: "pointer",
+              }}
             >
-              <option value="" disabled>{t("form.select_person_placeholder")}</option>
-              {people.filter((p) => p.active).map((p) => (
-                <option key={p.id} value={p.id}>{p.name}</option>
-              ))}
+              <option value="" disabled>
+                {t("form.select_person_placeholder")}
+              </option>
+              {people
+                .filter((p) => p.active)
+                .map((p) => (
+                  <option key={p.id} value={p.id}>
+                    {p.name}
+                  </option>
+                ))}
             </select>
           ) : (
             <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-              <span style={{ fontFamily: fontSerif, fontSize: 17, fontWeight: 600, color: paper.ink }}>
+              <span
+                style={{ fontFamily: fontSerif, fontSize: 17, fontWeight: 600, color: paper.ink }}
+              >
                 {person?.name ?? me?.personName ?? "—"}
               </span>
-              {(person?.discount ?? 0) > 0 && <span style={{ color: paper.accent, fontSize: 13 }}>★</span>}
+              {(person?.discount ?? 0) > 0 && (
+                <span style={{ color: paper.accent, fontSize: 13 }}>★</span>
+              )}
               <span style={{ fontSize: 13 }}>🔒</span>
             </div>
           )}
         </div>
         <div style={{ flex: 1, padding: "10px 14px" }}>
           <span style={label}>{t("form.date")}</span>
-          <input {...register("date")} type="date" style={{ fontFamily: fontSerif, fontSize: 17, fontWeight: 600, color: paper.ink, background: "transparent", border: "none", outline: "none", width: "100%", padding: 0, cursor: "pointer" }} />
+          <input
+            {...register("date")}
+            type="date"
+            style={{
+              fontFamily: fontSerif,
+              fontSize: 17,
+              fontWeight: 600,
+              color: paper.ink,
+              background: "transparent",
+              border: "none",
+              outline: "none",
+              width: "100%",
+              padding: 0,
+              cursor: "pointer",
+            }}
+          />
         </div>
       </div>
       {!isAdmin && (
-        <div style={{ padding: "6px 14px", fontFamily: fontMono, fontSize: 9, color: paper.amber, letterSpacing: 1 }}>
+        <div
+          style={{
+            padding: "6px 14px",
+            fontFamily: fontMono,
+            fontSize: 9,
+            color: paper.amber,
+            letterSpacing: 1,
+          }}
+        >
           🔒 {t("form.driver_locked_hint")}
         </div>
       )}
 
       {/* Odometer block */}
-      <div style={{ margin: "12px 14px", background: paper.paper, border: `1.5px solid ${paper.paperDark}` }}>
-        <div style={{
-          textAlign: "center", padding: "8px 0 4px",
-          fontFamily: fontMono, fontSize: 9, fontWeight: 700, letterSpacing: 3,
-          color: paper.inkMute, textTransform: "uppercase",
-          borderBottom: `1px dashed ${paper.paperDark}`,
-        }}>
+      <div
+        style={{
+          margin: "12px 14px",
+          background: paper.paper,
+          border: `1.5px solid ${paper.paperDark}`,
+        }}
+      >
+        <div
+          style={{
+            textAlign: "center",
+            padding: "8px 0 4px",
+            fontFamily: fontMono,
+            fontSize: 9,
+            fontWeight: 700,
+            letterSpacing: 3,
+            color: paper.inkMute,
+            textTransform: "uppercase",
+            borderBottom: `1px dashed ${paper.paperDark}`,
+          }}
+        >
           @ {t("form.odometer_section")}
         </div>
         <div style={{ display: "flex", alignItems: "center", padding: "12px 14px", gap: 8 }}>
@@ -215,29 +364,51 @@ export function TripForm({ defaultValues, onSubmit, onCancel, onDelete }: Props)
               }}
             />
             {!online && isAddMode && (
-              <div style={{
-                fontFamily: fontMono, fontSize: 8, color: paper.amber,
-                letterSpacing: 1, marginTop: 2, textTransform: "uppercase",
-              }}>
+              <div
+                style={{
+                  fontFamily: fontMono,
+                  fontSize: 8,
+                  color: paper.amber,
+                  letterSpacing: 1,
+                  marginTop: 2,
+                  textTransform: "uppercase",
+                }}
+              >
                 {t("form.offline_start_km_hint")}
               </div>
             )}
           </div>
           <div style={{ textAlign: "center", flexShrink: 0, padding: "0 8px" }}>
-            <div style={{ fontFamily: fontMono, fontSize: 10, color: paper.inkMute, letterSpacing: 1, marginBottom: 2 }}>
+            <div
+              style={{
+                fontFamily: fontMono,
+                fontSize: 10,
+                color: paper.inkMute,
+                letterSpacing: 1,
+                marginBottom: 2,
+              }}
+            >
               {km > 0 ? `${km} KM` : "—"}
             </div>
-            <div style={{ fontSize: 16, color: errors.end_odometer ? paper.accent : paper.inkMute }}>→</div>
+            <div
+              style={{ fontSize: 16, color: errors.end_odometer ? paper.accent : paper.inkMute }}
+            >
+              →
+            </div>
           </div>
           <div style={{ flex: 1, textAlign: "right" }}>
-            <span style={{ ...label, fontSize: 8, textAlign: "right", display: "block" }}>{t("form.end_km")}</span>
+            <span style={{ ...label, fontSize: 8, textAlign: "right", display: "block" }}>
+              {t("form.end_km")}
+            </span>
             <input
               {...register("end_odometer")}
               type="number"
               style={{ ...bigInput, fontSize: 26, textAlign: "right" }}
             />
             {errors.end_odometer && (
-              <div style={{ fontFamily: fontMono, fontSize: 8, color: paper.accent, letterSpacing: 1 }}>
+              <div
+                style={{ fontFamily: fontMono, fontSize: 8, color: paper.accent, letterSpacing: 1 }}
+              >
                 {errors.end_odometer.message}
               </div>
             )}
@@ -248,9 +419,13 @@ export function TripForm({ defaultValues, onSubmit, onCancel, onDelete }: Props)
       {/* Location (GPS + map) */}
       <div style={{ padding: "4px 14px 4px" }}>
         <span style={{ ...label, marginBottom: 6 }}>{t("form.where_parked")}</span>
-        <Controller name="location" control={control}
+        <Controller
+          name="location"
+          control={control}
           render={({ field: addrField }) => (
-            <Controller name="gps_coords" control={control}
+            <Controller
+              name="gps_coords"
+              control={control}
               render={({ field: coordsField }) => (
                 <LocationPicker
                   address={addrField.value ?? null}
@@ -273,9 +448,15 @@ export function TripForm({ defaultValues, onSubmit, onCancel, onDelete }: Props)
             type="text"
             placeholder="bv. ondergrondse parking, verdieping -1"
             style={{
-              fontFamily: fontSerif, fontSize: 16, fontWeight: 500, color: paper.ink,
-              background: "transparent", border: "none", outline: "none",
-              width: "100%", padding: 0,
+              fontFamily: fontSerif,
+              fontSize: 16,
+              fontWeight: 500,
+              color: paper.ink,
+              background: "transparent",
+              border: "none",
+              outline: "none",
+              width: "100%",
+              padding: 0,
             }}
           />
         </div>
@@ -284,13 +465,24 @@ export function TripForm({ defaultValues, onSubmit, onCancel, onDelete }: Props)
       {/* Breakdown */}
       {km > 0 && car && person && (
         <div style={{ margin: "12px 14px", ...dashedBox }}>
-          <div style={{
-            textAlign: "center", fontFamily: fontMono, fontSize: 9, fontWeight: 700,
-            letterSpacing: 3, color: paper.inkDim, textTransform: "uppercase", marginBottom: 10,
-          }}>
+          <div
+            style={{
+              textAlign: "center",
+              fontFamily: fontMono,
+              fontSize: 9,
+              fontWeight: 700,
+              letterSpacing: 3,
+              color: paper.inkDim,
+              textTransform: "uppercase",
+              marginBottom: 10,
+            }}
+          >
             — {t("form.breakdown")} —
           </div>
-          <BreakdownRow label={t("form.rate")} value={`€ ${car.price_per_km.toFixed(2).replace(".", ",")} / km`} />
+          <BreakdownRow
+            label={t("form.rate")}
+            value={`€ ${car.price_per_km.toFixed(2).replace(".", ",")} / km`}
+          />
           <BreakdownRow
             label={t("form.tier_short", { km: String(shortKm), pct: String(pctShort) })}
             value={fmtMoney(shortAmount)}
@@ -307,8 +499,17 @@ export function TripForm({ defaultValues, onSubmit, onCancel, onDelete }: Props)
             value={fmtMoney(amount)}
             valueStyle={{ color: paper.accent, fontSize: 15, fontWeight: 700 }}
           />
-          {(shortAmount + longAmount) < car.price_per_km * km && (
-            <div style={{ textAlign: "right", fontFamily: fontMono, fontSize: 9, color: paper.inkMute, letterSpacing: 1, marginTop: 2 }}>
+          {shortAmount + longAmount < car.price_per_km * km && (
+            <div
+              style={{
+                textAlign: "right",
+                fontFamily: fontMono,
+                fontSize: 9,
+                color: paper.inkMute,
+                letterSpacing: 1,
+                marginTop: 2,
+              }}
+            >
               − {fmtMoney(car.price_per_km * km - amount)} {t("form.total_discount").toLowerCase()}
             </div>
           )}
@@ -317,12 +518,23 @@ export function TripForm({ defaultValues, onSubmit, onCancel, onDelete }: Props)
 
       {onDelete && (
         <div style={{ padding: "0 14px 24px" }}>
-          <button type="button" onClick={onDelete} style={{
-            width: "100%", padding: "10px", background: "transparent",
-            border: `1.5px solid ${paper.accent}`, color: paper.accent,
-            fontFamily: fontMono, fontSize: 10, fontWeight: 700, letterSpacing: 2,
-            textTransform: "uppercase", cursor: "pointer",
-          }}>
+          <button
+            type="button"
+            onClick={onDelete}
+            style={{
+              width: "100%",
+              padding: "10px",
+              background: "transparent",
+              border: `1.5px solid ${paper.accent}`,
+              color: paper.accent,
+              fontFamily: fontMono,
+              fontSize: 10,
+              fontWeight: 700,
+              letterSpacing: 2,
+              textTransform: "uppercase",
+              cursor: "pointer",
+            }}
+          >
             {t("action.delete")}
           </button>
         </div>
@@ -333,14 +545,43 @@ export function TripForm({ defaultValues, onSubmit, onCancel, onDelete }: Props)
 }
 
 function BreakdownRow({
-  label: lbl, value, valueStyle,
-}: { label: string; value: string; valueStyle?: React.CSSProperties }) {
+  label: lbl,
+  value,
+  valueStyle,
+}: {
+  label: string;
+  value: string;
+  valueStyle?: React.CSSProperties;
+}) {
   return (
-    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 6 }}>
-      <span style={{ fontFamily: fontMono, fontSize: 9, color: paper.inkDim, letterSpacing: 1.5, textTransform: "uppercase" }}>
+    <div
+      style={{
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: "baseline",
+        marginBottom: 6,
+      }}
+    >
+      <span
+        style={{
+          fontFamily: fontMono,
+          fontSize: 9,
+          color: paper.inkDim,
+          letterSpacing: 1.5,
+          textTransform: "uppercase",
+        }}
+      >
         {lbl}
       </span>
-      <span style={{ fontFamily: fontMono, fontSize: 12, fontWeight: 700, color: paper.ink, ...valueStyle }}>
+      <span
+        style={{
+          fontFamily: fontMono,
+          fontSize: 12,
+          fontWeight: 700,
+          color: paper.ink,
+          ...valueStyle,
+        }}
+      >
         {value}
       </span>
     </div>

@@ -9,7 +9,14 @@ import { usePeople } from "../_shared";
 import { toast } from "sonner";
 
 // ── Person Row (accordion) ────────────────────────────────────
-function PersonRow({ person, expanded, onToggle, onSave, onCloak, isSaving }: {
+function PersonRow({
+  person,
+  expanded,
+  onToggle,
+  onSave,
+  onCloak,
+  isSaving,
+}: {
   person: Person;
   expanded: boolean;
   onToggle: () => void;
@@ -39,7 +46,12 @@ function PersonRow({ person, expanded, onToggle, onSave, onCloak, isSaving }: {
     username !== (person.username ?? "") ||
     isAdmin !== (person.is_admin === 1);
 
-  const reset = () => { setDisc(person.discount); setDiscLong(person.discount_long); setUsername(person.username ?? ""); setIsAdmin(person.is_admin === 1); };
+  const reset = () => {
+    setDisc(person.discount);
+    setDiscLong(person.discount_long);
+    setUsername(person.username ?? "");
+    setIsAdmin(person.is_admin === 1);
+  };
 
   const isActive = !!person.active;
   const hasDiscount = person.discount > 0 || person.discount_long > 0;
@@ -61,13 +73,19 @@ function PersonRow({ person, expanded, onToggle, onSave, onCloak, isSaving }: {
   // Inactive: simple row with Activate button only
   if (!isActive) {
     return (
-      <div style={{
-        background: paper.paper, marginBottom: 6, opacity: 0.55,
-        boxShadow: "0 1px 2px rgba(0,0,0,0.05), 0 4px 16px rgba(0,0,0,0.06)",
-        borderLeft: "3px solid transparent",
-        display: "flex", alignItems: "center", justifyContent: "space-between",
-        padding: "12px 14px",
-      }}>
+      <div
+        style={{
+          background: paper.paper,
+          marginBottom: 6,
+          opacity: 0.55,
+          boxShadow: "0 1px 2px rgba(0,0,0,0.05), 0 4px 16px rgba(0,0,0,0.06)",
+          borderLeft: "3px solid transparent",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          padding: "12px 14px",
+        }}
+      >
         <div style={{ fontFamily: fontSerif, fontSize: 15, fontWeight: 700, color: paper.inkDim }}>
           {person.name}
         </div>
@@ -75,10 +93,19 @@ function PersonRow({ person, expanded, onToggle, onSave, onCloak, isSaving }: {
           disabled={isSaving}
           onClick={() => onSave({ ...person, active: 1 })}
           style={{
-            padding: "5px 12px", background: paper.green, color: paper.paper,
-            border: "none", cursor: isSaving ? "default" : "pointer", opacity: isSaving ? 0.6 : 1,
-            fontFamily: fontMono, fontSize: 9, fontWeight: 700, letterSpacing: 1.5, textTransform: "uppercase",
-          }}>
+            padding: "5px 12px",
+            background: paper.green,
+            color: paper.paper,
+            border: "none",
+            cursor: isSaving ? "default" : "pointer",
+            opacity: isSaving ? 0.6 : 1,
+            fontFamily: fontMono,
+            fontSize: 9,
+            fontWeight: 700,
+            letterSpacing: 1.5,
+            textTransform: "uppercase",
+          }}
+        >
           {isSaving ? "…" : t("admin.activate")}
         </button>
       </div>
@@ -86,11 +113,14 @@ function PersonRow({ person, expanded, onToggle, onSave, onCloak, isSaving }: {
   }
 
   return (
-    <div style={{
-      background: paper.paper, marginBottom: 6,
-      boxShadow: "0 1px 2px rgba(0,0,0,0.05), 0 4px 16px rgba(0,0,0,0.06)",
-      borderLeft: expanded ? `3px solid ${paper.blue}` : `3px solid transparent`,
-    }}>
+    <div
+      style={{
+        background: paper.paper,
+        marginBottom: 6,
+        boxShadow: "0 1px 2px rgba(0,0,0,0.05), 0 4px 16px rgba(0,0,0,0.06)",
+        borderLeft: expanded ? `3px solid ${paper.blue}` : `3px solid transparent`,
+      }}
+    >
       {/* Collapsed header */}
       <div
         role="button"
@@ -98,35 +128,62 @@ function PersonRow({ person, expanded, onToggle, onSave, onCloak, isSaving }: {
         onClick={onToggle}
         onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && onToggle()}
         style={{
-          display: "flex", alignItems: "center", gap: 10,
-          padding: "12px 14px", cursor: "pointer", userSelect: "none",
+          display: "flex",
+          alignItems: "center",
+          gap: 10,
+          padding: "12px 14px",
+          cursor: "pointer",
+          userSelect: "none",
         }}
       >
         {/* Name + ← view as + username */}
         <div style={{ flex: 1, display: "flex", alignItems: "baseline", gap: 8, minWidth: 0 }}>
-          <span style={{
-            fontFamily: fontSerif, fontSize: 15, fontWeight: 700, color: paper.ink,
-            whiteSpace: "nowrap",
-          }}>
+          <span
+            style={{
+              fontFamily: fontSerif,
+              fontSize: 15,
+              fontWeight: 700,
+              color: paper.ink,
+              whiteSpace: "nowrap",
+            }}
+          >
             {person.name}
           </span>
           {onCloak && (
             <button
-              onClick={(e) => { e.stopPropagation(); onCloak(person.id); }}
+              onClick={(e) => {
+                e.stopPropagation();
+                onCloak(person.id);
+              }}
               style={{
-                background: "none", border: "none", padding: 0, cursor: "pointer",
-                fontFamily: fontMono, fontSize: 8, fontWeight: 700, letterSpacing: 1.5,
-                textTransform: "uppercase", color: paper.amber, whiteSpace: "nowrap", flexShrink: 0,
+                background: "none",
+                border: "none",
+                padding: 0,
+                cursor: "pointer",
+                fontFamily: fontMono,
+                fontSize: 8,
+                fontWeight: 700,
+                letterSpacing: 1.5,
+                textTransform: "uppercase",
+                color: paper.amber,
+                whiteSpace: "nowrap",
+                flexShrink: 0,
               }}
             >
               ← view as
             </button>
           )}
           {person.username && (
-            <span style={{
-              fontFamily: fontMono, fontSize: 10, color: paper.inkDim,
-              whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis",
-            }}>
+            <span
+              style={{
+                fontFamily: fontMono,
+                fontSize: 10,
+                color: paper.inkDim,
+                whiteSpace: "nowrap",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+              }}
+            >
               {person.username}
             </span>
           )}
@@ -134,11 +191,19 @@ function PersonRow({ person, expanded, onToggle, onSave, onCloak, isSaving }: {
 
         {/* Discount badge */}
         {hasDiscount && (
-          <div style={{
-            fontFamily: fontMono, fontSize: 8, color: paper.amber, fontWeight: 700,
-            letterSpacing: 1, border: `1px solid ${paper.amber}`, padding: "2px 5px",
-            textTransform: "uppercase", flexShrink: 0,
-          }}>
+          <div
+            style={{
+              fontFamily: fontMono,
+              fontSize: 8,
+              color: paper.amber,
+              fontWeight: 700,
+              letterSpacing: 1,
+              border: `1px solid ${paper.amber}`,
+              padding: "2px 5px",
+              textTransform: "uppercase",
+              flexShrink: 0,
+            }}
+          >
             {t("admin.discount_badge")}
           </div>
         )}
@@ -148,9 +213,26 @@ function PersonRow({ person, expanded, onToggle, onSave, onCloak, isSaving }: {
       {expanded && (
         <div style={{ padding: "0 14px 14px", borderTop: `1px dashed ${paper.paperDark}` }}>
           {/* Username + admin */}
-          <div style={{ paddingTop: 12, marginBottom: 12, display: "flex", gap: 8, alignItems: "flex-end" }}>
+          <div
+            style={{
+              paddingTop: 12,
+              marginBottom: 12,
+              display: "flex",
+              gap: 8,
+              alignItems: "flex-end",
+            }}
+          >
             <div style={{ flex: 1 }}>
-              <div style={{ fontFamily: fontMono, fontSize: 9, color: paper.inkDim, letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 4 }}>
+              <div
+                style={{
+                  fontFamily: fontMono,
+                  fontSize: 9,
+                  color: paper.inkDim,
+                  letterSpacing: 1.5,
+                  textTransform: "uppercase",
+                  marginBottom: 4,
+                }}
+              >
                 {t("admin.username_label")}
               </div>
               <input
@@ -159,20 +241,41 @@ function PersonRow({ person, expanded, onToggle, onSave, onCloak, isSaving }: {
                 onChange={(e) => setUsername(e.target.value)}
                 placeholder={t("admin.no_username")}
                 style={{
-                  width: "100%", padding: "6px 8px",
-                  border: `1px solid ${paper.paperDark}`, background: paper.paperDeep,
-                  fontFamily: fontMono, fontSize: 12, color: paper.ink, outline: "none",
+                  width: "100%",
+                  padding: "6px 8px",
+                  border: `1px solid ${paper.paperDark}`,
+                  background: paper.paperDeep,
+                  fontFamily: fontMono,
+                  fontSize: 12,
+                  color: paper.ink,
+                  outline: "none",
                 }}
               />
             </div>
-            <label style={{ display: "flex", alignItems: "center", gap: 6, paddingBottom: 6, cursor: "pointer" }}>
+            <label
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 6,
+                paddingBottom: 6,
+                cursor: "pointer",
+              }}
+            >
               <input
                 type="checkbox"
                 checked={isAdmin}
                 onChange={(e) => setIsAdmin(e.target.checked)}
                 style={{ accentColor: paper.blue, width: 14, height: 14 }}
               />
-              <span style={{ fontFamily: fontMono, fontSize: 9, letterSpacing: 1.5, textTransform: "uppercase", color: paper.inkDim }}>
+              <span
+                style={{
+                  fontFamily: fontMono,
+                  fontSize: 9,
+                  letterSpacing: 1.5,
+                  textTransform: "uppercase",
+                  color: paper.inkDim,
+                }}
+              >
                 {t("admin.is_admin_label")}
               </span>
             </label>
@@ -183,15 +286,23 @@ function PersonRow({ person, expanded, onToggle, onSave, onCloak, isSaving }: {
             <button
               onClick={handleInvite}
               style={{
-                padding: "7px 12px", background: "transparent",
-                border: `1px dashed ${paper.inkDim}`, cursor: "pointer",
-                fontFamily: fontMono, fontSize: 9, letterSpacing: 1.5, textTransform: "uppercase",
+                padding: "7px 12px",
+                background: "transparent",
+                border: `1px dashed ${paper.inkDim}`,
+                cursor: "pointer",
+                fontFamily: fontMono,
+                fontSize: 9,
+                letterSpacing: 1.5,
+                textTransform: "uppercase",
                 color: paper.inkDim,
-              }}>
+              }}
+            >
               {t("admin.invite_copy")}
             </button>
             {inviteBanner && (
-              <span style={{ marginLeft: 10, fontFamily: fontMono, fontSize: 10, color: paper.green }}>
+              <span
+                style={{ marginLeft: 10, fontFamily: fontMono, fontSize: 10, color: paper.green }}
+              >
                 {inviteBanner}
               </span>
             )}
@@ -199,56 +310,126 @@ function PersonRow({ person, expanded, onToggle, onSave, onCloak, isSaving }: {
 
           {/* Discounts */}
           <div style={{ marginBottom: 10 }}>
-            <div style={{ fontFamily: fontMono, fontSize: 9, color: paper.inkDim, letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 4 }}>
+            <div
+              style={{
+                fontFamily: fontMono,
+                fontSize: 9,
+                color: paper.inkDim,
+                letterSpacing: 1.5,
+                textTransform: "uppercase",
+                marginBottom: 4,
+              }}
+            >
               {t("admin.base_discount", { pct: (disc * 100).toFixed(0) })}
             </div>
-            <input type="range" min={0} max={0.5} step={0.05} value={disc}
+            <input
+              type="range"
+              min={0}
+              max={0.5}
+              step={0.05}
+              value={disc}
               onChange={(e) => setDisc(parseFloat(e.target.value))}
-              style={{ width: "100%", accentColor: disc > 0 ? paper.amber : paper.inkDim }} />
+              style={{ width: "100%", accentColor: disc > 0 ? paper.amber : paper.inkDim }}
+            />
           </div>
           <div style={{ marginBottom: 14 }}>
-            <div style={{ fontFamily: fontMono, fontSize: 9, color: paper.inkDim, letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 4 }}>
+            <div
+              style={{
+                fontFamily: fontMono,
+                fontSize: 9,
+                color: paper.inkDim,
+                letterSpacing: 1.5,
+                textTransform: "uppercase",
+                marginBottom: 4,
+              }}
+            >
               {t("admin.long_discount", { pct: (discLong * 100).toFixed(0) })}
             </div>
-            <input type="range" min={0} max={0.75} step={0.05} value={discLong}
+            <input
+              type="range"
+              min={0}
+              max={0.75}
+              step={0.05}
+              value={discLong}
               onChange={(e) => setDiscLong(parseFloat(e.target.value))}
-              style={{ width: "100%", accentColor: discLong > 0 ? paper.amber : paper.inkDim }} />
+              style={{ width: "100%", accentColor: discLong > 0 ? paper.amber : paper.inkDim }}
+            />
           </div>
 
           {/* Deactivate */}
           <div style={{ marginBottom: 12 }}>
             <button
               disabled={isSaving}
-              onClick={() => onSave({ ...person, discount: disc, discount_long: discLong, active: 0 })}
+              onClick={() =>
+                onSave({ ...person, discount: disc, discount_long: discLong, active: 0 })
+              }
               style={{
-                width: "100%", padding: "8px",
-                background: paper.accent, color: paper.paper,
-                border: "none", cursor: isSaving ? "default" : "pointer", opacity: isSaving ? 0.6 : 1,
-                fontFamily: fontMono, fontSize: 9, fontWeight: 700, letterSpacing: 1.5, textTransform: "uppercase",
-              }}>
+                width: "100%",
+                padding: "8px",
+                background: paper.accent,
+                color: paper.paper,
+                border: "none",
+                cursor: isSaving ? "default" : "pointer",
+                opacity: isSaving ? 0.6 : 1,
+                fontFamily: fontMono,
+                fontSize: 9,
+                fontWeight: 700,
+                letterSpacing: 1.5,
+                textTransform: "uppercase",
+              }}
+            >
               {isSaving ? "…" : t("admin.deactivate")}
             </button>
           </div>
 
           {/* Cancel / Save */}
           <div style={{ display: "flex", gap: 8 }}>
-            <button onClick={() => { reset(); onToggle(); }} style={{
-              flex: 1, padding: "9px", background: "transparent", color: paper.inkDim,
-              border: `1px solid ${paper.paperDark}`, cursor: "pointer",
-              fontFamily: fontMono, fontSize: 9, fontWeight: 700, letterSpacing: 1.5, textTransform: "uppercase",
-            }}>
+            <button
+              onClick={() => {
+                reset();
+                onToggle();
+              }}
+              style={{
+                flex: 1,
+                padding: "9px",
+                background: "transparent",
+                color: paper.inkDim,
+                border: `1px solid ${paper.paperDark}`,
+                cursor: "pointer",
+                fontFamily: fontMono,
+                fontSize: 9,
+                fontWeight: 700,
+                letterSpacing: 1.5,
+                textTransform: "uppercase",
+              }}
+            >
               {t("action.cancel")}
             </button>
             <button
               disabled={!dirty || isSaving}
-              onClick={() => onSave({ ...person, discount: disc, discount_long: discLong, username: username || null, is_admin: isAdmin ? 1 : 0 })}
+              onClick={() =>
+                onSave({
+                  ...person,
+                  discount: disc,
+                  discount_long: discLong,
+                  username: username || null,
+                  is_admin: isAdmin ? 1 : 0,
+                })
+              }
               style={{
-                flex: 2, padding: "9px",
+                flex: 2,
+                padding: "9px",
                 background: dirty && !isSaving ? paper.ink : paper.paperDark,
                 color: dirty && !isSaving ? paper.paper : paper.inkMute,
-                border: "none", cursor: dirty && !isSaving ? "pointer" : "default",
-                fontFamily: fontMono, fontSize: 9, fontWeight: 700, letterSpacing: 2, textTransform: "uppercase",
-              }}>
+                border: "none",
+                cursor: dirty && !isSaving ? "pointer" : "default",
+                fontFamily: fontMono,
+                fontSize: 9,
+                fontWeight: 700,
+                letterSpacing: 2,
+                textTransform: "uppercase",
+              }}
+            >
               {isSaving ? "…" : t("action.save")}
             </button>
           </div>
@@ -275,8 +456,12 @@ export default function AdminLedenPage() {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          name: p.name, discount: p.discount, discount_long: p.discount_long,
-          active: p.active, username: p.username, is_admin: p.is_admin,
+          name: p.name,
+          discount: p.discount,
+          discount_long: p.discount_long,
+          active: p.active,
+          username: p.username,
+          is_admin: p.is_admin,
         }),
       });
       if (!res.ok) throw new Error("Failed");
@@ -319,11 +504,18 @@ export default function AdminLedenPage() {
       ))}
       {inactive.length > 0 && (
         <>
-          <div style={{
-            fontFamily: fontMono, fontSize: 9, color: paper.inkDim, letterSpacing: 2,
-            textTransform: "uppercase", padding: "16px 0 8px",
-            borderTop: `1.5px dashed ${paper.inkMute}`, marginTop: 8,
-          }}>
+          <div
+            style={{
+              fontFamily: fontMono,
+              fontSize: 9,
+              color: paper.inkDim,
+              letterSpacing: 2,
+              textTransform: "uppercase",
+              padding: "16px 0 8px",
+              borderTop: `1.5px dashed ${paper.inkMute}`,
+              marginTop: 8,
+            }}
+          >
             {t("admin.inactive_section")}
           </div>
           {inactive.map((person) => (

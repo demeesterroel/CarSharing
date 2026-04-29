@@ -10,18 +10,18 @@ describe("calcTripAmount", () => {
   it("applies short-trip discount for first 500km, long discount beyond", () => {
     // Tinne, JF price_per_km=0.20, discount=0.25, discount_long=0.50, km=2299
     // 500 * 0.20 * (1-0.25) + 1799 * 0.20 * (1-0.50) = 75 + 179.90 = 254.90
-    expect(calcTripAmount(2299, 0.20, 0.25, 0.50)).toBeCloseTo(254.90);
+    expect(calcTripAmount(2299, 0.2, 0.25, 0.5)).toBeCloseTo(254.9);
   });
 
   it("applies only short-trip rate for trips <= 500km", () => {
     // 100km, price_per_km=0.20, discount=0.25
     // 100 * 0.20 * (1-0.25) = 15.00
-    expect(calcTripAmount(100, 0.20, 0.25, 0.50)).toBeCloseTo(15.00);
+    expect(calcTripAmount(100, 0.2, 0.25, 0.5)).toBeCloseTo(15.0);
   });
 
   it("handles exactly 500km", () => {
     // 500 * 0.20 * (1-0.25) = 75.00
-    expect(calcTripAmount(500, 0.20, 0.25, 0.50)).toBeCloseTo(75.00);
+    expect(calcTripAmount(500, 0.2, 0.25, 0.5)).toBeCloseTo(75.0);
   });
 });
 

@@ -1,6 +1,16 @@
 "use client";
 import * as Dialog from "@radix-ui/react-dialog";
-import { Menu, X, LayoutDashboard, Car, Users, Wrench, CreditCard, CalendarDays, LogOut } from "lucide-react";
+import {
+  Menu,
+  X,
+  LayoutDashboard,
+  Car,
+  Users,
+  Wrench,
+  CreditCard,
+  CalendarDays,
+  LogOut,
+} from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
@@ -44,7 +54,10 @@ export function NavDrawer() {
                 </div>
                 <span className="text-lg font-semibold">{t("brand.app")}</span>
                 <Dialog.Close asChild>
-                  <button className="ml-auto p-1 rounded hover:bg-gray-100" aria-label={t("action.cancel")}>
+                  <button
+                    className="ml-auto p-1 rounded hover:bg-gray-100"
+                    aria-label={t("action.cancel")}
+                  >
                     <X className="w-4 h-4" />
                   </button>
                 </Dialog.Close>
@@ -56,7 +69,11 @@ export function NavDrawer() {
                     href={href}
                     onClick={() => setOpen(false)}
                     className={`flex items-center gap-3 px-4 py-3 text-sm hover:bg-blue-50 transition-colors ${
-                      (href === "/" ? pathname === href : pathname === href || pathname.startsWith(`${href}/`))
+                      (
+                        href === "/"
+                          ? pathname === href
+                          : pathname === href || pathname.startsWith(`${href}/`)
+                      )
                         ? "text-blue-600 bg-blue-50 border-l-4 border-blue-600"
                         : "text-gray-700"
                     }`}

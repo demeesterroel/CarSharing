@@ -2,7 +2,12 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import bcrypt from "bcryptjs";
 import { getDb } from "@/lib/db";
-import { getInviteToken, deleteInviteToken, setPasswordHash, getPersonById } from "@/lib/queries/people";
+import {
+  getInviteToken,
+  deleteInviteToken,
+  setPasswordHash,
+  getPersonById,
+} from "@/lib/queries/people";
 import { getIronSession } from "iron-session";
 import { sessionOptions, type SessionData } from "@/lib/session";
 
@@ -10,10 +15,7 @@ const Schema = z.object({
   password: z.string().min(8),
 });
 
-export async function POST(
-  req: Request,
-  ctx: { params: Promise<{ token: string }> }
-) {
+export async function POST(req: Request, ctx: { params: Promise<{ token: string }> }) {
   const { token } = await ctx.params;
   const db = getDb();
 
@@ -27,7 +29,9 @@ export async function POST(
   }
 
   let body: unknown;
-  try { body = await req.json(); } catch {
+  try {
+    body = await req.json();
+  } catch {
     return NextResponse.json({ error: "bad_request" }, { status: 400 });
   }
   const parsed = Schema.safeParse(body);

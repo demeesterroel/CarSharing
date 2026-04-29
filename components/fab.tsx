@@ -6,10 +6,10 @@ import { t } from "@/lib/i18n";
 import { useOnlineState } from "@/lib/offline/online-state";
 
 const CHIT_DEFS = [
-  { key: "expense", labelKey: "fab.expense" as const, emoji: "🧾", rotate:  2 },
+  { key: "expense", labelKey: "fab.expense" as const, emoji: "🧾", rotate: 2 },
   { key: "reserve", labelKey: "fab.reservation" as const, emoji: "📅", rotate: -2 },
-  { key: "fuel",    labelKey: "fab.fuel" as const, emoji: "⛽", rotate:  1 },
-  { key: "trip",    labelKey: "fab.trip" as const, emoji: "🚗", rotate: -1 },
+  { key: "fuel", labelKey: "fab.fuel" as const, emoji: "⛽", rotate: 1 },
+  { key: "trip", labelKey: "fab.trip" as const, emoji: "🚗", rotate: -1 },
 ];
 
 interface Props {
@@ -21,7 +21,10 @@ interface Props {
 export function Fab({ onClick, label }: Props) {
   const { online } = useOnlineState();
   const handleClick = () => {
-    if (!online) { toast.error(t("offline.mutation_blocked")); return; }
+    if (!online) {
+      toast.error(t("offline.mutation_blocked"));
+      return;
+    }
     onClick();
   };
   return (
@@ -61,16 +64,18 @@ export function MultiFab({ onPick }: { onPick: (action: string) => void }) {
   const { online } = useOnlineState();
 
   return (
-    <div style={{
-      position: "fixed",
-      right: 16,
-      bottom: 86,
-      zIndex: 40,
-      display: "flex",
-      flexDirection: "column",
-      alignItems: "flex-end",
-      gap: 10,
-    }}>
+    <div
+      style={{
+        position: "fixed",
+        right: 16,
+        bottom: 86,
+        zIndex: 40,
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "flex-end",
+        gap: 10,
+      }}
+    >
       {open && (
         <div
           onClick={() => setOpen(false)}
@@ -84,37 +89,44 @@ export function MultiFab({ onPick }: { onPick: (action: string) => void }) {
         />
       )}
 
-      {open && CHIT_DEFS.map((chit) => (
-        <button
-          key={chit.key}
-          onClick={() => { setOpen(false); onPick(chit.key); }}
-          className="animate-pop-in"
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: 10,
-            padding: "10px 14px",
-            background: paper.paper,
-            border: `1.5px solid ${paper.ink}`,
-            cursor: "pointer",
-            fontFamily: fontMono,
-            fontSize: 11,
-            letterSpacing: 2,
-            textTransform: "uppercase" as const,
-            fontWeight: 700,
-            color: paper.ink,
-            transform: `rotate(${chit.rotate}deg)`,
-            boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
-          }}
-        >
-          <span style={{ fontSize: 16 }}>{chit.emoji}</span>
-          {t(chit.labelKey)}
-        </button>
-      ))}
+      {open &&
+        CHIT_DEFS.map((chit) => (
+          <button
+            key={chit.key}
+            onClick={() => {
+              setOpen(false);
+              onPick(chit.key);
+            }}
+            className="animate-pop-in"
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 10,
+              padding: "10px 14px",
+              background: paper.paper,
+              border: `1.5px solid ${paper.ink}`,
+              cursor: "pointer",
+              fontFamily: fontMono,
+              fontSize: 11,
+              letterSpacing: 2,
+              textTransform: "uppercase" as const,
+              fontWeight: 700,
+              color: paper.ink,
+              transform: `rotate(${chit.rotate}deg)`,
+              boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
+            }}
+          >
+            <span style={{ fontSize: 16 }}>{chit.emoji}</span>
+            {t(chit.labelKey)}
+          </button>
+        ))}
 
       <button
         onClick={() => {
-          if (!online) { toast.error(t("offline.mutation_blocked")); return; }
+          if (!online) {
+            toast.error(t("offline.mutation_blocked"));
+            return;
+          }
           setOpen((o) => !o);
         }}
         style={{

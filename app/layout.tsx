@@ -58,23 +58,23 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body>
         <LocaleProvider>
-        <Providers>
-          <div
-            style={{
-              minHeight: "100dvh",
-              maxWidth: 480,
-              margin: "0 auto",
-              background: "var(--paper-deep)",
-              position: "relative",
-              boxShadow: "0 0 0 1px rgba(0,0,0,0.05)",
-              paddingBottom: 72,
-            }}
-          >
-            <CloakBanner />
-            {children}
-          </div>
-          <BottomTabBar />
-        </Providers>
+          <Providers>
+            <div
+              style={{
+                minHeight: "100dvh",
+                maxWidth: 480,
+                margin: "0 auto",
+                background: "var(--paper-deep)",
+                position: "relative",
+                boxShadow: "0 0 0 1px rgba(0,0,0,0.05)",
+                paddingBottom: 72,
+              }}
+            >
+              <CloakBanner />
+              {children}
+            </div>
+            <BottomTabBar />
+          </Providers>
         </LocaleProvider>
       </body>
     </html>

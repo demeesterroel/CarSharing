@@ -13,25 +13,26 @@
 
 ## File map
 
-| File | Action | Purpose |
-|---|---|---|
-| `lib/session.ts` | Create | `SessionData` type + `sessionOptions` — single source of truth for session shape |
-| `lib/auth.ts` | Create | `verifyCredentials()` — timing-safe credential comparison, fully testable |
-| `lib/__tests__/auth.test.ts` | Create | Vitest unit tests for `verifyCredentials` |
-| `middleware.ts` | Create | Redirects unauthenticated requests to `/login` |
-| `app/login/page.tsx` | Create | Login form — client component, posts to `/api/auth/login` |
-| `app/api/auth/login/route.ts` | Create | Validates credentials, sets session cookie |
-| `app/api/auth/logout/route.ts` | Create | Destroys session cookie |
-| `scripts/hash-password.ts` | Create | CLI utility to bcrypt-hash a password for `AUTH_PASSWORD_HASH` |
-| `lib/i18n/messages/nl.ts` | Modify | Add `error.invalid_credentials` and `nav.logout` keys |
-| `components/nav-drawer.tsx` | Modify | Add Uitloggen button at bottom of drawer |
-| `.env.local.example` | Create | Documents required env vars |
+| File                           | Action | Purpose                                                                          |
+| ------------------------------ | ------ | -------------------------------------------------------------------------------- |
+| `lib/session.ts`               | Create | `SessionData` type + `sessionOptions` — single source of truth for session shape |
+| `lib/auth.ts`                  | Create | `verifyCredentials()` — timing-safe credential comparison, fully testable        |
+| `lib/__tests__/auth.test.ts`   | Create | Vitest unit tests for `verifyCredentials`                                        |
+| `middleware.ts`                | Create | Redirects unauthenticated requests to `/login`                                   |
+| `app/login/page.tsx`           | Create | Login form — client component, posts to `/api/auth/login`                        |
+| `app/api/auth/login/route.ts`  | Create | Validates credentials, sets session cookie                                       |
+| `app/api/auth/logout/route.ts` | Create | Destroys session cookie                                                          |
+| `scripts/hash-password.ts`     | Create | CLI utility to bcrypt-hash a password for `AUTH_PASSWORD_HASH`                   |
+| `lib/i18n/messages/nl.ts`      | Modify | Add `error.invalid_credentials` and `nav.logout` keys                            |
+| `components/nav-drawer.tsx`    | Modify | Add Uitloggen button at bottom of drawer                                         |
+| `.env.local.example`           | Create | Documents required env vars                                                      |
 
 ---
 
 ### Task 1: Install packages, add i18n keys, document env vars
 
 **Files:**
+
 - Modify: `lib/i18n/messages/nl.ts`
 - Create: `.env.local.example`
 
@@ -93,6 +94,7 @@ git commit -m "feat(auth): install iron-session + bcryptjs, add i18n keys, docum
 ### Task 2: Session module and credential helper
 
 **Files:**
+
 - Create: `lib/session.ts`
 - Create: `lib/auth.ts`
 - Create: `lib/__tests__/auth.test.ts`
@@ -142,10 +144,7 @@ export async function verifyCredentials(
   input: Credentials,
   stored: StoredCredentials
 ): Promise<boolean> {
-  const maxLen = Math.max(
-    Buffer.byteLength(input.username),
-    Buffer.byteLength(stored.username)
-  );
+  const maxLen = Math.max(Buffer.byteLength(input.username), Buffer.byteLength(stored.username));
   const a = Buffer.alloc(maxLen);
   const b = Buffer.alloc(maxLen);
   Buffer.from(input.username).copy(a);
@@ -157,7 +156,7 @@ export async function verifyCredentials(
 }
 ```
 
-- [ ] **Step 3: Write failing tests in lib/__tests__/auth.test.ts**
+- [ ] **Step 3: Write failing tests in lib/**tests**/auth.test.ts**
 
 ```ts
 import { describe, it, expect, beforeAll } from "vitest";
@@ -247,6 +246,7 @@ git commit -m "feat(auth): session options module and timing-safe credential hel
 ### Task 3: Hash-password script
 
 **Files:**
+
 - Create: `scripts/hash-password.ts`
 
 - [ ] **Step 1: Create scripts/hash-password.ts**
@@ -298,6 +298,7 @@ git commit -m "feat(auth): hash-password script for generating AUTH_PASSWORD_HAS
 ### Task 4: Login API route
 
 **Files:**
+
 - Create: `app/api/auth/login/route.ts`
 
 - [ ] **Step 1: Create app/api/auth/login/route.ts**
@@ -377,6 +378,7 @@ git commit -m "feat(auth): login API route with timing-safe credential check"
 ### Task 5: Logout API route
 
 **Files:**
+
 - Create: `app/api/auth/logout/route.ts`
 
 - [ ] **Step 1: Create app/api/auth/logout/route.ts**
@@ -421,6 +423,7 @@ git commit -m "feat(auth): logout API route"
 ### Task 6: Middleware
 
 **Files:**
+
 - Create: `middleware.ts`
 
 - [ ] **Step 1: Create middleware.ts at the project root**
@@ -431,11 +434,7 @@ import { getIronSession } from "iron-session";
 import { sessionOptions, type SessionData } from "@/lib/session";
 
 // Paths that are always accessible — no auth check.
-const PUBLIC_PATHS = [
-  "/login",
-  "/api/auth/login",
-  "/api/auth/logout",
-];
+const PUBLIC_PATHS = ["/login", "/api/auth/login", "/api/auth/logout"];
 
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
@@ -520,6 +519,7 @@ git commit -m "feat(auth): middleware redirects unauthenticated requests to /log
 ### Task 7: Login page
 
 **Files:**
+
 - Create: `app/login/page.tsx`
 
 - [ ] **Step 1: Create app/login/page.tsx**
@@ -570,7 +570,10 @@ export default function LoginPage() {
           <h1 className="text-2xl font-semibold">{t("brand.app")}</h1>
         </div>
 
-        <form onSubmit={handleSubmit} className="bg-white rounded-2xl shadow-sm border p-6 space-y-4">
+        <form
+          onSubmit={handleSubmit}
+          className="bg-white rounded-2xl shadow-sm border p-6 space-y-4"
+        >
           <div>
             <label className="block text-sm font-medium mb-1">{t("form.name")}</label>
             <input
@@ -593,9 +596,7 @@ export default function LoginPage() {
               required
             />
           </div>
-          {error && (
-            <p className="text-sm text-red-600">{error}</p>
-          )}
+          {error && <p className="text-sm text-red-600">{error}</p>}
           <button
             type="submit"
             disabled={loading}
@@ -634,6 +635,7 @@ git commit -m "feat(auth): login page with inline error and redirect on success"
 ### Task 8: NavDrawer logout button
 
 **Files:**
+
 - Modify: `components/nav-drawer.tsx`
 
 - [ ] **Step 1: Update components/nav-drawer.tsx**
@@ -646,7 +648,17 @@ import { useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
 import * as Dialog from "@radix-ui/react-dialog";
-import { Menu, X, Car, LayoutDashboard, CalendarDays, Users, CreditCard, Wrench, LogOut } from "lucide-react";
+import {
+  Menu,
+  X,
+  Car,
+  LayoutDashboard,
+  CalendarDays,
+  Users,
+  CreditCard,
+  Wrench,
+  LogOut,
+} from "lucide-react";
 import { t } from "@/lib/i18n";
 
 const NAV_ITEMS = [
@@ -696,7 +708,9 @@ export function NavDrawer() {
                 href={href}
                 onClick={() => setOpen(false)}
                 className={`flex items-center gap-3 px-4 py-3 text-sm hover:bg-blue-50 transition-colors ${
-                  pathname === href ? "text-blue-600 bg-blue-50 border-l-4 border-blue-600" : "text-gray-700"
+                  pathname === href
+                    ? "text-blue-600 bg-blue-50 border-l-4 border-blue-600"
+                    : "text-gray-700"
                 }`}
               >
                 <Icon className="w-5 h-5" />
@@ -741,19 +755,19 @@ git commit -m "feat(auth): logout button in nav drawer"
 
 **Spec coverage check:**
 
-| Spec requirement | Covered by |
-|---|---|
-| `SESSION_PASSWORD`, `AUTH_USERNAME`, `AUTH_PASSWORD_HASH` env vars | Task 1, 3 |
-| `lib/session.ts` — `SessionData` + `sessionOptions` | Task 2 |
-| `lib/auth.ts` — `verifyCredentials` with `timingSafeEqual` | Task 2 |
-| Tests for `verifyCredentials` (5 cases) | Task 2 |
-| `scripts/hash-password.ts` | Task 3 |
-| `app/api/auth/login/route.ts` — 200 on match, 401 on mismatch | Task 4 |
-| `app/api/auth/logout/route.ts` — destroys session | Task 5 |
-| `middleware.ts` — redirects unauthenticated, allows public paths, redirects authenticated /login → / | Task 6 |
-| `app/login/page.tsx` — username+password form, inline error | Task 7 |
-| `form.password` i18n key | Task 7 |
-| `error.invalid_credentials`, `nav.logout`, `form.password`, `action.login` i18n keys | Task 1 |
-| NavDrawer logout button | Task 8 |
-| Phase A does NOT touch `people` table | Confirmed — no DB changes in any task |
-| `SessionData` widens additively for Phase B | Task 2 — comment documents Phase B contract |
+| Spec requirement                                                                                     | Covered by                                  |
+| ---------------------------------------------------------------------------------------------------- | ------------------------------------------- |
+| `SESSION_PASSWORD`, `AUTH_USERNAME`, `AUTH_PASSWORD_HASH` env vars                                   | Task 1, 3                                   |
+| `lib/session.ts` — `SessionData` + `sessionOptions`                                                  | Task 2                                      |
+| `lib/auth.ts` — `verifyCredentials` with `timingSafeEqual`                                           | Task 2                                      |
+| Tests for `verifyCredentials` (5 cases)                                                              | Task 2                                      |
+| `scripts/hash-password.ts`                                                                           | Task 3                                      |
+| `app/api/auth/login/route.ts` — 200 on match, 401 on mismatch                                        | Task 4                                      |
+| `app/api/auth/logout/route.ts` — destroys session                                                    | Task 5                                      |
+| `middleware.ts` — redirects unauthenticated, allows public paths, redirects authenticated /login → / | Task 6                                      |
+| `app/login/page.tsx` — username+password form, inline error                                          | Task 7                                      |
+| `form.password` i18n key                                                                             | Task 7                                      |
+| `error.invalid_credentials`, `nav.logout`, `form.password`, `action.login` i18n keys                 | Task 1                                      |
+| NavDrawer logout button                                                                              | Task 8                                      |
+| Phase A does NOT touch `people` table                                                                | Confirmed — no DB changes in any task       |
+| `SessionData` widens additively for Phase B                                                          | Task 2 — comment documents Phase B contract |

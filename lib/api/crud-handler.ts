@@ -35,7 +35,7 @@ export function listHandler<T>(list: (db: Database.Database) => T[]) {
  */
 export function createHandler<T>(
   schema: ZodSchema<T>,
-  insert: (db: Database.Database, data: T) => number,
+  insert: (db: Database.Database, data: T) => number
 ) {
   return json(async (req: Request) => {
     const data = await readBody(req, schema);
@@ -53,7 +53,7 @@ export function createHandler<T>(
  * Throws 404 if the query returns null/undefined.
  */
 export function getOneHandler<T>(
-  getById: (db: Database.Database, id: number) => T | null | undefined,
+  getById: (db: Database.Database, id: number) => T | null | undefined
 ) {
   return json(async (_req: Request, ctx: Ctx) => {
     const row = getById(getDb(), await readId(ctx));
@@ -68,7 +68,7 @@ export function getOneHandler<T>(
  */
 export function updateHandler<T>(
   schema: ZodSchema<T>,
-  update: (db: Database.Database, id: number, data: T) => void,
+  update: (db: Database.Database, id: number, data: T) => void
 ) {
   return json(async (req: Request, ctx: Ctx) => {
     const id = await readId(ctx);

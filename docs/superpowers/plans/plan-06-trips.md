@@ -12,6 +12,7 @@
 ### Task 1: Trips query helpers
 
 **Files:**
+
 - Create: `lib/queries/trips.ts`
 
 - [ ] **Step 1: Create lib/queries/trips.ts**
@@ -22,30 +23,42 @@ import type { Trip, TripInput } from "@/types";
 import { calcTripAmount } from "@/lib/formulas";
 
 export function getTrips(db: Database.Database): Trip[] {
-  return db.prepare(`
+  return db
+    .prepare(
+      `
     SELECT t.*, p.name AS person_name, c.short AS car_short
     FROM trips t
     JOIN people p ON p.id = t.person_id
     JOIN cars c ON c.id = t.car_id
     ORDER BY t.date DESC, t.id DESC
-  `).all() as Trip[];
+  `
+    )
+    .all() as Trip[];
 }
 
 export function getTripById(db: Database.Database, id: number): Trip | null {
-  return (db.prepare(`
+  return (
+    (db
+      .prepare(
+        `
     SELECT t.*, p.name AS person_name, c.short AS car_short
     FROM trips t
     JOIN people p ON p.id = t.person_id
     JOIN cars c ON c.id = t.car_id
     WHERE t.id = ?
-  `).get(id) as Trip) ?? null;
+  `
+      )
+      .get(id) as Trip) ?? null
+  );
 }
 
 function compute(db: Database.Database, input: TripInput) {
-  const person = db.prepare("SELECT discount, discount_long FROM people WHERE id=?")
+  const person = db
+    .prepare("SELECT discount, discount_long FROM people WHERE id=?")
     .get(input.person_id) as { discount: number; discount_long: number } | undefined;
-  const car = db.prepare("SELECT price_per_km FROM cars WHERE id=?")
-    .get(input.car_id) as { price_per_km: number } | undefined;
+  const car = db.prepare("SELECT price_per_km FROM cars WHERE id=?").get(input.car_id) as
+    | { price_per_km: number }
+    | undefined;
   if (!person || !car) throw new Error("Invalid person_id or car_id");
   const km = input.end_odometer - input.start_odometer;
   const amount = calcTripAmount(km, car.price_per_km, person.discount, person.discount_long);
@@ -54,25 +67,42 @@ function compute(db: Database.Database, input: TripInput) {
 
 export function insertTrip(db: Database.Database, input: TripInput): number {
   const { km, amount } = compute(db, input);
-  const result = db.prepare(`
+  const result = db
+    .prepare(
+      `
     INSERT INTO trips (person_id,car_id,date,start_odometer,end_odometer,km,amount,location)
     VALUES (?,?,?,?,?,?,?,?)
-  `).run(
-    input.person_id, input.car_id, input.date,
-    input.start_odometer, input.end_odometer, km, amount,
-    input.location ?? null
-  );
+  `
+    )
+    .run(
+      input.person_id,
+      input.car_id,
+      input.date,
+      input.start_odometer,
+      input.end_odometer,
+      km,
+      amount,
+      input.location ?? null
+    );
   return result.lastInsertRowid as number;
 }
 
 export function updateTrip(db: Database.Database, id: number, input: TripInput): void {
   const { km, amount } = compute(db, input);
-  db.prepare(`
+  db.prepare(
+    `
     UPDATE trips SET person_id=?,car_id=?,date=?,start_odometer=?,end_odometer=?,km=?,amount=?,location=? WHERE id=?
-  `).run(
-    input.person_id, input.car_id, input.date,
-    input.start_odometer, input.end_odometer, km, amount,
-    input.location ?? null, id
+  `
+  ).run(
+    input.person_id,
+    input.car_id,
+    input.date,
+    input.start_odometer,
+    input.end_odometer,
+    km,
+    amount,
+    input.location ?? null,
+    id
   );
 }
 
@@ -81,7 +111,7 @@ export function deleteTrip(db: Database.Database, id: number): void {
 }
 ```
 
-- [ ] **Step 2: Append test to lib/__tests__/queries.test.ts**
+- [ ] **Step 2: Append test to lib/**tests**/queries.test.ts**
 
 ```ts
 import { insertTrip, getTrips } from "../queries/trips";
@@ -90,8 +120,21 @@ describe("trips queries", () => {
   it("inserts a trip and computes km and amount", () => {
     const db = makeDb();
     const pid = insertPerson(db, { name: "Roeland", discount: 0, discount_long: 0, active: 1 });
-    const cid = insertCar(db, { short: "LEW", name: "Lewis", price_per_km: 0.25, brand: null, color: null });
-    insertTrip(db, { person_id: pid, car_id: cid, date: "2026-04-18", start_odometer: 233900, end_odometer: 241929, location: null });
+    const cid = insertCar(db, {
+      short: "LEW",
+      name: "Lewis",
+      price_per_km: 0.25,
+      brand: null,
+      color: null,
+    });
+    insertTrip(db, {
+      person_id: pid,
+      car_id: cid,
+      date: "2026-04-18",
+      start_odometer: 233900,
+      end_odometer: 241929,
+      location: null,
+    });
     const trips = getTrips(db);
     expect(trips[0].km).toBe(8029);
     expect(trips[0].amount).toBeCloseTo(2007.25);
@@ -117,6 +160,7 @@ git commit -m "feat: trips query helpers with amount calculation"
 ### Task 2: Trips API routes
 
 **Files:**
+
 - Create: `app/api/trips/route.ts`
 - Create: `app/api/trips/[id]/route.ts`
 
@@ -134,7 +178,11 @@ const TripSchema = z.object({
   date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
   start_odometer: z.number().int().nonnegative(),
   end_odometer: z.number().int().nonnegative(),
-  location: z.string().nullable().optional().transform((v) => v ?? null),
+  location: z
+    .string()
+    .nullable()
+    .optional()
+    .transform((v) => v ?? null),
 });
 
 export const GET = json(async () => getTrips(getDb()));
@@ -160,7 +208,11 @@ const TripSchema = z.object({
   date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
   start_odometer: z.number().int().nonnegative(),
   end_odometer: z.number().int().nonnegative(),
-  location: z.string().nullable().optional().transform((v) => v ?? null),
+  location: z
+    .string()
+    .nullable()
+    .optional()
+    .transform((v) => v ?? null),
 });
 
 export const GET = json(async (_req, ctx: { params: Promise<{ id: string }> }) => {
@@ -193,9 +245,10 @@ git commit -m "feat: trips API routes with zod validation"
 
 ### Task 2b: Car "last state" query, API, and hook
 
-Both the trip form (this plan, Task 4) and the fuel form (plan-07, Task 6) need to answer the same question when the user selects a car: *"what was the last known odometer reading and location for this car?"* We answer it once here with a single query that unions the most recent rows from `trips` and `fuel_fillups`, and expose it via a dedicated endpoint + TanStack Query hook. No caller caches per-car state client-side; the hook is enabled only when `carId` is truthy.
+Both the trip form (this plan, Task 4) and the fuel form (plan-07, Task 6) need to answer the same question when the user selects a car: _"what was the last known odometer reading and location for this car?"_ We answer it once here with a single query that unions the most recent rows from `trips` and `fuel_fillups`, and expose it via a dedicated endpoint + TanStack Query hook. No caller caches per-car state client-side; the hook is enabled only when `carId` is truthy.
 
 **Files:**
+
 - Create: `lib/queries/car-state.ts`
 - Create: `app/api/cars/[id]/last-state/route.ts`
 - Create: `hooks/use-car-state.ts`
@@ -245,7 +298,7 @@ export function getLastCarState(db: Database.Database, carId: number): CarState 
 }
 ```
 
-- [ ] **Step 2: Append tests to lib/__tests__/queries.test.ts**
+- [ ] **Step 2: Append tests to lib/**tests**/queries.test.ts**
 
 ```ts
 import { getLastCarState } from "../queries/car-state";
@@ -254,44 +307,148 @@ import { insertFuelFillup } from "../queries/fuel-fillups";
 describe("getLastCarState", () => {
   it("returns null when the car has no trips or fill-ups", () => {
     const db = makeDb();
-    const cid = insertCar(db, { short: "A", name: "A", price_per_km: 0.25, brand: null, color: null });
+    const cid = insertCar(db, {
+      short: "A",
+      name: "A",
+      price_per_km: 0.25,
+      brand: null,
+      color: null,
+    });
     expect(getLastCarState(db, cid)).toBeNull();
   });
 
   it("returns the last trip's end_odometer when trips exist", () => {
     const db = makeDb();
     const pid = insertPerson(db, { name: "P", discount: 0, discount_long: 0, active: 1 });
-    const cid = insertCar(db, { short: "A", name: "A", price_per_km: 0.25, brand: null, color: null });
-    insertTrip(db, { person_id: pid, car_id: cid, date: "2026-04-01", start_odometer: 100, end_odometer: 150, location: "51.0,4.4" });
-    insertTrip(db, { person_id: pid, car_id: cid, date: "2026-04-10", start_odometer: 150, end_odometer: 200, location: "51.1,4.5" });
-    expect(getLastCarState(db, cid)).toEqual({ odometer: 200, location: "51.1,4.5", source: "trip" });
+    const cid = insertCar(db, {
+      short: "A",
+      name: "A",
+      price_per_km: 0.25,
+      brand: null,
+      color: null,
+    });
+    insertTrip(db, {
+      person_id: pid,
+      car_id: cid,
+      date: "2026-04-01",
+      start_odometer: 100,
+      end_odometer: 150,
+      location: "51.0,4.4",
+    });
+    insertTrip(db, {
+      person_id: pid,
+      car_id: cid,
+      date: "2026-04-10",
+      start_odometer: 150,
+      end_odometer: 200,
+      location: "51.1,4.5",
+    });
+    expect(getLastCarState(db, cid)).toEqual({
+      odometer: 200,
+      location: "51.1,4.5",
+      source: "trip",
+    });
   });
 
   it("prefers a later fuel fill-up over an earlier trip", () => {
     const db = makeDb();
     const pid = insertPerson(db, { name: "P", discount: 0, discount_long: 0, active: 1 });
-    const cid = insertCar(db, { short: "A", name: "A", price_per_km: 0.25, brand: null, color: null });
-    insertTrip(db, { person_id: pid, car_id: cid, date: "2026-04-01", start_odometer: 100, end_odometer: 150, location: null });
-    insertFuelFillup(db, { person_id: pid, car_id: cid, date: "2026-04-05", amount: 50, liters: 30, odometer: 180, receipt: null, location: "station" });
-    expect(getLastCarState(db, cid)).toEqual({ odometer: 180, location: "station", source: "fuel" });
+    const cid = insertCar(db, {
+      short: "A",
+      name: "A",
+      price_per_km: 0.25,
+      brand: null,
+      color: null,
+    });
+    insertTrip(db, {
+      person_id: pid,
+      car_id: cid,
+      date: "2026-04-01",
+      start_odometer: 100,
+      end_odometer: 150,
+      location: null,
+    });
+    insertFuelFillup(db, {
+      person_id: pid,
+      car_id: cid,
+      date: "2026-04-05",
+      amount: 50,
+      liters: 30,
+      odometer: 180,
+      receipt: null,
+      location: "station",
+    });
+    expect(getLastCarState(db, cid)).toEqual({
+      odometer: 180,
+      location: "station",
+      source: "fuel",
+    });
   });
 
   it("ignores fuel fill-ups where odometer is null", () => {
     const db = makeDb();
     const pid = insertPerson(db, { name: "P", discount: 0, discount_long: 0, active: 1 });
-    const cid = insertCar(db, { short: "A", name: "A", price_per_km: 0.25, brand: null, color: null });
-    insertTrip(db, { person_id: pid, car_id: cid, date: "2026-04-01", start_odometer: 100, end_odometer: 150, location: "loc-trip" });
-    insertFuelFillup(db, { person_id: pid, car_id: cid, date: "2026-04-05", amount: 50, liters: 30, odometer: null, receipt: null, location: "loc-fuel" });
+    const cid = insertCar(db, {
+      short: "A",
+      name: "A",
+      price_per_km: 0.25,
+      brand: null,
+      color: null,
+    });
+    insertTrip(db, {
+      person_id: pid,
+      car_id: cid,
+      date: "2026-04-01",
+      start_odometer: 100,
+      end_odometer: 150,
+      location: "loc-trip",
+    });
+    insertFuelFillup(db, {
+      person_id: pid,
+      car_id: cid,
+      date: "2026-04-05",
+      amount: 50,
+      liters: 30,
+      odometer: null,
+      receipt: null,
+      location: "loc-fuel",
+    });
     // Fuel has null odometer → trip still wins on odometer
-    expect(getLastCarState(db, cid)).toEqual({ odometer: 150, location: "loc-trip", source: "trip" });
+    expect(getLastCarState(db, cid)).toEqual({
+      odometer: 150,
+      location: "loc-trip",
+      source: "trip",
+    });
   });
 
   it("prefers trip over fuel when both share the same date", () => {
     const db = makeDb();
     const pid = insertPerson(db, { name: "P", discount: 0, discount_long: 0, active: 1 });
-    const cid = insertCar(db, { short: "A", name: "A", price_per_km: 0.25, brand: null, color: null });
-    insertFuelFillup(db, { person_id: pid, car_id: cid, date: "2026-04-10", amount: 50, liters: 30, odometer: 175, receipt: null, location: "station" });
-    insertTrip(db, { person_id: pid, car_id: cid, date: "2026-04-10", start_odometer: 175, end_odometer: 225, location: "parked" });
+    const cid = insertCar(db, {
+      short: "A",
+      name: "A",
+      price_per_km: 0.25,
+      brand: null,
+      color: null,
+    });
+    insertFuelFillup(db, {
+      person_id: pid,
+      car_id: cid,
+      date: "2026-04-10",
+      amount: 50,
+      liters: 30,
+      odometer: 175,
+      receipt: null,
+      location: "station",
+    });
+    insertTrip(db, {
+      person_id: pid,
+      car_id: cid,
+      date: "2026-04-10",
+      start_odometer: 175,
+      end_odometer: 225,
+      location: "parked",
+    });
     expect(getLastCarState(db, cid)).toEqual({ odometer: 225, location: "parked", source: "trip" });
   });
 });
@@ -348,6 +505,7 @@ git commit -m "feat: car last-state query, API route, and hook"
 ### Task 3: Trips hook & location picker
 
 **Files:**
+
 - Create: `hooks/use-trips.ts`
 - Create: `components/location-picker.tsx`
 
@@ -388,7 +546,7 @@ export function LocationPicker({ value, onChange }: Props) {
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstance = useRef<any>(null);
   const markerRef = useRef<any>(null);
-  const [status, setStatus] = useState<"idle"|"loading"|"error">("idle");
+  const [status, setStatus] = useState<"idle" | "loading" | "error">("idle");
 
   useEffect(() => {
     if (!mapRef.current || mapInstance.current) return;
@@ -465,8 +623,14 @@ export function LocationPicker({ value, onChange }: Props) {
           placeholder={t("form.location_placeholder")}
           className="flex-1 border rounded-md px-3 py-2 text-sm bg-gray-50"
         />
-        <button type="button" onClick={captureGPS} className="p-2 border rounded-md hover:bg-gray-50">
-          <MapPin className={`w-4 h-4 ${status === "loading" ? "animate-pulse text-blue-500" : "text-gray-600"}`} />
+        <button
+          type="button"
+          onClick={captureGPS}
+          className="p-2 border rounded-md hover:bg-gray-50"
+        >
+          <MapPin
+            className={`w-4 h-4 ${status === "loading" ? "animate-pulse text-blue-500" : "text-gray-600"}`}
+          />
         </button>
       </div>
       {status === "error" && <p className="text-xs text-red-500">{t("error.gps_unavailable")}</p>}
@@ -488,6 +652,7 @@ git commit -m "feat: trips hook and GPS location picker"
 ### Task 4: Trips list page & form
 
 **Files:**
+
 - Create: `app/trips/page.tsx`
 - Create: `app/trips/trip-form.tsx`
 
@@ -509,17 +674,19 @@ import { useLastCarState } from "@/hooks/use-car-state";
 import type { Trip } from "@/types";
 import { t } from "@/lib/i18n";
 
-const schema = z.object({
-  person_id: z.number({ required_error: t("validation.person_required") }),
-  car_id: z.number({ required_error: t("validation.car_required") }),
-  date: z.string().min(1),
-  start_odometer: z.coerce.number().int().min(0),
-  end_odometer: z.coerce.number().int().min(0),
-  location: z.string().nullable().optional(),
-}).refine((d) => d.end_odometer >= d.start_odometer, {
-  path: ["end_odometer"],
-  message: t("validation.end_gte_start"),
-});
+const schema = z
+  .object({
+    person_id: z.number({ required_error: t("validation.person_required") }),
+    car_id: z.number({ required_error: t("validation.car_required") }),
+    date: z.string().min(1),
+    start_odometer: z.coerce.number().int().min(0),
+    end_odometer: z.coerce.number().int().min(0),
+    location: z.string().nullable().optional(),
+  })
+  .refine((d) => d.end_odometer >= d.start_odometer, {
+    path: ["end_odometer"],
+    message: t("validation.end_gte_start"),
+  });
 type FormData = z.infer<typeof schema>;
 
 interface Props {
@@ -534,20 +701,36 @@ export function TripForm({ defaultValues, onSubmit, onCancel }: Props) {
   // "Add" mode when no row id was passed in. In add mode we prefill fields
   // from the car's last known state; in edit mode we leave the existing row alone.
   const isAddMode = !defaultValues?.id;
-  const { register, handleSubmit, control, watch, setValue, getValues, formState: { errors } } = useForm<FormData>({
+  const {
+    register,
+    handleSubmit,
+    control,
+    watch,
+    setValue,
+    getValues,
+    formState: { errors },
+  } = useForm<FormData>({
     resolver: zodResolver(schema),
     defaultValues: {
       date: new Date().toISOString().slice(0, 10),
-      start_odometer: 0, end_odometer: 0, location: null,
+      start_odometer: 0,
+      end_odometer: 0,
+      location: null,
       ...defaultValues,
     },
   });
 
-  const [start, end, personId, carId] = watch(["start_odometer", "end_odometer", "person_id", "car_id"]);
+  const [start, end, personId, carId] = watch([
+    "start_odometer",
+    "end_odometer",
+    "person_id",
+    "car_id",
+  ]);
   const km = Math.max(0, (end ?? 0) - (start ?? 0));
   const person = people.find((p) => p.id === personId);
   const car = cars.find((c) => c.id === carId);
-  const amount = person && car ? calcTripAmount(km, car.price_per_km, person.discount, person.discount_long) : 0;
+  const amount =
+    person && car ? calcTripAmount(km, car.price_per_km, person.discount, person.discount_long) : 0;
 
   // Last known state for the selected car — null until a car is picked and
   // the request resolves. The hook is disabled when carId is undefined.
@@ -580,21 +763,35 @@ export function TripForm({ defaultValues, onSubmit, onCancel }: Props) {
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 p-4">
       <div>
         <label className="block text-sm font-medium mb-2">{t("form.car")}</label>
-        <Controller name="car_id" control={control}
-          render={({ field }) => <CarToggle cars={cars} value={field.value} onChange={field.onChange} />}
+        <Controller
+          name="car_id"
+          control={control}
+          render={({ field }) => (
+            <CarToggle cars={cars} value={field.value} onChange={field.onChange} />
+          )}
         />
       </div>
       <div>
         <label className="block text-sm font-medium mb-1">{t("form.name")}</label>
-        <Controller name="person_id" control={control}
+        <Controller
+          name="person_id"
+          control={control}
           render={({ field }) => (
-            <PersonSelect people={people.filter((p) => p.active)} value={field.value} onChange={field.onChange} />
+            <PersonSelect
+              people={people.filter((p) => p.active)}
+              value={field.value}
+              onChange={field.onChange}
+            />
           )}
         />
       </div>
       <div>
         <label className="block text-sm font-medium mb-1">{t("form.date")}</label>
-        <input {...register("date")} type="date" className="w-full border rounded-md px-3 py-2 text-sm" />
+        <input
+          {...register("date")}
+          type="date"
+          className="w-full border rounded-md px-3 py-2 text-sm"
+        />
       </div>
       <div className="grid grid-cols-2 gap-3">
         <div>
@@ -612,29 +809,51 @@ export function TripForm({ defaultValues, onSubmit, onCancel }: Props) {
         </div>
         <div>
           <label className="block text-sm font-medium mb-1">{t("form.end_odometer")}</label>
-          <input {...register("end_odometer")} type="number" className="w-full border rounded-md px-3 py-2 text-sm" />
-          {errors.end_odometer && <p className="text-red-500 text-xs mt-1">{errors.end_odometer.message}</p>}
+          <input
+            {...register("end_odometer")}
+            type="number"
+            className="w-full border rounded-md px-3 py-2 text-sm"
+          />
+          {errors.end_odometer && (
+            <p className="text-red-500 text-xs mt-1">{errors.end_odometer.message}</p>
+          )}
         </div>
       </div>
       <div className="grid grid-cols-2 gap-3">
         <div>
           <label className="block text-sm font-medium mb-1">{t("form.km")}</label>
-          <input readOnly value={km} className="w-full border rounded-md px-3 py-2 text-sm bg-gray-50" />
+          <input
+            readOnly
+            value={km}
+            className="w-full border rounded-md px-3 py-2 text-sm bg-gray-50"
+          />
         </div>
         <div>
           <label className="block text-sm font-medium mb-1">{t("form.amount")}</label>
-          <input readOnly value={amount.toFixed(2)} className="w-full border rounded-md px-3 py-2 text-sm bg-gray-50" />
+          <input
+            readOnly
+            value={amount.toFixed(2)}
+            className="w-full border rounded-md px-3 py-2 text-sm bg-gray-50"
+          />
         </div>
       </div>
       <div>
         <label className="block text-sm font-medium mb-1">{t("form.location")}</label>
-        <Controller name="location" control={control}
-          render={({ field }) => <LocationPicker value={field.value ?? null} onChange={field.onChange} />}
+        <Controller
+          name="location"
+          control={control}
+          render={({ field }) => (
+            <LocationPicker value={field.value ?? null} onChange={field.onChange} />
+          )}
         />
       </div>
       <div className="flex gap-3 pt-2">
-        <button type="button" onClick={onCancel} className="flex-1 border rounded-md py-2 text-sm">{t("action.cancel")}</button>
-        <button type="submit" className="flex-1 bg-blue-600 text-white rounded-md py-2 text-sm">{t("action.save")}</button>
+        <button type="button" onClick={onCancel} className="flex-1 border rounded-md py-2 text-sm">
+          {t("action.cancel")}
+        </button>
+        <button type="submit" className="flex-1 bg-blue-600 text-white rounded-md py-2 text-sm">
+          {t("action.save")}
+        </button>
       </div>
     </form>
   );
@@ -665,7 +884,13 @@ export default function TripsPage() {
   const [adding, setAdding] = useState(false);
   const [editing, setEditing] = useState<Trip | null>(null);
 
-  if (isLoading) return <><PageHeader title={t("page.trips")} /><p className="p-4 text-gray-500">{t("state.loading")}</p></>;
+  if (isLoading)
+    return (
+      <>
+        <PageHeader title={t("page.trips")} />
+        <p className="p-4 text-gray-500">{t("state.loading")}</p>
+      </>
+    );
 
   return (
     <>
@@ -673,20 +898,30 @@ export default function TripsPage() {
       <GroupedList
         items={trips}
         getKey={(t) => t.date.slice(0, 7)}
-        getGroupLabel={(key) => { const [y, m] = key.split("-"); return `${y}-${Number(m)}`; }}
+        getGroupLabel={(key) => {
+          const [y, m] = key.split("-");
+          return `${y}-${Number(m)}`;
+        }}
         getGroupTotal={(items) => items.reduce((s, t) => s + t.km, 0)}
         renderItem={(t) => (
-          <button key={t.id} onClick={() => setEditing(t)}
-            className="w-full flex items-center px-4 py-3 border-b hover:bg-gray-50 text-left gap-3">
+          <button
+            key={t.id}
+            onClick={() => setEditing(t)}
+            className="w-full flex items-center px-4 py-3 border-b hover:bg-gray-50 text-left gap-3"
+          >
             <div className="flex-1">
               <div className="flex items-center gap-2">
                 <span className="text-sm font-medium">{t.person_name}</span>
-                <span className="text-xs font-mono bg-gray-100 px-1.5 py-0.5 rounded">{t.car_short}</span>
+                <span className="text-xs font-mono bg-gray-100 px-1.5 py-0.5 rounded">
+                  {t.car_short}
+                </span>
                 <span className="text-xs text-gray-500 ml-auto">{t.date}</span>
               </div>
               <div className="flex items-center gap-3 mt-0.5">
                 <span className="text-sm text-gray-600">{t.km} km</span>
-                <span className="text-xs text-gray-400">{t.start_odometer} → {t.end_odometer}</span>
+                <span className="text-xs text-gray-400">
+                  {t.start_odometer} → {t.end_odometer}
+                </span>
                 <span className="text-sm font-medium ml-auto">€ {t.amount.toFixed(2)}</span>
               </div>
             </div>
@@ -700,12 +935,19 @@ export default function TripsPage() {
         <Dialog.Portal>
           <Dialog.Overlay className="fixed inset-0 bg-black/40 z-40" />
           <Dialog.Content className="fixed inset-x-0 bottom-0 bg-white rounded-t-xl z-50 max-h-[95vh] overflow-y-auto">
-            <Dialog.Title className="px-4 pt-4 text-base font-semibold">{t("page.trip_add")}</Dialog.Title>
+            <Dialog.Title className="px-4 pt-4 text-base font-semibold">
+              {t("page.trip_add")}
+            </Dialog.Title>
             <TripForm
-              onSubmit={(data) => createTrip.mutate(data as any, {
-                onSuccess: () => { setAdding(false); toast.success(t("toast.trip_saved")); },
-                onError: (e) => toast.error(e.message),
-              })}
+              onSubmit={(data) =>
+                createTrip.mutate(data as any, {
+                  onSuccess: () => {
+                    setAdding(false);
+                    toast.success(t("toast.trip_saved"));
+                  },
+                  onError: (e) => toast.error(e.message),
+                })
+              }
               onCancel={() => setAdding(false)}
             />
           </Dialog.Content>
@@ -716,22 +958,37 @@ export default function TripsPage() {
         <Dialog.Portal>
           <Dialog.Overlay className="fixed inset-0 bg-black/40 z-40" />
           <Dialog.Content className="fixed inset-x-0 bottom-0 bg-white rounded-t-xl z-50 max-h-[95vh] overflow-y-auto">
-            <Dialog.Title className="px-4 pt-4 text-base font-semibold">{t("page.trip_edit")}</Dialog.Title>
+            <Dialog.Title className="px-4 pt-4 text-base font-semibold">
+              {t("page.trip_edit")}
+            </Dialog.Title>
             {editing && (
               <>
                 <TripForm
                   defaultValues={editing}
-                  onSubmit={(data) => updateTrip.mutate({ id: editing.id, ...data } as any, {
-                    onSuccess: () => { setEditing(null); toast.success(t("toast.saved")); },
-                    onError: (e) => toast.error(e.message),
-                  })}
+                  onSubmit={(data) =>
+                    updateTrip.mutate({ id: editing.id, ...data } as any, {
+                      onSuccess: () => {
+                        setEditing(null);
+                        toast.success(t("toast.saved"));
+                      },
+                      onError: (e) => toast.error(e.message),
+                    })
+                  }
                   onCancel={() => setEditing(null)}
                 />
                 <div className="px-4 pb-4">
-                  <button onClick={() => deleteTrip.mutate(editing.id, {
-                    onSuccess: () => { setEditing(null); toast.success(t("toast.trip_deleted")); },
-                    onError: (e) => toast.error(e.message),
-                  })} className="w-full border border-red-300 text-red-600 rounded-md py-2 text-sm">
+                  <button
+                    onClick={() =>
+                      deleteTrip.mutate(editing.id, {
+                        onSuccess: () => {
+                          setEditing(null);
+                          toast.success(t("toast.trip_deleted"));
+                        },
+                        onError: (e) => toast.error(e.message),
+                      })
+                    }
+                    className="w-full border border-red-300 text-red-600 rounded-md py-2 text-sm"
+                  >
                     {t("action.delete")}
                   </button>
                 </div>
@@ -750,6 +1007,7 @@ export default function TripsPage() {
 - [ ] **Step 3: Verify in browser**
 
 Navigate to http://localhost:3000/trips. Checks:
+
 1. Open "Rit toevoegen". Pick a car that has prior trips/fill-ups — `Start` and `Locatie` auto-fill from the car's last known state; the map pin moves to that location.
 2. Clear the odometers, type a value into `Start`, tab out — `Eind` fills to the same number because it was empty.
 3. Type a larger value into `Eind` — `KM` and `Bedrag` recompute live.

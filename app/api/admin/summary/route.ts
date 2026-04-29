@@ -1,8 +1,12 @@
 import { NextResponse } from "next/server";
 import { getDb } from "@/lib/db";
 import {
-  getCarPnL, getKmGaps, getZeroKmTrips,
-  getMonthlyCarKm, getPersonContributions, getHistoricalCarKm,
+  getCarPnL,
+  getKmGaps,
+  getZeroKmTrips,
+  getMonthlyCarKm,
+  getPersonContributions,
+  getHistoricalCarKm,
   getPriceHistory,
 } from "@/lib/queries/admin";
 import { getDashboard } from "@/lib/queries/dashboard";

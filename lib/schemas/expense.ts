@@ -11,6 +11,10 @@ export const expenseSchema = z.object({
   car_id: z.number().int().positive(),
   date: z.string().min(10),
   amount: z.number().positive(),
-  description: z.string().nullable().optional().transform((v) => v ?? null),
+  description: z
+    .string()
+    .nullable()
+    .optional()
+    .transform((v) => v ?? null),
   category: expenseCategorySchema,
 });

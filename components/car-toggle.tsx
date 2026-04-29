@@ -30,18 +30,27 @@ export function CarToggle({ cars, value, onChange }: Props) {
               textAlign: "center",
             }}
           >
-            <div style={{
-              fontFamily: fontMono, fontSize: 13, fontWeight: 700,
-              letterSpacing: 3, textTransform: "uppercase",
-              color: selected ? paper.paper : paper.ink,
-            }}>
+            <div
+              style={{
+                fontFamily: fontMono,
+                fontSize: 13,
+                fontWeight: 700,
+                letterSpacing: 3,
+                textTransform: "uppercase",
+                color: selected ? paper.paper : paper.ink,
+              }}
+            >
               {car.short}
             </div>
-            <div style={{
-              fontFamily: fontSerif, fontSize: 11, fontWeight: 400,
-              color: selected ? paper.paperDark : paper.inkMute,
-              marginTop: 2,
-            }}>
+            <div
+              style={{
+                fontFamily: fontSerif,
+                fontSize: 11,
+                fontWeight: 400,
+                color: selected ? paper.paperDark : paper.inkMute,
+                marginTop: 2,
+              }}
+            >
               {car.name}
             </div>
           </button>

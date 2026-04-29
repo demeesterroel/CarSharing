@@ -4,7 +4,7 @@ import { useCallback } from "react";
 
 export function useQueryParam(
   key: string,
-  defaultValue: string = "",
+  defaultValue: string = ""
 ): [string, (value: string) => void] {
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -24,7 +24,7 @@ export function useQueryParam(
       const url = search ? `${pathname}?${search}` : pathname;
       router.replace(url, { scroll: false });
     },
-    [searchParams, router, pathname, key, defaultValue],
+    [searchParams, router, pathname, key, defaultValue]
   );
 
   return [value, setValue];

@@ -20,12 +20,12 @@ Make the AutoDelen app installable as a PWA on Android and iOS with a proper ico
 
 **Output files:**
 
-| File | Size | Purpose |
-|------|------|---------|
-| `public/icons/icon-192.png` | 192×192 | Standard PWA manifest |
-| `public/icons/icon-512.png` | 512×512 | Standard PWA manifest |
+| File                                 | Size    | Purpose                                                                |
+| ------------------------------------ | ------- | ---------------------------------------------------------------------- |
+| `public/icons/icon-192.png`          | 192×192 | Standard PWA manifest                                                  |
+| `public/icons/icon-512.png`          | 512×512 | Standard PWA manifest                                                  |
 | `public/icons/icon-maskable-512.png` | 512×512 | Android adaptive icons — icon at 75% scale on ink `#1a1a1a` background |
-| `public/icons/apple-touch-icon.png` | 180×180 | iOS home screen |
+| `public/icons/apple-touch-icon.png`  | 180×180 | iOS home screen                                                        |
 
 ---
 
@@ -46,12 +46,18 @@ File: `public/manifest.json`
   "icons": [
     { "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
     { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png" },
-    { "src": "/icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+    {
+      "src": "/icons/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
   ]
 }
 ```
 
 Changes from current:
+
 - `theme_color`: `#1976d2` → `#1a1a1a`
 - `background_color`: `#ffffff` → `#f5f0e6`
 - `name`: "Autodelen" → "AutoDelen — Coöperatieve Antwerpen"

@@ -16,18 +16,18 @@ The current implementation is Google AppSheet backed by Google Sheets. The goal 
 
 ## Stack
 
-| Layer | Technology |
-|---|---|
-| Frontend | Next.js 15 (App Router) + React 19 + TypeScript |
-| Styling | Tailwind CSS v4 + Radix UI + Lucide icons |
-| Forms | React Hook Form + Zod |
-| Data fetching | TanStack Query |
-| Database | SQLite via `better-sqlite3` (Next.js API routes) |
-| PWA | `next-pwa` (service worker, offline queue) |
-| Maps | Leaflet (open-source, no API key) |
-| Calendar | FullCalendar (day/week/month) |
-| Toasts | Sonner |
-| Deployment | Docker + Traefik (cloud-infra stacks) |
+| Layer         | Technology                                       |
+| ------------- | ------------------------------------------------ |
+| Frontend      | Next.js 15 (App Router) + React 19 + TypeScript  |
+| Styling       | Tailwind CSS v4 + Radix UI + Lucide icons        |
+| Forms         | React Hook Form + Zod                            |
+| Data fetching | TanStack Query                                   |
+| Database      | SQLite via `better-sqlite3` (Next.js API routes) |
+| PWA           | `next-pwa` (service worker, offline queue)       |
+| Maps          | Leaflet (open-source, no API key)                |
+| Calendar      | FullCalendar (day/week/month)                    |
+| Toasts        | Sonner                                           |
+| Deployment    | Docker + Traefik (cloud-infra stacks)            |
 
 SQLite is chosen deliberately: this is a low-volume, low-user, single-server app. No connection pooling or separate DB container needed.
 
@@ -36,6 +36,7 @@ SQLite is chosen deliberately: this is a low-volume, low-user, single-server app
 ## Database Schema
 
 ### people
+
 ```sql
 CREATE TABLE people (
   id      INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -47,6 +48,7 @@ CREATE TABLE people (
 ```
 
 ### cars
+
 ```sql
 CREATE TABLE cars (
   id    INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -59,6 +61,7 @@ CREATE TABLE cars (
 ```
 
 ### ritten (mileage trips)
+
 ```sql
 CREATE TABLE ritten (
   id        INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -74,14 +77,17 @@ CREATE TABLE ritten (
 ```
 
 **Bedrag formula:**
+
 ```
 bedrag = car.prijs
        × ( min(km, 500) × (1 − person.korting)
          + max(km − 500, 0) × (1 − person.korting_long) )
 ```
+
 First 500 km charged at short-trip rate, remainder at long-trip rate. Both `km` and `bedrag` are computed on write and stored.
 
 ### tankbeurten (fuel fill-ups)
+
 ```sql
 CREATE TABLE tankbeurten (
   id             INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -97,6 +103,7 @@ CREATE TABLE tankbeurten (
 ```
 
 ### kosten (extra costs)
+
 ```sql
 CREATE TABLE kosten (
   id          INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -109,6 +116,7 @@ CREATE TABLE kosten (
 ```
 
 ### reservations (calendar bookings)
+
 ```sql
 CREATE TABLE reservations (
   id         INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -120,6 +128,7 @@ CREATE TABLE reservations (
 ```
 
 ### betaald (settlement payments)
+
 ```sql
 CREATE TABLE betaald (
   id         INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -153,16 +162,16 @@ Dashboard also shows per-person stats: `rit_aantal`, `rit_km`, `tank_aantal`, `t
 
 ## App Pages
 
-| Route | Page | Description |
-|---|---|---|
-| `/` | Dashboard | Balance per person per year, yearly selector |
-| `/ritten` | Kilometers | List grouped by year-month with totals, add/edit/delete |
-| `/tanken` | Tanken | List grouped by year-month, add/edit with receipt photo |
-| `/calendar` | Calendar | Day/Week/Month reservation view, add/edit reservations |
-| `/people` | People | Member list, korting rates, trip/fuel counts |
-| `/cars` | Cars | Car list, prijs/km, merk, kleur |
-| `/kosten` | Extra Kosten | Maintenance/tax costs grouped by year-month |
-| `/betaald` | Betalingen | Settlement payments list, add payment |
+| Route       | Page         | Description                                             |
+| ----------- | ------------ | ------------------------------------------------------- |
+| `/`         | Dashboard    | Balance per person per year, yearly selector            |
+| `/ritten`   | Kilometers   | List grouped by year-month with totals, add/edit/delete |
+| `/tanken`   | Tanken       | List grouped by year-month, add/edit with receipt photo |
+| `/calendar` | Calendar     | Day/Week/Month reservation view, add/edit reservations  |
+| `/people`   | People       | Member list, korting rates, trip/fuel counts            |
+| `/cars`     | Cars         | Car list, prijs/km, merk, kleur                         |
+| `/kosten`   | Extra Kosten | Maintenance/tax costs grouped by year-month             |
+| `/betaald`  | Betalingen   | Settlement payments list, add payment                   |
 
 Navigation: slide-out drawer (hamburger) matching AppSheet's menu style.
 

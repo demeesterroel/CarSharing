@@ -6,10 +6,7 @@ export function calcTripAmount(
 ): number {
   const shortKm = Math.min(km, 500);
   const longKm = Math.max(km - 500, 0);
-  return (
-    pricePerKm * shortKm * (1 - discount) +
-    pricePerKm * longKm * (1 - discountLong)
-  );
+  return pricePerKm * shortKm * (1 - discount) + pricePerKm * longKm * (1 - discountLong);
 }
 
 export function calcPricePerLiter(amount: number, liters: number): number {

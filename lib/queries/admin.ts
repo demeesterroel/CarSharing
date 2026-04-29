@@ -2,7 +2,11 @@ import type Database from "better-sqlite3";
 import type { FixedCostItem, FixedCostCategory } from "@/types";
 
 const VALID_CATEGORIES: FixedCostCategory[] = [
-  "belastingen", "verzekeringen", "onderhoud", "keuring", "diversen",
+  "belastingen",
+  "verzekeringen",
+  "onderhoud",
+  "keuring",
+  "diversen",
 ];
 
 function parseFixedCosts(json: string): FixedCostItem[] {
@@ -56,10 +60,10 @@ export interface CarPnL {
   expense_amount: number;
   fixed_total: number;
   // derived
-  variable_total: number;   // fuel + expense
-  total_cost: number;       // fuel + expense + fixed
-  net_to_owner: number;     // trip_revenue - total_cost
-  cost_per_km: number;      // total_cost / trip_km (or 0)
+  variable_total: number; // fuel + expense
+  total_cost: number; // fuel + expense + fixed
+  net_to_owner: number; // trip_revenue - total_cost
+  cost_per_km: number; // total_cost / trip_km (or 0)
   prev_year_trip_km: number;
 }
 
@@ -101,8 +105,13 @@ export function getCarPnL(db: Database.Database, year: number): CarPnL[] {
   const prevYearStr = String(year - 1);
 
   const cars = db.prepare("SELECT * FROM cars ORDER BY short").all() as {
-    id: number; short: string; name: string; price_per_km: number;
-    owner_name: string | null; long_threshold: number; fixed_costs_json: string | null;
+    id: number;
+    short: string;
+    name: string;
+    price_per_km: number;
+    owner_name: string | null;
+    long_threshold: number;
+    fixed_costs_json: string | null;
     expected_km: number | null;
   }[];
 
@@ -112,24 +121,40 @@ export function getCarPnL(db: Database.Database, year: number): CarPnL[] {
       : [];
     const fixed_total = fixed_costs.reduce((s, fc) => s + fc.amount, 0);
 
-    const trips = db.prepare(`
+    const trips = db
+      .prepare(
+        `
       SELECT COUNT(*) AS cnt, COALESCE(SUM(km),0) AS km, COALESCE(SUM(amount),0) AS rev
       FROM trips WHERE car_id=? AND strftime('%Y',date)=?
-    `).get(car.id, yearStr) as { cnt: number; km: number; rev: number };
+    `
+      )
+      .get(car.id, yearStr) as { cnt: number; km: number; rev: number };
 
-    const fuel = db.prepare(`
+    const fuel = db
+      .prepare(
+        `
       SELECT COUNT(*) AS cnt, COALESCE(SUM(amount),0) AS amt
       FROM fuel_fillups WHERE car_id=? AND strftime('%Y',date)=?
-    `).get(car.id, yearStr) as { cnt: number; amt: number };
+    `
+      )
+      .get(car.id, yearStr) as { cnt: number; amt: number };
 
-    const exp = db.prepare(`
+    const exp = db
+      .prepare(
+        `
       SELECT COUNT(*) AS cnt, COALESCE(SUM(amount),0) AS amt
       FROM expenses WHERE car_id=? AND strftime('%Y',date)=?
-    `).get(car.id, yearStr) as { cnt: number; amt: number };
+    `
+      )
+      .get(car.id, yearStr) as { cnt: number; amt: number };
 
-    const prevTrips = db.prepare(`
+    const prevTrips = db
+      .prepare(
+        `
       SELECT COALESCE(SUM(km),0) AS km FROM trips WHERE car_id=? AND strftime('%Y',date)=?
-    `).get(car.id, prevYearStr) as { km: number };
+    `
+      )
+      .get(car.id, prevYearStr) as { km: number };
 
     const variable_total = fuel.amt + exp.amt;
     const total_cost = variable_total + fixed_total;
@@ -163,34 +188,46 @@ export function getCarPnL(db: Database.Database, year: number): CarPnL[] {
 }
 
 export function getMonthlyCarKm(db: Database.Database, year: number): MonthlyCarKm[] {
-  return db.prepare(`
+  return db
+    .prepare(
+      `
     SELECT car_id, strftime('%Y-%m', date) AS year_month, SUM(km) AS km
     FROM trips
     WHERE strftime('%Y', date) = ?
     GROUP BY car_id, year_month
     ORDER BY car_id, year_month
-  `).all(String(year)) as MonthlyCarKm[];
+  `
+    )
+    .all(String(year)) as MonthlyCarKm[];
 }
 
 export function getPersonContributions(db: Database.Database, year: number): PersonContribution[] {
-  return db.prepare(`
+  return db
+    .prepare(
+      `
     SELECT t.car_id, t.person_id, p.name AS person_name, SUM(t.km) AS km
     FROM trips t
     JOIN people p ON p.id = t.person_id
     WHERE strftime('%Y', t.date) = ?
     GROUP BY t.car_id, t.person_id
     ORDER BY t.car_id, km DESC
-  `).all(String(year)) as PersonContribution[];
+  `
+    )
+    .all(String(year)) as PersonContribution[];
 }
 
 export function getHistoricalCarKm(db: Database.Database, currentYear: number): CarYearKm[] {
-  return db.prepare(`
+  return db
+    .prepare(
+      `
     SELECT car_id, CAST(strftime('%Y', date) AS INTEGER) AS year, SUM(km) AS km
     FROM trips
     WHERE CAST(strftime('%Y', date) AS INTEGER) BETWEEN ? AND ?
     GROUP BY car_id, year
     ORDER BY car_id, year
-  `).all(currentYear - 6, currentYear - 1) as CarYearKm[];
+  `
+    )
+    .all(currentYear - 6, currentYear - 1) as CarYearKm[];
 }
 
 export interface CarPriceHistory {
@@ -201,11 +238,15 @@ export interface CarPriceHistory {
 }
 
 export function getPriceHistory(db: Database.Database): CarPriceHistory[] {
-  return db.prepare(`
+  return db
+    .prepare(
+      `
     SELECT id, car_id, price_per_km, effective_from
     FROM car_price_history
     ORDER BY car_id, effective_from DESC
-  `).all() as CarPriceHistory[];
+  `
+    )
+    .all() as CarPriceHistory[];
 }
 
 export interface ZeroKmTrip {
@@ -216,14 +257,18 @@ export interface ZeroKmTrip {
 }
 
 export function getZeroKmTrips(db: Database.Database): ZeroKmTrip[] {
-  return db.prepare(`
+  return db
+    .prepare(
+      `
     SELECT t.id, t.date, c.short AS car_short, p.name AS person_name
     FROM trips t
     JOIN cars c ON c.id = t.car_id
     JOIN people p ON p.id = t.person_id
     WHERE t.km = 0
     ORDER BY t.date DESC
-  `).all() as ZeroKmTrip[];
+  `
+    )
+    .all() as ZeroKmTrip[];
 }
 
 export function getKmGaps(db: Database.Database): KmGap[] {
@@ -231,15 +276,25 @@ export function getKmGaps(db: Database.Database): KmGap[] {
   const cars = db.prepare("SELECT id, short FROM cars").all() as { id: number; short: string }[];
 
   for (const car of cars) {
-    const trips = db.prepare(`
+    const trips = db
+      .prepare(
+        `
       SELECT t.id, t.date, t.start_odometer, t.end_odometer, p.name AS person_name
       FROM trips t JOIN people p ON p.id = t.person_id
       WHERE t.car_id=? ORDER BY t.date ASC, t.end_odometer ASC
-    `).all(car.id) as { id: number; date: string; start_odometer: number; end_odometer: number; person_name: string }[];
+    `
+      )
+      .all(car.id) as {
+      id: number;
+      date: string;
+      start_odometer: number;
+      end_odometer: number;
+      person_name: string;
+    }[];
 
     for (let i = 1; i < trips.length; i++) {
       const prev = trips[i - 1];
-      const cur  = trips[i];
+      const cur = trips[i];
       if (cur.start_odometer > prev.end_odometer + 1) {
         gaps.push({
           car_short: car.short,

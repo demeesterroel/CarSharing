@@ -9,10 +9,7 @@ const MIME_BY_EXT: Record<string, string> = {
   webp: "image/webp",
 };
 
-export async function GET(
-  _: Request,
-  ctx: { params: Promise<{ path: string[] }> }
-) {
+export async function GET(_: Request, ctx: { params: Promise<{ path: string[] }> }) {
   const { path: parts } = await ctx.params;
   const uploadsRoot = path.resolve(process.cwd(), "uploads");
   const filePath = path.resolve(uploadsRoot, ...parts);

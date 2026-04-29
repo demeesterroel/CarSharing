@@ -328,6 +328,7 @@ Label-value pairs in `.receipt-row` format: label in uppercase mono `10px` with 
 ### Animations
 
 Three keyframe animations carry the physical metaphor:
+
 - **popIn** (200ms ease-out): elements appear from below (FAB chit menu items, tooltips).
 - **stampDrop** (350ms, custom cubic-bezier): stamps scale in with a bounce, simulating impact.
 - **tearOff** (400ms ease-in): list items exit downward with opacity fade, simulating a receipt being torn away.

@@ -14,6 +14,7 @@
 ### Task 1: Expenses query helpers
 
 **Files:**
+
 - Create: `lib/queries/expenses.ts`
 
 - [ ] **Step 1: Create lib/queries/expenses.ts**
@@ -23,42 +24,52 @@ import type Database from "better-sqlite3";
 import type { Expense, ExpenseInput } from "@/types";
 
 export function getExpenses(db: Database.Database): Expense[] {
-  return db.prepare(`
+  return db
+    .prepare(
+      `
     SELECT e.*, p.name AS person_name, c.short AS car_short
     FROM expenses e
     JOIN people p ON p.id = e.person_id
     JOIN cars c ON c.id = e.car_id
     ORDER BY e.date DESC, e.id DESC
-  `).all() as Expense[];
+  `
+    )
+    .all() as Expense[];
 }
 
 export function getExpenseById(db: Database.Database, id: number): Expense | null {
-  return (db.prepare(`
+  return (
+    (db
+      .prepare(
+        `
     SELECT e.*, p.name AS person_name, c.short AS car_short
     FROM expenses e
     JOIN people p ON p.id = e.person_id
     JOIN cars c ON c.id = e.car_id
     WHERE e.id = ?
-  `).get(id) as Expense) ?? null;
+  `
+      )
+      .get(id) as Expense) ?? null
+  );
 }
 
 export function insertExpense(db: Database.Database, input: ExpenseInput): number {
-  const result = db.prepare(`
+  const result = db
+    .prepare(
+      `
     INSERT INTO expenses (person_id,car_id,date,amount,description) VALUES (?,?,?,?,?)
-  `).run(
-    input.person_id, input.car_id, input.date, input.amount,
-    input.description ?? null
-  );
+  `
+    )
+    .run(input.person_id, input.car_id, input.date, input.amount, input.description ?? null);
   return result.lastInsertRowid as number;
 }
 
 export function updateExpense(db: Database.Database, id: number, input: ExpenseInput): void {
-  db.prepare(`
+  db.prepare(
+    `
     UPDATE expenses SET person_id=?,car_id=?,date=?,amount=?,description=? WHERE id=?
-  `).run(
-    input.person_id, input.car_id, input.date, input.amount,
-    input.description ?? null, id
-  );
+  `
+  ).run(input.person_id, input.car_id, input.date, input.amount, input.description ?? null, id);
 }
 
 export function deleteExpense(db: Database.Database, id: number): void {
@@ -78,6 +89,7 @@ git commit -m "feat: expense query helpers"
 ### Task 2: Expenses API routes
 
 **Files:**
+
 - Create: `app/api/expenses/route.ts`
 - Create: `app/api/expenses/[id]/route.ts`
 
@@ -114,11 +126,7 @@ export const POST = json(async (req) => {
 ```ts
 import { z } from "zod";
 import { getDb } from "@/lib/db";
-import {
-  getExpenseById,
-  updateExpense,
-  deleteExpense,
-} from "@/lib/queries/expenses";
+import { getExpenseById, updateExpense, deleteExpense } from "@/lib/queries/expenses";
 import { json, readBody, readId, notFound } from "@/lib/api";
 
 const ExpenseSchema = z.object({
@@ -162,6 +170,7 @@ git commit -m "feat: expenses API routes with zod validation"
 ### Task 3: Expenses hook and page
 
 **Files:**
+
 - Create: `hooks/use-expenses.ts`
 - Create: `app/expenses/expense-form.tsx`
 - Create: `app/expenses/page.tsx`
@@ -452,6 +461,7 @@ git commit -m "feat: expenses page with grouped list"
 ### Task 4: Payment query helpers
 
 **Files:**
+
 - Create: `lib/queries/payments.ts`
 
 - [ ] **Step 1: Create lib/queries/payments.ts**
@@ -462,33 +472,49 @@ import type { Payment, PaymentInput } from "@/types";
 import { calcPaymentYear } from "@/lib/formulas";
 
 export function getPayments(db: Database.Database): Payment[] {
-  return db.prepare(`
+  return db
+    .prepare(
+      `
     SELECT b.*, p.name AS person_name
     FROM payments b
     JOIN people p ON p.id = b.person_id
     ORDER BY b.date DESC, b.id DESC
-  `).all() as Payment[];
+  `
+    )
+    .all() as Payment[];
 }
 
 export function getPaymentById(db: Database.Database, id: number): Payment | null {
-  return (db.prepare(`
+  return (
+    (db
+      .prepare(
+        `
     SELECT b.*, p.name AS person_name FROM payments b
     JOIN people p ON p.id = b.person_id WHERE b.id=?
-  `).get(id) as Payment) ?? null;
+  `
+      )
+      .get(id) as Payment) ?? null
+  );
 }
 
 export function insertPayment(db: Database.Database, input: PaymentInput): number {
   const year = calcPaymentYear(input.date);
-  const result = db.prepare(
-    "INSERT INTO payments (person_id,date,amount,note,year) VALUES (?,?,?,?,?)"
-  ).run(input.person_id, input.date, input.amount, input.note ?? null, year);
+  const result = db
+    .prepare("INSERT INTO payments (person_id,date,amount,note,year) VALUES (?,?,?,?,?)")
+    .run(input.person_id, input.date, input.amount, input.note ?? null, year);
   return result.lastInsertRowid as number;
 }
 
 export function updatePayment(db: Database.Database, id: number, input: PaymentInput): void {
   const year = calcPaymentYear(input.date);
-  db.prepare("UPDATE payments SET person_id=?,date=?,amount=?,note=?,year=? WHERE id=?")
-    .run(input.person_id, input.date, input.amount, input.note ?? null, year, id);
+  db.prepare("UPDATE payments SET person_id=?,date=?,amount=?,note=?,year=? WHERE id=?").run(
+    input.person_id,
+    input.date,
+    input.amount,
+    input.note ?? null,
+    year,
+    id
+  );
 }
 
 export function deletePayment(db: Database.Database, id: number): void {
@@ -508,6 +534,7 @@ git commit -m "feat: payment query helpers"
 ### Task 5: Payments API routes
 
 **Files:**
+
 - Create: `app/api/payments/route.ts`
 - Create: `app/api/payments/[id]/route.ts`
 
@@ -543,11 +570,7 @@ export const POST = json(async (req) => {
 ```ts
 import { z } from "zod";
 import { getDb } from "@/lib/db";
-import {
-  getPaymentById,
-  updatePayment,
-  deletePayment,
-} from "@/lib/queries/payments";
+import { getPaymentById, updatePayment, deletePayment } from "@/lib/queries/payments";
 import { json, readBody, readId, notFound } from "@/lib/api";
 
 const PaymentSchema = z.object({
@@ -590,6 +613,7 @@ git commit -m "feat: payments API routes with zod validation"
 ### Task 6: Payments hook and page
 
 **Files:**
+
 - Create: `hooks/use-payments.ts`
 - Create: `app/payments/payment-form.tsx`
 - Create: `app/payments/page.tsx`

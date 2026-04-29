@@ -8,20 +8,20 @@ An authenticated admin can tap a "Cloak" button on any member's `PersonCard` in 
 
 ## 2. Affected Files
 
-| File | Change | Summary |
-|---|---|---|
-| `lib/session.ts` | Modify | Add `cloakedAs` field to `SessionData` |
-| `app/api/auth/cloak/route.ts` | **New** | POST — set `session.cloakedAs`; admin-only |
-| `app/api/auth/uncloak/route.ts` | **New** | POST — delete `session.cloakedAs` |
-| `app/api/me/route.ts` | Modify | Return cloaked person's identity + `isCloaked` flag when active |
-| `hooks/use-me.ts` | Modify | Add `isCloaked` and `cloakedAs` fields to `Me` type |
-| `middleware.ts` | Modify | Block `/admin/*` while `session.cloakedAs` is set |
-| `components/cloak-banner.tsx` | **New** | Client component: amber banner + exit button |
-| `app/layout.tsx` | Modify | Render `<CloakBanner />` inside the page container |
-| `components/bottom-tab-bar.tsx` | Modify | Replace Admin tab with Exit-cloak button when `isCloaked` |
-| `lib/i18n/messages/nl.ts` | Modify | Add translation keys: `cloak.*` |
-| `lib/i18n/messages/en.ts` | Modify | Add same keys in English |
-| `app/admin/page.tsx` | Modify | Add "Cloak" button to each active `PersonCard` |
+| File                            | Change  | Summary                                                         |
+| ------------------------------- | ------- | --------------------------------------------------------------- |
+| `lib/session.ts`                | Modify  | Add `cloakedAs` field to `SessionData`                          |
+| `app/api/auth/cloak/route.ts`   | **New** | POST — set `session.cloakedAs`; admin-only                      |
+| `app/api/auth/uncloak/route.ts` | **New** | POST — delete `session.cloakedAs`                               |
+| `app/api/me/route.ts`           | Modify  | Return cloaked person's identity + `isCloaked` flag when active |
+| `hooks/use-me.ts`               | Modify  | Add `isCloaked` and `cloakedAs` fields to `Me` type             |
+| `middleware.ts`                 | Modify  | Block `/admin/*` while `session.cloakedAs` is set               |
+| `components/cloak-banner.tsx`   | **New** | Client component: amber banner + exit button                    |
+| `app/layout.tsx`                | Modify  | Render `<CloakBanner />` inside the page container              |
+| `components/bottom-tab-bar.tsx` | Modify  | Replace Admin tab with Exit-cloak button when `isCloaked`       |
+| `lib/i18n/messages/nl.ts`       | Modify  | Add translation keys: `cloak.*`                                 |
+| `lib/i18n/messages/en.ts`       | Modify  | Add same keys in English                                        |
+| `app/admin/page.tsx`            | Modify  | Add "Cloak" button to each active `PersonCard`                  |
 
 ---
 
@@ -32,6 +32,7 @@ An authenticated admin can tap a "Cloak" button on any member's `PersonCard` in 
 **File:** `/home/roeland/Projects/CarSharing/lib/session.ts`
 
 **Old (lines 3–8):**
+
 ```ts
 export interface SessionData {
   authenticated: boolean;
@@ -42,6 +43,7 @@ export interface SessionData {
 ```
 
 **New:**
+
 ```ts
 export interface SessionData {
   authenticated: boolean;
@@ -147,6 +149,7 @@ export async function POST(req: Request) {
 **File:** `/home/roeland/Projects/CarSharing/app/api/me/route.ts`
 
 **Old (lines 7–25):**
+
 ```ts
 export async function GET(req: Request) {
   const res = NextResponse.next();
@@ -170,6 +173,7 @@ export async function GET(req: Request) {
 ```
 
 **New:**
+
 ```ts
 export async function GET(req: Request) {
   const res = NextResponse.next();
@@ -219,6 +223,7 @@ export async function GET(req: Request) {
 **File:** `/home/roeland/Projects/CarSharing/hooks/use-me.ts`
 
 **Old (lines 3–8):**
+
 ```ts
 export interface Me {
   personId: number | null;
@@ -229,6 +234,7 @@ export interface Me {
 ```
 
 **New:**
+
 ```ts
 export interface Me {
   personId: number | null;
@@ -252,32 +258,34 @@ export interface Me {
 Add the cloaked-redirect logic after the existing authenticated check. Insert after line 44 (the closing `}` of the `ADMIN_ONLY_PAGES` check):
 
 **Old (lines 40–47):**
-```ts
-  // Admin-only pages — redirect non-admins to dashboard
-  if (ADMIN_ONLY_PAGES.some((p) => pathname === p || pathname.startsWith(p + "/"))) {
-    if (!session.isAdmin) {
-      return NextResponse.redirect(new URL("/", req.url));
-    }
-  }
 
-  return res;
+```ts
+// Admin-only pages — redirect non-admins to dashboard
+if (ADMIN_ONLY_PAGES.some((p) => pathname === p || pathname.startsWith(p + "/"))) {
+  if (!session.isAdmin) {
+    return NextResponse.redirect(new URL("/", req.url));
+  }
+}
+
+return res;
 ```
 
 **New:**
-```ts
-  // Admin-only pages — redirect non-admins to dashboard
-  if (ADMIN_ONLY_PAGES.some((p) => pathname === p || pathname.startsWith(p + "/"))) {
-    if (!session.isAdmin) {
-      return NextResponse.redirect(new URL("/", req.url));
-    }
-  }
 
-  // While cloaking, block /admin/* entirely (redirect to dashboard)
-  if (session.cloakedAs && (pathname === "/admin" || pathname.startsWith("/admin/"))) {
+```ts
+// Admin-only pages — redirect non-admins to dashboard
+if (ADMIN_ONLY_PAGES.some((p) => pathname === p || pathname.startsWith(p + "/"))) {
+  if (!session.isAdmin) {
     return NextResponse.redirect(new URL("/", req.url));
   }
+}
 
-  return res;
+// While cloaking, block /admin/* entirely (redirect to dashboard)
+if (session.cloakedAs && (pathname === "/admin" || pathname.startsWith("/admin/"))) {
+  return NextResponse.redirect(new URL("/", req.url));
+}
+
+return res;
 ```
 
 **Why:** Prevents an admin from reaching the Members tab while cloaked, which would let them cloak again from within a cloaked session or perform admin actions under the wrong identity. The Exit button uncloaks first, then navigates to `/admin`.
@@ -372,12 +380,14 @@ export function CloakBanner() {
 **File:** `/home/roeland/Projects/CarSharing/app/layout.tsx`
 
 **Old (lines 5–6, imports section):**
+
 ```tsx
 import { BottomTabBar } from "@/components/bottom-tab-bar";
 import { LocaleProvider } from "@/components/locale-provider";
 ```
 
 **New:**
+
 ```tsx
 import { BottomTabBar } from "@/components/bottom-tab-bar";
 import { CloakBanner } from "@/components/cloak-banner";
@@ -385,38 +395,40 @@ import { LocaleProvider } from "@/components/locale-provider";
 ```
 
 **Old (lines 55–66, the inner `div` content):**
+
 ```tsx
-          <div
-            style={{
-              minHeight: "100dvh",
-              maxWidth: 480,
-              margin: "0 auto",
-              background: "var(--paper-deep)",
-              position: "relative",
-              boxShadow: "0 0 0 1px rgba(0,0,0,0.05)",
-              paddingBottom: 72,
-            }}
-          >
-            {children}
-          </div>
+<div
+  style={{
+    minHeight: "100dvh",
+    maxWidth: 480,
+    margin: "0 auto",
+    background: "var(--paper-deep)",
+    position: "relative",
+    boxShadow: "0 0 0 1px rgba(0,0,0,0.05)",
+    paddingBottom: 72,
+  }}
+>
+  {children}
+</div>
 ```
 
 **New:**
+
 ```tsx
-          <div
-            style={{
-              minHeight: "100dvh",
-              maxWidth: 480,
-              margin: "0 auto",
-              background: "var(--paper-deep)",
-              position: "relative",
-              boxShadow: "0 0 0 1px rgba(0,0,0,0.05)",
-              paddingBottom: 72,
-            }}
-          >
-            <CloakBanner />
-            {children}
-          </div>
+<div
+  style={{
+    minHeight: "100dvh",
+    maxWidth: 480,
+    margin: "0 auto",
+    background: "var(--paper-deep)",
+    position: "relative",
+    boxShadow: "0 0 0 1px rgba(0,0,0,0.05)",
+    paddingBottom: 72,
+  }}
+>
+  <CloakBanner />
+  {children}
+</div>
 ```
 
 **Why:** Placing the banner at the very top of the content `div` (above `{children}`) means it appears on every page without modifying individual page components. It is inside the constrained `maxWidth: 480` container, so it aligns with the app's layout.
@@ -438,6 +450,7 @@ The key changes are:
 3. When `isCloaked`, replace the Admin tab link with a button that calls uncloak.
 
 **New full file:**
+
 ```tsx
 "use client";
 import Link from "next/link";
@@ -448,11 +461,11 @@ import { useT } from "@/components/locale-provider";
 import { useMe } from "@/hooks/use-me";
 
 const BASE_TABS = [
-  { href: "/",         labelKey: "nav.dashboard" as const,        icon: "◉" },
-  { href: "/trips",    labelKey: "nav.trips" as const,             icon: "↦" },
-  { href: "/fuel",     labelKey: "nav.fuel" as const,              icon: "⛽" },
-  { href: "/calendar", labelKey: "nav.tab.reservations" as const,  icon: "▦" },
-  { href: "/expenses", labelKey: "nav.tab.expenses" as const,      icon: "₪" },
+  { href: "/", labelKey: "nav.dashboard" as const, icon: "◉" },
+  { href: "/trips", labelKey: "nav.trips" as const, icon: "↦" },
+  { href: "/fuel", labelKey: "nav.fuel" as const, icon: "⛽" },
+  { href: "/calendar", labelKey: "nav.tab.reservations" as const, icon: "▦" },
+  { href: "/expenses", labelKey: "nav.tab.expenses" as const, icon: "₪" },
 ];
 
 const ADMIN_TAB = { href: "/admin", labelKey: "nav.admin" as const, icon: "✎" };
@@ -626,13 +639,20 @@ function Members() {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          name: p.name, discount: p.discount, discount_long: p.discount_long,
-          active: p.active, username: p.username, is_admin: p.is_admin,
+          name: p.name,
+          discount: p.discount,
+          discount_long: p.discount_long,
+          active: p.active,
+          username: p.username,
+          is_admin: p.is_admin,
         }),
       });
       if (!res.ok) throw new Error("Failed");
     },
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ["people"] }); toast.success(t("toast.saved")); },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["people"] });
+      toast.success(t("toast.saved"));
+    },
   });
 
   async function handleCloak(personId: number) {
@@ -661,11 +681,18 @@ function Members() {
       ))}
       {inactive.length > 0 && (
         <>
-          <div style={{
-            fontFamily: fontMono, fontSize: 9, color: paper.inkDim, letterSpacing: 2,
-            textTransform: "uppercase", padding: "16px 0 8px",
-            borderTop: `1.5px dashed ${paper.inkMute}`, marginTop: 8,
-          }}>
+          <div
+            style={{
+              fontFamily: fontMono,
+              fontSize: 9,
+              color: paper.inkDim,
+              letterSpacing: 2,
+              textTransform: "uppercase",
+              padding: "16px 0 8px",
+              borderTop: `1.5px dashed ${paper.inkMute}`,
+              marginTop: 8,
+            }}
+          >
             {t("admin.inactive_section")}
           </div>
           {inactive.map((person) => (
@@ -681,11 +708,13 @@ function Members() {
 **Change B — `PersonCard` function signature (line 1122):**
 
 Old:
+
 ```tsx
 function PersonCard({ person, onSave }: { person: Person; onSave: (p: Person) => void }) {
 ```
 
 New:
+
 ```tsx
 function PersonCard({
   person,
@@ -703,74 +732,123 @@ function PersonCard({
 The existing action row renders a Save button (conditionally when `dirty`) and a Deactivate button. Add the Cloak button after Deactivate:
 
 Old (lines 1263–1288):
+
 ```tsx
-      <div style={{ display: "flex", gap: 8 }}>
-        {dirty && (
-          <button
-            onClick={() => onSave({
-              ...person,
-              discount: disc, discount_long: discLong,
-              username: username || null, is_admin: isAdmin ? 1 : 0,
-            })}
-            style={{
-              flex: 1, padding: "10px", background: paper.ink, color: paper.paper,
-              border: "none", cursor: "pointer", fontFamily: fontMono, fontSize: 10,
-              fontWeight: 700, letterSpacing: 2, textTransform: "uppercase",
-            }}>
-            {t("action.save")}
-          </button>
-        )}
-        <button
-          onClick={() => onSave({ ...person, discount: disc, discount_long: discLong, active: 0 })}
-          style={{
-            padding: "10px 14px", background: "transparent", color: paper.inkMute,
-            border: `1px solid ${paper.paperDark}`, cursor: "pointer",
-            fontFamily: fontMono, fontSize: 9, letterSpacing: 1.5, textTransform: "uppercase",
-          }}>
-          {t("admin.deactivate")}
-        </button>
-      </div>
+<div style={{ display: "flex", gap: 8 }}>
+  {dirty && (
+    <button
+      onClick={() =>
+        onSave({
+          ...person,
+          discount: disc,
+          discount_long: discLong,
+          username: username || null,
+          is_admin: isAdmin ? 1 : 0,
+        })
+      }
+      style={{
+        flex: 1,
+        padding: "10px",
+        background: paper.ink,
+        color: paper.paper,
+        border: "none",
+        cursor: "pointer",
+        fontFamily: fontMono,
+        fontSize: 10,
+        fontWeight: 700,
+        letterSpacing: 2,
+        textTransform: "uppercase",
+      }}
+    >
+      {t("action.save")}
+    </button>
+  )}
+  <button
+    onClick={() => onSave({ ...person, discount: disc, discount_long: discLong, active: 0 })}
+    style={{
+      padding: "10px 14px",
+      background: "transparent",
+      color: paper.inkMute,
+      border: `1px solid ${paper.paperDark}`,
+      cursor: "pointer",
+      fontFamily: fontMono,
+      fontSize: 9,
+      letterSpacing: 1.5,
+      textTransform: "uppercase",
+    }}
+  >
+    {t("admin.deactivate")}
+  </button>
+</div>
 ```
 
 New:
+
 ```tsx
-      <div style={{ display: "flex", gap: 8 }}>
-        {dirty && (
-          <button
-            onClick={() => onSave({
-              ...person,
-              discount: disc, discount_long: discLong,
-              username: username || null, is_admin: isAdmin ? 1 : 0,
-            })}
-            style={{
-              flex: 1, padding: "10px", background: paper.ink, color: paper.paper,
-              border: "none", cursor: "pointer", fontFamily: fontMono, fontSize: 10,
-              fontWeight: 700, letterSpacing: 2, textTransform: "uppercase",
-            }}>
-            {t("action.save")}
-          </button>
-        )}
-        <button
-          onClick={() => onSave({ ...person, discount: disc, discount_long: discLong, active: 0 })}
-          style={{
-            padding: "10px 14px", background: "transparent", color: paper.inkMute,
-            border: `1px solid ${paper.paperDark}`, cursor: "pointer",
-            fontFamily: fontMono, fontSize: 9, letterSpacing: 1.5, textTransform: "uppercase",
-          }}>
-          {t("admin.deactivate")}
-        </button>
-        {onCloak && (
-          <button
-            onClick={() => onCloak(person.id)}
-            style={{
-              padding: "10px 14px", background: "transparent", color: paper.blue,
-              border: `1px solid ${paper.blue}`, cursor: "pointer",
-              fontFamily: fontMono, fontSize: 9, letterSpacing: 1.5, textTransform: "uppercase",
-            }}>
-            👁
-          </button>
-        )}
-      </div>
+<div style={{ display: "flex", gap: 8 }}>
+  {dirty && (
+    <button
+      onClick={() =>
+        onSave({
+          ...person,
+          discount: disc,
+          discount_long: discLong,
+          username: username || null,
+          is_admin: isAdmin ? 1 : 0,
+        })
+      }
+      style={{
+        flex: 1,
+        padding: "10px",
+        background: paper.ink,
+        color: paper.paper,
+        border: "none",
+        cursor: "pointer",
+        fontFamily: fontMono,
+        fontSize: 10,
+        fontWeight: 700,
+        letterSpacing: 2,
+        textTransform: "uppercase",
+      }}
+    >
+      {t("action.save")}
+    </button>
+  )}
+  <button
+    onClick={() => onSave({ ...person, discount: disc, discount_long: discLong, active: 0 })}
+    style={{
+      padding: "10px 14px",
+      background: "transparent",
+      color: paper.inkMute,
+      border: `1px solid ${paper.paperDark}`,
+      cursor: "pointer",
+      fontFamily: fontMono,
+      fontSize: 9,
+      letterSpacing: 1.5,
+      textTransform: "uppercase",
+    }}
+  >
+    {t("admin.deactivate")}
+  </button>
+  {onCloak && (
+    <button
+      onClick={() => onCloak(person.id)}
+      style={{
+        padding: "10px 14px",
+        background: "transparent",
+        color: paper.blue,
+        border: `1px solid ${paper.blue}`,
+        cursor: "pointer",
+        fontFamily: fontMono,
+        fontSize: 9,
+        letterSpacing: 1.5,
+        textTransform: "uppercase",
+      }}
+    >
+      👁
+    </button>
+  )}
+</div>
 ```
 
 **Why:** Inactive members cannot be logged in to, so `onCloak` is only passed for active members. The eye icon (`👁`) with a blue border is visually distinct from save/deactivate without cluttering the card. `onCloak` is `undefined` for inactive cards so the button doesn't appear there.
@@ -828,10 +906,12 @@ All four forms use the same pattern:
 ## 5. Testing Checklist
 
 ### Setup
+
 - [ ] Ensure at least two people in the DB: one admin (the tester) and one or more active members.
 - [ ] Log in as admin.
 
 ### Cloaking initiation
+
 - [ ] Navigate to `/admin` → Members tab.
 - [ ] Confirm the 👁 button appears on active member cards and is absent on inactive member cards.
 - [ ] Tap 👁 on a non-admin member. Verify redirect to `/`.
@@ -841,6 +921,7 @@ All four forms use the same pattern:
 - [ ] Attempt direct navigation to `/admin` in the browser — verify redirect to `/`.
 
 ### CRUD while cloaked (as non-admin member)
+
 - [ ] Open the Trip form: confirm the driver field shows the cloaked person's name and is locked (lock icon visible).
 - [ ] Save a trip: confirm the saved trip has `person_id` of the cloaked person (check DB or dashboard).
 - [ ] Open the Fuel form: same lock check, save a fuel fillup, verify person_id.
@@ -849,12 +930,14 @@ All four forms use the same pattern:
 - [ ] Confirm existing edit flows (tapping an existing record) still work and show correct data.
 
 ### Page refresh persistence
+
 - [ ] While cloaked, hard-refresh the browser (`Ctrl+Shift+R`).
 - [ ] Confirm the amber banner reappears immediately after refresh.
 - [ ] Confirm the Admin tab is still replaced by Exit.
 - [ ] Confirm `/admin` still redirects to `/`.
 
 ### Cloaking an admin
+
 - [ ] Return to normal session (use Exit button or direct uncloak).
 - [ ] Cloak another admin-role person.
 - [ ] Confirm the driver dropdown is shown (not locked) in forms (because `isAdmin` is `true`).
@@ -862,6 +945,7 @@ All four forms use the same pattern:
 - [ ] Confirm `/admin` still redirects to `/`.
 
 ### Exit cloaking (via banner)
+
 - [ ] While cloaked, tap "Exit cloaking" in the amber banner.
 - [ ] Confirm redirect to `/admin`.
 - [ ] Confirm banner disappears.
@@ -869,10 +953,12 @@ All four forms use the same pattern:
 - [ ] Confirm `/admin` is now accessible.
 
 ### Exit cloaking (via bottom nav Exit button)
+
 - [ ] Cloak again. Tap the amber Exit button in the bottom nav.
 - [ ] Same checks as above.
 
 ### Edge cases
+
 - [ ] Confirm logging out while cloaked destroys the entire session (the logout route calls `session.destroy()` which wipes everything including `cloakedAs`). After logout and re-login, no cloaking is active.
 - [ ] Confirm a non-admin cannot call `POST /api/auth/cloak` (should receive 403).
 - [ ] Confirm an unauthenticated request to `POST /api/auth/cloak` returns 403.

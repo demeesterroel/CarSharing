@@ -14,11 +14,11 @@ describe("prewarmCriticalEndpoints", () => {
   });
 
   it("does not throw when an individual fetch fails", async () => {
-    const fetcher = vi.fn().mockImplementation((url: string) =>
-      url.includes("trips")
-        ? Promise.reject(new Error("boom"))
-        : Promise.resolve([])
-    );
+    const fetcher = vi
+      .fn()
+      .mockImplementation((url: string) =>
+        url.includes("trips") ? Promise.reject(new Error("boom")) : Promise.resolve([])
+      );
     const qc = new QueryClient();
     await expect(prewarmCriticalEndpoints(qc, fetcher)).resolves.toBeDefined();
   });

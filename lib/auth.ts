@@ -18,10 +18,7 @@ export async function verifyCredentials(
   input: Credentials,
   stored: StoredCredentials
 ): Promise<boolean> {
-  const maxLen = Math.max(
-    Buffer.byteLength(input.username),
-    Buffer.byteLength(stored.username)
-  );
+  const maxLen = Math.max(Buffer.byteLength(input.username), Buffer.byteLength(stored.username));
   const a = Buffer.alloc(maxLen);
   const b = Buffer.alloc(maxLen);
   Buffer.from(input.username).copy(a);

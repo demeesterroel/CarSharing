@@ -12,7 +12,9 @@ export function getPeople(db: Database.Database): Person[] {
 }
 
 export function getActivePeople(db: Database.Database): Person[] {
-  return (db.prepare("SELECT * FROM people WHERE active=1 ORDER BY name").all() as Person[]).map(strip);
+  return (db.prepare("SELECT * FROM people WHERE active=1 ORDER BY name").all() as Person[]).map(
+    strip
+  );
 }
 
 export function getPersonById(db: Database.Database, id: number): Person | null {
@@ -40,11 +42,7 @@ export function insertPerson(db: Database.Database, data: Omit<Person, "id">): n
   return result.lastInsertRowid as number;
 }
 
-export function updatePerson(
-  db: Database.Database,
-  id: number,
-  data: Omit<Person, "id">
-): void {
+export function updatePerson(db: Database.Database, id: number, data: Omit<Person, "id">): void {
   db.prepare(
     "UPDATE people SET name=?,discount=?,discount_long=?,active=?,username=?,is_admin=? WHERE id=?"
   ).run(
@@ -58,11 +56,7 @@ export function updatePerson(
   );
 }
 
-export function setPasswordHash(
-  db: Database.Database,
-  id: number,
-  passwordHash: string
-): void {
+export function setPasswordHash(db: Database.Database, id: number, passwordHash: string): void {
   db.prepare("UPDATE people SET password_hash=? WHERE id=?").run(passwordHash, id);
 }
 
@@ -90,10 +84,10 @@ export function getInviteToken(
   token: string
 ): { person_id: number; expires_at: string } | null {
   return (
-    db
-      .prepare("SELECT person_id,expires_at FROM invite_tokens WHERE token=?")
-      .get(token) as { person_id: number; expires_at: string } | undefined
-  ) ?? null;
+    (db.prepare("SELECT person_id,expires_at FROM invite_tokens WHERE token=?").get(token) as
+      | { person_id: number; expires_at: string }
+      | undefined) ?? null
+  );
 }
 
 export function deleteInviteToken(db: Database.Database, token: string): void {

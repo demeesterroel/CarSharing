@@ -3,24 +3,25 @@
 
 /* ── Paper palette ─────────────────────────────────────────── */
 :root {
-  --paper:       #f5f0e6;
-  --paper-deep:  #ebe3d2;
-  --paper-dark:  #d9ceb2;
-  --ink:         #1a1a1a;
-  --ink-dim:     #555047;
-  --ink-mute:    #8a8273;
-  --accent:      #c44536;
-  --green:       #5a7a3c;
-  --blue:        #3d5a7a;
-  --amber:       #b87e0f;
+  --paper: #f5f0e6;
+  --paper-deep: #ebe3d2;
+  --paper-dark: #d9ceb2;
+  --ink: #1a1a1a;
+  --ink-dim: #555047;
+  --ink-mute: #8a8273;
+  --accent: #c44536;
+  --green: #5a7a3c;
+  --blue: #3d5a7a;
+  --amber: #b87e0f;
 
-  --font-mono:   var(--font-courier-prime, "Courier Prime", "IBM Plex Mono", ui-monospace, monospace);
-  --font-serif:  var(--font-fraunces, "Fraunces", "Playfair Display", Georgia, serif);
-  --font-sans:   var(--font-inter, "Inter", -apple-system, system-ui, sans-serif);
+  --font-mono: var(--font-courier-prime, "Courier Prime", "IBM Plex Mono", ui-monospace, monospace);
+  --font-serif: var(--font-fraunces, "Fraunces", "Playfair Display", Georgia, serif);
+  --font-sans: var(--font-inter, "Inter", -apple-system, system-ui, sans-serif);
 }
 
 /* ── Base ──────────────────────────────────────────────────── */
-html, body {
+html,
+body {
   margin: 0;
   padding: 0;
   background-color: var(--paper-deep);
@@ -35,18 +36,40 @@ html, body {
 }
 
 /* ── Paper utilities ───────────────────────────────────────── */
-.paper-bg        { background-color: var(--paper); }
-.paper-deep-bg   { background-color: var(--paper-deep); }
-.ink-text        { color: var(--ink); }
-.ink-dim-text    { color: var(--ink-dim); }
-.ink-mute-text   { color: var(--ink-mute); }
-.accent-text     { color: var(--accent); }
-.green-text      { color: var(--green); }
-.blue-text       { color: var(--blue); }
-.amber-text      { color: var(--amber); }
+.paper-bg {
+  background-color: var(--paper);
+}
+.paper-deep-bg {
+  background-color: var(--paper-deep);
+}
+.ink-text {
+  color: var(--ink);
+}
+.ink-dim-text {
+  color: var(--ink-dim);
+}
+.ink-mute-text {
+  color: var(--ink-mute);
+}
+.accent-text {
+  color: var(--accent);
+}
+.green-text {
+  color: var(--green);
+}
+.blue-text {
+  color: var(--blue);
+}
+.amber-text {
+  color: var(--amber);
+}
 
-.font-mono-paper { font-family: var(--font-mono); }
-.font-serif-paper{ font-family: var(--font-serif); }
+.font-mono-paper {
+  font-family: var(--font-mono);
+}
+.font-serif-paper {
+  font-family: var(--font-serif);
+}
 
 /* Dashed perforation line */
 .perf {
@@ -78,9 +101,15 @@ html, body {
   padding: 4px 10px;
   font-size: 9px;
 }
-.stamp-green { color: var(--green); }
-.stamp-accent { color: var(--accent); }
-.stamp-blue { color: var(--blue); }
+.stamp-green {
+  color: var(--green);
+}
+.stamp-accent {
+  color: var(--accent);
+}
+.stamp-blue {
+  color: var(--blue);
+}
 
 /* Car short code pill */
 .car-stamp {
@@ -131,7 +160,9 @@ html, body {
 /* Receipt card shadow */
 .receipt-card {
   background: var(--paper);
-  box-shadow: 0 1px 2px rgba(0,0,0,0.05), 0 8px 24px rgba(0,0,0,0.07);
+  box-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.05),
+    0 8px 24px rgba(0, 0, 0, 0.07);
 }
 
 /* Trip / fuel strip */
@@ -142,7 +173,7 @@ html, body {
   display: flex;
   align-items: center;
   gap: 12px;
-  box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
 }
 
 /* Bottom nav paper style */
@@ -217,21 +248,48 @@ html, body {
 
 /* Animations */
 @keyframes popIn {
-  from { opacity: 0; transform: translateY(6px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 @keyframes stampDrop {
-  0%   { transform: translate(-50%, -50%) rotate(-8deg) scale(2.4); opacity: 0; }
-  60%  { transform: translate(-50%, -50%) rotate(-8deg) scale(0.94); opacity: 1; }
-  100% { transform: translate(-50%, -50%) rotate(-8deg) scale(1);    opacity: 1; }
+  0% {
+    transform: translate(-50%, -50%) rotate(-8deg) scale(2.4);
+    opacity: 0;
+  }
+  60% {
+    transform: translate(-50%, -50%) rotate(-8deg) scale(0.94);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-50%, -50%) rotate(-8deg) scale(1);
+    opacity: 1;
+  }
 }
 @keyframes tearOff {
-  0%   { transform: translateY(0); opacity: 1; }
-  100% { transform: translateY(100%); opacity: 0; }
+  0% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(100%);
+    opacity: 0;
+  }
 }
-.animate-pop-in  { animation: popIn 0.2s ease-out; }
-.animate-stamp   { animation: stampDrop 0.35s cubic-bezier(0.36, 0.07, 0.19, 0.97); }
-.animate-tear    { animation: tearOff 0.4s ease-in forwards; }
+.animate-pop-in {
+  animation: popIn 0.2s ease-out;
+}
+.animate-stamp {
+  animation: stampDrop 0.35s cubic-bezier(0.36, 0.07, 0.19, 0.97);
+}
+.animate-tear {
+  animation: tearOff 0.4s ease-in forwards;
+}
 
 /* Input underline style */
 .input-underline {
@@ -254,11 +312,7 @@ html, body {
 /* Desktop framing */
 @media (min-width: 900px) {
   body {
-    background: repeating-linear-gradient(
-      0deg,
-      #e8e2d4 0 2px,
-      #e2dcce 2px 3px
-    );
+    background: repeating-linear-gradient(0deg, #e8e2d4 0 2px, #e2dcce 2px 3px);
     min-height: 100vh;
     display: flex;
     align-items: flex-start;

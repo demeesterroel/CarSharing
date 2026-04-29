@@ -6,9 +6,7 @@ const envSchema = z.object({
     .string()
     .optional()
     .transform((val) => val ?? "data/carsharing.db"),
-  NODE_ENV: z
-    .enum(["development", "production", "test"])
-    .default("development"),
+  NODE_ENV: z.enum(["development", "production", "test"]).default("development"),
   NEXT_PUBLIC_BASE_URL: z.string().url().optional(),
   AUTH_USERNAME: z.string().optional(),
   AUTH_PASSWORD_HASH: z.string().optional(),

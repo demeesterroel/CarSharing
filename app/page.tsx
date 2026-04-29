@@ -24,10 +24,18 @@ import { ExpenseCard } from "@/components/expense-card";
 import { ReservationCard } from "@/components/reservation-card";
 import { useMe } from "@/hooks/use-me";
 import {
-  useCreateTrip, useUpdateTrip, useDeleteTrip,
-  useCreateFuelFillup, useUpdateFuelFillup, useDeleteFuelFillup,
-  useCreateExpense, useUpdateExpense, useDeleteExpense,
-  useCreateReservation, useUpdateReservation, useDeleteReservation,
+  useCreateTrip,
+  useUpdateTrip,
+  useDeleteTrip,
+  useCreateFuelFillup,
+  useUpdateFuelFillup,
+  useDeleteFuelFillup,
+  useCreateExpense,
+  useUpdateExpense,
+  useDeleteExpense,
+  useCreateReservation,
+  useUpdateReservation,
+  useDeleteReservation,
 } from "./dashboard-hooks";
 import { useCars } from "@/hooks/use-cars";
 import { CarBadge } from "@/components/car-badge";
@@ -38,30 +46,62 @@ function Perf({ margin = "12px 0" }: { margin?: string }) {
 }
 
 function ReceiptRow({
-  label, value, big, color, href,
-}: { label: string; value: string; big?: boolean; color?: string; href?: string }) {
+  label,
+  value,
+  big,
+  color,
+  href,
+}: {
+  label: string;
+  value: string;
+  big?: boolean;
+  color?: string;
+  href?: string;
+}) {
   const [hovered, setHovered] = useState(false);
   const c = color ?? paper.ink;
   const inner = (
-    <div style={{
-      display: "flex", justifyContent: "space-between", alignItems: "baseline",
-      fontFamily: fontMono, padding: "4px 0",
-      ...(href ? {
-        margin: "0 -8px", padding: "4px 8px",
-        background: hovered ? "rgba(0,0,0,0.05)" : "transparent",
-        borderRadius: 2,
-        transition: "background 0.1s",
-      } : {}),
-    }}>
-      <span style={{
-        textTransform: "uppercase", letterSpacing: 1,
-        fontSize: big ? 11 : 10, color: paper.inkDim,
-        whiteSpace: "nowrap", marginRight: 12,
-        ...(href && hovered ? { textDecoration: "underline", textDecorationColor: paper.inkDim } : {}),
-      }}>
+    <div
+      style={{
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: "baseline",
+        fontFamily: fontMono,
+        padding: "4px 0",
+        ...(href
+          ? {
+              margin: "0 -8px",
+              padding: "4px 8px",
+              background: hovered ? "rgba(0,0,0,0.05)" : "transparent",
+              borderRadius: 2,
+              transition: "background 0.1s",
+            }
+          : {}),
+      }}
+    >
+      <span
+        style={{
+          textTransform: "uppercase",
+          letterSpacing: 1,
+          fontSize: big ? 11 : 10,
+          color: paper.inkDim,
+          whiteSpace: "nowrap",
+          marginRight: 12,
+          ...(href && hovered
+            ? { textDecoration: "underline", textDecorationColor: paper.inkDim }
+            : {}),
+        }}
+      >
         {label}
       </span>
-      <span style={{ fontWeight: big ? 700 : 600, fontSize: big ? 17 : 13, whiteSpace: "nowrap", color: c }}>
+      <span
+        style={{
+          fontWeight: big ? 700 : 600,
+          fontSize: big ? 17 : 13,
+          whiteSpace: "nowrap",
+          color: c,
+        }}
+      >
         {value}
       </span>
     </div>
@@ -105,48 +145,87 @@ function BalanceReceipt({ personName }: { personName: string }) {
   return (
     <div style={{ padding: "18px 16px 0" }}>
       {/* Year navigation */}
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 0, marginBottom: 8 }}>
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          gap: 0,
+          marginBottom: 8,
+        }}
+      >
         <button
           onClick={() => setYear((y) => y - 1)}
           disabled={year <= earliestYear}
           style={{
-            padding: "6px 14px", background: "transparent", border: `1.5px solid ${paper.ink}`,
-            borderRight: "none", fontFamily: fontMono, fontSize: 10, fontWeight: 700,
+            padding: "6px 14px",
+            background: "transparent",
+            border: `1.5px solid ${paper.ink}`,
+            borderRight: "none",
+            fontFamily: fontMono,
+            fontSize: 10,
+            fontWeight: 700,
             color: year <= earliestYear ? paper.inkMute : paper.ink,
-            cursor: year <= earliestYear ? "default" : "pointer", letterSpacing: 1,
-          }}>
+            cursor: year <= earliestYear ? "default" : "pointer",
+            letterSpacing: 1,
+          }}
+        >
           ← {year - 1}
         </button>
-        <div style={{
-          padding: "6px 18px", background: paper.ink, color: paper.paper,
-          fontFamily: fontMono, fontSize: 10, fontWeight: 700, letterSpacing: 2,
-          border: `1.5px solid ${paper.ink}`,
-        }}>
+        <div
+          style={{
+            padding: "6px 18px",
+            background: paper.ink,
+            color: paper.paper,
+            fontFamily: fontMono,
+            fontSize: 10,
+            fontWeight: 700,
+            letterSpacing: 2,
+            border: `1.5px solid ${paper.ink}`,
+          }}
+        >
           {year}
         </div>
         <button
           onClick={() => setYear((y) => y + 1)}
           disabled={year >= currentYear}
           style={{
-            padding: "6px 14px", background: "transparent", border: `1.5px solid ${paper.ink}`,
-            borderLeft: "none", fontFamily: fontMono, fontSize: 10, fontWeight: 700,
+            padding: "6px 14px",
+            background: "transparent",
+            border: `1.5px solid ${paper.ink}`,
+            borderLeft: "none",
+            fontFamily: fontMono,
+            fontSize: 10,
+            fontWeight: 700,
             color: year >= currentYear ? paper.inkMute : paper.ink,
-            cursor: year >= currentYear ? "default" : "pointer", letterSpacing: 1,
-          }}>
+            cursor: year >= currentYear ? "default" : "pointer",
+            letterSpacing: 1,
+          }}
+        >
           {year + 1} →
         </button>
       </div>
 
       {/* Receipt card */}
-      <div style={{
-        background: paper.paper, padding: "20px 18px 22px",
-        boxShadow: "0 1px 2px rgba(0,0,0,0.05), 0 8px 24px rgba(0,0,0,0.07)",
-      }}>
+      <div
+        style={{
+          background: paper.paper,
+          padding: "20px 18px 22px",
+          boxShadow: "0 1px 2px rgba(0,0,0,0.05), 0 8px 24px rgba(0,0,0,0.07)",
+        }}
+      >
         {/* Title */}
-        <div style={{
-          fontFamily: fontMono, fontSize: 11, color: paper.ink,
-          letterSpacing: 3, textTransform: "uppercase", textAlign: "center", fontWeight: 700,
-        }}>
+        <div
+          style={{
+            fontFamily: fontMono,
+            fontSize: 11,
+            color: paper.ink,
+            letterSpacing: 3,
+            textTransform: "uppercase",
+            textAlign: "center",
+            fontWeight: 700,
+          }}
+        >
           — {t("dashboard.receipt_title", { year })} —
         </div>
         <Perf margin="10px 0 12px" />
@@ -188,32 +267,45 @@ function BalanceReceipt({ personName }: { personName: string }) {
             value={`${myRow.paid_amount >= 0 ? "−" : "+"} ${fmtMoney(Math.abs(myRow.paid_amount))}`}
           />
         ) : (
-          <ReceiptRow
-            label={t("dashboard.not_yet_paid")}
-            value="—"
-            color={paper.inkMute}
-          />
+          <ReceiptRow label={t("dashboard.not_yet_paid")} value="—" color={paper.inkMute} />
         )}
 
         {/* Balance row — only when a payment has been recorded */}
         {myRow.paid_amount !== 0 && (
           <>
             <Perf margin="10px 0" />
-            <div style={{
-              display: "flex", justifyContent: "space-between", alignItems: "baseline",
-              padding: "4px 0",
-            }}>
-              <span style={{
-                fontFamily: fontMono, fontSize: 10, letterSpacing: 2,
-                textTransform: "uppercase", color: paper.inkDim,
-                whiteSpace: "nowrap", marginRight: 12,
-              }}>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "baseline",
+                padding: "4px 0",
+              }}
+            >
+              <span
+                style={{
+                  fontFamily: fontMono,
+                  fontSize: 10,
+                  letterSpacing: 2,
+                  textTransform: "uppercase",
+                  color: paper.inkDim,
+                  whiteSpace: "nowrap",
+                  marginRight: 12,
+                }}
+              >
                 {t("dashboard.balance_label")}
               </span>
-              <span style={{
-                fontFamily: fontSerif, fontSize: 28, fontWeight: 700,
-                color: balanceColor, letterSpacing: -1, lineHeight: 1, whiteSpace: "nowrap",
-              }}>
+              <span
+                style={{
+                  fontFamily: fontSerif,
+                  fontSize: 28,
+                  fontWeight: 700,
+                  color: balanceColor,
+                  letterSpacing: -1,
+                  lineHeight: 1,
+                  whiteSpace: "nowrap",
+                }}
+              >
                 {settled
                   ? `€ 0.00 ✓`
                   : `${myRow.balance >= 0 ? "+" : "−"} ${fmtMoney(Math.abs(myRow.balance))}`}
@@ -230,19 +322,51 @@ function BalanceReceipt({ personName }: { personName: string }) {
 function SectionHeader({ title, href }: { title: string; href: string }) {
   const t = useT();
   return (
-    <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", padding: "24px 20px 10px" }}>
-      <div style={{ fontFamily: fontSerif, fontSize: 20, fontWeight: 700, color: paper.ink, letterSpacing: -0.3 }}>{title}</div>
-      <Link href={href} style={{
-        fontFamily: fontMono, fontSize: 10, color: paper.inkDim,
-        letterSpacing: 1.5, textTransform: "uppercase",
-        borderBottom: `1px solid ${paper.inkDim}`, textDecoration: "none",
-      }}>{t("action.see_all")}</Link>
+    <div
+      style={{
+        display: "flex",
+        alignItems: "baseline",
+        justifyContent: "space-between",
+        padding: "24px 20px 10px",
+      }}
+    >
+      <div
+        style={{
+          fontFamily: fontSerif,
+          fontSize: 20,
+          fontWeight: 700,
+          color: paper.ink,
+          letterSpacing: -0.3,
+        }}
+      >
+        {title}
+      </div>
+      <Link
+        href={href}
+        style={{
+          fontFamily: fontMono,
+          fontSize: 10,
+          color: paper.inkDim,
+          letterSpacing: 1.5,
+          textTransform: "uppercase",
+          borderBottom: `1px solid ${paper.inkDim}`,
+          textDecoration: "none",
+        }}
+      >
+        {t("action.see_all")}
+      </Link>
     </div>
   );
 }
 
 // ── Car Locations ─────────────────────────────────────────────
-function CarLocations({ trips, onTripClick }: { trips: Trip[]; onTripClick: (trip: Trip) => void }) {
+function CarLocations({
+  trips,
+  onTripClick,
+}: {
+  trips: Trip[];
+  onTripClick: (trip: Trip) => void;
+}) {
   const t = useT();
   const { data: cars = [] } = useCars();
   const activeShortsSet = new Set(cars.filter((c) => c.active === 1).map((c) => c.short));
@@ -258,15 +382,27 @@ function CarLocations({ trips, onTripClick }: { trips: Trip[]; onTripClick: (tri
 
   return (
     <div style={{ padding: "18px 16px 0" }}>
-      <div style={{
-        background: paper.paper, padding: "16px 18px",
-        boxShadow: "0 1px 2px rgba(0,0,0,0.05), 0 8px 24px rgba(0,0,0,0.07)",
-      }}>
-        <div style={{
-          fontFamily: fontMono, fontSize: 11, color: paper.ink,
-          letterSpacing: 3, textTransform: "uppercase", textAlign: "center", fontWeight: 700,
-          marginBottom: 14,
-        }}>— {t("dashboard.car_locations")} —</div>
+      <div
+        style={{
+          background: paper.paper,
+          padding: "16px 18px",
+          boxShadow: "0 1px 2px rgba(0,0,0,0.05), 0 8px 24px rgba(0,0,0,0.07)",
+        }}
+      >
+        <div
+          style={{
+            fontFamily: fontMono,
+            fontSize: 11,
+            color: paper.ink,
+            letterSpacing: 3,
+            textTransform: "uppercase",
+            textAlign: "center",
+            fontWeight: 700,
+            marginBottom: 14,
+          }}
+        >
+          — {t("dashboard.car_locations")} —
+        </div>
         {entries.map(([short, trip]) => {
           const isParkingOnly = !trip.location && !trip.gps_coords && trip.parking;
           const loc = trip.location ?? trip.gps_coords ?? trip.parking;
@@ -275,29 +411,55 @@ function CarLocations({ trips, onTripClick }: { trips: Trip[]; onTripClick: (tri
               key={short}
               onClick={() => onTripClick(trip)}
               style={{
-                width: "100%", textAlign: "left", appearance: "none",
-                background: "transparent", border: "none", padding: 0,
-                display: "flex", alignItems: "center", gap: 12,
-                paddingTop: 10, paddingBottom: 10,
+                width: "100%",
+                textAlign: "left",
+                appearance: "none",
+                background: "transparent",
+                border: "none",
+                padding: 0,
+                display: "flex",
+                alignItems: "center",
+                gap: 12,
+                paddingTop: 10,
+                paddingBottom: 10,
                 borderTop: `1px dashed ${paper.paperDark}`,
                 cursor: "pointer",
               }}
             >
               <CarBadge short={short} />
               <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{
-                  fontFamily: fontSerif, fontSize: 14, fontWeight: 600, lineHeight: 1.2,
-                  whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis",
-                  color: isParkingOnly ? paper.inkDim : paper.ink,
-                  fontStyle: isParkingOnly ? "italic" : "normal",
-                }}>
+                <div
+                  style={{
+                    fontFamily: fontSerif,
+                    fontSize: 14,
+                    fontWeight: 600,
+                    lineHeight: 1.2,
+                    whiteSpace: "nowrap",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    color: isParkingOnly ? paper.inkDim : paper.ink,
+                    fontStyle: isParkingOnly ? "italic" : "normal",
+                  }}
+                >
                   {loc ?? "—"}
                 </div>
-                <div style={{ fontFamily: fontMono, fontSize: 9, color: paper.inkMute, letterSpacing: 1, marginTop: 2 }}>
+                <div
+                  style={{
+                    fontFamily: fontMono,
+                    fontSize: 9,
+                    color: paper.inkMute,
+                    letterSpacing: 1,
+                    marginTop: 2,
+                  }}
+                >
                   {t("dashboard.last_seen")} · {fmtDate(trip.date)}
                 </div>
               </div>
-              <div style={{ fontFamily: fontMono, fontSize: 11, color: paper.inkMute, flexShrink: 0 }}>›</div>
+              <div
+                style={{ fontFamily: fontMono, fontSize: 11, color: paper.inkMute, flexShrink: 0 }}
+              >
+                ›
+              </div>
             </button>
           );
         })}
@@ -319,9 +481,17 @@ function Sheets({ sheet, setSheet }: { sheet: SheetType; setSheet: (s: SheetType
   const close = () => setSheet(null);
 
   const sheetStyle: React.CSSProperties = {
-    position: "fixed", left: 0, right: 0, bottom: 0, background: paper.paper,
-    borderRadius: "16px 16px 0 0", zIndex: 50, maxHeight: "95vh",
-    overflowY: "auto", maxWidth: 480, margin: "0 auto",
+    position: "fixed",
+    left: 0,
+    right: 0,
+    bottom: 0,
+    background: paper.paper,
+    borderRadius: "16px 16px 0 0",
+    zIndex: 50,
+    maxHeight: "95vh",
+    overflowY: "auto",
+    maxWidth: 480,
+    margin: "0 auto",
   };
 
   return (
@@ -330,8 +500,28 @@ function Sheets({ sheet, setSheet }: { sheet: SheetType; setSheet: (s: SheetType
         <Dialog.Portal>
           <Dialog.Overlay className="fixed inset-0 bg-black/40 z-40" />
           <Dialog.Content style={sheetStyle}>
-            <Dialog.Title style={{ padding: "16px 20px 0", fontFamily: fontSerif, fontSize: 20, fontWeight: 700 }}>{t("page.trip_add")}</Dialog.Title>
-            <TripForm onSubmit={(d) => createTrip.mutate(d as any, { onSuccess: () => { close(); toast.success(t("toast.trip_saved")); }, onError: (e) => toast.error(e.message) })} onCancel={close} />
+            <Dialog.Title
+              style={{
+                padding: "16px 20px 0",
+                fontFamily: fontSerif,
+                fontSize: 20,
+                fontWeight: 700,
+              }}
+            >
+              {t("page.trip_add")}
+            </Dialog.Title>
+            <TripForm
+              onSubmit={(d) =>
+                createTrip.mutate(d as any, {
+                  onSuccess: () => {
+                    close();
+                    toast.success(t("toast.trip_saved"));
+                  },
+                  onError: (e) => toast.error(e.message),
+                })
+              }
+              onCancel={close}
+            />
           </Dialog.Content>
         </Dialog.Portal>
       </Dialog.Root>
@@ -340,8 +530,28 @@ function Sheets({ sheet, setSheet }: { sheet: SheetType; setSheet: (s: SheetType
         <Dialog.Portal>
           <Dialog.Overlay className="fixed inset-0 bg-black/40 z-40" />
           <Dialog.Content style={sheetStyle}>
-            <Dialog.Title style={{ padding: "16px 20px 0", fontFamily: fontSerif, fontSize: 20, fontWeight: 700 }}>{t("page.fuel_add")}</Dialog.Title>
-            <FuelForm onSubmit={(d) => createFuel.mutate(d as any, { onSuccess: () => { close(); toast.success(t("toast.fuel_saved")); }, onError: (e) => toast.error(e.message) })} onCancel={close} />
+            <Dialog.Title
+              style={{
+                padding: "16px 20px 0",
+                fontFamily: fontSerif,
+                fontSize: 20,
+                fontWeight: 700,
+              }}
+            >
+              {t("page.fuel_add")}
+            </Dialog.Title>
+            <FuelForm
+              onSubmit={(d) =>
+                createFuel.mutate(d as any, {
+                  onSuccess: () => {
+                    close();
+                    toast.success(t("toast.fuel_saved"));
+                  },
+                  onError: (e) => toast.error(e.message),
+                })
+              }
+              onCancel={close}
+            />
           </Dialog.Content>
         </Dialog.Portal>
       </Dialog.Root>
@@ -350,8 +560,28 @@ function Sheets({ sheet, setSheet }: { sheet: SheetType; setSheet: (s: SheetType
         <Dialog.Portal>
           <Dialog.Overlay className="fixed inset-0 bg-black/40 z-40" />
           <Dialog.Content style={sheetStyle}>
-            <Dialog.Title style={{ padding: "16px 20px 0", fontFamily: fontSerif, fontSize: 20, fontWeight: 700 }}>{t("page.expense_add")}</Dialog.Title>
-            <ExpenseForm onSubmit={(d) => createExpense.mutate(d as any, { onSuccess: () => { close(); toast.success(t("toast.expense_saved")); }, onError: (e) => toast.error(e.message) })} onCancel={close} />
+            <Dialog.Title
+              style={{
+                padding: "16px 20px 0",
+                fontFamily: fontSerif,
+                fontSize: 20,
+                fontWeight: 700,
+              }}
+            >
+              {t("page.expense_add")}
+            </Dialog.Title>
+            <ExpenseForm
+              onSubmit={(d) =>
+                createExpense.mutate(d as any, {
+                  onSuccess: () => {
+                    close();
+                    toast.success(t("toast.expense_saved"));
+                  },
+                  onError: (e) => toast.error(e.message),
+                })
+              }
+              onCancel={close}
+            />
           </Dialog.Content>
         </Dialog.Portal>
       </Dialog.Root>
@@ -360,8 +590,28 @@ function Sheets({ sheet, setSheet }: { sheet: SheetType; setSheet: (s: SheetType
         <Dialog.Portal>
           <Dialog.Overlay className="fixed inset-0 bg-black/40 z-40" />
           <Dialog.Content style={sheetStyle}>
-            <Dialog.Title style={{ padding: "16px 20px 0", fontFamily: fontSerif, fontSize: 20, fontWeight: 700 }}>{t("page.reservation_request")}</Dialog.Title>
-            <ReservationForm onSubmit={(d) => createReservation.mutate(d as any, { onSuccess: () => { close(); toast.success(t("toast.reservation_requested")); }, onError: (e) => toast.error(e.message) })} onCancel={close} />
+            <Dialog.Title
+              style={{
+                padding: "16px 20px 0",
+                fontFamily: fontSerif,
+                fontSize: 20,
+                fontWeight: 700,
+              }}
+            >
+              {t("page.reservation_request")}
+            </Dialog.Title>
+            <ReservationForm
+              onSubmit={(d) =>
+                createReservation.mutate(d as any, {
+                  onSuccess: () => {
+                    close();
+                    toast.success(t("toast.reservation_requested"));
+                  },
+                  onError: (e) => toast.error(e.message),
+                })
+              }
+              onCancel={close}
+            />
           </Dialog.Content>
         </Dialog.Portal>
       </Dialog.Root>
@@ -377,30 +627,30 @@ export default function DashboardPage() {
   const [sheet, setSheet] = useState<SheetType>(null);
 
   // Edit state
-  const [editTrip, setEditTrip]               = useState<Trip | null>(null);
-  const [editFuel, setEditFuel]               = useState<FuelFillup | null>(null);
-  const [editExpense, setEditExpense]         = useState<Expense | null>(null);
+  const [editTrip, setEditTrip] = useState<Trip | null>(null);
+  const [editFuel, setEditFuel] = useState<FuelFillup | null>(null);
+  const [editExpense, setEditExpense] = useState<Expense | null>(null);
   const [editReservation, setEditReservation] = useState<Reservation | null>(null);
 
   // Mutation hooks
-  const updateTrip    = useUpdateTrip();
-  const deleteTrip    = useDeleteTrip();
-  const updateFuel    = useUpdateFuelFillup();
-  const deleteFuel    = useDeleteFuelFillup();
+  const updateTrip = useUpdateTrip();
+  const deleteTrip = useDeleteTrip();
+  const updateFuel = useUpdateFuelFillup();
+  const deleteFuel = useDeleteFuelFillup();
   const updateExpense = useUpdateExpense();
   const deleteExpense = useDeleteExpense();
-  const updateRes     = useUpdateReservation();
-  const deleteRes     = useDeleteReservation();
+  const updateRes = useUpdateReservation();
+  const deleteRes = useDeleteReservation();
 
   const handleLogout = async () => {
     await fetch("/api/auth/logout", { method: "POST" });
     router.replace("/login");
   };
 
-  const { data: trips = [] }        = useTrips();
-  const { data: fillups = [] }      = useFuelFillups();
+  const { data: trips = [] } = useTrips();
+  const { data: fillups = [] } = useFuelFillups();
   const { data: reservations = [] } = useReservations();
-  const { data: expenses = [] }     = useExpenses();
+  const { data: expenses = [] } = useExpenses();
 
   const today = new Date().toISOString().slice(0, 10);
   const upcoming = reservations
@@ -408,32 +658,63 @@ export default function DashboardPage() {
     .sort((a, b) => a.start_date.localeCompare(b.start_date))
     .slice(0, 3);
 
-  const recentTrips    = trips.slice(0, 4);
-  const recentFuel     = fillups.slice(0, 3);
+  const recentTrips = trips.slice(0, 4);
+  const recentFuel = fillups.slice(0, 3);
   const recentExpenses = expenses.slice(0, 3);
 
   const [todayFmt, setTodayFmt] = useState("");
   useEffect(() => {
-    setTodayFmt(new Date().toLocaleDateString("nl-BE", { weekday: "short", day: "numeric", month: "short" }));
+    setTodayFmt(
+      new Date().toLocaleDateString("nl-BE", { weekday: "short", day: "numeric", month: "short" })
+    );
   }, []);
 
   const sheetStyle: React.CSSProperties = {
-    position: "fixed", bottom: 0,
-    left: "50%", transform: "translateX(-50%)",
+    position: "fixed",
+    bottom: 0,
+    left: "50%",
+    transform: "translateX(-50%)",
     width: "min(100%, 480px)",
-    maxHeight: "92dvh", borderRadius: "14px 14px 0 0",
-    background: paper.paperDeep, zIndex: 50, overflowY: "auto",
+    maxHeight: "92dvh",
+    borderRadius: "14px 14px 0 0",
+    background: paper.paperDeep,
+    zIndex: 50,
+    overflowY: "auto",
   };
   const overlayStyle: React.CSSProperties = {
-    position: "fixed", inset: 0, background: "rgba(0,0,0,0.45)", zIndex: 49,
+    position: "fixed",
+    inset: 0,
+    background: "rgba(0,0,0,0.45)",
+    zIndex: 49,
   };
 
   return (
     <div style={{ background: paper.paperDeep, minHeight: "100dvh", paddingBottom: 80 }}>
       {/* Header */}
-      <div style={{ background: paper.paper, padding: "22px 20px 20px", borderBottom: `1.5px dashed ${paper.ink}` }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
-          <div style={{ fontFamily: fontMono, fontSize: 9, color: paper.inkDim, letterSpacing: 2, textTransform: "uppercase" }}>
+      <div
+        style={{
+          background: paper.paper,
+          padding: "22px 20px 20px",
+          borderBottom: `1.5px dashed ${paper.ink}`,
+        }}
+      >
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            marginBottom: 12,
+          }}
+        >
+          <div
+            style={{
+              fontFamily: fontMono,
+              fontSize: 9,
+              color: paper.inkDim,
+              letterSpacing: 2,
+              textTransform: "uppercase",
+            }}
+          >
             {t("brand.tagline")}
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
@@ -443,21 +724,45 @@ export default function DashboardPage() {
               title={t("nav.logout")}
               style={{
                 padding: "3px 8px",
-                fontFamily: fontMono, fontSize: 9, fontWeight: 700,
-                letterSpacing: 1.5, textTransform: "uppercase",
-                background: "transparent", color: paper.inkDim,
+                fontFamily: fontMono,
+                fontSize: 9,
+                fontWeight: 700,
+                letterSpacing: 1.5,
+                textTransform: "uppercase",
+                background: "transparent",
+                color: paper.inkDim,
                 border: `1.5px solid ${paper.paperDark}`,
-                cursor: "pointer", lineHeight: 1.6,
+                cursor: "pointer",
+                lineHeight: 1.6,
               }}
             >
               ⏻
             </button>
           </div>
         </div>
-        <div style={{ fontFamily: fontSerif, fontSize: 32, fontWeight: 700, color: paper.ink, letterSpacing: -0.8, lineHeight: 1.05 }}>
-          {t("dashboard.hello")}{me?.personName ? ` ${me.personName.split(" ")[0]}` : ""}
+        <div
+          style={{
+            fontFamily: fontSerif,
+            fontSize: 32,
+            fontWeight: 700,
+            color: paper.ink,
+            letterSpacing: -0.8,
+            lineHeight: 1.05,
+          }}
+        >
+          {t("dashboard.hello")}
+          {me?.personName ? ` ${me.personName.split(" ")[0]}` : ""}
         </div>
-        <div style={{ fontFamily: fontMono, fontSize: 10, color: paper.inkDim, letterSpacing: 2, textTransform: "uppercase", marginTop: 4 }}>
+        <div
+          style={{
+            fontFamily: fontMono,
+            fontSize: 10,
+            color: paper.inkDim,
+            letterSpacing: 2,
+            textTransform: "uppercase",
+            marginTop: 4,
+          }}
+        >
           {t("dashboard.today")} · {todayFmt}
         </div>
       </div>
@@ -472,11 +777,21 @@ export default function DashboardPage() {
       <SectionHeader title={t("dashboard.recent_trips")} href="/trips" />
       <div style={{ padding: "0 16px" }}>
         {recentTrips.length === 0 ? (
-          <div style={{ fontFamily: fontMono, fontSize: 11, color: paper.inkMute, padding: "8px 0", letterSpacing: 1 }}>
+          <div
+            style={{
+              fontFamily: fontMono,
+              fontSize: 11,
+              color: paper.inkMute,
+              padding: "8px 0",
+              letterSpacing: 1,
+            }}
+          >
             {t("state.empty_trips")}
           </div>
         ) : (
-          recentTrips.map((trip) => <TripCard key={trip.id} trip={trip} onClick={() => setEditTrip(trip)} />)
+          recentTrips.map((trip) => (
+            <TripCard key={trip.id} trip={trip} onClick={() => setEditTrip(trip)} />
+          ))
         )}
       </div>
 
@@ -484,7 +799,15 @@ export default function DashboardPage() {
       <SectionHeader title={t("dashboard.recent_fuel")} href="/fuel" />
       <div style={{ padding: "0 16px" }}>
         {recentFuel.length === 0 ? (
-          <div style={{ fontFamily: fontMono, fontSize: 11, color: paper.inkMute, padding: "8px 0", letterSpacing: 1 }}>
+          <div
+            style={{
+              fontFamily: fontMono,
+              fontSize: 11,
+              color: paper.inkMute,
+              padding: "8px 0",
+              letterSpacing: 1,
+            }}
+          >
             {t("state.empty_fuel")}
           </div>
         ) : (
@@ -496,11 +819,21 @@ export default function DashboardPage() {
       <SectionHeader title={t("dashboard.recent_maintenance")} href="/expenses" />
       <div style={{ padding: "0 16px" }}>
         {recentExpenses.length === 0 ? (
-          <div style={{ fontFamily: fontMono, fontSize: 11, color: paper.inkMute, padding: "8px 0", letterSpacing: 1 }}>
+          <div
+            style={{
+              fontFamily: fontMono,
+              fontSize: 11,
+              color: paper.inkMute,
+              padding: "8px 0",
+              letterSpacing: 1,
+            }}
+          >
             {t("state.empty_expenses")}
           </div>
         ) : (
-          recentExpenses.map((e) => <ExpenseCard key={e.id} expense={e} onClick={() => setEditExpense(e)} />)
+          recentExpenses.map((e) => (
+            <ExpenseCard key={e.id} expense={e} onClick={() => setEditExpense(e)} />
+          ))
         )}
       </div>
 
@@ -509,13 +842,25 @@ export default function DashboardPage() {
         <>
           <SectionHeader title={t("dashboard.upcoming")} href="/calendar" />
           <div style={{ padding: "0 16px" }}>
-            {upcoming.map((r) => <ReservationCard key={r.id} reservation={r} onClick={() => setEditReservation(r)} />)}
+            {upcoming.map((r) => (
+              <ReservationCard key={r.id} reservation={r} onClick={() => setEditReservation(r)} />
+            ))}
           </div>
         </>
       )}
 
       {/* Footer */}
-      <div style={{ fontFamily: fontSerif, fontSize: 12, fontStyle: "italic", color: paper.inkMute, textAlign: "center", padding: "32px 32px 20px", lineHeight: 1.5 }}>
+      <div
+        style={{
+          fontFamily: fontSerif,
+          fontSize: 12,
+          fontStyle: "italic",
+          color: paper.inkMute,
+          textAlign: "center",
+          padding: "32px 32px 20px",
+          lineHeight: 1.5,
+        }}
+      >
         {t("dashboard.footer")}
       </div>
 
@@ -527,19 +872,39 @@ export default function DashboardPage() {
         <Dialog.Portal>
           <Dialog.Overlay style={overlayStyle} />
           <Dialog.Content style={sheetStyle} aria-describedby={undefined}>
-            <Dialog.Title style={{ position: "absolute", width: 1, height: 1, overflow: "hidden", clip: "rect(0,0,0,0)" }}>{t("page.trip_edit")}</Dialog.Title>
+            <Dialog.Title
+              style={{
+                position: "absolute",
+                width: 1,
+                height: 1,
+                overflow: "hidden",
+                clip: "rect(0,0,0,0)",
+              }}
+            >
+              {t("page.trip_edit")}
+            </Dialog.Title>
             {editTrip && (
               <TripForm
                 defaultValues={editTrip}
-                onSubmit={(d) => updateTrip.mutate({ id: editTrip.id, ...d } as any, {
-                  onSuccess: () => { setEditTrip(null); toast.success(t("toast.saved")); },
-                  onError: (e) => toast.error(e.message),
-                })}
+                onSubmit={(d) =>
+                  updateTrip.mutate({ id: editTrip.id, ...d } as any, {
+                    onSuccess: () => {
+                      setEditTrip(null);
+                      toast.success(t("toast.saved"));
+                    },
+                    onError: (e) => toast.error(e.message),
+                  })
+                }
                 onCancel={() => setEditTrip(null)}
-                onDelete={() => deleteTrip.mutate(editTrip.id, {
-                  onSuccess: () => { setEditTrip(null); toast.success(t("toast.trip_deleted")); },
-                  onError: (e) => toast.error(e.message),
-                })}
+                onDelete={() =>
+                  deleteTrip.mutate(editTrip.id, {
+                    onSuccess: () => {
+                      setEditTrip(null);
+                      toast.success(t("toast.trip_deleted"));
+                    },
+                    onError: (e) => toast.error(e.message),
+                  })
+                }
               />
             )}
           </Dialog.Content>
@@ -551,19 +916,42 @@ export default function DashboardPage() {
         <Dialog.Portal>
           <Dialog.Overlay style={overlayStyle} />
           <Dialog.Content style={sheetStyle} aria-describedby={undefined}>
-            <Dialog.Title style={{ position: "absolute", width: 1, height: 1, overflow: "hidden", clip: "rect(0,0,0,0)" }}>{t("page.fuel_edit")}</Dialog.Title>
+            <Dialog.Title
+              style={{
+                position: "absolute",
+                width: 1,
+                height: 1,
+                overflow: "hidden",
+                clip: "rect(0,0,0,0)",
+              }}
+            >
+              {t("page.fuel_edit")}
+            </Dialog.Title>
             {editFuel && (
               <FuelForm
                 defaultValues={editFuel}
-                onSubmit={(d) => updateFuel.mutate({ id: editFuel.id, ...d }, {
-                  onSuccess: () => { setEditFuel(null); toast.success(t("toast.saved")); },
-                  onError: (e) => toast.error(e.message),
-                })}
+                onSubmit={(d) =>
+                  updateFuel.mutate(
+                    { id: editFuel.id, ...d },
+                    {
+                      onSuccess: () => {
+                        setEditFuel(null);
+                        toast.success(t("toast.saved"));
+                      },
+                      onError: (e) => toast.error(e.message),
+                    }
+                  )
+                }
                 onCancel={() => setEditFuel(null)}
-                onDelete={() => deleteFuel.mutate(editFuel.id, {
-                  onSuccess: () => { setEditFuel(null); toast.success(t("toast.deleted")); },
-                  onError: (e) => toast.error(e.message),
-                })}
+                onDelete={() =>
+                  deleteFuel.mutate(editFuel.id, {
+                    onSuccess: () => {
+                      setEditFuel(null);
+                      toast.success(t("toast.deleted"));
+                    },
+                    onError: (e) => toast.error(e.message),
+                  })
+                }
               />
             )}
           </Dialog.Content>
@@ -575,19 +963,39 @@ export default function DashboardPage() {
         <Dialog.Portal>
           <Dialog.Overlay style={overlayStyle} />
           <Dialog.Content style={sheetStyle} aria-describedby={undefined}>
-            <Dialog.Title style={{ position: "absolute", width: 1, height: 1, overflow: "hidden", clip: "rect(0,0,0,0)" }}>{t("page.expense_edit")}</Dialog.Title>
+            <Dialog.Title
+              style={{
+                position: "absolute",
+                width: 1,
+                height: 1,
+                overflow: "hidden",
+                clip: "rect(0,0,0,0)",
+              }}
+            >
+              {t("page.expense_edit")}
+            </Dialog.Title>
             {editExpense && (
               <ExpenseForm
                 defaultValues={editExpense}
-                onSubmit={(d) => updateExpense.mutate({ id: editExpense.id, ...d } as any, {
-                  onSuccess: () => { setEditExpense(null); toast.success(t("toast.saved")); },
-                  onError: (e) => toast.error(e.message),
-                })}
+                onSubmit={(d) =>
+                  updateExpense.mutate({ id: editExpense.id, ...d } as any, {
+                    onSuccess: () => {
+                      setEditExpense(null);
+                      toast.success(t("toast.saved"));
+                    },
+                    onError: (e) => toast.error(e.message),
+                  })
+                }
                 onCancel={() => setEditExpense(null)}
-                onDelete={() => deleteExpense.mutate(editExpense.id, {
-                  onSuccess: () => { setEditExpense(null); toast.success(t("toast.deleted")); },
-                  onError: (e) => toast.error(e.message),
-                })}
+                onDelete={() =>
+                  deleteExpense.mutate(editExpense.id, {
+                    onSuccess: () => {
+                      setEditExpense(null);
+                      toast.success(t("toast.deleted"));
+                    },
+                    onError: (e) => toast.error(e.message),
+                  })
+                }
               />
             )}
           </Dialog.Content>
@@ -599,14 +1007,29 @@ export default function DashboardPage() {
         <Dialog.Portal>
           <Dialog.Overlay style={overlayStyle} />
           <Dialog.Content style={sheetStyle} aria-describedby={undefined}>
-            <Dialog.Title style={{ position: "absolute", width: 1, height: 1, overflow: "hidden", clip: "rect(0,0,0,0)" }}>{t("page.reservation_edit")}</Dialog.Title>
+            <Dialog.Title
+              style={{
+                position: "absolute",
+                width: 1,
+                height: 1,
+                overflow: "hidden",
+                clip: "rect(0,0,0,0)",
+              }}
+            >
+              {t("page.reservation_edit")}
+            </Dialog.Title>
             {editReservation && (
               <ReservationForm
                 defaultValues={editReservation}
-                onSubmit={(d) => updateRes.mutate({ id: editReservation.id, ...d } as any, {
-                  onSuccess: () => { setEditReservation(null); toast.success(t("toast.saved")); },
-                  onError: (e) => toast.error(e.message),
-                })}
+                onSubmit={(d) =>
+                  updateRes.mutate({ id: editReservation.id, ...d } as any, {
+                    onSuccess: () => {
+                      setEditReservation(null);
+                      toast.success(t("toast.saved"));
+                    },
+                    onError: (e) => toast.error(e.message),
+                  })
+                }
                 onCancel={() => setEditReservation(null)}
               />
             )}

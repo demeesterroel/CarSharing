@@ -2,7 +2,10 @@ import { NextResponse } from "next/server";
 import { z, ZodError, type ZodSchema } from "zod";
 
 export class HttpError extends Error {
-  constructor(public status: number, message: string) {
+  constructor(
+    public status: number,
+    message: string
+  ) {
     super(message);
   }
 }
@@ -15,7 +18,10 @@ export function badRequest(msg = "Bad request"): never {
   throw new HttpError(400, msg);
 }
 
-type Handler<T> = (req: Request, ctx: { params: Promise<Record<string, string>> }) => Promise<T> | T;
+type Handler<T> = (
+  req: Request,
+  ctx: { params: Promise<Record<string, string>> }
+) => Promise<T> | T;
 
 export function json<T>(handler: Handler<T>) {
   return async (req: Request, ctx: { params: Promise<Record<string, string>> }) => {
@@ -28,7 +34,10 @@ export function json<T>(handler: Handler<T>) {
         return NextResponse.json({ error: err.message }, { status: err.status });
       }
       if (err instanceof ZodError) {
-        return NextResponse.json({ error: "Validation failed", issues: err.issues }, { status: 400 });
+        return NextResponse.json(
+          { error: "Validation failed", issues: err.issues },
+          { status: 400 }
+        );
       }
       console.error("[api]", err);
       return NextResponse.json({ error: "Internal error" }, { status: 500 });

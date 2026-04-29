@@ -14,6 +14,7 @@
 ### Task 1: API handler wrapper
 
 **Files:**
+
 - Create: `lib/api.ts`
 - Create: `lib/__tests__/api.test.ts`
 
@@ -24,7 +25,10 @@ import { NextResponse } from "next/server";
 import { z, ZodError, type ZodSchema } from "zod";
 
 export class HttpError extends Error {
-  constructor(public status: number, message: string) {
+  constructor(
+    public status: number,
+    message: string
+  ) {
     super(message);
   }
 }
@@ -37,7 +41,10 @@ export function badRequest(msg = "Bad request"): never {
   throw new HttpError(400, msg);
 }
 
-type Handler<T> = (req: Request, ctx: { params: Promise<Record<string, string>> }) => Promise<T> | T;
+type Handler<T> = (
+  req: Request,
+  ctx: { params: Promise<Record<string, string>> }
+) => Promise<T> | T;
 
 export function json<T>(handler: Handler<T>) {
   return async (req: Request, ctx: { params: Promise<Record<string, string>> }) => {
@@ -50,7 +57,10 @@ export function json<T>(handler: Handler<T>) {
         return NextResponse.json({ error: err.message }, { status: err.status });
       }
       if (err instanceof ZodError) {
-        return NextResponse.json({ error: "Validation failed", issues: err.issues }, { status: 400 });
+        return NextResponse.json(
+          { error: "Validation failed", issues: err.issues },
+          { status: 400 }
+        );
       }
       console.error("[api]", err);
       return NextResponse.json({ error: "Internal error" }, { status: 500 });
@@ -74,6 +84,7 @@ export async function readId(ctx: { params: Promise<{ id: string }> }): Promise<
 - [ ] **Step 2: Write failing test**
 
 Create `lib/__tests__/api.test.ts`:
+
 ```ts
 import { describe, it, expect } from "vitest";
 import { z } from "zod";
@@ -88,7 +99,9 @@ describe("json wrapper", () => {
   });
 
   it("maps HttpError to matching status", async () => {
-    const handler = json(async () => { throw new HttpError(404, "gone"); });
+    const handler = json(async () => {
+      throw new HttpError(404, "gone");
+    });
     const res = await handler(new Request("http://x"), { params: Promise.resolve({}) });
     expect(res.status).toBe(404);
     expect(await res.json()).toEqual({ error: "gone" });
@@ -100,7 +113,11 @@ describe("json wrapper", () => {
       const body = await readBody(req, schema);
       return body;
     });
-    const req = new Request("http://x", { method: "POST", body: JSON.stringify({ n: "not-a-number" }), headers: { "Content-Type": "application/json" } });
+    const req = new Request("http://x", {
+      method: "POST",
+      body: JSON.stringify({ n: "not-a-number" }),
+      headers: { "Content-Type": "application/json" },
+    });
     const res = await handler(req, { params: Promise.resolve({}) });
     expect(res.status).toBe(400);
     const body = await res.json();
@@ -115,6 +132,7 @@ describe("json wrapper", () => {
 ```bash
 npm test lib/__tests__/api.test.ts
 ```
+
 Expected: 3 tests PASS.
 
 - [ ] **Step 4: Commit**
@@ -129,6 +147,7 @@ git commit -m "feat: json/readBody/readId api helpers with tests"
 ### Task 2: TanStack Query CRUD hook factory
 
 **Files:**
+
 - Create: `hooks/use-resource.ts`
 
 - [ ] **Step 1: Create hooks/use-resource.ts**
@@ -163,17 +182,17 @@ export function createResourceHooks<T extends { id: number }, TInput>(
   };
 
   return {
-    useList: () =>
-      useQuery<T[]>({ queryKey: [key], queryFn: () => send<T[]>(path) }),
+    useList: () => useQuery<T[]>({ queryKey: [key], queryFn: () => send<T[]>(path) }),
 
     useCreate: () => {
       const qc = useQueryClient();
       return useMutation<{ id: number }, Error, TInput>({
-        mutationFn: (data) => send(path, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(data),
-        }),
+        mutationFn: (data) =>
+          send(path, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(data),
+          }),
         onSuccess: () => invalidate(qc),
       });
     },
@@ -181,11 +200,12 @@ export function createResourceHooks<T extends { id: number }, TInput>(
     useUpdate: () => {
       const qc = useQueryClient();
       return useMutation<unknown, Error, TInput & { id: number }>({
-        mutationFn: ({ id, ...data }) => send(`${path}/${id}`, {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(data),
-        }),
+        mutationFn: ({ id, ...data }) =>
+          send(`${path}/${id}`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(data),
+          }),
         onSuccess: () => invalidate(qc),
       });
     },

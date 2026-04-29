@@ -13,6 +13,7 @@
 ### Task 1: DB connection singleton
 
 **Files:**
+
 - Create: `lib/db.ts`
 - Create: `lib/schema.sql.ts`
 
@@ -128,6 +129,7 @@ export function applySchema(db: Database.Database) {
 - [ ] **Step 4: Write failing test**
 
 Create `lib/__tests__/db.test.ts`:
+
 ```ts
 import { describe, it, expect } from "vitest";
 import Database from "better-sqlite3";
@@ -142,7 +144,13 @@ describe("applySchema", () => {
       .all()
       .map((r: any) => r.name);
     expect(tables).toEqual([
-      "cars", "expenses", "fuel_fillups", "payments", "people", "reservations", "trips"
+      "cars",
+      "expenses",
+      "fuel_fillups",
+      "payments",
+      "people",
+      "reservations",
+      "trips",
     ]);
   });
 
@@ -151,9 +159,11 @@ describe("applySchema", () => {
     db.pragma("foreign_keys = ON");
     applySchema(db);
     expect(() =>
-      db.prepare(
-        "INSERT INTO trips (person_id,car_id,date,start_odometer,end_odometer,km,amount) VALUES (999,999,'2026-01-01',0,0,0,0)"
-      ).run()
+      db
+        .prepare(
+          "INSERT INTO trips (person_id,car_id,date,start_odometer,end_odometer,km,amount) VALUES (999,999,'2026-01-01',0,0,0,0)"
+        )
+        .run()
     ).toThrow();
   });
 });
@@ -164,6 +174,7 @@ describe("applySchema", () => {
 ```bash
 npm test lib/__tests__/db.test.ts
 ```
+
 Expected: 2 tests PASS.
 
 - [ ] **Step 6: Commit**
@@ -178,6 +189,7 @@ git commit -m "feat: sqlite connection singleton and english schema"
 ### Task 2: Seed from exported data
 
 **Files:**
+
 - Create: `scripts/seed.ts`
 
 See **plan-02b-seed.md** for the full seed script that imports all historical data from `docs/data/car_sharing.json`.

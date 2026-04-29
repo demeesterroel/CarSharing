@@ -4,7 +4,7 @@
 
 **Goal:** Make add/edit/delete operations work offline by queueing them locally, applying them optimistically to the UI, and replaying them to the server when connectivity returns — without producing duplicates or silent data loss.
 
-**Architecture:** Three-layer write pipeline. (1) **Server contract:** every mutable table gains a `client_id TEXT UNIQUE` column for idempotent inserts and an `updated_at` column for last-write-wins conflict checks. POST endpoints accept an optional `client_id`; PUT/DELETE endpoints become idempotent by construction. (2) **Client outbox:** a tiny IndexedDB-backed FIFO queue (via the `idb` library) stores pending mutations with their `client_id`, method, URL, body, and queue timestamp. Mutations write to the outbox *and* React Query's cache (optimistic update) on commit. (3) **Sync engine:** a singleton drainer fires on `online` events and on Background Sync API tags, replaying queued items in order. Successful replays remove from the outbox and reconcile React Query cache with the server response. Conflicts (HTTP 409) drop with a toast.
+**Architecture:** Three-layer write pipeline. (1) **Server contract:** every mutable table gains a `client_id TEXT UNIQUE` column for idempotent inserts and an `updated_at` column for last-write-wins conflict checks. POST endpoints accept an optional `client_id`; PUT/DELETE endpoints become idempotent by construction. (2) **Client outbox:** a tiny IndexedDB-backed FIFO queue (via the `idb` library) stores pending mutations with their `client_id`, method, URL, body, and queue timestamp. Mutations write to the outbox _and_ React Query's cache (optimistic update) on commit. (3) **Sync engine:** a singleton drainer fires on `online` events and on Background Sync API tags, replaying queued items in order. Successful replays remove from the outbox and reconcile React Query cache with the server response. Conflicts (HTTP 409) drop with a toast.
 
 **Tech Stack:** Next.js 15 App Router · better-sqlite3 migrations · `idb` (^8) for typed IndexedDB · React Query v5 mutations · Workbox Background Sync API
 
@@ -32,7 +32,7 @@
     - **Admin screens** under `/admin/*` (inbox, member management, settlement, payouts, hygiene gap-assignment, owner break-even tooling).
     - **Owner screens** (car management, fixed costs, price history, expected-km).
     - **People & cars CRUD** (admin-only forms).
-  - **Rationale:** the offline experience targets the *member* in the field. Admin and owner workflows are deliberate and benefit from the consistency of a live server; making them write-offline introduces failure modes (e.g. queued reservation confirms creating phantom availability) that aren't worth the complexity for a use case that almost always happens at a desk.
+  - **Rationale:** the offline experience targets the _member_ in the field. Admin and owner workflows are deliberate and benefit from the consistency of a live server; making them write-offline introduces failure modes (e.g. queued reservation confirms creating phantom availability) that aren't worth the complexity for a use case that almost always happens at a desk.
 - **Library choices:** `idb` (5 KB, well-maintained, typed wrapper). No Dexie, no Replicache, no full sync engine.
 - **Drain trigger:** primary path is the `online` event (works in all browsers). Background Sync API is registered as a fallback for cases where the tab is closed before reconnect; we accept that Safari ignores Background Sync.
 - **No background fetcher worker:** the drainer runs in the page context, not the SW. Simpler, easier to reason about React Query invalidation. The only thing the SW does is fire the Background Sync event back to a focused client.
@@ -43,6 +43,7 @@
 ## File Structure
 
 **New files:**
+
 - `migrations/0003_add_client_id_and_updated_at.sql` — schema migration.
 - `lib/offline/outbox.ts` — IndexedDB wrapper (`enqueue`, `peek`, `drain`, `remove`, `count`, `list`).
 - `lib/offline/outbox.test.ts` — uses `fake-indexeddb` to test queue operations end-to-end.
@@ -53,6 +54,7 @@
 - `components/pending-badge.tsx` — small `↻` glyph component used in list rows.
 
 **Modified files:**
+
 - `lib/db/migrate.ts` — no change (it auto-discovers migrations) but verify.
 - `app/api/trips/route.ts` (POST) — accept optional `client_id`, return existing record on duplicate.
 - `app/api/trips/[id]/route.ts` (PUT, DELETE) — verify `X-Expected-Updated-At`, idempotent delete.
@@ -67,6 +69,7 @@
 - The four list pages (`/trips`, `/fuel`, `/expenses`, `/calendar`) — render `<PendingBadge />` on rows whose `id < 0` (sentinel) or have `_pending: true`.
 
 **Tests:**
+
 - `lib/offline/outbox.test.ts`
 - `lib/offline/sync-engine.test.ts`
 - `lib/offline/optimistic.test.ts`
@@ -97,6 +100,7 @@ If at any point this branch grows uncomfortably large, it's safe to ship after T
 ### Task 1: Migration — `client_id` and `updated_at` columns
 
 **Files:**
+
 - Create: `migrations/0003_add_client_id_and_updated_at.sql`
 - Test: `lib/__tests__/migration_0003.test.ts`
 
@@ -139,9 +143,11 @@ describe("migration 0003", () => {
       "INSERT INTO trips (person_id,car_id,date,start_odometer,end_odometer,km,amount,client_id) VALUES (?,?,?,?,?,?,?,?)"
     ).run(1, 1, "2026-01-01", 0, 0, 0, 0, "abc");
     expect(() =>
-      db.prepare(
-        "INSERT INTO trips (person_id,car_id,date,start_odometer,end_odometer,km,amount,client_id) VALUES (?,?,?,?,?,?,?,?)"
-      ).run(1, 1, "2026-01-02", 0, 0, 0, 0, "abc")
+      db
+        .prepare(
+          "INSERT INTO trips (person_id,car_id,date,start_odometer,end_odometer,km,amount,client_id) VALUES (?,?,?,?,?,?,?,?)"
+        )
+        .run(1, 1, "2026-01-02", 0, 0, 0, 0, "abc")
     ).toThrow(/UNIQUE/i);
   });
 
@@ -208,6 +214,7 @@ git commit -m "feat(db): add client_id and updated_at columns for offline sync"
 ### Task 2: Update query types and SELECT projections
 
 **Files:**
+
 - Modify: `types/index.ts` (or whichever file declares the entity types)
 - Modify: every `lib/queries/*.ts` that returns these entities
 
@@ -238,6 +245,7 @@ Modify each query so the returned shape matches the new interface.
 ```bash
 npm test
 ```
+
 Expected: existing tests still pass; type errors in TS surface and are fixed in the same step.
 
 - [ ] **Step 4: Commit**
@@ -252,6 +260,7 @@ git commit -m "feat(api): include client_id and updated_at in entity projections
 ### Task 3: API — POST `/api/trips` accepts client_id idempotently
 
 **Files:**
+
 - Modify: `app/api/trips/route.ts`
 - Test: `lib/__tests__/api_idempotency.test.ts`
 
@@ -272,8 +281,13 @@ describe("createTrip idempotency", () => {
     db.exec("INSERT INTO cars (id,short,name,price_per_km) VALUES (1,'X','c',0.2)");
 
     const input = {
-      person_id: 1, car_id: 1, date: "2026-04-27",
-      start_odometer: 100, end_odometer: 150, km: 50, amount: 10,
+      person_id: 1,
+      car_id: 1,
+      date: "2026-04-27",
+      start_odometer: 100,
+      end_odometer: 150,
+      km: 50,
+      amount: 10,
       client_id: "uuid-1",
     };
     const a = createTrip(db, input);
@@ -289,8 +303,26 @@ describe("createTrip idempotency", () => {
     db.exec("INSERT INTO people (id,name) VALUES (1,'P')");
     db.exec("INSERT INTO cars (id,short,name,price_per_km) VALUES (1,'X','c',0.2)");
 
-    const a = createTrip(db, { person_id:1, car_id:1, date:"2026-04-27", start_odometer:0, end_odometer:50, km:50, amount:10, client_id:"u-1" });
-    const b = createTrip(db, { person_id:1, car_id:1, date:"2026-04-27", start_odometer:50, end_odometer:80, km:30, amount:6,  client_id:"u-2" });
+    const a = createTrip(db, {
+      person_id: 1,
+      car_id: 1,
+      date: "2026-04-27",
+      start_odometer: 0,
+      end_odometer: 50,
+      km: 50,
+      amount: 10,
+      client_id: "u-1",
+    });
+    const b = createTrip(db, {
+      person_id: 1,
+      car_id: 1,
+      date: "2026-04-27",
+      start_odometer: 50,
+      end_odometer: 80,
+      km: 30,
+      amount: 6,
+      client_id: "u-2",
+    });
     expect(a.id).not.toBe(b.id);
   });
 
@@ -300,7 +332,15 @@ describe("createTrip idempotency", () => {
     db.exec("INSERT INTO people (id,name) VALUES (1,'P')");
     db.exec("INSERT INTO cars (id,short,name,price_per_km) VALUES (1,'X','c',0.2)");
 
-    const a = createTrip(db, { person_id:1, car_id:1, date:"2026-04-27", start_odometer:0, end_odometer:50, km:50, amount:10 });
+    const a = createTrip(db, {
+      person_id: 1,
+      car_id: 1,
+      date: "2026-04-27",
+      start_odometer: 0,
+      end_odometer: 50,
+      km: 50,
+      amount: 10,
+    });
     expect(a.id).toBeGreaterThan(0);
   });
 });
@@ -319,19 +359,29 @@ Find `createTrip` (likely in `lib/queries/trips.ts`). Modify:
 // lib/queries/trips.ts
 export function createTrip(db: Database.Database, input: TripCreateInput): Trip {
   if (input.client_id) {
-    const existing = db.prepare(
-      "SELECT * FROM trips WHERE client_id = ?"
-    ).get(input.client_id) as Trip | undefined;
+    const existing = db.prepare("SELECT * FROM trips WHERE client_id = ?").get(input.client_id) as
+      | Trip
+      | undefined;
     if (existing) return existing;
   }
-  const result = db.prepare(`
+  const result = db
+    .prepare(
+      `
     INSERT INTO trips (person_id, car_id, date, start_odometer, end_odometer, km, amount, location, client_id)
     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-  `).run(
-    input.person_id, input.car_id, input.date,
-    input.start_odometer, input.end_odometer, input.km, input.amount,
-    input.location ?? null, input.client_id ?? null
-  );
+  `
+    )
+    .run(
+      input.person_id,
+      input.car_id,
+      input.date,
+      input.start_odometer,
+      input.end_odometer,
+      input.km,
+      input.amount,
+      input.location ?? null,
+      input.client_id ?? null
+    );
   return db.prepare("SELECT * FROM trips WHERE id = ?").get(result.lastInsertRowid) as Trip;
 }
 ```
@@ -372,6 +422,7 @@ git commit -m "feat(api): trips POST is idempotent on client_id"
 ### Task 4: API — PUT `/api/trips/[id]` enforces conflict check
 
 **Files:**
+
 - Modify: `app/api/trips/[id]/route.ts`
 - Modify: `lib/queries/trips.ts` (`updateTrip`)
 - Test: extend `api_idempotency.test.ts`
@@ -385,10 +436,20 @@ it("updateTrip throws ConflictError when expectedUpdatedAt is older than DB", ()
   runMigrations(db);
   db.exec("INSERT INTO people (id,name) VALUES (1,'P')");
   db.exec("INSERT INTO cars (id,short,name,price_per_km) VALUES (1,'X','c',0.2)");
-  const t = createTrip(db, { person_id:1, car_id:1, date:"2026-04-27", start_odometer:0, end_odometer:50, km:50, amount:10 });
+  const t = createTrip(db, {
+    person_id: 1,
+    car_id: 1,
+    date: "2026-04-27",
+    start_odometer: 0,
+    end_odometer: 50,
+    km: 50,
+    amount: 10,
+  });
 
   // Simulate someone else updating in the meantime
-  db.prepare("UPDATE trips SET amount = 20, updated_at = '2099-01-01 00:00:00' WHERE id = ?").run(t.id);
+  db.prepare("UPDATE trips SET amount = 20, updated_at = '2099-01-01 00:00:00' WHERE id = ?").run(
+    t.id
+  );
 
   expect(() =>
     updateTrip(db, { id: t.id, amount: 30 }, { expectedUpdatedAt: t.updated_at })
@@ -401,7 +462,10 @@ it("updateTrip throws ConflictError when expectedUpdatedAt is older than DB", ()
 ```ts
 // lib/queries/trips.ts
 export class ConflictError extends Error {
-  constructor(message = "Conflict") { super(message); this.name = "ConflictError"; }
+  constructor(message = "Conflict") {
+    super(message);
+    this.name = "ConflictError";
+  }
 }
 
 export function updateTrip(
@@ -410,7 +474,9 @@ export function updateTrip(
   opts?: { expectedUpdatedAt?: string }
 ): Trip {
   if (opts?.expectedUpdatedAt) {
-    const cur = db.prepare("SELECT updated_at FROM trips WHERE id = ?").get(input.id) as { updated_at: string } | undefined;
+    const cur = db.prepare("SELECT updated_at FROM trips WHERE id = ?").get(input.id) as
+      | { updated_at: string }
+      | undefined;
     if (!cur) throw new ConflictError("Trip no longer exists");
     if (cur.updated_at !== opts.expectedUpdatedAt) {
       throw new ConflictError("Trip was modified after this offline edit");
@@ -459,6 +525,7 @@ git commit -m "feat(api): trips PUT supports conflict check, DELETE is idempoten
 ### Task 5: Repeat Tasks 3–4 for fuel_fillups
 
 **Files:**
+
 - Modify: `app/api/fuel/route.ts`, `app/api/fuel/[id]/route.ts`, `lib/queries/fuel.ts`
 - Test: extend `api_idempotency.test.ts`
 
@@ -478,6 +545,7 @@ git commit -m "feat(api): fuel POST idempotent, PUT conflict-checked, DELETE ide
 ### Task 6: Repeat Tasks 3–4 for expenses and reservations
 
 **Files:**
+
 - Modify: `app/api/expenses/route.ts`, `app/api/expenses/[id]/route.ts`, `lib/queries/expenses.ts`
 - Modify: `app/api/reservations/route.ts`, `app/api/reservations/[id]/route.ts`, `lib/queries/reservations.ts`
 - Test: extend `api_idempotency.test.ts`
@@ -503,6 +571,7 @@ git commit -m "feat(api): expenses & reservations idempotent POST/PUT/DELETE"
 ### Task 7: UUID utility
 
 **Files:**
+
 - Create: `lib/offline/uuid.ts`
 
 - [ ] **Step 1: Implement**
@@ -517,8 +586,10 @@ export function newUuid(): string {
   for (let i = 0; i < 16; i++) b[i] = Math.floor(Math.random() * 256);
   b[6] = (b[6] & 0x0f) | 0x40;
   b[8] = (b[8] & 0x3f) | 0x80;
-  const h = Array.from(b).map((x) => x.toString(16).padStart(2, "0")).join("");
-  return `${h.slice(0,8)}-${h.slice(8,12)}-${h.slice(12,16)}-${h.slice(16,20)}-${h.slice(20)}`;
+  const h = Array.from(b)
+    .map((x) => x.toString(16).padStart(2, "0"))
+    .join("");
+  return `${h.slice(0, 8)}-${h.slice(8, 12)}-${h.slice(12, 16)}-${h.slice(16, 20)}-${h.slice(20)}`;
 }
 ```
 
@@ -531,7 +602,9 @@ import { newUuid } from "./uuid";
 
 describe("newUuid", () => {
   it("returns RFC4122 v4 shape", () => {
-    expect(newUuid()).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/);
+    expect(newUuid()).toMatch(
+      /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/
+    );
   });
   it("yields unique values across N calls", () => {
     const set = new Set(Array.from({ length: 1000 }, newUuid));
@@ -552,6 +625,7 @@ git commit -m "feat(offline): UUIDv4 helper with crypto fallback"
 ### Task 8: Outbox — IndexedDB queue
 
 **Files:**
+
 - Create: `lib/offline/outbox.ts`
 - Create: `lib/offline/outbox.test.ts`
 - Modify: `package.json` (add deps `idb`, `fake-indexeddb`)
@@ -577,11 +651,25 @@ import "fake-indexeddb/auto";
 import { enqueue, list, peek, remove, count, clearAll } from "./outbox";
 
 describe("outbox", () => {
-  beforeEach(async () => { await clearAll(); });
+  beforeEach(async () => {
+    await clearAll();
+  });
 
   it("enqueues and lists items in FIFO order", async () => {
-    await enqueue({ url: "/api/trips", method: "POST", body: { a: 1 }, resource: "trips", client_id: "u-1" });
-    await enqueue({ url: "/api/trips", method: "POST", body: { a: 2 }, resource: "trips", client_id: "u-2" });
+    await enqueue({
+      url: "/api/trips",
+      method: "POST",
+      body: { a: 1 },
+      resource: "trips",
+      client_id: "u-1",
+    });
+    await enqueue({
+      url: "/api/trips",
+      method: "POST",
+      body: { a: 2 },
+      resource: "trips",
+      client_id: "u-2",
+    });
     const items = await list();
     expect(items).toHaveLength(2);
     expect(items[0].body).toEqual({ a: 1 });
@@ -589,14 +677,26 @@ describe("outbox", () => {
   });
 
   it("peek returns the oldest item without removing it", async () => {
-    await enqueue({ url: "/api/trips", method: "POST", body: { a: 1 }, resource: "trips", client_id: "u-1" });
+    await enqueue({
+      url: "/api/trips",
+      method: "POST",
+      body: { a: 1 },
+      resource: "trips",
+      client_id: "u-1",
+    });
     const head = await peek();
     expect(head?.body).toEqual({ a: 1 });
     expect(await count()).toBe(1);
   });
 
   it("remove drops an item by id", async () => {
-    await enqueue({ url: "/api/trips", method: "POST", body: { a: 1 }, resource: "trips", client_id: "u-1" });
+    await enqueue({
+      url: "/api/trips",
+      method: "POST",
+      body: { a: 1 },
+      resource: "trips",
+      client_id: "u-1",
+    });
     const item = await peek();
     await remove(item!.id);
     expect(await count()).toBe(0);
@@ -604,12 +704,24 @@ describe("outbox", () => {
 
   it("count returns the queue size", async () => {
     expect(await count()).toBe(0);
-    await enqueue({ url: "/api/trips", method: "POST", body: {}, resource: "trips", client_id: "u" });
+    await enqueue({
+      url: "/api/trips",
+      method: "POST",
+      body: {},
+      resource: "trips",
+      client_id: "u",
+    });
     expect(await count()).toBe(1);
   });
 
   it("survives 'reopens' (re-import) preserving items", async () => {
-    await enqueue({ url: "/api/trips", method: "POST", body: {}, resource: "trips", client_id: "u-1" });
+    await enqueue({
+      url: "/api/trips",
+      method: "POST",
+      body: {},
+      resource: "trips",
+      client_id: "u-1",
+    });
     // simulate reopen by clearing module cache — fake-indexeddb persists per test
     expect(await count()).toBe(1);
   });
@@ -663,9 +775,15 @@ function db(): Promise<IDBPDatabase<OutboxDB>> {
   return dbPromise;
 }
 
-export async function enqueue(item: Omit<QueuedMutation, "id" | "queued_at" | "attempts">): Promise<number> {
+export async function enqueue(
+  item: Omit<QueuedMutation, "id" | "queued_at" | "attempts">
+): Promise<number> {
   const d = await db();
-  const id = await d.add("mutations", { ...item, queued_at: Date.now(), attempts: 0 } as QueuedMutation);
+  const id = await d.add("mutations", {
+    ...item,
+    queued_at: Date.now(),
+    attempts: 0,
+  } as QueuedMutation);
   return id as number;
 }
 
@@ -720,6 +838,7 @@ git commit -m "feat(offline): IndexedDB outbox for queued mutations"
 ### Task 9: Sync engine — drainer + Background Sync
 
 **Files:**
+
 - Create: `lib/offline/sync-engine.ts`
 - Create: `lib/offline/sync-engine.test.ts`
 
@@ -742,22 +861,52 @@ function makeFetcher(responses: Array<{ status: number; body?: unknown }>) {
 }
 
 describe("drainOutbox", () => {
-  beforeEach(async () => { await clearAll(); });
+  beforeEach(async () => {
+    await clearAll();
+  });
 
   it("drains all items on success in FIFO order", async () => {
-    await enqueue({ url:"/api/trips", method:"POST", body:{a:1}, resource:"trips", client_id:"u-1" });
-    await enqueue({ url:"/api/trips", method:"POST", body:{a:2}, resource:"trips", client_id:"u-2" });
+    await enqueue({
+      url: "/api/trips",
+      method: "POST",
+      body: { a: 1 },
+      resource: "trips",
+      client_id: "u-1",
+    });
+    await enqueue({
+      url: "/api/trips",
+      method: "POST",
+      body: { a: 2 },
+      resource: "trips",
+      client_id: "u-2",
+    });
     const fetcher = makeFetcher([{ status: 201 }, { status: 201 }]);
     const onSuccess = vi.fn();
     const result = await drainOutbox({ fetch: fetcher, onSuccess });
     expect(result.drained).toBe(2);
     expect(await list()).toHaveLength(0);
-    expect(fetcher).toHaveBeenNthCalledWith(1, expect.stringContaining("/api/trips"), expect.objectContaining({ method: "POST", body: JSON.stringify({a:1}) }));
+    expect(fetcher).toHaveBeenNthCalledWith(
+      1,
+      expect.stringContaining("/api/trips"),
+      expect.objectContaining({ method: "POST", body: JSON.stringify({ a: 1 }) })
+    );
   });
 
   it("stops draining on 5xx and leaves item in queue with incremented attempts", async () => {
-    await enqueue({ url:"/api/trips", method:"POST", body:{a:1}, resource:"trips", client_id:"u-1" });
-    await enqueue({ url:"/api/trips", method:"POST", body:{a:2}, resource:"trips", client_id:"u-2" });
+    await enqueue({
+      url: "/api/trips",
+      method: "POST",
+      body: { a: 1 },
+      resource: "trips",
+      client_id: "u-1",
+    });
+    await enqueue({
+      url: "/api/trips",
+      method: "POST",
+      body: { a: 2 },
+      resource: "trips",
+      client_id: "u-2",
+    });
     const fetcher = makeFetcher([{ status: 500 }]);
     const result = await drainOutbox({ fetch: fetcher });
     expect(result.drained).toBe(0);
@@ -767,8 +916,21 @@ describe("drainOutbox", () => {
   });
 
   it("drops an item on 409 conflict and continues", async () => {
-    await enqueue({ url:"/api/trips/5", method:"PUT", body:{}, resource:"trips", resource_id:5, expectedUpdatedAt:"old" });
-    await enqueue({ url:"/api/trips", method:"POST", body:{}, resource:"trips", client_id:"u-2" });
+    await enqueue({
+      url: "/api/trips/5",
+      method: "PUT",
+      body: {},
+      resource: "trips",
+      resource_id: 5,
+      expectedUpdatedAt: "old",
+    });
+    await enqueue({
+      url: "/api/trips",
+      method: "POST",
+      body: {},
+      resource: "trips",
+      client_id: "u-2",
+    });
     const fetcher = makeFetcher([{ status: 409 }, { status: 201 }]);
     const onConflict = vi.fn();
     const result = await drainOutbox({ fetch: fetcher, onConflict });
@@ -779,8 +941,16 @@ describe("drainOutbox", () => {
   });
 
   it("aborts cleanly when network fails (offline mid-drain)", async () => {
-    await enqueue({ url:"/api/trips", method:"POST", body:{}, resource:"trips", client_id:"u" });
-    const fetcher = vi.fn(async () => { throw new TypeError("Failed to fetch"); });
+    await enqueue({
+      url: "/api/trips",
+      method: "POST",
+      body: {},
+      resource: "trips",
+      client_id: "u",
+    });
+    const fetcher = vi.fn(async () => {
+      throw new TypeError("Failed to fetch");
+    });
     const result = await drainOutbox({ fetch: fetcher });
     expect(result.drained).toBe(0);
     expect((await list()).length).toBe(1);
@@ -822,13 +992,18 @@ export async function drainOutbox(opts: DrainOptions = {}): Promise<DrainResult>
   if (draining) return { drained: 0, conflicts: 0, failed: 0 };
   draining = true;
   const fetcher = opts.fetch ?? fetch;
-  let drained = 0, conflicts = 0, failed = 0;
+  let drained = 0,
+    conflicts = 0,
+    failed = 0;
   try {
     while (true) {
       const head = await peek();
       if (!head) break;
 
-      const headers: Record<string, string> = { "Content-Type": "application/json", ...(head.headers ?? {}) };
+      const headers: Record<string, string> = {
+        "Content-Type": "application/json",
+        ...(head.headers ?? {}),
+      };
       if (head.expectedUpdatedAt) headers["X-Expected-Updated-At"] = head.expectedUpdatedAt;
 
       let res: Response;
@@ -907,7 +1082,9 @@ export function useSyncEngine() {
     navigator.serviceWorker.ready.then((reg) => {
       if ("sync" in reg) {
         // Sync will fire when the browser thinks we're online and the SW is registered.
-        (reg as any).sync.register("autodelen-mutations").catch(() => { /* unsupported */ });
+        (reg as any).sync.register("autodelen-mutations").catch(() => {
+          /* unsupported */
+        });
       }
     });
   }, []);
@@ -935,6 +1112,7 @@ git commit -m "feat(offline): sync engine with FIFO drainer and Background Sync"
 ### Task 10: Optimistic update helpers
 
 **Files:**
+
 - Create: `lib/offline/optimistic.ts`
 - Create: `lib/offline/optimistic.test.ts`
 
@@ -946,7 +1124,11 @@ import { describe, it, expect } from "vitest";
 import { QueryClient } from "@tanstack/react-query";
 import { applyCreate, replaceCreate, rollbackCreate, applyUpdate, applyDelete } from "./optimistic";
 
-interface Trip { id: number; client_id?: string | null; amount: number; }
+interface Trip {
+  id: number;
+  client_id?: string | null;
+  amount: number;
+}
 
 describe("optimistic helpers", () => {
   it("applyCreate inserts a pending row at the start of the list", () => {
@@ -1001,13 +1183,18 @@ Expected: FAIL.
 import type { QueryClient } from "@tanstack/react-query";
 
 export function applyCreate<T extends { id: number; client_id?: string | null }>(
-  qc: QueryClient, key: readonly unknown[], pending: T
+  qc: QueryClient,
+  key: readonly unknown[],
+  pending: T
 ): void {
   qc.setQueryData<T[]>(key, (old) => [pending, ...(old ?? [])]);
 }
 
 export function replaceCreate<T extends { id: number; client_id?: string | null }>(
-  qc: QueryClient, key: readonly unknown[], clientId: string, server: T
+  qc: QueryClient,
+  key: readonly unknown[],
+  clientId: string,
+  server: T
 ): void {
   qc.setQueryData<T[]>(key, (old) =>
     (old ?? []).map((row) => (row.client_id === clientId ? server : row))
@@ -1015,13 +1202,18 @@ export function replaceCreate<T extends { id: number; client_id?: string | null 
 }
 
 export function rollbackCreate<T extends { id: number; client_id?: string | null }>(
-  qc: QueryClient, key: readonly unknown[], clientId: string
+  qc: QueryClient,
+  key: readonly unknown[],
+  clientId: string
 ): void {
   qc.setQueryData<T[]>(key, (old) => (old ?? []).filter((row) => row.client_id !== clientId));
 }
 
 export function applyUpdate<T extends { id: number }>(
-  qc: QueryClient, key: readonly unknown[], id: number, patch: Partial<T>
+  qc: QueryClient,
+  key: readonly unknown[],
+  id: number,
+  patch: Partial<T>
 ): void {
   qc.setQueryData<T[]>(key, (old) =>
     (old ?? []).map((row) => (row.id === id ? { ...row, ...patch } : row))
@@ -1029,7 +1221,9 @@ export function applyUpdate<T extends { id: number }>(
 }
 
 export function applyDelete<T extends { id: number }>(
-  qc: QueryClient, key: readonly unknown[], id: number
+  qc: QueryClient,
+  key: readonly unknown[],
+  id: number
 ): void {
   qc.setQueryData<T[]>(key, (old) => (old ?? []).filter((row) => row.id !== id));
 }
@@ -1050,6 +1244,7 @@ git commit -m "feat(offline): optimistic update helpers for create/update/delete
 ### Task 11: Wire mutation hooks — trips
 
 **Files:**
+
 - Modify: `hooks/use-trips.ts`
 
 - [ ] **Step 1: Refactor `useCreateTrip` to enqueue on offline failure**
@@ -1064,8 +1259,13 @@ import { applyCreate, replaceCreate, rollbackCreate } from "@/lib/offline/optimi
 import type { Trip } from "@/types";
 
 interface CreateInput {
-  person_id: number; car_id: number; date: string;
-  start_odometer: number; end_odometer: number; km: number; amount: number;
+  person_id: number;
+  car_id: number;
+  date: string;
+  start_odometer: number;
+  end_odometer: number;
+  km: number;
+  amount: number;
   location?: string | null;
 }
 
@@ -1075,11 +1275,16 @@ export function useCreateTrip() {
     mutationFn: async (input: CreateInput): Promise<Trip> => {
       const client_id = newUuid();
       const optimistic: Trip = {
-        id: -Date.now(),                       // negative sentinel for pending
+        id: -Date.now(), // negative sentinel for pending
         client_id,
-        person_id: input.person_id, car_id: input.car_id, date: input.date,
-        start_odometer: input.start_odometer, end_odometer: input.end_odometer,
-        km: input.km, amount: input.amount, location: input.location ?? null,
+        person_id: input.person_id,
+        car_id: input.car_id,
+        date: input.date,
+        start_odometer: input.start_odometer,
+        end_odometer: input.end_odometer,
+        km: input.km,
+        amount: input.amount,
+        location: input.location ?? null,
         updated_at: new Date().toISOString(),
         // ...other fields from Trip type (person_name, car_short, etc.) — populate from cache lookup
       } as Trip;
@@ -1099,8 +1304,11 @@ export function useCreateTrip() {
         // If we're offline, leave optimistic row, queue the mutation.
         if (typeof navigator !== "undefined" && !navigator.onLine) {
           await enqueue({
-            url: "/api/trips", method: "POST", body: { ...input, client_id },
-            resource: "trips", client_id,
+            url: "/api/trips",
+            method: "POST",
+            body: { ...input, client_id },
+            resource: "trips",
+            client_id,
           });
           toast.success("Opgeslagen — wordt gesynchroniseerd zodra je weer online bent.");
           return optimistic;
@@ -1114,6 +1322,7 @@ export function useCreateTrip() {
 ```
 
 The same pattern applies to `useUpdateTrip` and `useDeleteTrip`. Update them similarly:
+
 - `useUpdateTrip`: optimistic patch via `applyUpdate`; on offline → enqueue with `expectedUpdatedAt`; on success → invalidate `["trips"]`.
 - `useDeleteTrip`: optimistic remove via `applyDelete`; on offline → enqueue DELETE; on success → no-op.
 
@@ -1177,6 +1386,7 @@ if (!navigator.onLine) {
 ### Task 15: PendingBadge component + list integration
 
 **Files:**
+
 - Create: `components/pending-badge.tsx`
 - Modify: the four list pages to render `<PendingBadge />` for rows with `id < 0` or `client_id` not yet reconciled
 
@@ -1228,7 +1438,9 @@ export function PendingBadge() {
 For each row in `/trips`, `/fuel`, `/expenses`, `/calendar`:
 
 ```tsx
-{row.id < 0 && <PendingBadge />}
+{
+  row.id < 0 && <PendingBadge />;
+}
 ```
 
 Place it next to the title or amount, where it's visible but not intrusive.
@@ -1249,6 +1461,7 @@ git commit -m "feat(offline): pending badge on optimistic rows"
 ### Task 16: Extend OfflineBadge with queue count
 
 **Files:**
+
 - Modify: `lib/offline/online-state.tsx` — add `pendingCount`
 - Modify: `components/offline-badge.tsx` — show `· N wachten` when count > 0
 - Modify: `app/providers.tsx` — mount `useSyncEngine()`, push count into context
@@ -1283,7 +1496,10 @@ useEffect(() => {
   };
   tick();
   const id = setInterval(tick, 3000);
-  return () => { cancelled = true; clearInterval(id); };
+  return () => {
+    cancelled = true;
+    clearInterval(id);
+  };
 }, [setPendingCount]);
 ```
 
@@ -1364,11 +1580,13 @@ Add a trip / edit / delete while online. Behavior identical to Phase 1.
 - [ ] **Step 2: Offline create**
 
 Toggle DevTools offline. Add a trip. Verify:
+
 - Row appears immediately with `↻ Sync.` badge
 - Header badge shows `OFFLINE · 1 wachten`
 - IndexedDB `autodelen-outbox.mutations` contains the entry
 
 Go online. Verify:
+
 - Within ~3s: row's pending badge disappears
 - Header badge clears
 - IndexedDB queue is empty
@@ -1379,16 +1597,18 @@ Go online. Verify:
 Online, add trip A. Take offline. Edit A's amount. Take online again. Verify the server amount is the new one (single edit applied).
 
 Then: simulate flaky network. Take offline, edit A. Take online but immediately throttle to "Slow 3G" with timeout. Force a partial failure. Take online fully. Verify:
+
 - Idempotency: A is updated exactly once (no double-apply)
 - Queue eventually drains
 
 - [ ] **Step 4: Conflict path**
 
 Online, add trip A. Note `updated_at`. In another tab (or via SQL) update A's amount. In the original tab, take offline, edit A, take online. Verify:
+
 - 409 returned
 - Queue item dropped
 - Toast appears: "Edit conflict — refresh and retry"
-- A in cache is invalidated and shows the *other* tab's value after refetch
+- A in cache is invalidated and shows the _other_ tab's value after refetch
 
 - [ ] **Step 5: Cross-resource ordering**
 
@@ -1397,6 +1617,7 @@ Offline. Add trip A, add fuel B, add expense C (in that order). Go online. Verif
 - [ ] **Step 6: Tab-close survival**
 
 Offline. Add trip A. Close tab. Open tab. Verify:
+
 - Trip A still visible (from React Query cache OR re-loaded from server when online — the queue should drain on reopen since `online` is true and `useSyncEngine` mounts)
 
 - [ ] **Step 7: Background Sync (Chrome only)**
@@ -1416,6 +1637,7 @@ Document the limitation in the PR description.
 ```bash
 npm test
 ```
+
 Expected: green.
 
 - [ ] **Step 2: Push and PR**
@@ -1453,6 +1675,7 @@ EOF
 - [ ] **Step 3: After merge, deploy and watch**
 
 After merge to main:
+
 ```bash
 ssh root@100.86.173.115 "cd /opt/dockge/stacks/autodelen && docker compose pull && docker compose up -d"
 ```
@@ -1473,15 +1696,15 @@ Watch for the migration to apply on container start. Verify on production by add
 
 ## Risks & mitigations
 
-| Risk | Likelihood | Mitigation |
-|---|---|---|
-| Migration fails on existing prod data due to NOT NULL default | Low | `DEFAULT CURRENT_TIMESTAMP` works on SQLite ALTER TABLE; tested in `migration_0003.test.ts`. Take a backup before deploying. |
-| Race: user submits, response arrives, drain ALSO submits queued copy | Medium | Mitigated by `client_id` UNIQUE — server returns existing row, client gets same `id` either way. |
-| Negative-id sentinel collides if Date.now() repeats (impossible at ms resolution but worth noting) | Very low | Acceptable; collisions would just replace a different pending row briefly. |
-| Background Sync unsupported in Safari | Known | Documented; fallback to `online`-event drain on next visit. |
-| Outbox grows unbounded if user stays offline for weeks | Low | `attempts` field + future eviction policy if `attempts > 50` (out of scope, log only for now). |
-| User edits an offline-created row before its first sync | Medium | The optimistic row has a negative `id`; mutation hook should detect this and chain by `client_id` instead — **add to acceptance criteria of Task 11 if reproducible in QA**. |
-| Trigger-based `updated_at` doesn't fire on `INSERT OR REPLACE` paths | Low | Verified: existing code uses `INSERT` and `UPDATE`, never `REPLACE`. If it changes, add `updated_at = CURRENT_TIMESTAMP` explicitly. |
+| Risk                                                                                               | Likelihood | Mitigation                                                                                                                                                                   |
+| -------------------------------------------------------------------------------------------------- | ---------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Migration fails on existing prod data due to NOT NULL default                                      | Low        | `DEFAULT CURRENT_TIMESTAMP` works on SQLite ALTER TABLE; tested in `migration_0003.test.ts`. Take a backup before deploying.                                                 |
+| Race: user submits, response arrives, drain ALSO submits queued copy                               | Medium     | Mitigated by `client_id` UNIQUE — server returns existing row, client gets same `id` either way.                                                                             |
+| Negative-id sentinel collides if Date.now() repeats (impossible at ms resolution but worth noting) | Very low   | Acceptable; collisions would just replace a different pending row briefly.                                                                                                   |
+| Background Sync unsupported in Safari                                                              | Known      | Documented; fallback to `online`-event drain on next visit.                                                                                                                  |
+| Outbox grows unbounded if user stays offline for weeks                                             | Low        | `attempts` field + future eviction policy if `attempts > 50` (out of scope, log only for now).                                                                               |
+| User edits an offline-created row before its first sync                                            | Medium     | The optimistic row has a negative `id`; mutation hook should detect this and chain by `client_id` instead — **add to acceptance criteria of Task 11 if reproducible in QA**. |
+| Trigger-based `updated_at` doesn't fire on `INSERT OR REPLACE` paths                               | Low        | Verified: existing code uses `INSERT` and `UPDATE`, never `REPLACE`. If it changes, add `updated_at = CURRENT_TIMESTAMP` explicitly.                                         |
 
 ---
 
@@ -1492,4 +1715,4 @@ Watch for the migration to apply on container start. Verify on production by add
 - **Admin & owner offline writes:** all `/admin/*` workflows (inbox, settlement, payouts, hygiene gap-assignment, member CRUD, car CRUD, fixed-cost editing, price history) require connectivity. Surface this as a polite hint in the page header when an admin opens an admin screen offline (e.g. `OFFLINE — admin features require connection`).
 - **Reservation status changes offline:** confirming or rejecting a booking is an admin action with cross-member visibility consequences; queueing it could mislead users about availability.
 - **Outbox eviction / age-based GC:** can be added later as a maintenance hook; not needed in Phase 2.
-- **Per-resource priority differences in the runtime:** all four scoped resources share the same outbox, drainer, and optimistic helpers. The "primary vs secondary" split only governs *implementation order*, not runtime behavior.
+- **Per-resource priority differences in the runtime:** all four scoped resources share the same outbox, drainer, and optimistic helpers. The "primary vs secondary" split only governs _implementation order_, not runtime behavior.

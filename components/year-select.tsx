@@ -29,7 +29,10 @@ export function YearSelect({ value, onChange, years, allLabel }: YearSelectProps
       <button
         onClick={() => setOpen((o) => !o)}
         style={{
-          fontFamily: fontMono, fontSize: 9, fontWeight: 700, letterSpacing: 2,
+          fontFamily: fontMono,
+          fontSize: 9,
+          fontWeight: 700,
+          letterSpacing: 2,
           textTransform: "uppercase",
           background: active ? paper.ink : "transparent",
           color: active ? paper.paper : paper.inkDim,
@@ -42,30 +45,48 @@ export function YearSelect({ value, onChange, years, allLabel }: YearSelectProps
         }}
       >
         {value || allLabel}
-        <span style={{
-          position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)",
-          lineHeight: 1,
-        }}>
+        <span
+          style={{
+            position: "absolute",
+            right: 8,
+            top: "50%",
+            transform: "translateY(-50%)",
+            lineHeight: 1,
+          }}
+        >
           {open ? "▴" : "▾"}
         </span>
       </button>
 
       {open && (
-        <div style={{
-          position: "absolute", right: 0, top: "100%", zIndex: 100,
-          background: paper.paper,
-          border: `1.5px solid ${paper.ink}`,
-          boxShadow: "0 4px 16px rgba(0,0,0,0.18)",
-          minWidth: "100%",
-        }}>
+        <div
+          style={{
+            position: "absolute",
+            right: 0,
+            top: "100%",
+            zIndex: 100,
+            background: paper.paper,
+            border: `1.5px solid ${paper.ink}`,
+            boxShadow: "0 4px 16px rgba(0,0,0,0.18)",
+            minWidth: "100%",
+          }}
+        >
           {["", ...years].map((y) => (
             <button
               key={y || "__all"}
-              onClick={() => { onChange(y); setOpen(false); }}
+              onClick={() => {
+                onChange(y);
+                setOpen(false);
+              }}
               style={{
-                display: "block", width: "100%", textAlign: "left",
-                fontFamily: fontMono, fontSize: 9, fontWeight: 700,
-                letterSpacing: 2, textTransform: "uppercase",
+                display: "block",
+                width: "100%",
+                textAlign: "left",
+                fontFamily: fontMono,
+                fontSize: 9,
+                fontWeight: 700,
+                letterSpacing: 2,
+                textTransform: "uppercase",
                 background: value === y ? paper.ink : paper.paper,
                 color: value === y ? paper.paper : paper.ink,
                 border: "none",

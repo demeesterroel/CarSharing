@@ -13,11 +13,13 @@
 ### Task 1: Install dependencies
 
 **Files:**
+
 - Create: `package.json`
 
 - [ ] **Step 1: Initialise package.json**
 
 Run from `/home/roeland/Projects/CarSharing`:
+
 ```bash
 npm init -y
 ```
@@ -39,6 +41,7 @@ npm install --save-dev tailwindcss @tailwindcss/postcss postcss vitest @vitejs/p
 - [ ] **Step 3: Update scripts in package.json**
 
 Replace the scripts section:
+
 ```json
 {
   "scripts": {
@@ -64,6 +67,7 @@ git commit -m "chore: install dependencies"
 ### Task 2: TypeScript & PostCSS config
 
 **Files:**
+
 - Create: `tsconfig.json`
 - Create: `postcss.config.mjs`
 - Create: `next.config.ts`
@@ -148,6 +152,7 @@ git commit -m "chore: add typescript, postcss, next, vitest config"
 ### Task 3: App shell — layout, global CSS, providers
 
 **Files:**
+
 - Create: `app/globals.css`
 - Create: `app/layout.tsx`
 - Create: `app/providers.tsx`
@@ -221,7 +226,11 @@ Note: `themeColor` moved to `viewport` export (Next 14+ requirement). Leaflet CS
 
 ```tsx
 export default function HomePage() {
-  return <main className="p-4"><h1 className="text-2xl font-bold">Autodelen</h1></main>;
+  return (
+    <main className="p-4">
+      <h1 className="text-2xl font-bold">Autodelen</h1>
+    </main>
+  );
 }
 ```
 
@@ -230,6 +239,7 @@ export default function HomePage() {
 ```bash
 npm run dev
 ```
+
 Expected: server starts at http://localhost:3000, page shows "Autodelen".
 
 - [ ] **Step 6: Commit**

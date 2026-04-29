@@ -9,8 +9,14 @@ const schema = z.object({
   short: z.string().min(1).max(10),
   name: z.string().min(1),
   price_per_km: z.coerce.number().positive(),
-  brand: z.string().optional().transform((v) => v === "" ? null : (v ?? null)),
-  color: z.string().optional().transform((v) => v === "" ? null : (v ?? null)),
+  brand: z
+    .string()
+    .optional()
+    .transform((v) => (v === "" ? null : (v ?? null))),
+  color: z
+    .string()
+    .optional()
+    .transform((v) => (v === "" ? null : (v ?? null))),
 });
 type FormInput = z.input<typeof schema>;
 type FormData = z.output<typeof schema>;
@@ -22,10 +28,14 @@ interface Props {
 }
 
 export function CarForm({ defaultValues, onSubmit, onCancel }: Props) {
-  const { register, handleSubmit, formState: { errors } } = useForm<FormInput, unknown, FormData>({
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<FormInput, unknown, FormData>({
     resolver: zodResolver(schema),
     defaultValues: {
-      price_per_km: 0.20,
+      price_per_km: 0.2,
       ...defaultValues,
       brand: defaultValues?.brand ?? undefined,
       color: defaultValues?.color ?? undefined,
@@ -36,7 +46,10 @@ export function CarForm({ defaultValues, onSubmit, onCancel }: Props) {
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 p-4">
       <div>
         <label className="block text-sm font-medium mb-1">{t("form.car_short")}</label>
-        <input {...register("short")} className="w-full border rounded-md px-3 py-2 text-sm uppercase" />
+        <input
+          {...register("short")}
+          className="w-full border rounded-md px-3 py-2 text-sm uppercase"
+        />
         {errors.short && <p className="text-red-500 text-xs mt-1">{errors.short.message}</p>}
       </div>
       <div>
@@ -45,7 +58,12 @@ export function CarForm({ defaultValues, onSubmit, onCancel }: Props) {
       </div>
       <div>
         <label className="block text-sm font-medium mb-1">{t("form.price_per_km")}</label>
-        <input {...register("price_per_km")} type="number" step="0.01" className="w-full border rounded-md px-3 py-2 text-sm" />
+        <input
+          {...register("price_per_km")}
+          type="number"
+          step="0.01"
+          className="w-full border rounded-md px-3 py-2 text-sm"
+        />
       </div>
       <div>
         <label className="block text-sm font-medium mb-1">{t("form.brand")}</label>
@@ -56,8 +74,12 @@ export function CarForm({ defaultValues, onSubmit, onCancel }: Props) {
         <input {...register("color")} className="w-full border rounded-md px-3 py-2 text-sm" />
       </div>
       <div className="flex gap-3 pt-2">
-        <button type="button" onClick={onCancel} className="flex-1 border rounded-md py-2 text-sm">{t("action.cancel")}</button>
-        <button type="submit" className="flex-1 bg-blue-600 text-white rounded-md py-2 text-sm">{t("action.save")}</button>
+        <button type="button" onClick={onCancel} className="flex-1 border rounded-md py-2 text-sm">
+          {t("action.cancel")}
+        </button>
+        <button type="submit" className="flex-1 bg-blue-600 text-white rounded-md py-2 text-sm">
+          {t("action.save")}
+        </button>
       </div>
     </form>
   );

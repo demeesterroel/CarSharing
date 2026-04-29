@@ -12,6 +12,7 @@
 ### Task 1: People API routes
 
 **Files:**
+
 - Create: `app/api/people/route.ts`
 - Create: `app/api/people/[id]/route.ts`
 
@@ -74,6 +75,7 @@ export const PUT = json(async (req, ctx: { params: Promise<{ id: string }> }) =>
 npm run dev
 curl http://localhost:3000/api/people
 ```
+
 Expected: `[]` (empty array) or seeded rows.
 
 ```bash
@@ -81,14 +83,17 @@ curl -X POST http://localhost:3000/api/people \
   -H "Content-Type: application/json" \
   -d '{"name":"Roeland","discount":0,"discount_long":0,"active":1}'
 ```
+
 Expected: `{"id":N}`.
 
 Invalid payload fails fast:
+
 ```bash
 curl -X POST http://localhost:3000/api/people \
   -H "Content-Type: application/json" \
   -d '{"name":""}'
 ```
+
 Expected: `400` with `{"error":"Validation failed","issues":[...]}`.
 
 - [ ] **Step 4: Commit**
@@ -103,6 +108,7 @@ git commit -m "feat: people API routes with zod validation and error wrapper"
 ### Task 2: Cars API routes
 
 **Files:**
+
 - Create: `app/api/cars/route.ts`
 - Create: `app/api/cars/[id]/route.ts`
 
@@ -118,8 +124,16 @@ const CarSchema = z.object({
   short: z.string().min(1).max(10),
   name: z.string().min(1),
   price_per_km: z.number().positive(),
-  brand: z.string().nullable().optional().transform((v) => v ?? null),
-  color: z.string().nullable().optional().transform((v) => v ?? null),
+  brand: z
+    .string()
+    .nullable()
+    .optional()
+    .transform((v) => v ?? null),
+  color: z
+    .string()
+    .nullable()
+    .optional()
+    .transform((v) => v ?? null),
 });
 
 export const GET = json(async () => getCars(getDb()));
@@ -143,8 +157,16 @@ const CarSchema = z.object({
   short: z.string().min(1).max(10),
   name: z.string().min(1),
   price_per_km: z.number().positive(),
-  brand: z.string().nullable().optional().transform((v) => v ?? null),
-  color: z.string().nullable().optional().transform((v) => v ?? null),
+  brand: z
+    .string()
+    .nullable()
+    .optional()
+    .transform((v) => v ?? null),
+  color: z
+    .string()
+    .nullable()
+    .optional()
+    .transform((v) => v ?? null),
 });
 
 export const GET = json(async (_req, ctx: { params: Promise<{ id: string }> }) => {
@@ -173,6 +195,7 @@ git commit -m "feat: cars API routes with zod validation"
 ### Task 3: TanStack Query hooks via factory
 
 **Files:**
+
 - Create: `hooks/use-people.ts`
 - Create: `hooks/use-cars.ts`
 
@@ -216,6 +239,7 @@ git commit -m "feat: TanStack Query hooks for people and cars"
 ### Task 4: People page
 
 **Files:**
+
 - Create: `app/people/page.tsx`
 - Create: `app/people/person-form.tsx`
 
@@ -244,7 +268,11 @@ interface Props {
 }
 
 export function PersonForm({ defaultValues, onSubmit, onCancel }: Props) {
-  const { register, handleSubmit, formState: { errors } } = useForm<FormData>({
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<FormData>({
     resolver: zodResolver(schema),
     defaultValues: { discount: 0, discount_long: 0, active: 1, ...defaultValues },
   });
@@ -258,19 +286,41 @@ export function PersonForm({ defaultValues, onSubmit, onCancel }: Props) {
       </div>
       <div>
         <label className="block text-sm font-medium mb-1">{t("form.discount")}</label>
-        <input {...register("discount")} type="number" step="0.01" className="w-full border rounded-md px-3 py-2 text-sm" />
+        <input
+          {...register("discount")}
+          type="number"
+          step="0.01"
+          className="w-full border rounded-md px-3 py-2 text-sm"
+        />
       </div>
       <div>
         <label className="block text-sm font-medium mb-1">{t("form.discount_long")}</label>
-        <input {...register("discount_long")} type="number" step="0.01" className="w-full border rounded-md px-3 py-2 text-sm" />
+        <input
+          {...register("discount_long")}
+          type="number"
+          step="0.01"
+          className="w-full border rounded-md px-3 py-2 text-sm"
+        />
       </div>
       <div className="flex items-center gap-2">
-        <input {...register("active")} type="checkbox" id="active" value="1" defaultChecked={defaultValues?.active !== 0} />
-        <label htmlFor="active" className="text-sm">{t("form.active_member")}</label>
+        <input
+          {...register("active")}
+          type="checkbox"
+          id="active"
+          value="1"
+          defaultChecked={defaultValues?.active !== 0}
+        />
+        <label htmlFor="active" className="text-sm">
+          {t("form.active_member")}
+        </label>
       </div>
       <div className="flex gap-3 pt-2">
-        <button type="button" onClick={onCancel} className="flex-1 border rounded-md py-2 text-sm">{t("action.cancel")}</button>
-        <button type="submit" className="flex-1 bg-blue-600 text-white rounded-md py-2 text-sm">{t("action.save")}</button>
+        <button type="button" onClick={onCancel} className="flex-1 border rounded-md py-2 text-sm">
+          {t("action.cancel")}
+        </button>
+        <button type="submit" className="flex-1 bg-blue-600 text-white rounded-md py-2 text-sm">
+          {t("action.save")}
+        </button>
       </div>
     </form>
   );
@@ -299,7 +349,13 @@ export default function PeoplePage() {
   const [editing, setEditing] = useState<Person | null>(null);
   const [adding, setAdding] = useState(false);
 
-  if (isLoading) return <><PageHeader title={t("page.people")} /><p className="p-4 text-gray-500">{t("state.loading")}</p></>;
+  if (isLoading)
+    return (
+      <>
+        <PageHeader title={t("page.people")} />
+        <p className="p-4 text-gray-500">{t("state.loading")}</p>
+      </>
+    );
 
   return (
     <>
@@ -323,11 +379,16 @@ export default function PeoplePage() {
         <Dialog.Portal>
           <Dialog.Overlay className="fixed inset-0 bg-black/40 z-40" />
           <Dialog.Content className="fixed inset-x-0 bottom-0 bg-white rounded-t-xl z-50 max-h-[90vh] overflow-y-auto">
-            <Dialog.Title className="px-4 pt-4 text-base font-semibold">{t("page.person_add")}</Dialog.Title>
+            <Dialog.Title className="px-4 pt-4 text-base font-semibold">
+              {t("page.person_add")}
+            </Dialog.Title>
             <PersonForm
               onSubmit={(data) => {
                 createPerson.mutate(data as Omit<Person, "id">, {
-                  onSuccess: () => { setAdding(false); toast.success(t("toast.person_added")); },
+                  onSuccess: () => {
+                    setAdding(false);
+                    toast.success(t("toast.person_added"));
+                  },
                   onError: (e) => toast.error(e.message),
                 });
               }}
@@ -341,15 +402,23 @@ export default function PeoplePage() {
         <Dialog.Portal>
           <Dialog.Overlay className="fixed inset-0 bg-black/40 z-40" />
           <Dialog.Content className="fixed inset-x-0 bottom-0 bg-white rounded-t-xl z-50 max-h-[90vh] overflow-y-auto">
-            <Dialog.Title className="px-4 pt-4 text-base font-semibold">{t("page.person_edit")}</Dialog.Title>
+            <Dialog.Title className="px-4 pt-4 text-base font-semibold">
+              {t("page.person_edit")}
+            </Dialog.Title>
             {editing && (
               <PersonForm
                 defaultValues={editing}
                 onSubmit={(data) => {
-                  updatePerson.mutate({ ...editing, ...data }, {
-                    onSuccess: () => { setEditing(null); toast.success(t("toast.saved")); },
-                    onError: (e) => toast.error(e.message),
-                  });
+                  updatePerson.mutate(
+                    { ...editing, ...data },
+                    {
+                      onSuccess: () => {
+                        setEditing(null);
+                        toast.success(t("toast.saved"));
+                      },
+                      onError: (e) => toast.error(e.message),
+                    }
+                  );
                 }}
                 onCancel={() => setEditing(null)}
               />
@@ -369,6 +438,7 @@ export default function PeoplePage() {
 ```bash
 npm run dev
 ```
+
 Navigate to http://localhost:3000/people — list shows, FAB opens add form, save works.
 
 - [ ] **Step 4: Commit**
@@ -383,6 +453,7 @@ git commit -m "feat: people list and add/edit form"
 ### Task 5: Cars page
 
 **Files:**
+
 - Create: `app/cars/page.tsx`
 - Create: `app/cars/car-form.tsx`
 
@@ -412,16 +483,23 @@ interface Props {
 }
 
 export function CarForm({ defaultValues, onSubmit, onCancel }: Props) {
-  const { register, handleSubmit, formState: { errors } } = useForm<FormData>({
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<FormData>({
     resolver: zodResolver(schema),
-    defaultValues: { price_per_km: 0.20, ...defaultValues },
+    defaultValues: { price_per_km: 0.2, ...defaultValues },
   });
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 p-4">
       <div>
         <label className="block text-sm font-medium mb-1">{t("form.car_short")}</label>
-        <input {...register("short")} className="w-full border rounded-md px-3 py-2 text-sm uppercase" />
+        <input
+          {...register("short")}
+          className="w-full border rounded-md px-3 py-2 text-sm uppercase"
+        />
         {errors.short && <p className="text-red-500 text-xs mt-1">{errors.short.message}</p>}
       </div>
       <div>
@@ -430,7 +508,12 @@ export function CarForm({ defaultValues, onSubmit, onCancel }: Props) {
       </div>
       <div>
         <label className="block text-sm font-medium mb-1">{t("form.price_per_km")}</label>
-        <input {...register("price_per_km")} type="number" step="0.01" className="w-full border rounded-md px-3 py-2 text-sm" />
+        <input
+          {...register("price_per_km")}
+          type="number"
+          step="0.01"
+          className="w-full border rounded-md px-3 py-2 text-sm"
+        />
       </div>
       <div>
         <label className="block text-sm font-medium mb-1">{t("form.brand")}</label>
@@ -441,8 +524,12 @@ export function CarForm({ defaultValues, onSubmit, onCancel }: Props) {
         <input {...register("color")} className="w-full border rounded-md px-3 py-2 text-sm" />
       </div>
       <div className="flex gap-3 pt-2">
-        <button type="button" onClick={onCancel} className="flex-1 border rounded-md py-2 text-sm">{t("action.cancel")}</button>
-        <button type="submit" className="flex-1 bg-blue-600 text-white rounded-md py-2 text-sm">{t("action.save")}</button>
+        <button type="button" onClick={onCancel} className="flex-1 border rounded-md py-2 text-sm">
+          {t("action.cancel")}
+        </button>
+        <button type="submit" className="flex-1 bg-blue-600 text-white rounded-md py-2 text-sm">
+          {t("action.save")}
+        </button>
       </div>
     </form>
   );
@@ -471,15 +558,24 @@ export default function CarsPage() {
   const [editing, setEditing] = useState<Car | null>(null);
   const [adding, setAdding] = useState(false);
 
-  if (isLoading) return <><PageHeader title={t("page.cars")} /><p className="p-4 text-gray-500">{t("state.loading")}</p></>;
+  if (isLoading)
+    return (
+      <>
+        <PageHeader title={t("page.cars")} />
+        <p className="p-4 text-gray-500">{t("state.loading")}</p>
+      </>
+    );
 
   return (
     <>
       <PageHeader title={t("page.cars")} />
       <div className="divide-y">
         {cars.map((c) => (
-          <button key={c.id} onClick={() => setEditing(c)}
-            className="w-full flex items-center px-4 py-3 hover:bg-gray-50 text-left gap-3">
+          <button
+            key={c.id}
+            onClick={() => setEditing(c)}
+            className="w-full flex items-center px-4 py-3 hover:bg-gray-50 text-left gap-3"
+          >
             <span className="text-sm font-mono font-bold text-blue-600 w-10">{c.short}</span>
             <div className="flex-1">
               <p className="text-sm font-medium">{c.name}</p>
@@ -496,13 +592,25 @@ export default function CarsPage() {
         <Dialog.Portal>
           <Dialog.Overlay className="fixed inset-0 bg-black/40 z-40" />
           <Dialog.Content className="fixed inset-x-0 bottom-0 bg-white rounded-t-xl z-50 max-h-[90vh] overflow-y-auto">
-            <Dialog.Title className="px-4 pt-4 text-base font-semibold">{t("page.car_add")}</Dialog.Title>
+            <Dialog.Title className="px-4 pt-4 text-base font-semibold">
+              {t("page.car_add")}
+            </Dialog.Title>
             <CarForm
-              onSubmit={(data) => createCar.mutate(
-                { ...data, brand: data.brand ?? null, color: data.color ?? null } as Omit<Car,"id">,
-                { onSuccess: () => { setAdding(false); toast.success(t("toast.car_added")); },
-                  onError: (e) => toast.error(e.message) }
-              )}
+              onSubmit={(data) =>
+                createCar.mutate(
+                  { ...data, brand: data.brand ?? null, color: data.color ?? null } as Omit<
+                    Car,
+                    "id"
+                  >,
+                  {
+                    onSuccess: () => {
+                      setAdding(false);
+                      toast.success(t("toast.car_added"));
+                    },
+                    onError: (e) => toast.error(e.message),
+                  }
+                )
+              }
               onCancel={() => setAdding(false)}
             />
           </Dialog.Content>
@@ -513,15 +621,24 @@ export default function CarsPage() {
         <Dialog.Portal>
           <Dialog.Overlay className="fixed inset-0 bg-black/40 z-40" />
           <Dialog.Content className="fixed inset-x-0 bottom-0 bg-white rounded-t-xl z-50 max-h-[90vh] overflow-y-auto">
-            <Dialog.Title className="px-4 pt-4 text-base font-semibold">{t("page.car_edit")}</Dialog.Title>
+            <Dialog.Title className="px-4 pt-4 text-base font-semibold">
+              {t("page.car_edit")}
+            </Dialog.Title>
             {editing && (
               <CarForm
                 defaultValues={editing}
-                onSubmit={(data) => updateCar.mutate(
-                  { ...editing, ...data, brand: data.brand ?? null, color: data.color ?? null },
-                  { onSuccess: () => { setEditing(null); toast.success(t("toast.saved")); },
-                    onError: (e) => toast.error(e.message) }
-                )}
+                onSubmit={(data) =>
+                  updateCar.mutate(
+                    { ...editing, ...data, brand: data.brand ?? null, color: data.color ?? null },
+                    {
+                      onSuccess: () => {
+                        setEditing(null);
+                        toast.success(t("toast.saved"));
+                      },
+                      onError: (e) => toast.error(e.message),
+                    }
+                  )
+                }
                 onCancel={() => setEditing(null)}
               />
             )}

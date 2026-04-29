@@ -12,33 +12,34 @@
 
 ### Column name mapping (Dutch AppSheet → English codebase)
 
-| AppSheet | DB column / TypeScript field |
-|---|---|
-| Naam | person_name (joined) |
-| Wagen | car_short (joined) |
-| datum | date |
-| start | start_odometer |
-| eind | end_odometer |
-| Kilometers | km |
-| Bedrag | amount |
-| Locatie | location |
-| #liter | liters |
-| prijs/liter | price_per_liter |
-| kilometerstand | odometer |
-| Bonnetje | receipt |
-| Kosten (description) | description |
-| Opmerking | note |
-| korting | discount |
-| korting_long | discount_long |
-| prijs | price_per_km |
-| merk | brand |
-| kleur | color |
+| AppSheet             | DB column / TypeScript field |
+| -------------------- | ---------------------------- |
+| Naam                 | person_name (joined)         |
+| Wagen                | car_short (joined)           |
+| datum                | date                         |
+| start                | start_odometer               |
+| eind                 | end_odometer                 |
+| Kilometers           | km                           |
+| Bedrag               | amount                       |
+| Locatie              | location                     |
+| #liter               | liters                       |
+| prijs/liter          | price_per_liter              |
+| kilometerstand       | odometer                     |
+| Bonnetje             | receipt                      |
+| Kosten (description) | description                  |
+| Opmerking            | note                         |
+| korting              | discount                     |
+| korting_long         | discount_long                |
+| prijs                | price_per_km                 |
+| merk                 | brand                        |
+| kleur                | color                        |
 
 ---
 
 ### Task 1: Domain types
 
 **Files:**
+
 - Create: `types/index.ts`
 
 - [ ] **Step 1: Create types/index.ts**
@@ -65,7 +66,7 @@ export interface Trip {
   id: number;
   person_id: number;
   car_id: number;
-  date: string;           // ISO date "YYYY-MM-DD"
+  date: string; // ISO date "YYYY-MM-DD"
   start_odometer: number;
   end_odometer: number;
   km: number;
@@ -121,7 +122,7 @@ export interface Payment {
   date: string;
   amount: number;
   note: string | null;
-  year: number;           // date.year − 1 (payment settles previous year)
+  year: number; // date.year − 1 (payment settles previous year)
   // joined
   person_name?: string;
 }
@@ -134,20 +135,32 @@ export interface DashboardRow {
   trip_km: number;
   fuel_count: number;
   fuel_liters: number;
-  trip_amount: number;     // negative (cost charged)
-  fuel_amount: number;     // positive (fuel paid)
-  expense_amount: number;  // positive (expenses paid)
-  total_amount: number;    // trip_amount + fuel_amount + expense_amount
-  paid_amount: number;     // settlement payments
-  balance: number;         // total_amount + paid_amount
+  trip_amount: number; // negative (cost charged)
+  fuel_amount: number; // positive (fuel paid)
+  expense_amount: number; // positive (expenses paid)
+  total_amount: number; // trip_amount + fuel_amount + expense_amount
+  paid_amount: number; // settlement payments
+  balance: number; // total_amount + paid_amount
 }
 
 // Form input types (no id, no computed fields)
-export type TripInput = Pick<Trip, "person_id"|"car_id"|"date"|"start_odometer"|"end_odometer"|"location">;
-export type FuelFillupInput = Pick<FuelFillup, "person_id"|"car_id"|"date"|"amount"|"liters"|"odometer"|"receipt"|"location">;
-export type ExpenseInput = Pick<Expense, "person_id"|"car_id"|"date"|"amount"|"description">;
-export type ReservationInput = Pick<Reservation, "person_id"|"car_id"|"start_date"|"end_date">;
-export type PaymentInput = Pick<Payment, "person_id"|"date"|"amount"|"note">;
+export type TripInput = Pick<
+  Trip,
+  "person_id" | "car_id" | "date" | "start_odometer" | "end_odometer" | "location"
+>;
+export type FuelFillupInput = Pick<
+  FuelFillup,
+  "person_id" | "car_id" | "date" | "amount" | "liters" | "odometer" | "receipt" | "location"
+>;
+export type ExpenseInput = Pick<
+  Expense,
+  "person_id" | "car_id" | "date" | "amount" | "description"
+>;
+export type ReservationInput = Pick<
+  Reservation,
+  "person_id" | "car_id" | "start_date" | "end_date"
+>;
+export type PaymentInput = Pick<Payment, "person_id" | "date" | "amount" | "note">;
 
 // Derived "last known" state for a car, used to prefill trip/fuel forms on car selection.
 // `source` records which table the reading came from — trips always win a same-date tie
@@ -171,12 +184,14 @@ git commit -m "feat: domain types with english field names"
 ### Task 2: Business logic — amount formula
 
 **Files:**
+
 - Create: `lib/formulas.ts`
 - Create: `lib/__tests__/formulas.test.ts`
 
 - [ ] **Step 1: Write failing test**
 
 Create `lib/__tests__/formulas.test.ts`:
+
 ```ts
 import { describe, it, expect } from "vitest";
 import { calcTripAmount, calcPricePerLiter, calcPaymentYear } from "../formulas";
@@ -190,18 +205,18 @@ describe("calcTripAmount", () => {
   it("applies short-trip discount for first 500km, long discount beyond", () => {
     // Tinne, JF price_per_km=0.20, discount=0.25, discount_long=0.50, km=2299
     // 500 * 0.20 * (1-0.25) + 1799 * 0.20 * (1-0.50) = 75 + 179.90 = 254.90
-    expect(calcTripAmount(2299, 0.20, 0.25, 0.50)).toBeCloseTo(254.90);
+    expect(calcTripAmount(2299, 0.2, 0.25, 0.5)).toBeCloseTo(254.9);
   });
 
   it("applies only short-trip rate for trips <= 500km", () => {
     // 100km, price_per_km=0.20, discount=0.25
     // 100 * 0.20 * (1-0.25) = 15.00
-    expect(calcTripAmount(100, 0.20, 0.25, 0.50)).toBeCloseTo(15.00);
+    expect(calcTripAmount(100, 0.2, 0.25, 0.5)).toBeCloseTo(15.0);
   });
 
   it("handles exactly 500km", () => {
     // 500 * 0.20 * (1-0.25) = 75.00
-    expect(calcTripAmount(500, 0.20, 0.25, 0.50)).toBeCloseTo(75.00);
+    expect(calcTripAmount(500, 0.2, 0.25, 0.5)).toBeCloseTo(75.0);
   });
 });
 
@@ -228,6 +243,7 @@ describe("calcPaymentYear", () => {
 ```bash
 npm test lib/__tests__/formulas.test.ts
 ```
+
 Expected: FAIL — module not found.
 
 - [ ] **Step 3: Create lib/formulas.ts**
@@ -241,10 +257,7 @@ export function calcTripAmount(
 ): number {
   const shortKm = Math.min(km, 500);
   const longKm = Math.max(km - 500, 0);
-  return (
-    pricePerKm * shortKm * (1 - discount) +
-    pricePerKm * longKm * (1 - discountLong)
-  );
+  return pricePerKm * shortKm * (1 - discount) + pricePerKm * longKm * (1 - discountLong);
 }
 
 export function calcPricePerLiter(amount: number, liters: number): number {
@@ -262,6 +275,7 @@ export function calcPaymentYear(date: string): number {
 ```bash
 npm test lib/__tests__/formulas.test.ts
 ```
+
 Expected: 6 tests PASS.
 
 - [ ] **Step 5: Commit**
@@ -276,6 +290,7 @@ git commit -m "feat: trip amount and payment year formulas with tests"
 ### Task 3: Query helpers — people & cars
 
 **Files:**
+
 - Create: `lib/queries/people.ts`
 - Create: `lib/queries/cars.ts`
 - Create: `lib/__tests__/queries.test.ts`
@@ -306,8 +321,13 @@ export function insertPerson(db: Database.Database, data: Omit<Person, "id">): n
 }
 
 export function updatePerson(db: Database.Database, id: number, data: Omit<Person, "id">): void {
-  db.prepare("UPDATE people SET name=?,discount=?,discount_long=?,active=? WHERE id=?")
-    .run(data.name, data.discount, data.discount_long, data.active, id);
+  db.prepare("UPDATE people SET name=?,discount=?,discount_long=?,active=? WHERE id=?").run(
+    data.name,
+    data.discount,
+    data.discount_long,
+    data.active,
+    id
+  );
 }
 ```
 
@@ -333,14 +353,21 @@ export function insertCar(db: Database.Database, data: Omit<Car, "id">): number 
 }
 
 export function updateCar(db: Database.Database, id: number, data: Omit<Car, "id">): void {
-  db.prepare("UPDATE cars SET short=?,name=?,price_per_km=?,brand=?,color=? WHERE id=?")
-    .run(data.short, data.name, data.price_per_km, data.brand, data.color, id);
+  db.prepare("UPDATE cars SET short=?,name=?,price_per_km=?,brand=?,color=? WHERE id=?").run(
+    data.short,
+    data.name,
+    data.price_per_km,
+    data.brand,
+    data.color,
+    id
+  );
 }
 ```
 
 - [ ] **Step 3: Write query tests**
 
 Create `lib/__tests__/queries.test.ts`:
+
 ```ts
 import { describe, it, expect } from "vitest";
 import Database from "better-sqlite3";
@@ -372,7 +399,13 @@ describe("people queries", () => {
 describe("cars queries", () => {
   it("inserts and retrieves cars", () => {
     const db = makeDb();
-    insertCar(db, { short: "JF", name: "Jean-Francois", price_per_km: 0.20, brand: "Toyota", color: "wit" });
+    insertCar(db, {
+      short: "JF",
+      name: "Jean-Francois",
+      price_per_km: 0.2,
+      brand: "Toyota",
+      color: "wit",
+    });
     const cars = getCars(db);
     expect(cars).toHaveLength(1);
     expect(cars[0].short).toBe("JF");
@@ -385,6 +418,7 @@ describe("cars queries", () => {
 ```bash
 npm test lib/__tests__/
 ```
+
 Expected: all tests PASS.
 
 - [ ] **Step 5: Commit**

@@ -30,12 +30,7 @@ export type FixedCostCategory =
   | "keuring"
   | "diversen";
 
-export type ExpenseCategory =
-  | "onderhoud"
-  | "keuring"
-  | "belasting"
-  | "verzekering"
-  | "diversen";
+export type ExpenseCategory = "onderhoud" | "keuring" | "belasting" | "verzekering" | "diversen";
 
 export interface FixedCostItem {
   id: string;
@@ -48,12 +43,12 @@ export interface Trip {
   id: number;
   person_id: number;
   car_id: number;
-  date: string;           // ISO date "YYYY-MM-DD"
+  date: string; // ISO date "YYYY-MM-DD"
   start_odometer: number;
   end_odometer: number;
   km: number;
   amount: number;
-  location: string | null;   // human-readable address (shown in list)
+  location: string | null; // human-readable address (shown in list)
   gps_coords: string | null; // raw "lat, lng" (for map pin)
   parking: string | null;
   // joined
@@ -92,7 +87,10 @@ export interface Expense {
   car_short?: string;
 }
 
-export type ExpenseInput = Pick<Expense, "person_id"|"car_id"|"date"|"amount"|"description"> & {
+export type ExpenseInput = Pick<
+  Expense,
+  "person_id" | "car_id" | "date" | "amount" | "description"
+> & {
   category?: ExpenseCategory | null;
 };
 
@@ -117,7 +115,7 @@ export interface Payment {
   date: string;
   amount: number;
   note: string | null;
-  year: number;           // date.year − 1 (payment settles previous year)
+  year: number; // date.year − 1 (payment settles previous year)
   // joined
   person_name?: string;
 }
@@ -131,30 +129,39 @@ export interface DashboardRow {
   fuel_count: number;
   fuel_liters: number;
   expense_count: number;
-  trip_amount: number;     // negative (cost charged)
-  fuel_amount: number;     // positive (fuel paid)
-  expense_amount: number;  // positive (expenses paid)
-  total_amount: number;    // trip_amount + fuel_amount + expense_amount
-  paid_amount: number;     // settlement payments
-  balance: number;         // total_amount + paid_amount
+  trip_amount: number; // negative (cost charged)
+  fuel_amount: number; // positive (fuel paid)
+  expense_amount: number; // positive (expenses paid)
+  total_amount: number; // trip_amount + fuel_amount + expense_amount
+  paid_amount: number; // settlement payments
+  balance: number; // total_amount + paid_amount
 }
 
 // Form input types (no id, no computed fields)
-export type PersonInput = Pick<Person, "name"|"discount"|"discount_long"|"active"> & {
+export type PersonInput = Pick<Person, "name" | "discount" | "discount_long" | "active"> & {
   username?: string | null;
   is_admin?: 0 | 1;
 };
-export type CarInput = Pick<Car, "short"|"name"|"price_per_km"|"brand"|"color"> & {
+export type CarInput = Pick<Car, "short" | "name" | "price_per_km" | "brand" | "color"> & {
   owner_name?: string | null;
   long_threshold?: number;
   fixed_costs_json?: string | null;
   active?: number;
   expected_km?: number | null;
 };
-export type TripInput = Pick<Trip, "person_id"|"car_id"|"date"|"start_odometer"|"end_odometer"|"location"> & { parking?: string | null; gps_coords?: string | null };
-export type FuelFillupInput = Pick<FuelFillup, "person_id"|"car_id"|"date"|"amount"|"liters"|"odometer"|"receipt"|"location"> & { gps_coords?: string | null; full_tank?: 0 | 1 };
-export type ReservationInput = Pick<Reservation, "person_id"|"car_id"|"start_date"|"end_date"> & { note?: string | null; status?: ReservationStatus };
-export type PaymentInput = Pick<Payment, "person_id"|"date"|"amount"|"note">;
+export type TripInput = Pick<
+  Trip,
+  "person_id" | "car_id" | "date" | "start_odometer" | "end_odometer" | "location"
+> & { parking?: string | null; gps_coords?: string | null };
+export type FuelFillupInput = Pick<
+  FuelFillup,
+  "person_id" | "car_id" | "date" | "amount" | "liters" | "odometer" | "receipt" | "location"
+> & { gps_coords?: string | null; full_tank?: 0 | 1 };
+export type ReservationInput = Pick<
+  Reservation,
+  "person_id" | "car_id" | "start_date" | "end_date"
+> & { note?: string | null; status?: ReservationStatus };
+export type PaymentInput = Pick<Payment, "person_id" | "date" | "amount" | "note">;
 
 // Derived "last known" state for a car, used to prefill trip/fuel forms on car selection.
 // `source` records which table the reading came from — trips always win a same-date tie

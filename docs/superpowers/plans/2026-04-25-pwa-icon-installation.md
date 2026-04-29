@@ -13,6 +13,7 @@
 ### Task 1: Update icon generation script and produce all PNG sizes
 
 **Files:**
+
 - Modify: `scripts/generate-icons.mjs`
 - Create: `public/icons/source.svg`
 - Output: `public/icons/icon-192.png`, `public/icons/icon-512.png`, `public/icons/icon-maskable-512.png`, `public/icons/apple-touch-icon.png`
@@ -71,7 +72,7 @@ const maskableSvg = `<svg viewBox="0 0 200 200" width="200" height="200" xmlns="
   </g>
 </svg>`;
 
-const iconBuf     = Buffer.from(iconSvg);
+const iconBuf = Buffer.from(iconSvg);
 const maskableBuf = Buffer.from(maskableSvg);
 
 await writeFile("public/icons/source.svg", iconSvg);
@@ -94,6 +95,7 @@ node scripts/generate-icons.mjs
 ```
 
 Expected output:
+
 ```
 ✓ icon-192.png
 ✓ icon-512.png
@@ -133,6 +135,7 @@ git commit -m "feat(pwa): generate people+car icons in all required sizes"
 ### Task 2: Update manifest.json
 
 **Files:**
+
 - Modify: `public/manifest.json`
 
 - [ ] **Step 1: Replace `public/manifest.json` with the correct content**
@@ -150,7 +153,12 @@ git commit -m "feat(pwa): generate people+car icons in all required sizes"
   "icons": [
     { "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
     { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png" },
-    { "src": "/icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+    {
+      "src": "/icons/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
   ]
 }
 ```
@@ -175,6 +183,7 @@ git commit -m "feat(pwa): update manifest — AutoDelen name, paper/ink colours,
 ### Task 3: Update layout.tsx
 
 **Files:**
+
 - Modify: `app/layout.tsx`
 
 - [ ] **Step 1: Update `appleWebApp.title` and `apple-touch-icon` href**
@@ -189,12 +198,13 @@ export const metadata: Metadata = {
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "AutoDelen",          // was "Autodelen"
+    title: "AutoDelen", // was "Autodelen"
   },
 };
 ```
 
 And in the `<head>` block, change:
+
 ```tsx
 // Before:
 <link rel="apple-touch-icon" href="/icons/icon-192.png" />
@@ -247,6 +257,7 @@ curl -s http://localhost:3000/manifest.json | python3 -m json.tool | grep -E "sh
 ```
 
 Expected:
+
 ```
 "short_name": "AutoDelen",
 "theme_color": "#1a1a1a",

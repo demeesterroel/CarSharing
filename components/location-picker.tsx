@@ -4,8 +4,8 @@ import { paper, fontMono, fontSerif } from "@/lib/paper-theme";
 import { t } from "@/lib/i18n";
 
 interface Props {
-  address: string | null;      // human-readable; stored in location column
-  coords: string | null;       // "lat, lng"; stored in gps_coords column
+  address: string | null; // human-readable; stored in location column
+  coords: string | null; // "lat, lng"; stored in gps_coords column
   onAddressChange: (v: string | null) => void;
   onCoordsChange: (v: string | null) => void;
 }
@@ -73,18 +73,19 @@ export function LocationPicker({ address, coords, onAddressChange, onCoordsChang
 
       const icon = makeIcon(L);
       const parsedCoords = parseCoords(coords);
-      const center: [number, number] = parsedCoords ?? [51.22, 4.40];
+      const center: [number, number] = parsedCoords ?? [51.22, 4.4];
 
-      const map = L.map(mapRef.current, { zoomControl: false }).setView(center, parsedCoords ? 15 : 11);
+      const map = L.map(mapRef.current, { zoomControl: false }).setView(
+        center,
+        parsedCoords ? 15 : 11
+      );
       L.control.zoom({ position: "bottomright" }).addTo(map);
-      L.tileLayer(
-        "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png",
-        {
-          attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> &copy; <a href="https://carto.com/attributions">CARTO</a>',
-          subdomains: "abcd",
-          maxZoom: 19,
-        }
-      ).addTo(map);
+      L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png", {
+        attribution:
+          '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> &copy; <a href="https://carto.com/attributions">CARTO</a>',
+        subdomains: "abcd",
+        maxZoom: 19,
+      }).addTo(map);
 
       if (parsedCoords) {
         markerRef.current = L.marker(parsedCoords, { icon, draggable: true }).addTo(map);
@@ -120,7 +121,9 @@ export function LocationPicker({ address, coords, onAddressChange, onCoordsChang
       }
 
       mapInstance.current = map;
-      setTimeout(() => { if (!cancelled) map.invalidateSize(); }, 200);
+      setTimeout(() => {
+        if (!cancelled) map.invalidateSize();
+      }, 200);
     })();
 
     return () => {
@@ -148,7 +151,9 @@ export function LocationPicker({ address, coords, onAddressChange, onCoordsChang
           if (markerRef.current) {
             markerRef.current.setLatLng([lat, lng]);
           } else {
-            markerRef.current = L.marker([lat, lng], { icon, draggable: true }).addTo(mapInstance.current);
+            markerRef.current = L.marker([lat, lng], { icon, draggable: true }).addTo(
+              mapInstance.current
+            );
             markerRef.current.on("dragend", async () => {
               const { lat: la, lng: ln } = markerRef.current.getLatLng();
               const cs = `${la.toFixed(6)}, ${ln.toFixed(6)}`;
@@ -176,11 +181,16 @@ export function LocationPicker({ address, coords, onAddressChange, onCoordsChang
 
   return (
     <div>
-      <div style={{
-        display: "flex", alignItems: "center", gap: 8,
-        border: `1.5px dashed ${paper.paperDark}`, padding: "10px 14px",
-        marginBottom: 8,
-      }}>
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: 8,
+          border: `1.5px dashed ${paper.paperDark}`,
+          padding: "10px 14px",
+          marginBottom: 8,
+        }}
+      >
         <div style={{ flex: 1, minWidth: 0 }}>
           {/* Always editable — shows geocoded address or free-text */}
           <input
@@ -195,41 +205,97 @@ export function LocationPicker({ address, coords, onAddressChange, onCoordsChang
             placeholder={t("form.location_placeholder")}
             readOnly={geocoding}
             style={{
-              width: "100%", fontFamily: fontSerif, fontSize: 17, fontWeight: 600,
+              width: "100%",
+              fontFamily: fontSerif,
+              fontSize: 17,
+              fontWeight: 600,
               color: geocoding ? paper.inkMute : paper.ink,
-              background: "transparent", border: "none", outline: "none", padding: 0,
+              background: "transparent",
+              border: "none",
+              outline: "none",
+              padding: 0,
             }}
           />
           {hasGps && (
-            <div style={{ fontFamily: fontMono, fontSize: 8, color: paper.inkMute, letterSpacing: 1, marginTop: 2 }}>
+            <div
+              style={{
+                fontFamily: fontMono,
+                fontSize: 8,
+                color: paper.inkMute,
+                letterSpacing: 1,
+                marginTop: 2,
+              }}
+            >
               📍 {coords}
             </div>
           )}
         </div>
-        <button type="button" onClick={captureGPS} style={{
-          fontFamily: fontMono, fontSize: 9, letterSpacing: 1.5, textTransform: "uppercase",
-          background: "transparent", border: `1px solid ${paper.paperDark}`, color: paper.inkDim,
-          padding: "4px 8px", cursor: "pointer", flexShrink: 0,
-          opacity: gpsStatus === "loading" ? 0.5 : 1,
-        }}>
+        <button
+          type="button"
+          onClick={captureGPS}
+          style={{
+            fontFamily: fontMono,
+            fontSize: 9,
+            letterSpacing: 1.5,
+            textTransform: "uppercase",
+            background: "transparent",
+            border: `1px solid ${paper.paperDark}`,
+            color: paper.inkDim,
+            padding: "4px 8px",
+            cursor: "pointer",
+            flexShrink: 0,
+            opacity: gpsStatus === "loading" ? 0.5 : 1,
+          }}
+        >
           {gpsStatus === "loading" ? "…" : "GPS"}
         </button>
         {hasGps && (
-          <button type="button" onClick={() => { onCoordsChange(null); }} title="Wis GPS pin" style={{
-            fontFamily: fontMono, fontSize: 11, background: "transparent",
-            border: "none", color: paper.inkMute, cursor: "pointer", padding: "0 2px", lineHeight: 1,
-          }}>✕</button>
+          <button
+            type="button"
+            onClick={() => {
+              onCoordsChange(null);
+            }}
+            title="Wis GPS pin"
+            style={{
+              fontFamily: fontMono,
+              fontSize: 11,
+              background: "transparent",
+              border: "none",
+              color: paper.inkMute,
+              cursor: "pointer",
+              padding: "0 2px",
+              lineHeight: 1,
+            }}
+          >
+            ✕
+          </button>
         )}
       </div>
 
       {gpsStatus === "error" && (
-        <div style={{ fontFamily: fontMono, fontSize: 9, color: paper.accent, letterSpacing: 1, marginBottom: 6 }}>
+        <div
+          style={{
+            fontFamily: fontMono,
+            fontSize: 9,
+            color: paper.accent,
+            letterSpacing: 1,
+            marginBottom: 6,
+          }}
+        >
           GPS niet beschikbaar
         </div>
       )}
 
       <div ref={mapRef} style={{ height: 200, border: `1.5px solid ${paper.paperDark}` }} />
-      <div style={{ fontFamily: fontMono, fontSize: 8, color: paper.inkMute, letterSpacing: 1, marginTop: 4 }}>
+      <div
+        style={{
+          fontFamily: fontMono,
+          fontSize: 8,
+          color: paper.inkMute,
+          letterSpacing: 1,
+          marginTop: 4,
+        }}
+      >
         Klik op kaart of sleep de pin om locatie aan te passen
       </div>
     </div>

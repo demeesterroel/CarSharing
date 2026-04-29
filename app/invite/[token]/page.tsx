@@ -28,8 +28,14 @@ export default function InvitePage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
-    if (password.length < 8) { setError(t("invite.too_short")); return; }
-    if (password !== confirm) { setError(t("invite.mismatch")); return; }
+    if (password.length < 8) {
+      setError(t("invite.too_short"));
+      return;
+    }
+    if (password !== confirm) {
+      setError(t("invite.mismatch"));
+      return;
+    }
     setLoading(true);
     try {
       const res = await fetch(`/api/invite/${token}`, {
@@ -50,52 +56,63 @@ export default function InvitePage() {
   };
 
   return (
-    <div style={{
-      minHeight: "100dvh",
-      background: paper.paperDeep,
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-      padding: "20px",
-    }}>
+    <div
+      style={{
+        minHeight: "100dvh",
+        background: paper.paperDeep,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: "20px",
+      }}
+    >
       <div style={{ width: "100%", maxWidth: 360 }}>
         <div style={{ textAlign: "center", marginBottom: 28 }}>
-          <div style={{
-            fontFamily: fontSerif,
-            fontSize: 28,
-            fontWeight: 600,
-            color: paper.ink,
-            letterSpacing: -0.5,
-            marginBottom: 6,
-          }}>
+          <div
+            style={{
+              fontFamily: fontSerif,
+              fontSize: 28,
+              fontWeight: 600,
+              color: paper.ink,
+              letterSpacing: -0.5,
+              marginBottom: 6,
+            }}
+          >
             {t("invite.title")}
           </div>
-          <div style={{
-            fontFamily: fontMono,
-            fontSize: 11,
-            color: paper.inkDim,
-            letterSpacing: 1,
-            textTransform: "uppercase",
-          }}>
+          <div
+            style={{
+              fontFamily: fontMono,
+              fontSize: 11,
+              color: paper.inkDim,
+              letterSpacing: 1,
+              textTransform: "uppercase",
+            }}
+          >
             {t("invite.subtitle")}
           </div>
         </div>
 
-        <form onSubmit={handleSubmit} style={{
-          background: paper.paper,
-          padding: "24px 20px",
-          boxShadow: "0 4px 24px rgba(0,0,0,0.1)",
-        }}>
+        <form
+          onSubmit={handleSubmit}
+          style={{
+            background: paper.paper,
+            padding: "24px 20px",
+            boxShadow: "0 4px 24px rgba(0,0,0,0.1)",
+          }}
+        >
           <div style={{ marginBottom: 16 }}>
-            <label style={{
-              display: "block",
-              fontFamily: fontMono,
-              fontSize: 9,
-              letterSpacing: 1.5,
-              textTransform: "uppercase",
-              color: paper.inkDim,
-              marginBottom: 6,
-            }}>
+            <label
+              style={{
+                display: "block",
+                fontFamily: fontMono,
+                fontSize: 9,
+                letterSpacing: 1.5,
+                textTransform: "uppercase",
+                color: paper.inkDim,
+                marginBottom: 6,
+              }}
+            >
               {t("invite.password_label")}
             </label>
             <input
@@ -109,15 +126,17 @@ export default function InvitePage() {
           </div>
 
           <div style={{ marginBottom: 20 }}>
-            <label style={{
-              display: "block",
-              fontFamily: fontMono,
-              fontSize: 9,
-              letterSpacing: 1.5,
-              textTransform: "uppercase",
-              color: paper.inkDim,
-              marginBottom: 6,
-            }}>
+            <label
+              style={{
+                display: "block",
+                fontFamily: fontMono,
+                fontSize: 9,
+                letterSpacing: 1.5,
+                textTransform: "uppercase",
+                color: paper.inkDim,
+                marginBottom: 6,
+              }}
+            >
               {t("invite.confirm_label")}
             </label>
             <input
@@ -131,13 +150,15 @@ export default function InvitePage() {
           </div>
 
           {error && (
-            <div style={{
-              fontFamily: fontMono,
-              fontSize: 11,
-              color: paper.accent,
-              marginBottom: 16,
-              letterSpacing: 0.5,
-            }}>
+            <div
+              style={{
+                fontFamily: fontMono,
+                fontSize: 11,
+                color: paper.accent,
+                marginBottom: 16,
+                letterSpacing: 0.5,
+              }}
+            >
               {error}
             </div>
           )}

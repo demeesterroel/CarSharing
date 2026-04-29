@@ -16,9 +16,7 @@ export function runMigrations(db: Database.Database): void {
     .filter((f) => f.endsWith(".sql"))
     .sort();
 
-  const applied = new Set(
-    db.prepare("SELECT filename FROM _migrations").pluck().all() as string[]
-  );
+  const applied = new Set(db.prepare("SELECT filename FROM _migrations").pluck().all() as string[]);
 
   for (const filename of files) {
     if (applied.has(filename)) continue;

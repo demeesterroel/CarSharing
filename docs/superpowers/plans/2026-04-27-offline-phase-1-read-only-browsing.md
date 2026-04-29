@@ -29,6 +29,7 @@
 ## File Structure
 
 **New files:**
+
 - `app/api/health/route.ts` — minimal unauthenticated GET endpoint for heartbeat checks.
 - `lib/offline/online-state.tsx` — React context, hooks, and `OnlineStateProvider`.
 - `lib/offline/online-state.test.ts` — unit tests for the state-machine logic (extracted to a pure function).
@@ -37,6 +38,7 @@
 - `components/offline-badge.tsx` — header indicator (3 states for Phase 1).
 
 **Modified files:**
+
 - `next.config.ts` — add `workboxOptions.runtimeCaching` rules for the API endpoints.
 - `app/providers.tsx` — wrap children in `OnlineStateProvider`, mount `useBootPrewarm`.
 - `components/page-header.tsx` — render `<OfflineBadge />` to the left of `LangSwitcher`.
@@ -45,6 +47,7 @@
 - `lib/i18n/messages/nl.ts`, `lib/i18n/messages/en.ts` — add 6 new keys for the indicator and form staleness hint.
 
 **Tests:**
+
 - `lib/offline/online-state.test.ts`
 - `lib/offline/prewarm.test.ts`
 - `app/api/health/route.test.ts` (smoke test)
@@ -60,6 +63,7 @@ Phase 1 is structured so each task produces working code. Tasks 1–3 establish 
 ### Task 1: Health endpoint
 
 **Files:**
+
 - Create: `app/api/health/route.ts`
 - Test: `app/api/health/route.test.ts`
 
@@ -114,9 +118,11 @@ Expected: PASS (2/2)
 - [ ] **Step 6: Manual smoke test**
 
 Run dev server, then in another terminal:
+
 ```bash
 curl -i http://localhost:3000/api/health
 ```
+
 Expected: `HTTP/1.1 200 OK`, body `{"ok":true}`, no `Set-Cookie`.
 
 - [ ] **Step 7: Commit**
@@ -133,6 +139,7 @@ git commit -m "feat(api): add /api/health unauthenticated heartbeat endpoint"
 The state machine has three observable values: `online: boolean`, `lastSyncAt: number | null`, and `isStale: boolean`. We extract the calculation into a pure function so it's trivially testable in `node` env (no DOM needed).
 
 **Files:**
+
 - Create: `lib/offline/online-state.tsx`
 - Create: `lib/offline/online-state.test.ts`
 
@@ -178,8 +185,8 @@ Expected: FAIL — module not found
 import { createContext, useContext, useEffect, useRef, useState, useCallback } from "react";
 
 export const STALE_THRESHOLD_MS = 60 * 60 * 1000; // 1 hour
-const HEARTBEAT_INTERVAL_MS = 30 * 1000;          // 30 seconds
-const HEARTBEAT_TIMEOUT_MS = 5 * 1000;            // 5 seconds
+const HEARTBEAT_INTERVAL_MS = 30 * 1000; // 30 seconds
+const HEARTBEAT_TIMEOUT_MS = 5 * 1000; // 5 seconds
 
 export type Staleness = "fresh" | "stale" | "unknown";
 
@@ -207,7 +214,11 @@ async function heartbeat(): Promise<boolean> {
   const ctrl = new AbortController();
   const timer = setTimeout(() => ctrl.abort(), HEARTBEAT_TIMEOUT_MS);
   try {
-    const res = await fetch("/api/health", { method: "HEAD", signal: ctrl.signal, cache: "no-store" });
+    const res = await fetch("/api/health", {
+      method: "HEAD",
+      signal: ctrl.signal,
+      cache: "no-store",
+    });
     return res.ok;
   } catch {
     return false;
@@ -244,7 +255,10 @@ export function OnlineStateProvider({ children }: { children: React.ReactNode })
       const ok = await heartbeat();
       if (!cancelled) setOnline(ok);
     }, HEARTBEAT_INTERVAL_MS);
-    return () => { cancelled = true; clearInterval(id); };
+    return () => {
+      cancelled = true;
+      clearInterval(id);
+    };
   }, [online]);
 
   // Tick `now` once a minute so staleness updates without remounts.
@@ -281,6 +295,7 @@ git commit -m "feat(offline): online-state context with heartbeat and staleness"
 ### Task 3: Wire OnlineStateProvider into the app
 
 **Files:**
+
 - Modify: `app/providers.tsx`
 
 - [ ] **Step 1: Wrap Providers with OnlineStateProvider**
@@ -324,9 +339,10 @@ git commit -m "feat(offline): wire OnlineStateProvider into app shell"
 
 ### Task 4: Switch SW runtime caching to StaleWhileRevalidate for data APIs
 
-This is the load-bearing change. The current SW uses `NetworkFirst` for `/api/*` (10s timeout, then cache). We swap to `StaleWhileRevalidate` for *data* endpoints so cached data is served instantly. Auth and identity endpoints stay `NetworkFirst` so the user can't get stuck logged-in after their session is revoked.
+This is the load-bearing change. The current SW uses `NetworkFirst` for `/api/*` (10s timeout, then cache). We swap to `StaleWhileRevalidate` for _data_ endpoints so cached data is served instantly. Auth and identity endpoints stay `NetworkFirst` so the user can't get stuck logged-in after their session is revoked.
 
 **Files:**
+
 - Modify: `next.config.ts`
 
 - [ ] **Step 1: Add explicit runtime caching rules**
@@ -379,9 +395,7 @@ const nextConfig: NextConfig = {
   output: "standalone",
   serverExternalPackages: ["better-sqlite3"],
   async rewrites() {
-    return [
-      { source: "/uploads/:path*", destination: "/api/static/:path*" },
-    ];
+    return [{ source: "/uploads/:path*", destination: "/api/static/:path*" }];
   },
 };
 
@@ -396,6 +410,7 @@ npm run build 2>&1 | tail -20
 ls public/sw.js public/workbox-*.js
 grep -c "StaleWhileRevalidate" public/sw.js
 ```
+
 Expected: build succeeds, `sw.js` regenerated, contains `StaleWhileRevalidate`.
 
 - [ ] **Step 3: Manual offline test (must pass before continuing)**
@@ -405,6 +420,7 @@ npm run start  # production server, SW is active
 ```
 
 In Chrome with a fresh profile or incognito + DevTools:
+
 1. Visit `http://localhost:3000/`, log in
 2. Navigate to `/trips`, `/fuel`, `/expenses`, `/calendar`
 3. DevTools → Application → Service Workers → tick **Offline**
@@ -425,6 +441,7 @@ git commit -m "feat(pwa): StaleWhileRevalidate for data APIs, NetworkFirst for a
 ### Task 5: Boot-time prewarm helper
 
 **Files:**
+
 - Create: `lib/offline/prewarm.ts`
 - Create: `lib/offline/prewarm.test.ts`
 
@@ -450,9 +467,11 @@ describe("prewarmCriticalEndpoints", () => {
   });
 
   it("does not throw when an individual fetch fails", async () => {
-    const fetcher = vi.fn().mockImplementation((url: string) =>
-      url.includes("trips") ? Promise.reject(new Error("boom")) : Promise.resolve([])
-    );
+    const fetcher = vi
+      .fn()
+      .mockImplementation((url: string) =>
+        url.includes("trips") ? Promise.reject(new Error("boom")) : Promise.resolve([])
+      );
     const qc = new QueryClient();
     await expect(prewarmCriticalEndpoints(qc, fetcher)).resolves.toBeDefined();
   });
@@ -488,13 +507,13 @@ export interface CriticalEndpoint {
 }
 
 export const CRITICAL_ENDPOINTS: readonly CriticalEndpoint[] = [
-  { queryKey: ["dashboard"],     url: "/api/dashboard" },
-  { queryKey: ["trips"],         url: "/api/trips" },
-  { queryKey: ["fuel"],          url: "/api/fuel" },
-  { queryKey: ["expenses"],      url: "/api/expenses" },
-  { queryKey: ["reservations"],  url: "/api/reservations" },
-  { queryKey: ["people"],        url: "/api/people" },
-  { queryKey: ["cars"],          url: "/api/cars" },
+  { queryKey: ["dashboard"], url: "/api/dashboard" },
+  { queryKey: ["trips"], url: "/api/trips" },
+  { queryKey: ["fuel"], url: "/api/fuel" },
+  { queryKey: ["expenses"], url: "/api/expenses" },
+  { queryKey: ["reservations"], url: "/api/reservations" },
+  { queryKey: ["people"], url: "/api/people" },
+  { queryKey: ["cars"], url: "/api/cars" },
 ] as const;
 
 export type Fetcher = (url: string) => Promise<unknown>;
@@ -504,7 +523,8 @@ export async function prewarmCriticalEndpoints(
   fetcher: Fetcher = defaultFetcher
 ): Promise<PromiseSettledResult<unknown>[]> {
   const tasks = CRITICAL_ENDPOINTS.map((ep) =>
-    qc.prefetchQuery({ queryKey: ep.queryKey, queryFn: () => fetcher(ep.url) })
+    qc
+      .prefetchQuery({ queryKey: ep.queryKey, queryFn: () => fetcher(ep.url) })
       .then(() => qc.getQueryData(ep.queryKey))
   );
   return Promise.allSettled(tasks);
@@ -550,6 +570,7 @@ git commit -m "feat(offline): boot-time prewarm of critical API endpoints"
 ### Task 6: Mount the prewarm hook
 
 **Files:**
+
 - Modify: `app/providers.tsx`
 
 The hook needs `authReady = true`, which means a successful `useMe` call. Mount it inside an inner client component so it has access to context.
@@ -612,6 +633,7 @@ git commit -m "feat(offline): trigger boot-time prewarm after auth resolved"
 Three states for Phase 1: `null` (online + fresh, render nothing), `offline-fresh` (grey), `offline-stale` (amber). Pure presentational — receives state via `useOnlineState`.
 
 **Files:**
+
 - Create: `components/offline-badge.tsx`
 - Modify: `lib/i18n/messages/nl.ts`, `lib/i18n/messages/en.ts`
 
@@ -671,7 +693,8 @@ export function OfflineBadge() {
         lineHeight: 1.4,
       }}
     >
-      {t("offline.label")}{isStale && ` · ${t("offline.stale_suffix")}`}
+      {t("offline.label")}
+      {isStale && ` · ${t("offline.stale_suffix")}`}
     </span>
   );
 }
@@ -693,6 +716,7 @@ git commit -m "feat(offline): header badge with fresh/stale states"
 ### Task 8: Wire badge into PageHeader
 
 **Files:**
+
 - Modify: `components/page-header.tsx`
 
 The badge goes into the existing `right` slot of the header, before `LangSwitcher`.
@@ -710,18 +734,22 @@ import { OfflineBadge } from "./offline-badge";
 //     <button onClick={handleLogout} ...>⏻</button>
 //   </div>
 // with:
-        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <OfflineBadge />
-          {right}
-          <LangSwitcher />
-          <button
-            onClick={handleLogout}
-            title={t("nav.logout")}
-            style={{ /* unchanged */ }}
-          >
-            ⏻
-          </button>
-        </div>
+<div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+  <OfflineBadge />
+  {right}
+  <LangSwitcher />
+  <button
+    onClick={handleLogout}
+    title={t("nav.logout")}
+    style={
+      {
+        /* unchanged */
+      }
+    }
+  >
+    ⏻
+  </button>
+</div>;
 ```
 
 - [ ] **Step 2: Manual verification on every page**
@@ -740,6 +768,7 @@ git commit -m "feat(offline): show OfflineBadge in every page header"
 ### Task 9: Trip form — refetch lastCarState on mount when online
 
 **Files:**
+
 - Modify: the trip form file (likely `app/trips/trip-form.tsx`)
 
 First find the form. The plan assumes it uses a hook like `useLastCarState(carId)` to populate `start_odometer`. Confirm by inspecting before editing.
@@ -747,6 +776,7 @@ First find the form. The plan assumes it uses a hook like `useLastCarState(carId
 - [ ] **Step 1: Locate the trip form and its dependency hook**
 
 Run:
+
 ```bash
 grep -rn "last-state\|lastCarState\|useLastState" app/ hooks/ --include="*.tsx" --include="*.ts"
 ```
@@ -788,19 +818,27 @@ import { useT } from "@/components/locale-provider";
 //   "form.offline_start_km_hint": "Offline — start KM is from last sync."
 
 // near the start_odometer input:
-{!online && (
-  <div style={{
-    fontFamily: fontMono, fontSize: 9, color: paper.amber,
-    letterSpacing: 1, marginTop: 2, textTransform: "uppercase",
-  }}>
-    {t("form.offline_start_km_hint")}
-  </div>
-)}
+{
+  !online && (
+    <div
+      style={{
+        fontFamily: fontMono,
+        fontSize: 9,
+        color: paper.amber,
+        letterSpacing: 1,
+        marginTop: 2,
+        textTransform: "uppercase",
+      }}
+    >
+      {t("form.offline_start_km_hint")}
+    </div>
+  );
+}
 ```
 
 - [ ] **Step 4: Manual verification**
 
-Run dev, log a trip with car X, save. Wait long enough that staleTime expires for `lastCarState` (or just open the form). Verify the network panel shows a `GET /api/cars/X/last-state` *every time* the form opens, not just the first.
+Run dev, log a trip with car X, save. Wait long enough that staleTime expires for `lastCarState` (or just open the form). Verify the network panel shows a `GET /api/cars/X/last-state` _every time_ the form opens, not just the first.
 
 Then: go offline (DevTools), open form — request fails, `start_odometer` falls back to cached value, hint message visible.
 
@@ -816,6 +854,7 @@ git commit -m "feat(offline): refetch lastCarState on trip form open + offline h
 ### Task 10: Reservation form — refetch reservations on mount when online
 
 **Files:**
+
 - Modify: `app/calendar/page.tsx` (the `?action=reserve` flow)
 
 Same pattern: when the new-reservation sheet opens (controlled by `searchParams.get("action") === "reserve"` per the deep-linking work), force a refetch of `["reservations"]` if online.
@@ -859,6 +898,7 @@ npm run build && npm run start
 ```
 
 In Chrome incognito:
+
 1. Visit `http://localhost:3000`, log in
 2. Network tab → filter `/api/`
 3. Within 2s of dashboard load: GETs to `/api/me`, `/api/dashboard`, `/api/trips`, `/api/fuel`, `/api/expenses`, `/api/reservations`, `/api/people`, `/api/cars` should all appear
@@ -867,6 +907,7 @@ In Chrome incognito:
 - [ ] **Step 2: Offline browsing verification**
 
 Same session, after step 1:
+
 1. DevTools → Application → Service Workers → tick **Offline**
 2. Click each bottom-tab: dashboard, trips, fuel, calendar, expenses → all render
 3. Click an existing trip → edit sheet opens with full data
@@ -878,10 +919,12 @@ Same session, after step 1:
 - [ ] **Step 3: Stale-cache verification**
 
 To force the `OFFLINE · ouder dan 1u` state without waiting an hour, in DevTools console:
+
 ```js
 // Bypass: temporarily lower the threshold by hot-replacing the constant in dev tools, or
 // simulate by visiting in an incognito window with a stored old `lastSyncAt` in React DevTools.
 ```
+
 Practical alternative: temporarily change `STALE_THRESHOLD_MS` to `60_000` (1 min), wait 90s while offline, confirm amber appears, then revert.
 
 - [ ] **Step 4: Form refetch verification**
@@ -905,6 +948,7 @@ Online, open the page. Every 30s a `HEAD /api/health` request should appear. Tak
 ```bash
 npm test
 ```
+
 Expected: all green.
 
 - [ ] **Step 2: Push and PR**
@@ -937,6 +981,7 @@ EOF
 - [ ] **Step 3: Review and merge**
 
 After self-review, merge to main. Trigger Docker build. Pull on VPS:
+
 ```bash
 ssh root@100.86.173.115 "cd /opt/dockge/stacks/autodelen && docker compose pull && docker compose up -d"
 ```
@@ -955,10 +1000,10 @@ ssh root@100.86.173.115 "cd /opt/dockge/stacks/autodelen && docker compose pull 
 
 ## Risks & mitigations
 
-| Risk | Likelihood | Mitigation |
-|---|---|---|
-| `runtimeCaching` config syntax differs from `@ducanh2912/next-pwa` v10 | Medium | Task 4 Step 2 verifies SW regenerates and contains `StaleWhileRevalidate`. If syntax wrong, fix before merging. |
-| RSC payload for detail sheets isn't covered by `/api/*` rule | Medium | Task 11 Step 2 explicitly tests detail-sheet offline behavior. If broken, add a route for `?_rsc=` pattern in next.config. |
-| Heartbeat creates noise in production logs | Low | `/api/health` is intentionally tiny; can be filtered in log aggregator if needed. 30s × users is small at this scale. |
-| `useBootPrewarm` runs before SW activates on first visit | Low | First prewarm goes to network anyway; subsequent ones use SW cache. Acceptable. |
-| Stale threshold of 1h is wrong for the user base | Low | One-line constant; tweak after observation. |
+| Risk                                                                   | Likelihood | Mitigation                                                                                                                 |
+| ---------------------------------------------------------------------- | ---------- | -------------------------------------------------------------------------------------------------------------------------- |
+| `runtimeCaching` config syntax differs from `@ducanh2912/next-pwa` v10 | Medium     | Task 4 Step 2 verifies SW regenerates and contains `StaleWhileRevalidate`. If syntax wrong, fix before merging.            |
+| RSC payload for detail sheets isn't covered by `/api/*` rule           | Medium     | Task 11 Step 2 explicitly tests detail-sheet offline behavior. If broken, add a route for `?_rsc=` pattern in next.config. |
+| Heartbeat creates noise in production logs                             | Low        | `/api/health` is intentionally tiny; can be filtered in log aggregator if needed. 30s × users is small at this scale.      |
+| `useBootPrewarm` runs before SW activates on first visit               | Low        | First prewarm goes to network anyway; subsequent ones use SW cache. Acceptable.                                            |
+| Stale threshold of 1h is wrong for the user base                       | Low        | One-line constant; tweak after observation.                                                                                |

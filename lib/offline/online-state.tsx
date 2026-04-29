@@ -1,12 +1,5 @@
 "use client";
-import {
-  createContext,
-  useCallback,
-  useContext,
-  useEffect,
-  useRef,
-  useState,
-} from "react";
+import { createContext, useCallback, useContext, useEffect, useRef, useState } from "react";
 
 export const STALE_THRESHOLD_MS = 60 * 60 * 1000; // 1 hour
 const HEARTBEAT_INTERVAL_MS = 30 * 1000;

@@ -43,7 +43,10 @@ export default function LoginPage() {
           <h1 className="text-2xl font-semibold">{t("brand.app")}</h1>
         </div>
 
-        <form onSubmit={handleSubmit} className="bg-white rounded-2xl shadow-sm border p-6 space-y-4">
+        <form
+          onSubmit={handleSubmit}
+          className="bg-white rounded-2xl shadow-sm border p-6 space-y-4"
+        >
           <div>
             <label className="block text-sm font-medium mb-1">{t("form.name")}</label>
             <input
@@ -66,9 +69,7 @@ export default function LoginPage() {
               required
             />
           </div>
-          {error && (
-            <p className="text-sm text-red-600">{error}</p>
-          )}
+          {error && <p className="text-sm text-red-600">{error}</p>}
           <button
             type="submit"
             disabled={loading}

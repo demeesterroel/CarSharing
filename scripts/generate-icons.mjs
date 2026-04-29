@@ -49,7 +49,7 @@ const maskableSvg = `<svg viewBox="0 0 200 200" width="200" height="200" xmlns="
   </g>
 </svg>`;
 
-const iconBuf     = Buffer.from(iconSvg);
+const iconBuf = Buffer.from(iconSvg);
 const maskableBuf = Buffer.from(maskableSvg);
 
 await writeFile("public/icons/source.svg", iconSvg);

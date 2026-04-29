@@ -34,16 +34,24 @@ export function GroupedList<T>({
         return (
           <div key={key}>
             {/* Month header */}
-            <div style={{
-              display: "flex", alignItems: "baseline", justifyContent: "space-between",
-              padding: "10px 20px 6px",
-              borderTop: `1.5px dashed ${paper.ink}`,
-              background: paper.paperDeep,
-            }}>
-              <span style={{ fontFamily: fontSerif, fontSize: 16, fontWeight: 600, color: paper.ink }}>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "baseline",
+                justifyContent: "space-between",
+                padding: "10px 20px 6px",
+                borderTop: `1.5px dashed ${paper.ink}`,
+                background: paper.paperDeep,
+              }}
+            >
+              <span
+                style={{ fontFamily: fontSerif, fontSize: 16, fontWeight: 600, color: paper.ink }}
+              >
                 {getGroupLabel(key)}
               </span>
-              <span style={{ fontFamily: fontMono, fontSize: 11, color: paper.inkDim, fontWeight: 600 }}>
+              <span
+                style={{ fontFamily: fontMono, fontSize: 11, color: paper.inkDim, fontWeight: 600 }}
+              >
                 {totalSuffix === "€"
                   ? `€\u00a0${total.toLocaleString("nl-BE", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
                   : `${total.toLocaleString("nl-BE")} ${totalSuffix}`}

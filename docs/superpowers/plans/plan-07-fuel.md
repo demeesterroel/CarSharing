@@ -14,6 +14,7 @@
 ### Task 1: Fuel fill-up query helpers
 
 **Files:**
+
 - Create: `lib/queries/fuel-fillups.ts`
 
 - [ ] **Step 1: Create lib/queries/fuel-fillups.ts**
@@ -24,48 +25,77 @@ import type { FuelFillup, FuelFillupInput } from "@/types";
 import { calcPricePerLiter } from "@/lib/formulas";
 
 export function getFuelFillups(db: Database.Database): FuelFillup[] {
-  return db.prepare(`
+  return db
+    .prepare(
+      `
     SELECT f.*, p.name AS person_name, c.short AS car_short
     FROM fuel_fillups f
     JOIN people p ON p.id = f.person_id
     JOIN cars c ON c.id = f.car_id
     ORDER BY f.date DESC, f.id DESC
-  `).all() as FuelFillup[];
+  `
+    )
+    .all() as FuelFillup[];
 }
 
 export function getFuelFillupById(db: Database.Database, id: number): FuelFillup | null {
-  return (db.prepare(`
+  return (
+    (db
+      .prepare(
+        `
     SELECT f.*, p.name AS person_name, c.short AS car_short
     FROM fuel_fillups f
     JOIN people p ON p.id = f.person_id
     JOIN cars c ON c.id = f.car_id
     WHERE f.id = ?
-  `).get(id) as FuelFillup) ?? null;
+  `
+      )
+      .get(id) as FuelFillup) ?? null
+  );
 }
 
 export function insertFuelFillup(db: Database.Database, input: FuelFillupInput): number {
   const price_per_liter = calcPricePerLiter(input.amount, input.liters);
-  const result = db.prepare(`
+  const result = db
+    .prepare(
+      `
     INSERT INTO fuel_fillups (person_id,car_id,date,amount,liters,price_per_liter,odometer,receipt,location)
     VALUES (?,?,?,?,?,?,?,?,?)
-  `).run(
-    input.person_id, input.car_id, input.date,
-    input.amount, input.liters, price_per_liter,
-    input.odometer ?? null, input.receipt ?? null, input.location ?? null
-  );
+  `
+    )
+    .run(
+      input.person_id,
+      input.car_id,
+      input.date,
+      input.amount,
+      input.liters,
+      price_per_liter,
+      input.odometer ?? null,
+      input.receipt ?? null,
+      input.location ?? null
+    );
   return result.lastInsertRowid as number;
 }
 
 export function updateFuelFillup(db: Database.Database, id: number, input: FuelFillupInput): void {
   const price_per_liter = calcPricePerLiter(input.amount, input.liters);
-  db.prepare(`
+  db.prepare(
+    `
     UPDATE fuel_fillups
     SET person_id=?,car_id=?,date=?,amount=?,liters=?,price_per_liter=?,odometer=?,receipt=?,location=?
     WHERE id=?
-  `).run(
-    input.person_id, input.car_id, input.date,
-    input.amount, input.liters, price_per_liter,
-    input.odometer ?? null, input.receipt ?? null, input.location ?? null, id
+  `
+  ).run(
+    input.person_id,
+    input.car_id,
+    input.date,
+    input.amount,
+    input.liters,
+    price_per_liter,
+    input.odometer ?? null,
+    input.receipt ?? null,
+    input.location ?? null,
+    id
   );
 }
 
@@ -86,6 +116,7 @@ git commit -m "feat: fuel fill-up query helpers"
 ### Task 2: Receipt upload API
 
 **Files:**
+
 - Create: `app/api/uploads/route.ts`
 - Create: `app/api/static/[...path]/route.ts`
 - Modify: `next.config.ts`
@@ -146,9 +177,7 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   serverExternalPackages: ["better-sqlite3"],
   async rewrites() {
-    return [
-      { source: "/uploads/:path*", destination: "/api/static/:path*" },
-    ];
+    return [{ source: "/uploads/:path*", destination: "/api/static/:path*" }];
   },
 };
 
@@ -169,10 +198,7 @@ const MIME_BY_EXT: Record<string, string> = {
   webp: "image/webp",
 };
 
-export async function GET(
-  _: Request,
-  ctx: { params: Promise<{ path: string[] }> }
-) {
+export async function GET(_: Request, ctx: { params: Promise<{ path: string[] }> }) {
   const { path: parts } = await ctx.params;
   const uploadsRoot = path.resolve(process.cwd(), "uploads");
   const filePath = path.resolve(uploadsRoot, ...parts);
@@ -207,6 +233,7 @@ git commit -m "feat: upload route with size/mime validation and static serving"
 ### Task 3: Fuel fill-up API routes
 
 **Files:**
+
 - Create: `app/api/fuel/route.ts`
 - Create: `app/api/fuel/[id]/route.ts`
 
@@ -226,7 +253,11 @@ const FuelFillupSchema = z.object({
   liters: z.number().positive(),
   odometer: z.number().int().nonnegative().nullable().optional(),
   receipt: z.string().nullable().optional(),
-  location: z.string().nullable().optional().transform((v) => v ?? null),
+  location: z
+    .string()
+    .nullable()
+    .optional()
+    .transform((v) => v ?? null),
 });
 
 export const GET = json(async () => getFuelFillups(getDb()));
@@ -246,11 +277,7 @@ export const POST = json(async (req) => {
 ```ts
 import { z } from "zod";
 import { getDb } from "@/lib/db";
-import {
-  getFuelFillupById,
-  updateFuelFillup,
-  deleteFuelFillup,
-} from "@/lib/queries/fuel-fillups";
+import { getFuelFillupById, updateFuelFillup, deleteFuelFillup } from "@/lib/queries/fuel-fillups";
 import { json, readBody, readId, notFound } from "@/lib/api";
 
 const FuelFillupSchema = z.object({
@@ -261,7 +288,11 @@ const FuelFillupSchema = z.object({
   liters: z.number().positive(),
   odometer: z.number().int().nonnegative().nullable().optional(),
   receipt: z.string().nullable().optional(),
-  location: z.string().nullable().optional().transform((v) => v ?? null),
+  location: z
+    .string()
+    .nullable()
+    .optional()
+    .transform((v) => v ?? null),
 });
 
 export const GET = json(async (_req, ctx) => {
@@ -297,6 +328,7 @@ git commit -m "feat: fuel fill-up API routes with zod validation"
 ### Task 4: Fuel fill-up hook
 
 **Files:**
+
 - Create: `hooks/use-fuel-fillups.ts`
 
 - [ ] **Step 1: Create hooks/use-fuel-fillups.ts**
@@ -331,6 +363,7 @@ git commit -m "feat: useFuelFillups hooks"
 ### Task 5: Receipt upload component
 
 **Files:**
+
 - Create: `components/receipt-upload.tsx`
 
 - [ ] **Step 1: Create components/receipt-upload.tsx**
@@ -390,7 +423,9 @@ export function ReceiptUpload({ value, onChange }: Props) {
         <img src={value} alt={t("form.receipt")} className="max-h-32 rounded object-contain" />
       ) : (
         <>
-          <Camera className={`w-6 h-6 ${uploading ? "animate-pulse text-blue-500" : "text-gray-400"}`} />
+          <Camera
+            className={`w-6 h-6 ${uploading ? "animate-pulse text-blue-500" : "text-gray-400"}`}
+          />
           <span className="text-xs text-gray-500">
             {uploading ? t("state.uploading") : t("form.receipt_add")}
           </span>
@@ -413,6 +448,7 @@ git commit -m "feat: receipt-upload component"
 ### Task 6: Fuel page and form
 
 **Files:**
+
 - Create: `app/fuel/fuel-form.tsx`
 - Create: `app/fuel/page.tsx`
 - Modify: `components/nav-drawer.tsx` (already links to `/fuel` from plan 04)
@@ -753,6 +789,7 @@ npm run dev
 ```
 
 Navigate to http://localhost:3000/fuel. Verify:
+
 - Add entry — `prijs/liter` auto-calculates from `bedrag` and `liter`.
 - Pick a car that has prior trips or fill-ups: `Kilometerstand` prefills from the car's last known odometer. Clear the field and pick a different car — it refills. Editing an existing fill-up does NOT refill the odometer.
 - `Locatie` starts empty even after picking a car (gas stations change per visit). GPS button captures the station location; map click or GPS both update the pin.

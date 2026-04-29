@@ -19,17 +19,17 @@ export function createResourceHooks<T extends { id: number }, TInput>(
   };
 
   return {
-    useList: () =>
-      useQuery<T[]>({ queryKey: [key], queryFn: () => apiFetch<T[]>(path) }),
+    useList: () => useQuery<T[]>({ queryKey: [key], queryFn: () => apiFetch<T[]>(path) }),
 
     useCreate: () => {
       const qc = useQueryClient();
       return useMutation<{ id: number }, Error, TInput>({
-        mutationFn: (data) => apiFetch(path, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(data),
-        }),
+        mutationFn: (data) =>
+          apiFetch(path, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(data),
+          }),
         onSuccess: () => invalidate(qc),
       });
     },
@@ -37,11 +37,12 @@ export function createResourceHooks<T extends { id: number }, TInput>(
     useUpdate: () => {
       const qc = useQueryClient();
       return useMutation<unknown, Error, TInput & { id: number }>({
-        mutationFn: ({ id, ...data }) => apiFetch(`${path}/${id}`, {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(data),
-        }),
+        mutationFn: ({ id, ...data }) =>
+          apiFetch(`${path}/${id}`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(data),
+          }),
         onSuccess: () => invalidate(qc),
       });
     },

@@ -52,7 +52,9 @@ export function ReceiptUpload({ value, onChange }: Props) {
         <img src={value} alt={t("form.receipt")} className="max-h-32 rounded object-contain" />
       ) : (
         <>
-          <Camera className={`w-6 h-6 ${uploading ? "animate-pulse text-blue-500" : "text-gray-400"}`} />
+          <Camera
+            className={`w-6 h-6 ${uploading ? "animate-pulse text-blue-500" : "text-gray-400"}`}
+          />
           <span className="text-xs text-gray-500">
             {uploading ? t("state.uploading") : t("form.receipt_add")}
           </span>

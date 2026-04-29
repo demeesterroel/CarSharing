@@ -17,11 +17,11 @@ The app currently has no login gate. Two phases are planned:
 
 ## Tech choices
 
-| Concern | Choice | Reason |
-|---|---|---|
-| Cookie sealing | `iron-session` | Tiny, audited, zero-config; avoids hand-rolled HMAC boilerplate |
-| Password hashing | `bcryptjs` | Pure JS (no native bindings), works in Docker without node-gyp |
-| External auth framework | None | NextAuth is overkill for env-var + bcrypt; adds 100 kB and complex config |
+| Concern                 | Choice         | Reason                                                                    |
+| ----------------------- | -------------- | ------------------------------------------------------------------------- |
+| Cookie sealing          | `iron-session` | Tiny, audited, zero-config; avoids hand-rolled HMAC boilerplate           |
+| Password hashing        | `bcryptjs`     | Pure JS (no native bindings), works in Docker without node-gyp            |
+| External auth framework | None           | NextAuth is overkill for env-var + bcrypt; adds 100 kB and complex config |
 
 ---
 
@@ -59,7 +59,7 @@ export const sessionOptions: IronSessionOptions = {
   },
 };
 
-export async function getSession(req: Request): Promise<IronSession<SessionData>>
+export async function getSession(req: Request): Promise<IronSession<SessionData>>;
 ```
 
 **`app/login/page.tsx`**
@@ -74,6 +74,7 @@ Body: { username: string; password: string }
 ```
 
 Steps:
+
 1. Compare `username` to `AUTH_USERNAME` using `crypto.timingSafeEqual` (pad/truncate both to the same length as `Buffer` before comparing — prevents timing attacks even on the username check).
 2. `bcryptjs.compare(password, AUTH_PASSWORD_HASH)`.
 3. Both pass → `session.authenticated = true; session.save()` → `200 { ok: true }`.
@@ -90,6 +91,7 @@ Destroys the session cookie, returns `200 { ok: true }`. The client redirects to
 **`middleware.ts`** (new file at project root)
 
 Runs on every request. Allowlisted paths that bypass auth:
+
 - `/login`
 - `/api/auth/login`
 - `/_next/*`
@@ -105,7 +107,10 @@ Middleware never touches the DB — only reads the sealed cookie.
 ```ts
 import bcrypt from "bcryptjs";
 const password = process.argv[2];
-if (!password) { console.error("Usage: npx tsx scripts/hash-password.ts <password>"); process.exit(1); }
+if (!password) {
+  console.error("Usage: npx tsx scripts/hash-password.ts <password>");
+  process.exit(1);
+}
 const hash = await bcrypt.hash(password, 12);
 console.log(hash);
 ```
@@ -119,6 +124,7 @@ Run once: `npx tsx scripts/hash-password.ts mypassword` → paste output into `A
 ### New i18n keys
 
 Two keys added to `lib/i18n/messages/nl.ts`:
+
 ```ts
 "error.invalid_credentials": "Ongeldige gebruikersnaam of wachtwoord",
 "nav.logout": "Uitloggen",
@@ -149,8 +155,8 @@ ALTER TABLE people ADD COLUMN is_admin INTEGER NOT NULL DEFAULT 0;
 ```ts
 export interface SessionData {
   authenticated: boolean;
-  personId?: number;    // set after Phase B login; absent in Phase A sessions
-  isAdmin?: boolean;    // set after Phase B login; absent in Phase A sessions
+  personId?: number; // set after Phase B login; absent in Phase A sessions
+  isAdmin?: boolean; // set after Phase B login; absent in Phase A sessions
 }
 ```
 
@@ -207,6 +213,7 @@ All of these are Phase B concerns.
 ## Testing
 
 **Phase A:**
+
 - Login with correct credentials → session cookie set, redirected to `/`.
 - Login with wrong username → `401`, same error message as wrong password.
 - Login with wrong password → `401`.
@@ -215,6 +222,7 @@ All of these are Phase B concerns.
 - Logout → cookie cleared, next request redirects to `/login`.
 
 **Phase B (future):**
+
 - Non-admin login → dashboard returns only own row.
 - Admin login → dashboard returns all rows.
 - Non-admin form submission → `person_id` locked to session person, cannot be overridden via payload manipulation (API reads from session, not body).

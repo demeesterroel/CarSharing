@@ -15,6 +15,7 @@
 ### Task 1: NavDrawer
 
 **Files:**
+
 - Create: `components/nav-drawer.tsx`
 - Modify: `app/layout.tsx`
 
@@ -23,7 +24,16 @@
 ```tsx
 "use client";
 import * as Dialog from "@radix-ui/react-dialog";
-import { Menu, X, LayoutDashboard, Car, Users, Wrench, CreditCard, CalendarDays } from "lucide-react";
+import {
+  Menu,
+  X,
+  LayoutDashboard,
+  Car,
+  Users,
+  Wrench,
+  CreditCard,
+  CalendarDays,
+} from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
@@ -72,7 +82,9 @@ export function NavDrawer() {
                 href={href}
                 onClick={() => setOpen(false)}
                 className={`flex items-center gap-3 px-4 py-3 text-sm hover:bg-blue-50 transition-colors ${
-                  pathname === href ? "text-blue-600 bg-blue-50 border-l-4 border-blue-600" : "text-gray-700"
+                  pathname === href
+                    ? "text-blue-600 bg-blue-50 border-l-4 border-blue-600"
+                    : "text-gray-700"
                 }`}
               >
                 <Icon className="w-5 h-5" />
@@ -124,9 +136,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="nl">
       <body className="min-h-screen bg-gray-50">
         <Providers>
-          <div className="max-w-2xl mx-auto bg-white min-h-screen shadow-sm pb-16">
-            {children}
-          </div>
+          <div className="max-w-2xl mx-auto bg-white min-h-screen shadow-sm pb-16">{children}</div>
           <BottomTabBar />
         </Providers>
       </body>
@@ -158,6 +168,7 @@ export default function HomePage() {
 ```bash
 npm run dev
 ```
+
 Open http://localhost:3000 — hamburger menu opens drawer with all nav links.
 
 - [ ] **Step 6: Commit**
@@ -172,6 +183,7 @@ git commit -m "feat: nav drawer and page header"
 ### Task 2: CarToggle
 
 **Files:**
+
 - Create: `components/car-toggle.tsx`
 
 - [ ] **Step 1: Create components/car-toggle.tsx**
@@ -220,6 +232,7 @@ git commit -m "feat: car toggle button group component"
 ### Task 3: PersonSelect & FAB
 
 **Files:**
+
 - Create: `components/person-select.tsx`
 - Create: `components/fab.tsx`
 
@@ -244,9 +257,13 @@ export function PersonSelect({ people, value, onChange, placeholder }: Props) {
       onChange={(e) => onChange(Number(e.target.value))}
       className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
     >
-      <option value="" disabled>{placeholder ?? t("form.select_person_placeholder")}</option>
+      <option value="" disabled>
+        {placeholder ?? t("form.select_person_placeholder")}
+      </option>
       {people.map((p) => (
-        <option key={p.id} value={p.id}>{p.name}</option>
+        <option key={p.id} value={p.id}>
+          {p.name}
+        </option>
       ))}
     </select>
   );
@@ -290,6 +307,7 @@ git commit -m "feat: person select and floating action button"
 ### Task 4: GroupedList
 
 **Files:**
+
 - Create: `components/grouped-list.tsx`
 
 - [ ] **Step 1: Create components/grouped-list.tsx**
@@ -299,7 +317,7 @@ Groups an array of records by `year-month` key and renders a section header with
 ```tsx
 interface GroupedListProps<T> {
   items: T[];
-  getKey: (item: T) => string;        // e.g. item.datum.slice(0,7) → "2026-04"
+  getKey: (item: T) => string; // e.g. item.datum.slice(0,7) → "2026-04"
   getGroupLabel: (key: string) => string; // e.g. "2026-4"
   getGroupTotal: (items: T[]) => number;
   renderItem: (item: T) => React.ReactNode;
@@ -354,6 +372,7 @@ git commit -m "feat: grouped list component with month headers and totals"
 ### Task 5: BottomTabBar
 
 **Files:**
+
 - Create: `components/bottom-tab-bar.tsx`
 
 The bar is a two-tab footer pinned to the bottom of the viewport, matching the width constraint of the main content wrapper (`max-w-2xl`). Active-state styling is driven by `usePathname()`; the root layout already reserves 64 px of bottom padding so list content never sits beneath it.
@@ -375,10 +394,7 @@ const TABS = [
 export function BottomTabBar() {
   const pathname = usePathname();
   return (
-    <nav
-      aria-label={t("nav.primary")}
-      className="fixed bottom-0 inset-x-0 z-30 border-t bg-white"
-    >
+    <nav aria-label={t("nav.primary")} className="fixed bottom-0 inset-x-0 z-30 border-t bg-white">
       <div className="max-w-2xl mx-auto grid grid-cols-2 h-16">
         {TABS.map(({ href, label, icon: Icon }) => {
           const active = pathname === href || pathname.startsWith(`${href}/`);

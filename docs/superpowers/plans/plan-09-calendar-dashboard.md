@@ -14,6 +14,7 @@
 ### Task 1: Reservations query helpers
 
 **Files:**
+
 - Create: `lib/queries/reservations.ts`
 
 - [ ] **Step 1: Create lib/queries/reservations.ts**
@@ -23,35 +24,54 @@ import type Database from "better-sqlite3";
 import type { Reservation, ReservationInput } from "@/types";
 
 export function getReservations(db: Database.Database): Reservation[] {
-  return db.prepare(`
+  return db
+    .prepare(
+      `
     SELECT r.*, p.name AS person_name, c.short AS car_short
     FROM reservations r
     JOIN people p ON p.id = r.person_id
     JOIN cars c ON c.id = r.car_id
     ORDER BY r.start_date DESC
-  `).all() as Reservation[];
+  `
+    )
+    .all() as Reservation[];
 }
 
 export function getReservationById(db: Database.Database, id: number): Reservation | null {
-  return (db.prepare(`
+  return (
+    (db
+      .prepare(
+        `
     SELECT r.*, p.name AS person_name, c.short AS car_short
     FROM reservations r
     JOIN people p ON p.id = r.person_id
     JOIN cars c ON c.id = r.car_id
     WHERE r.id = ?
-  `).get(id) as Reservation) ?? null;
+  `
+      )
+      .get(id) as Reservation) ?? null
+  );
 }
 
 export function insertReservation(db: Database.Database, input: ReservationInput): number {
-  const result = db.prepare(
-    "INSERT INTO reservations (person_id,car_id,start_date,end_date) VALUES (?,?,?,?)"
-  ).run(input.person_id, input.car_id, input.start_date, input.end_date);
+  const result = db
+    .prepare("INSERT INTO reservations (person_id,car_id,start_date,end_date) VALUES (?,?,?,?)")
+    .run(input.person_id, input.car_id, input.start_date, input.end_date);
   return result.lastInsertRowid as number;
 }
 
-export function updateReservation(db: Database.Database, id: number, input: ReservationInput): void {
-  db.prepare("UPDATE reservations SET person_id=?,car_id=?,start_date=?,end_date=? WHERE id=?")
-    .run(input.person_id, input.car_id, input.start_date, input.end_date, id);
+export function updateReservation(
+  db: Database.Database,
+  id: number,
+  input: ReservationInput
+): void {
+  db.prepare("UPDATE reservations SET person_id=?,car_id=?,start_date=?,end_date=? WHERE id=?").run(
+    input.person_id,
+    input.car_id,
+    input.start_date,
+    input.end_date,
+    id
+  );
 }
 
 export function deleteReservation(db: Database.Database, id: number): void {
@@ -71,6 +91,7 @@ git commit -m "feat: reservation query helpers"
 ### Task 2: Reservations API routes
 
 **Files:**
+
 - Create: `app/api/reservations/route.ts`
 - Create: `app/api/reservations/[id]/route.ts`
 
@@ -82,15 +103,17 @@ import { getDb } from "@/lib/db";
 import { getReservations, insertReservation } from "@/lib/queries/reservations";
 import { json, readBody, badRequest } from "@/lib/api";
 
-const ReservationSchema = z.object({
-  person_id: z.number().int().positive(),
-  car_id: z.number().int().positive(),
-  start_date: z.string().min(10),
-  end_date: z.string().min(10),
-}).refine((v) => v.end_date >= v.start_date, {
-  message: "end_date must be on or after start_date",
-  path: ["end_date"],
-});
+const ReservationSchema = z
+  .object({
+    person_id: z.number().int().positive(),
+    car_id: z.number().int().positive(),
+    start_date: z.string().min(10),
+    end_date: z.string().min(10),
+  })
+  .refine((v) => v.end_date >= v.start_date, {
+    message: "end_date must be on or after start_date",
+    path: ["end_date"],
+  });
 
 export const GET = json(async () => getReservations(getDb()));
 
@@ -116,15 +139,17 @@ import {
 } from "@/lib/queries/reservations";
 import { json, readBody, readId, notFound } from "@/lib/api";
 
-const ReservationSchema = z.object({
-  person_id: z.number().int().positive(),
-  car_id: z.number().int().positive(),
-  start_date: z.string().min(10),
-  end_date: z.string().min(10),
-}).refine((v) => v.end_date >= v.start_date, {
-  message: "end_date must be on or after start_date",
-  path: ["end_date"],
-});
+const ReservationSchema = z
+  .object({
+    person_id: z.number().int().positive(),
+    car_id: z.number().int().positive(),
+    start_date: z.string().min(10),
+    end_date: z.string().min(10),
+  })
+  .refine((v) => v.end_date >= v.start_date, {
+    message: "end_date must be on or after start_date",
+    path: ["end_date"],
+  });
 
 export const GET = json(async (_req, ctx) => {
   const id = await readId(ctx);
@@ -159,6 +184,7 @@ git commit -m "feat: reservations API routes with zod validation"
 ### Task 3: Reservations hook
 
 **Files:**
+
 - Create: `hooks/use-reservations.ts`
 
 - [ ] **Step 1: Create hooks/use-reservations.ts**
@@ -190,6 +216,7 @@ git commit -m "feat: useReservations hooks"
 ### Task 4: Calendar page with FullCalendar
 
 **Files:**
+
 - Create: `app/calendar/reservation-form.tsx`
 - Create: `app/calendar/full-calendar-wrapper.tsx`
 - Create: `app/calendar/page.tsx`
@@ -492,6 +519,7 @@ git commit -m "feat: calendar page with FullCalendar and inclusive end-date rend
 ### Task 5: Dashboard query — aggregated in 4 GROUP BY queries
 
 **Files:**
+
 - Create: `lib/queries/dashboard.ts`
 - Modify: `lib/__tests__/queries.test.ts` (or create if missing)
 
@@ -527,12 +555,14 @@ interface PaymentAgg {
 export function getDashboard(db: Database.Database, year: number): DashboardRow[] {
   const yearStr = String(year);
 
-  const people = db
-    .prepare("SELECT id, name FROM people ORDER BY name")
-    .all() as { id: number; name: string }[];
+  const people = db.prepare("SELECT id, name FROM people ORDER BY name").all() as {
+    id: number;
+    name: string;
+  }[];
 
   const tripRows = db
-    .prepare(`
+    .prepare(
+      `
       SELECT person_id,
              COUNT(*)                AS trip_count,
              COALESCE(SUM(km),0)     AS trip_km,
@@ -540,11 +570,13 @@ export function getDashboard(db: Database.Database, year: number): DashboardRow[
       FROM trips
       WHERE strftime('%Y', date) = ?
       GROUP BY person_id
-    `)
+    `
+    )
     .all(yearStr) as TripAgg[];
 
   const fuelRows = db
-    .prepare(`
+    .prepare(
+      `
       SELECT person_id,
              COUNT(*)                AS fuel_count,
              COALESCE(SUM(liters),0) AS fuel_liters,
@@ -552,27 +584,32 @@ export function getDashboard(db: Database.Database, year: number): DashboardRow[
       FROM fuel_fillups
       WHERE strftime('%Y', date) = ?
       GROUP BY person_id
-    `)
+    `
+    )
     .all(yearStr) as FuelAgg[];
 
   const expenseRows = db
-    .prepare(`
+    .prepare(
+      `
       SELECT person_id,
              COALESCE(SUM(amount),0) AS expense_amount
       FROM expenses
       WHERE strftime('%Y', date) = ?
       GROUP BY person_id
-    `)
+    `
+    )
     .all(yearStr) as ExpenseAgg[];
 
   const paymentRows = db
-    .prepare(`
+    .prepare(
+      `
       SELECT person_id,
              COALESCE(SUM(amount),0) AS paid_amount
       FROM payments
       WHERE year = ?
       GROUP BY person_id
-    `)
+    `
+    )
     .all(year) as PaymentAgg[];
 
   const byId = <T extends { person_id: number }>(rows: T[]) =>
@@ -615,7 +652,7 @@ export function getDashboard(db: Database.Database, year: number): DashboardRow[
 }
 ```
 
-- [ ] **Step 2: Append tests to lib/__tests__/queries.test.ts**
+- [ ] **Step 2: Append tests to lib/**tests**/queries.test.ts**
 
 ```ts
 import { describe, it, expect } from "vitest";
@@ -691,6 +728,7 @@ Note: `makeTestDb` is the in-memory test helper created in plan 02. If it hasn't
 ```bash
 npm test lib/__tests__/
 ```
+
 Expected: all PASS.
 
 - [ ] **Step 4: Commit**
@@ -705,6 +743,7 @@ git commit -m "feat: dashboard query aggregates in 4 GROUP BY passes with tests"
 ### Task 6: Dashboard API route
 
 **Files:**
+
 - Create: `app/api/dashboard/route.ts`
 
 - [ ] **Step 1: Create app/api/dashboard/route.ts**
@@ -733,6 +772,7 @@ git commit -m "feat: dashboard API route"
 ### Task 7: Dashboard hook and page
 
 **Files:**
+
 - Create: `hooks/use-dashboard.ts`
 - Modify: `app/page.tsx`
 

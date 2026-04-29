@@ -24,7 +24,9 @@ interface PaymentAgg {
 }
 
 export function getEarliestYear(db: Database.Database): number {
-  const row = db.prepare(`
+  const row = db
+    .prepare(
+      `
     SELECT MIN(earliest) as year FROM (
       SELECT MIN(CAST(strftime('%Y', date) AS INTEGER)) as earliest FROM trips
       UNION ALL
@@ -32,19 +34,23 @@ export function getEarliestYear(db: Database.Database): number {
       UNION ALL
       SELECT MIN(CAST(strftime('%Y', date) AS INTEGER)) FROM expenses
     )
-  `).get() as { year: number | null };
+  `
+    )
+    .get() as { year: number | null };
   return row.year ?? new Date().getFullYear();
 }
 
 export function getDashboard(db: Database.Database, year: number): DashboardRow[] {
   const yearStr = String(year);
 
-  const people = db
-    .prepare("SELECT id, name FROM people ORDER BY name")
-    .all() as { id: number; name: string }[];
+  const people = db.prepare("SELECT id, name FROM people ORDER BY name").all() as {
+    id: number;
+    name: string;
+  }[];
 
   const tripRows = db
-    .prepare(`
+    .prepare(
+      `
       SELECT person_id,
              COUNT(*)                AS trip_count,
              COALESCE(SUM(km),0)     AS trip_km,
@@ -52,11 +58,13 @@ export function getDashboard(db: Database.Database, year: number): DashboardRow[
       FROM trips
       WHERE strftime('%Y', date) = ?
       GROUP BY person_id
-    `)
+    `
+    )
     .all(yearStr) as TripAgg[];
 
   const fuelRows = db
-    .prepare(`
+    .prepare(
+      `
       SELECT person_id,
              COUNT(*)                AS fuel_count,
              COALESCE(SUM(liters),0) AS fuel_liters,
@@ -64,28 +72,33 @@ export function getDashboard(db: Database.Database, year: number): DashboardRow[
       FROM fuel_fillups
       WHERE strftime('%Y', date) = ?
       GROUP BY person_id
-    `)
+    `
+    )
     .all(yearStr) as FuelAgg[];
 
   const expenseRows = db
-    .prepare(`
+    .prepare(
+      `
       SELECT person_id,
              COUNT(*)                AS expense_count,
              COALESCE(SUM(amount),0) AS expense_amount
       FROM expenses
       WHERE strftime('%Y', date) = ?
       GROUP BY person_id
-    `)
+    `
+    )
     .all(yearStr) as ExpenseAgg[];
 
   const paymentRows = db
-    .prepare(`
+    .prepare(
+      `
       SELECT person_id,
              COALESCE(SUM(amount),0) AS paid_amount
       FROM payments
       WHERE year = ?
       GROUP BY person_id
-    `)
+    `
+    )
     .all(year) as PaymentAgg[];
 
   const byId = <T extends { person_id: number }>(rows: T[]) =>

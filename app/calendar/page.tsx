@@ -36,12 +36,18 @@ function BottomSheet({
       <div
         onClick={onClose}
         style={{
-          position: "fixed", inset: 0, background: "rgba(0,0,0,0.4)", zIndex: 40,
+          position: "fixed",
+          inset: 0,
+          background: "rgba(0,0,0,0.4)",
+          zIndex: 40,
         }}
       />
       <div
         style={{
-          position: "fixed", left: 0, right: 0, bottom: 0,
+          position: "fixed",
+          left: 0,
+          right: 0,
+          bottom: 0,
           background: paper.paper,
           borderRadius: "16px 16px 0 0",
           zIndex: 50,
@@ -70,10 +76,14 @@ function CarTimeline({
   onPickDone: (carId: number, from: string, to: string) => void;
 }) {
   return (
-    <div style={{
-      background: paper.paper, marginBottom: 12, padding: "14px 14px 18px",
-      boxShadow: "0 1px 2px rgba(0,0,0,0.04)",
-    }}>
+    <div
+      style={{
+        background: paper.paper,
+        marginBottom: 12,
+        padding: "14px 14px 18px",
+        boxShadow: "0 1px 2px rgba(0,0,0,0.04)",
+      }}
+    >
       <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10 }}>
         <CarBadge short={car.short} active={!!car.active} />
         <div style={{ fontFamily: fontSerif, fontSize: 16, fontWeight: 700, color: paper.ink }}>
@@ -114,9 +124,10 @@ function CalendarContent() {
 
   const sheet: "add" | "edit" | null =
     actionParam === "reserve" ? "add" : editIdParam ? "edit" : null;
-  const editing = !isLoading && editIdParam
-    ? reservations.find((r) => r.id === Number(editIdParam)) ?? null
-    : null;
+  const editing =
+    !isLoading && editIdParam
+      ? (reservations.find((r) => r.id === Number(editIdParam)) ?? null)
+      : null;
 
   // Refetch reservations whenever the new-reservation sheet opens online —
   // the conflict warning needs to see the freshest server state.
@@ -141,7 +152,10 @@ function CalendarContent() {
   );
 
   const handlePickDone = (carId: number, from: string, to: string) => {
-    if (!online) { toast.error(t("offline.mutation_blocked")); return; }
+    if (!online) {
+      toast.error(t("offline.mutation_blocked"));
+      return;
+    }
     setPrefillCarId(carId);
     setPrefillFrom(from);
     setPrefillTo(to);
@@ -158,27 +172,43 @@ function CalendarContent() {
     router.push(`${pathname}?${params.toString()}`, { scroll: false });
   };
 
-  if (isLoading) return (
-    <div style={{ background: paper.paperDeep, minHeight: "100dvh" }}>
-      <PageHeader title={t("page.reservations")} />
-      <div style={{ padding: "32px 20px", fontFamily: fontMono, fontSize: 11, color: paper.inkMute, letterSpacing: 1 }}>
-        {t("state.loading")}
+  if (isLoading)
+    return (
+      <div style={{ background: paper.paperDeep, minHeight: "100dvh" }}>
+        <PageHeader title={t("page.reservations")} />
+        <div
+          style={{
+            padding: "32px 20px",
+            fontFamily: fontMono,
+            fontSize: 11,
+            color: paper.inkMute,
+            letterSpacing: 1,
+          }}
+        >
+          {t("state.loading")}
+        </div>
       </div>
-    </div>
-  );
+    );
 
   return (
     <div style={{ background: paper.paperDeep, minHeight: "100dvh", paddingBottom: 80 }}>
       <PageHeader title={t("page.reservations")} />
 
       {/* Legend */}
-      <div style={{
-        display: "flex", gap: 16, flexWrap: "wrap",
-        padding: "10px 16px",
-        fontFamily: fontMono, fontSize: 9, letterSpacing: 1.5,
-        textTransform: "uppercase", color: paper.inkDim,
-        borderBottom: `1px solid ${paper.paperDark}`,
-      }}>
+      <div
+        style={{
+          display: "flex",
+          gap: 16,
+          flexWrap: "wrap",
+          padding: "10px 16px",
+          fontFamily: fontMono,
+          fontSize: 9,
+          letterSpacing: 1.5,
+          textTransform: "uppercase",
+          color: paper.inkDim,
+          borderBottom: `1px solid ${paper.paperDark}`,
+        }}
+      >
         <span>□ {t("calendar.available")}</span>
         <span style={{ color: paper.ink }}>■ {t("calendar.confirmed")}</span>
         <span style={{ color: paper.amber }}>▦ {t("calendar.pending")}</span>
@@ -198,16 +228,28 @@ function CalendarContent() {
 
       {/* Upcoming list */}
       <div style={{ padding: "8px 16px 0" }}>
-        <div style={{
-          fontFamily: fontMono, fontSize: 10, color: paper.inkDim,
-          letterSpacing: 2, textTransform: "uppercase",
-          marginBottom: 10, borderTop: `1.5px dashed ${paper.ink}`, paddingTop: 12,
-          display: "flex", justifyContent: "space-between", alignItems: "center",
-        }}>
+        <div
+          style={{
+            fontFamily: fontMono,
+            fontSize: 10,
+            color: paper.inkDim,
+            letterSpacing: 2,
+            textTransform: "uppercase",
+            marginBottom: 10,
+            borderTop: `1.5px dashed ${paper.ink}`,
+            paddingTop: 12,
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+          }}
+        >
           <span>{t("calendar.upcoming")}</span>
           <button
             onClick={() => {
-              if (!online) { toast.error(t("offline.mutation_blocked")); return; }
+              if (!online) {
+                toast.error(t("offline.mutation_blocked"));
+                return;
+              }
               setPrefillCarId(undefined);
               setPrefillFrom(undefined);
               setPrefillTo(undefined);
@@ -216,10 +258,16 @@ function CalendarContent() {
               router.push(`${pathname}?${params.toString()}`, { scroll: false });
             }}
             style={{
-              padding: "5px 12px", background: online ? paper.ink : paper.inkMute, color: paper.paper,
-              border: "none", cursor: online ? "pointer" : "default",
-              fontFamily: fontMono, fontSize: 9, fontWeight: 700,
-              letterSpacing: 1.5, textTransform: "uppercase",
+              padding: "5px 12px",
+              background: online ? paper.ink : paper.inkMute,
+              color: paper.paper,
+              border: "none",
+              cursor: online ? "pointer" : "default",
+              fontFamily: fontMono,
+              fontSize: 9,
+              fontWeight: 700,
+              letterSpacing: 1.5,
+              textTransform: "uppercase",
               opacity: online ? 1 : 0.45,
             }}
           >
@@ -228,7 +276,16 @@ function CalendarContent() {
         </div>
 
         {upcoming.length === 0 && (
-          <div style={{ padding: "20px 0", textAlign: "center", fontFamily: fontMono, fontSize: 11, color: paper.inkMute, letterSpacing: 1 }}>
+          <div
+            style={{
+              padding: "20px 0",
+              textAlign: "center",
+              fontFamily: fontMono,
+              fontSize: 11,
+              color: paper.inkMute,
+              letterSpacing: 1,
+            }}
+          >
             {t("state.empty_reservations")}
           </div>
         )}
@@ -239,18 +296,33 @@ function CalendarContent() {
 
       {/* Add sheet */}
       <BottomSheet open={sheet === "add"} onClose={() => closeSheet()}>
-        <div style={{ padding: "16px 20px 0", fontFamily: fontSerif, fontSize: 20, fontWeight: 700, color: paper.ink }}>
+        <div
+          style={{
+            padding: "16px 20px 0",
+            fontFamily: fontSerif,
+            fontSize: 20,
+            fontWeight: 700,
+            color: paper.ink,
+          }}
+        >
           {t("page.reservation_add")}
         </div>
         <ReservationForm
-          defaultValues={prefillCarId !== undefined ? {
-            car_id: prefillCarId,
-            start_date: prefillFrom,
-            end_date: prefillTo,
-          } : undefined}
+          defaultValues={
+            prefillCarId !== undefined
+              ? {
+                  car_id: prefillCarId,
+                  start_date: prefillFrom,
+                  end_date: prefillTo,
+                }
+              : undefined
+          }
           onSubmit={(data) =>
             createR.mutate(data, {
-              onSuccess: () => { closeSheet(); toast.success(t("toast.reservation_saved")); },
+              onSuccess: () => {
+                closeSheet();
+                toast.success(t("toast.reservation_saved"));
+              },
               onError: (e) => toast.error(e.message),
             })
           }
@@ -260,7 +332,15 @@ function CalendarContent() {
 
       {/* Edit sheet */}
       <BottomSheet open={sheet === "edit" && !!editing} onClose={() => closeSheet()}>
-        <div style={{ padding: "16px 20px 0", fontFamily: fontSerif, fontSize: 20, fontWeight: 700, color: paper.ink }}>
+        <div
+          style={{
+            padding: "16px 20px 0",
+            fontFamily: fontSerif,
+            fontSize: 20,
+            fontWeight: 700,
+            color: paper.ink,
+          }}
+        >
           {t("page.reservation_edit")}
         </div>
         {editing && (
@@ -271,7 +351,10 @@ function CalendarContent() {
                 updateR.mutate(
                   { id: editing.id, ...data },
                   {
-                    onSuccess: () => { closeSheet(); toast.success(t("toast.saved")); },
+                    onSuccess: () => {
+                      closeSheet();
+                      toast.success(t("toast.saved"));
+                    },
                     onError: (e) => toast.error(e.message),
                   }
                 )
@@ -282,15 +365,25 @@ function CalendarContent() {
               <button
                 onClick={() =>
                   deleteR.mutate(editing.id, {
-                    onSuccess: () => { closeSheet(); toast.success(t("toast.deleted")); },
+                    onSuccess: () => {
+                      closeSheet();
+                      toast.success(t("toast.deleted"));
+                    },
                     onError: (e) => toast.error(e.message),
                   })
                 }
                 style={{
-                  width: "100%", padding: "10px", background: "transparent",
-                  border: `1.5px solid ${paper.accent}`, color: paper.accent,
-                  fontFamily: fontMono, fontSize: 10, fontWeight: 700,
-                  letterSpacing: 2, textTransform: "uppercase", cursor: "pointer",
+                  width: "100%",
+                  padding: "10px",
+                  background: "transparent",
+                  border: `1.5px solid ${paper.accent}`,
+                  color: paper.accent,
+                  fontFamily: fontMono,
+                  fontSize: 10,
+                  fontWeight: 700,
+                  letterSpacing: 2,
+                  textTransform: "uppercase",
+                  cursor: "pointer",
                 }}
               >
                 {t("action.delete")}
@@ -304,5 +397,9 @@ function CalendarContent() {
 }
 
 export default function CalendarPage() {
-  return <Suspense><CalendarContent /></Suspense>;
+  return (
+    <Suspense>
+      <CalendarContent />
+    </Suspense>
+  );
 }

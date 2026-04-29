@@ -9,7 +9,12 @@ const schema = z.object({
   name: z.string().min(1, t("validation.name_required")),
   discount: z.coerce.number().min(0).max(1),
   discount_long: z.coerce.number().min(0).max(1),
-  active: z.coerce.number().int().min(0).max(1).transform((v): 0 | 1 => (v === 0 ? 0 : 1)),
+  active: z.coerce
+    .number()
+    .int()
+    .min(0)
+    .max(1)
+    .transform((v): 0 | 1 => (v === 0 ? 0 : 1)),
 });
 type FormInput = z.input<typeof schema>;
 type FormData = z.output<typeof schema>;
@@ -21,7 +26,13 @@ interface Props {
 }
 
 export function PersonForm({ defaultValues, onSubmit, onCancel }: Props) {
-  const { register, handleSubmit, watch, setValue, formState: { errors } } = useForm<FormInput, unknown, FormData>({
+  const {
+    register,
+    handleSubmit,
+    watch,
+    setValue,
+    formState: { errors },
+  } = useForm<FormInput, unknown, FormData>({
     resolver: zodResolver(schema),
     defaultValues: { discount: 0, discount_long: 0, active: 1, ...defaultValues },
   });
@@ -35,11 +46,21 @@ export function PersonForm({ defaultValues, onSubmit, onCancel }: Props) {
       </div>
       <div>
         <label className="block text-sm font-medium mb-1">{t("form.discount")}</label>
-        <input {...register("discount")} type="number" step="0.01" className="w-full border rounded-md px-3 py-2 text-sm" />
+        <input
+          {...register("discount")}
+          type="number"
+          step="0.01"
+          className="w-full border rounded-md px-3 py-2 text-sm"
+        />
       </div>
       <div>
         <label className="block text-sm font-medium mb-1">{t("form.discount_long")}</label>
-        <input {...register("discount_long")} type="number" step="0.01" className="w-full border rounded-md px-3 py-2 text-sm" />
+        <input
+          {...register("discount_long")}
+          type="number"
+          step="0.01"
+          className="w-full border rounded-md px-3 py-2 text-sm"
+        />
       </div>
       <div className="flex items-center gap-2">
         <input
@@ -49,11 +70,17 @@ export function PersonForm({ defaultValues, onSubmit, onCancel }: Props) {
           onChange={(e) => setValue("active", e.target.checked ? 1 : 0)}
           className="rounded"
         />
-        <label htmlFor="active" className="text-sm">{t("form.active_member")}</label>
+        <label htmlFor="active" className="text-sm">
+          {t("form.active_member")}
+        </label>
       </div>
       <div className="flex gap-3 pt-2">
-        <button type="button" onClick={onCancel} className="flex-1 border rounded-md py-2 text-sm">{t("action.cancel")}</button>
-        <button type="submit" className="flex-1 bg-blue-600 text-white rounded-md py-2 text-sm">{t("action.save")}</button>
+        <button type="button" onClick={onCancel} className="flex-1 border rounded-md py-2 text-sm">
+          {t("action.cancel")}
+        </button>
+        <button type="submit" className="flex-1 bg-blue-600 text-white rounded-md py-2 text-sm">
+          {t("action.save")}
+        </button>
       </div>
     </form>
   );

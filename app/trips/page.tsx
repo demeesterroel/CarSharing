@@ -17,14 +17,22 @@ import { useT } from "@/components/locale-provider";
 import { TripCard } from "@/components/trip-card";
 
 const overlayStyle: React.CSSProperties = {
-  position: "fixed", inset: 0, background: "rgba(0,0,0,0.45)", zIndex: 49,
+  position: "fixed",
+  inset: 0,
+  background: "rgba(0,0,0,0.45)",
+  zIndex: 49,
 };
 const sheetStyle: React.CSSProperties = {
-  position: "fixed", bottom: 0,
-  left: "50%", transform: "translateX(-50%)",
+  position: "fixed",
+  bottom: 0,
+  left: "50%",
+  transform: "translateX(-50%)",
   width: "min(100%, 480px)",
-  maxHeight: "92dvh", borderRadius: "14px 14px 0 0",
-  background: paper.paperDeep, zIndex: 50, overflowY: "auto",
+  maxHeight: "92dvh",
+  borderRadius: "14px 14px 0 0",
+  background: paper.paperDeep,
+  zIndex: 50,
+  overflowY: "auto",
 };
 
 function TripsContent() {
@@ -50,17 +58,22 @@ function TripsContent() {
 
   const adding = actionParam === "add";
   const editingId = editIdParam ? Number(editIdParam) : null;
-  const editing = !isLoading && editingId ? trips.find((tr) => tr.id === editingId) ?? null : null;
+  const editing =
+    !isLoading && editingId ? (trips.find((tr) => tr.id === editingId) ?? null) : null;
 
   const isMine = mineParam === "true";
   const canFilter = me?.personId != null;
-  const cars = Array.from(new Set(trips.map((tr) => tr.car_short).filter((s): s is string => !!s))).sort();
-  const years = Array.from(new Set(trips.map((tr) => tr.date.slice(0, 4)))).sort().reverse();
+  const cars = Array.from(
+    new Set(trips.map((tr) => tr.car_short).filter((s): s is string => !!s))
+  ).sort();
+  const years = Array.from(new Set(trips.map((tr) => tr.date.slice(0, 4))))
+    .sort()
+    .reverse();
 
   const visible = trips
-    .filter((tr) => isMine && canFilter ? tr.person_id === me!.personId : true)
-    .filter((tr) => carFilter ? tr.car_short === carFilter : true)
-    .filter((tr) => yearFilter ? tr.date.startsWith(yearFilter) : true);
+    .filter((tr) => (isMine && canFilter ? tr.person_id === me!.personId : true))
+    .filter((tr) => (carFilter ? tr.car_short === carFilter : true))
+    .filter((tr) => (yearFilter ? tr.date.startsWith(yearFilter) : true));
 
   const openAdd = () => {
     const params = new URLSearchParams(searchParams.toString());
@@ -81,22 +94,45 @@ function TripsContent() {
     background: active ? paper.ink : "transparent",
     color: active ? paper.paper : paper.inkDim,
     border: `1.5px solid ${paper.ink}`,
-    fontFamily: fontMono, fontSize: 9, fontWeight: 700, letterSpacing: 2,
-    textTransform: "uppercase", cursor: "pointer",
+    fontFamily: fontMono,
+    fontSize: 9,
+    fontWeight: 700,
+    letterSpacing: 2,
+    textTransform: "uppercase",
+    cursor: "pointer",
   });
 
-  if (isLoading) return (
-    <div style={{ background: paper.paperDeep, minHeight: "100dvh" }}>
-      <PageHeader title={t("page.trips")} />
-      <div style={{ padding: "32px 20px", fontFamily: fontMono, fontSize: 11, color: paper.inkMute, letterSpacing: 1 }}>{t("state.loading")}</div>
-    </div>
-  );
+  if (isLoading)
+    return (
+      <div style={{ background: paper.paperDeep, minHeight: "100dvh" }}>
+        <PageHeader title={t("page.trips")} />
+        <div
+          style={{
+            padding: "32px 20px",
+            fontFamily: fontMono,
+            fontSize: 11,
+            color: paper.inkMute,
+            letterSpacing: 1,
+          }}
+        >
+          {t("state.loading")}
+        </div>
+      </div>
+    );
 
   return (
     <div style={{ background: paper.paperDeep, minHeight: "100dvh", paddingBottom: 80 }}>
       <PageHeader title={t("page.trips")} />
 
-      <div style={{ padding: "10px 16px 8px", borderBottom: `1px solid ${paper.paperDark}`, display: "flex", flexDirection: "column", gap: 6 }}>
+      <div
+        style={{
+          padding: "10px 16px 8px",
+          borderBottom: `1px solid ${paper.paperDark}`,
+          display: "flex",
+          flexDirection: "column",
+          gap: 6,
+        }}
+      >
         {(canFilter || years.length > 1) && (
           <div style={{ display: "flex", alignItems: "center" }}>
             {canFilter && (
@@ -117,7 +153,12 @@ function TripsContent() {
             )}
             {years.length > 1 && (
               <div style={{ marginLeft: "auto" }}>
-                <YearSelect value={yearFilter} onChange={setYearFilter} years={years} allLabel={t("filter.all")} />
+                <YearSelect
+                  value={yearFilter}
+                  onChange={setYearFilter}
+                  years={years}
+                  allLabel={t("filter.all")}
+                />
               </div>
             )}
           </div>
@@ -146,54 +187,102 @@ function TripsContent() {
         getGroupLabel={(key) => fmtYearMonth(key + "-01")}
         getGroupTotal={(items) => items.reduce((s, trip) => s + trip.km, 0)}
         totalSuffix="km"
-        renderItem={(trip) => (
-          <TripCard key={trip.id} trip={trip} onClick={() => openEdit(trip)} />
-        )}
+        renderItem={(trip) => <TripCard key={trip.id} trip={trip} onClick={() => openEdit(trip)} />}
       />
 
       {visible.length === 0 && (
-        <div style={{ padding: "32px 20px", textAlign: "center", fontFamily: fontMono, fontSize: 11, color: paper.inkMute, letterSpacing: 1 }}>
+        <div
+          style={{
+            padding: "32px 20px",
+            textAlign: "center",
+            fontFamily: fontMono,
+            fontSize: 11,
+            color: paper.inkMute,
+            letterSpacing: 1,
+          }}
+        >
           {t("state.empty_trips")}
         </div>
       )}
 
-      <Dialog.Root open={adding} onOpenChange={(open) => { if (!open) closeModal(); }}>
+      <Dialog.Root
+        open={adding}
+        onOpenChange={(open) => {
+          if (!open) closeModal();
+        }}
+      >
         <Dialog.Portal>
           <Dialog.Overlay style={overlayStyle} />
           <Dialog.Content style={sheetStyle} aria-describedby={undefined}>
-            <Dialog.Title style={{ position: "absolute", width: 1, height: 1, overflow: "hidden", clip: "rect(0,0,0,0)" }}>
+            <Dialog.Title
+              style={{
+                position: "absolute",
+                width: 1,
+                height: 1,
+                overflow: "hidden",
+                clip: "rect(0,0,0,0)",
+              }}
+            >
               {t("page.trip_add")}
             </Dialog.Title>
             <TripForm
-              onSubmit={(data) => createTrip.mutate(data as any, {
-                onSuccess: () => { closeModal(); toast.success(t("toast.trip_saved")); },
-                onError: (e) => toast.error(e.message),
-              })}
+              onSubmit={(data) =>
+                createTrip.mutate(data as any, {
+                  onSuccess: () => {
+                    closeModal();
+                    toast.success(t("toast.trip_saved"));
+                  },
+                  onError: (e) => toast.error(e.message),
+                })
+              }
               onCancel={closeModal}
             />
           </Dialog.Content>
         </Dialog.Portal>
       </Dialog.Root>
 
-      <Dialog.Root open={!!editing} onOpenChange={(open) => { if (!open) closeModal(); }}>
+      <Dialog.Root
+        open={!!editing}
+        onOpenChange={(open) => {
+          if (!open) closeModal();
+        }}
+      >
         <Dialog.Portal>
           <Dialog.Overlay style={overlayStyle} />
           <Dialog.Content style={sheetStyle} aria-describedby={undefined}>
-            <Dialog.Title style={{ position: "absolute", width: 1, height: 1, overflow: "hidden", clip: "rect(0,0,0,0)" }}>
+            <Dialog.Title
+              style={{
+                position: "absolute",
+                width: 1,
+                height: 1,
+                overflow: "hidden",
+                clip: "rect(0,0,0,0)",
+              }}
+            >
               {t("page.trip_edit")}
             </Dialog.Title>
             {editing && (
               <TripForm
                 defaultValues={editing}
-                onSubmit={(data) => updateTrip.mutate({ id: editing.id, ...data } as any, {
-                  onSuccess: () => { closeModal(); toast.success(t("toast.saved")); },
-                  onError: (e) => toast.error(e.message),
-                })}
+                onSubmit={(data) =>
+                  updateTrip.mutate({ id: editing.id, ...data } as any, {
+                    onSuccess: () => {
+                      closeModal();
+                      toast.success(t("toast.saved"));
+                    },
+                    onError: (e) => toast.error(e.message),
+                  })
+                }
                 onCancel={closeModal}
-                onDelete={() => deleteTrip.mutate(editing.id, {
-                  onSuccess: () => { closeModal(); toast.success(t("toast.trip_deleted")); },
-                  onError: (e) => toast.error(e.message),
-                })}
+                onDelete={() =>
+                  deleteTrip.mutate(editing.id, {
+                    onSuccess: () => {
+                      closeModal();
+                      toast.success(t("toast.trip_deleted"));
+                    },
+                    onError: (e) => toast.error(e.message),
+                  })
+                }
               />
             )}
           </Dialog.Content>
@@ -206,5 +295,9 @@ function TripsContent() {
 }
 
 export default function TripsPage() {
-  return <Suspense><TripsContent /></Suspense>;
+  return (
+    <Suspense>
+      <TripsContent />
+    </Suspense>
+  );
 }

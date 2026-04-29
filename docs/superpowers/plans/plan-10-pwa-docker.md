@@ -14,6 +14,7 @@
 ### Task 1: PWA manifest & icons
 
 **Files:**
+
 - Create: `public/manifest.json`
 - Create: `scripts/generate-icons.mjs`
 
@@ -67,6 +68,7 @@ console.log("Icons generated");
 ```bash
 node scripts/generate-icons.mjs
 ```
+
 Expected: `public/icons/icon-192.png` and `public/icons/icon-512.png` created.
 
 - [ ] **Step 5: Commit**
@@ -83,6 +85,7 @@ git commit -m "feat: PWA manifest and icons"
 `next-pwa` is unmaintained since 2023 and produces runtime warnings with Next 15. `@ducanh2912/next-pwa` is the actively maintained fork with Next 15 + Workbox 7 support.
 
 **Files:**
+
 - Modify: `next.config.ts`
 - Modify: `app/layout.tsx`
 - Modify: `.gitignore`
@@ -104,9 +107,7 @@ const nextConfig: NextConfig = {
   output: "standalone",
   serverExternalPackages: ["better-sqlite3"],
   async rewrites() {
-    return [
-      { source: "/uploads/:path*", destination: "/api/static/:path*" },
-    ];
+    return [{ source: "/uploads/:path*", destination: "/api/static/:path*" }];
   },
 };
 
@@ -152,9 +153,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body className="min-h-screen bg-gray-50">
         <Providers>
-          <div className="max-w-2xl mx-auto bg-white min-h-screen shadow-sm">
-            {children}
-          </div>
+          <div className="max-w-2xl mx-auto bg-white min-h-screen shadow-sm">{children}</div>
         </Providers>
       </body>
     </html>
@@ -193,6 +192,7 @@ git commit -m "feat: PWA service worker via @ducanh2912/next-pwa"
 ### Task 3: Dockerfile
 
 **Files:**
+
 - Create: `Dockerfile`
 - Create: `.dockerignore`
 
@@ -268,6 +268,7 @@ cloud-infra
 ```bash
 docker build -t carsharing:local .
 ```
+
 Expected: image builds successfully, final size ~180–220 MB (no python/make in runner).
 
 - [ ] **Step 4: Smoke test the image**
@@ -294,6 +295,7 @@ git commit -m "feat: multi-stage dockerfile with native module compile in builde
 ### Task 4: Docker Compose + Traefik labels
 
 **Files:**
+
 - Create: `cloud-infra/stacks/autodelen/docker-compose.yml`
 
 - [ ] **Step 1: Discover the Traefik network name used in cloud-infra**
@@ -356,6 +358,7 @@ git commit -m "feat: autodelen docker stack with traefik labels"
 ### Task 5: GitHub Actions CI — build & publish image
 
 **Files:**
+
 - Create: `.github/workflows/docker.yml`
 
 - [ ] **Step 1: Create .github/workflows/docker.yml**

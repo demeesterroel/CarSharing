@@ -6,22 +6,73 @@ export function Perf({ margin = "12px 0" }: { margin?: string }) {
   return <div style={{ height: 0, borderTop: `1.5px dashed ${paper.ink}`, margin }} />;
 }
 
-export function Row({ label, value, big, color }: { label: string; value: string; big?: boolean; color?: string }) {
+export function Row({
+  label,
+  value,
+  big,
+  color,
+}: {
+  label: string;
+  value: string;
+  big?: boolean;
+  color?: string;
+}) {
   return (
-    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", fontFamily: fontMono, padding: "4px 0" }}>
-      <span style={{ fontSize: big ? 11 : 10, color: paper.inkDim, textTransform: "uppercase", letterSpacing: 1, whiteSpace: "nowrap", marginRight: 12 }}>{label}</span>
-      <span style={{ fontSize: big ? 16 : 13, fontWeight: big ? 700 : 600, color: color ?? paper.ink, whiteSpace: "nowrap" }}>{value}</span>
+    <div
+      style={{
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: "baseline",
+        fontFamily: fontMono,
+        padding: "4px 0",
+      }}
+    >
+      <span
+        style={{
+          fontSize: big ? 11 : 10,
+          color: paper.inkDim,
+          textTransform: "uppercase",
+          letterSpacing: 1,
+          whiteSpace: "nowrap",
+          marginRight: 12,
+        }}
+      >
+        {label}
+      </span>
+      <span
+        style={{
+          fontSize: big ? 16 : 13,
+          fontWeight: big ? 700 : 600,
+          color: color ?? paper.ink,
+          whiteSpace: "nowrap",
+        }}
+      >
+        {value}
+      </span>
     </div>
   );
 }
 
-export function Card({ children, style, onClick }: { children: React.ReactNode; style?: React.CSSProperties; onClick?: () => void }) {
+export function Card({
+  children,
+  style,
+  onClick,
+}: {
+  children: React.ReactNode;
+  style?: React.CSSProperties;
+  onClick?: () => void;
+}) {
   return (
-    <div style={{
-      background: paper.paper, padding: "18px 16px", marginBottom: 12,
-      boxShadow: "0 1px 2px rgba(0,0,0,0.05), 0 4px 16px rgba(0,0,0,0.06)",
-      ...style,
-    }} onClick={onClick}>
+    <div
+      style={{
+        background: paper.paper,
+        padding: "18px 16px",
+        marginBottom: 12,
+        boxShadow: "0 1px 2px rgba(0,0,0,0.05), 0 4px 16px rgba(0,0,0,0.06)",
+        ...style,
+      }}
+      onClick={onClick}
+    >
       {children}
     </div>
   );
@@ -29,7 +80,15 @@ export function Card({ children, style, onClick }: { children: React.ReactNode; 
 
 // ── Data hooks ─────────────────────────────────────────────────
 import { useQuery } from "@tanstack/react-query";
-import type { CarPnL, KmGap, ZeroKmTrip, MonthlyCarKm, PersonContribution, CarYearKm, CarPriceHistory } from "@/lib/queries/admin";
+import type {
+  CarPnL,
+  KmGap,
+  ZeroKmTrip,
+  MonthlyCarKm,
+  PersonContribution,
+  CarYearKm,
+  CarPriceHistory,
+} from "@/lib/queries/admin";
 import type { DashboardRow, Reservation, Person } from "@/types";
 
 export interface AdminSummary {
@@ -95,25 +154,38 @@ export function beMetrics(car: CarPnL) {
   const kmGap = isFinite(breakEvenKm) ? Math.max(0, breakEvenKm - car.trip_km) : Infinity;
 
   const status: "ahead" | "on_pace" | "behind" =
-    pctCovered >= 1 ? "ahead" :
-    pctProjected >= 0.85 ? "on_pace" :
-    "behind";
+    pctCovered >= 1 ? "ahead" : pctProjected >= 0.85 ? "on_pace" : "behind";
 
-  return { variablePerKm, contribPerKm, fixedCovered, remainingBurden, pctCovered, projectedBurden, pctProjected, breakEvenKm, kmGap, status };
+  return {
+    variablePerKm,
+    contribPerKm,
+    fixedCovered,
+    remainingBurden,
+    pctCovered,
+    projectedBurden,
+    pctProjected,
+    breakEvenKm,
+    kmGap,
+    status,
+  };
 }
 
 // ── Fixed cost helpers ────────────────────────────────────────
 import type { FixedCostItem, FixedCostCategory } from "@/types";
 
 export const FIXED_COST_CATEGORIES: FixedCostCategory[] = [
-  "belastingen", "verzekeringen", "onderhoud", "keuring", "diversen",
+  "belastingen",
+  "verzekeringen",
+  "onderhoud",
+  "keuring",
+  "diversen",
 ];
 export const FIXED_COST_LABELS: Record<FixedCostCategory, { nl: string; en: string }> = {
-  belastingen:   { nl: "Belastingen",   en: "Road tax"      },
-  verzekeringen: { nl: "Verzekeringen", en: "Insurance"     },
-  onderhoud:     { nl: "Onderhoud",     en: "Maintenance"   },
-  keuring:       { nl: "Keuring",       en: "Inspection"    },
-  diversen:      { nl: "Diversen",      en: "Miscellaneous" },
+  belastingen: { nl: "Belastingen", en: "Road tax" },
+  verzekeringen: { nl: "Verzekeringen", en: "Insurance" },
+  onderhoud: { nl: "Onderhoud", en: "Maintenance" },
+  keuring: { nl: "Keuring", en: "Inspection" },
+  diversen: { nl: "Diversen", en: "Miscellaneous" },
 };
 
 export function FixedCostEditor({
@@ -126,8 +198,12 @@ export function FixedCostEditor({
   lang?: string;
 }) {
   const inputStyle: React.CSSProperties = {
-    padding: "5px 6px", border: `1px solid ${paper.paperDark}`,
-    background: paper.paperDeep, fontFamily: fontMono, fontSize: 11, color: paper.ink,
+    padding: "5px 6px",
+    border: `1px solid ${paper.paperDark}`,
+    background: paper.paperDeep,
+    fontFamily: fontMono,
+    fontSize: 11,
+    color: paper.ink,
     outline: "none",
   };
 
@@ -146,21 +222,32 @@ export function FixedCostEditor({
 
   return (
     <div>
-      <div style={{
-        fontFamily: fontMono, fontSize: 9, color: paper.inkDim,
-        letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 6,
-      }}>
+      <div
+        style={{
+          fontFamily: fontMono,
+          fontSize: 9,
+          color: paper.inkDim,
+          letterSpacing: 1.5,
+          textTransform: "uppercase",
+          marginBottom: 6,
+        }}
+      >
         {lang === "nl" ? "Vaste kosten" : "Fixed costs"}
       </div>
       {items.map((item) => (
-        <div key={item.id} style={{ display: "flex", gap: 4, marginBottom: 6, alignItems: "center" }}>
+        <div
+          key={item.id}
+          style={{ display: "flex", gap: 4, marginBottom: 6, alignItems: "center" }}
+        >
           <select
             value={item.category}
             onChange={(e) => update(item.id, { category: e.target.value as FixedCostCategory })}
             style={{ ...inputStyle, flex: "0 0 auto", minWidth: 0 }}
           >
             {FIXED_COST_CATEGORIES.map((c) => (
-              <option key={c} value={c}>{FIXED_COST_LABELS[c][lang === "nl" ? "nl" : "en"]}</option>
+              <option key={c} value={c}>
+                {FIXED_COST_LABELS[c][lang === "nl" ? "nl" : "en"]}
+              </option>
             ))}
           </select>
           <input
@@ -178,28 +265,47 @@ export function FixedCostEditor({
           <button
             onClick={() => remove(item.id)}
             style={{
-              padding: "4px 7px", background: "transparent",
-              border: `1px solid ${paper.paperDark}`, cursor: "pointer",
-              fontFamily: fontMono, fontSize: 11, color: paper.inkDim,
+              padding: "4px 7px",
+              background: "transparent",
+              border: `1px solid ${paper.paperDark}`,
+              cursor: "pointer",
+              fontFamily: fontMono,
+              fontSize: 11,
+              color: paper.inkDim,
             }}
-          >×</button>
+          >
+            ×
+          </button>
         </div>
       ))}
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 4 }}>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          marginTop: 4,
+        }}
+      >
         <button
           onClick={add}
           style={{
-            padding: "4px 10px", background: "transparent",
-            border: `1px dashed ${paper.inkDim}`, cursor: "pointer",
-            fontFamily: fontMono, fontSize: 9, letterSpacing: 1.5,
-            textTransform: "uppercase", color: paper.inkDim,
+            padding: "4px 10px",
+            background: "transparent",
+            border: `1px dashed ${paper.inkDim}`,
+            cursor: "pointer",
+            fontFamily: fontMono,
+            fontSize: 9,
+            letterSpacing: 1.5,
+            textTransform: "uppercase",
+            color: paper.inkDim,
           }}
         >
           + {lang === "nl" ? "toevoegen" : "add"}
         </button>
         {items.length > 0 && (
           <span style={{ fontFamily: fontMono, fontSize: 11, color: paper.ink, fontWeight: 700 }}>
-            {lang === "nl" ? "Totaal" : "Total"}: € {total.toLocaleString("nl-BE", { minimumFractionDigits: 2 })}
+            {lang === "nl" ? "Totaal" : "Total"}: €{" "}
+            {total.toLocaleString("nl-BE", { minimumFractionDigits: 2 })}
           </span>
         )}
       </div>

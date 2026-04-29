@@ -149,9 +149,7 @@ const withPWA = withPWAInit({
       // entry serve /trips?edit=ID — all search params are client-side state.
       {
         urlPattern: ({ request, url, sameOrigin }) =>
-          sameOrigin &&
-          request.headers.get("RSC") === "1" &&
-          !url.pathname.startsWith("/api/"),
+          sameOrigin && request.headers.get("RSC") === "1" && !url.pathname.startsWith("/api/"),
         handler: "NetworkFirst",
         options: {
           cacheName: "pages-rsc",
@@ -160,8 +158,7 @@ const withPWA = withPWAInit({
         },
       },
       {
-        urlPattern: ({ url, sameOrigin }) =>
-          sameOrigin && !url.pathname.startsWith("/api/"),
+        urlPattern: ({ url, sameOrigin }) => sameOrigin && !url.pathname.startsWith("/api/"),
         handler: "NetworkFirst",
         options: {
           cacheName: "pages",
@@ -190,9 +187,7 @@ const nextConfig: NextConfig = {
   output: "standalone",
   serverExternalPackages: ["better-sqlite3"],
   async rewrites() {
-    return [
-      { source: "/uploads/:path*", destination: "/api/static/:path*" },
-    ];
+    return [{ source: "/uploads/:path*", destination: "/api/static/:path*" }];
   },
 };
 

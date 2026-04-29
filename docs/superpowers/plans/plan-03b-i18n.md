@@ -14,6 +14,7 @@
 ### Task 1: Create the Dutch message dictionary
 
 **Files:**
+
 - Create: `lib/i18n/messages/nl.ts`
 
 - [ ] **Step 1: Create lib/i18n/messages/nl.ts**
@@ -150,6 +151,7 @@ git commit -m "feat(i18n): dutch message dictionary"
 ### Task 2: Create the t() helper
 
 **Files:**
+
 - Create: `lib/i18n/index.ts`
 
 - [ ] **Step 1: Create lib/i18n/index.ts**
@@ -187,6 +189,7 @@ git commit -m "feat(i18n): t() helper with typed keys and {param} substitution"
 ### Task 3: Tests for t()
 
 **Files:**
+
 - Create: `lib/__tests__/i18n.test.ts`
 
 - [ ] **Step 1: Write failing tests**
@@ -242,6 +245,7 @@ git commit -m "test(i18n): t() helper behaviour"
 ### Task 4: Document the module (NAMING.md hand-off)
 
 **Files:**
+
 - Modify: `docs/superpowers/plans/NAMING.md`
 
 - [ ] **Step 1: Verify NAMING.md now points to this module**
@@ -270,11 +274,13 @@ git commit -m "docs: point NAMING.md UI-labels section to i18n module"
 No code in this task — this is the reference plans 04–09 cite when they switch from inline Dutch to `t()`.
 
 **Import:**
+
 ```ts
 import { t } from "@/lib/i18n";
 ```
 
 **Use for:**
+
 - JSX text content: `<h1>{t("page.dashboard")}</h1>`
 - Attribute values: `aria-label={t("nav.menu")}`, `placeholder={t("form.location_placeholder")}`
 - Dialog/FAB labels: `<Fab label={t("page.person_add")} />`
@@ -285,11 +291,12 @@ import { t } from "@/lib/i18n";
 **Module-scope constants** (e.g. `const NAV_ITEMS = [...]` in `NavDrawer`, `const TABS = [...]` in `BottomTabBar`) may call `t()` in their initialisers — the helper is synchronous and has no React dependency, so it is safe at import time.
 
 **Do not:**
+
 - Concatenate a translated fragment with an inline Dutch fragment — put the whole sentence in the dictionary.
 - Pass `t("…")` into `z.string().min(1, …)` at module scope inside a plain Zod schema if the schema is exported across a client/server boundary and then re-serialised — in our plans this is not an issue because the schemas are co-located with the form that uses them.
 - Call `t()` with a dynamic key (`t(someVar)`). Always pass a string literal so TypeScript can check it.
 
-**Adding `en.ts` later:** create `lib/i18n/messages/en.ts` mirroring `nl.ts`, have `lib/i18n/index.ts` pick the dictionary from an env var or cookie, and export the *same* `t()` signature. Call sites stay unchanged — that's the whole point of this module.
+**Adding `en.ts` later:** create `lib/i18n/messages/en.ts` mirroring `nl.ts`, have `lib/i18n/index.ts` pick the dictionary from an env var or cookie, and export the _same_ `t()` signature. Call sites stay unchanged — that's the whole point of this module.
 
 ---
 

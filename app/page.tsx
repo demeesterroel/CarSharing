@@ -39,6 +39,7 @@ import {
 } from "./dashboard-hooks";
 import { useCars } from "@/hooks/use-cars";
 import { CarBadge } from "@/components/car-badge";
+import { ErrorBoundary } from "@/components/error-boundary";
 
 // ── Primitives ────────────────────────────────────────────────────
 function Perf({ margin = "12px 0" }: { margin?: string }) {
@@ -620,7 +621,7 @@ function Sheets({ sheet, setSheet }: { sheet: SheetType; setSheet: (s: SheetType
 }
 
 // ── Main Dashboard ────────────────────────────────────────────
-export default function DashboardPage() {
+function DashboardContent() {
   const t = useT();
   const { data: me } = useMe();
   const router = useRouter();
@@ -1036,5 +1037,13 @@ export default function DashboardPage() {
         </Dialog.Portal>
       </Dialog.Root>
     </div>
+  );
+}
+
+export default function DashboardPage() {
+  return (
+    <ErrorBoundary>
+      <DashboardContent />
+    </ErrorBoundary>
   );
 }

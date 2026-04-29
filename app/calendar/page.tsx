@@ -19,6 +19,7 @@ import { useT } from "@/components/locale-provider";
 import { ReservationCard } from "@/components/reservation-card";
 import { PickCalendar } from "@/components/pick-calendar";
 import { CarBadge } from "@/components/car-badge";
+import { ErrorBoundary } from "@/components/error-boundary";
 
 // ── Bottom Sheet ──────────────────────────────────────────────
 function BottomSheet({
@@ -399,7 +400,9 @@ function CalendarContent() {
 export default function CalendarPage() {
   return (
     <Suspense>
-      <CalendarContent />
+      <ErrorBoundary>
+        <CalendarContent />
+      </ErrorBoundary>
     </Suspense>
   );
 }

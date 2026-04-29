@@ -9,6 +9,7 @@ import { usePeople, useCreatePerson, useUpdatePerson } from "@/hooks/use-people"
 import type { Person } from "@/types";
 import { paper, fontMono, fontSerif } from "@/lib/paper-theme";
 import { useT } from "@/components/locale-provider";
+import { ErrorBoundary } from "@/components/error-boundary";
 
 const sheetStyle: React.CSSProperties = {
   position: "fixed",
@@ -24,7 +25,7 @@ const sheetStyle: React.CSSProperties = {
   margin: "0 auto",
 };
 
-export default function PeoplePage() {
+function PeopleContent() {
   const t = useT();
   const { data: people = [], isLoading } = usePeople();
   const createPerson = useCreatePerson();
@@ -197,5 +198,13 @@ export default function PeoplePage() {
 
       <Fab onClick={() => setAdding(true)} label={t("page.person_add")} />
     </div>
+  );
+}
+
+export default function PeoplePage() {
+  return (
+    <ErrorBoundary>
+      <PeopleContent />
+    </ErrorBoundary>
   );
 }

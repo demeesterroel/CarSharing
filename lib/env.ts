@@ -1,7 +1,11 @@
 import { z } from "zod";
 
+const isBuildPhase = process.env.NEXT_PHASE === "phase-production-build";
+
 const envSchema = z.object({
-  SESSION_PASSWORD: z.string().min(1, "SESSION_PASSWORD is required"),
+  SESSION_PASSWORD: isBuildPhase
+    ? z.string().optional().default("build-placeholder")
+    : z.string().min(1, "SESSION_PASSWORD is required"),
   DB_PATH: z
     .string()
     .optional()

@@ -8,6 +8,18 @@ export default defineConfig({
     environment: "node",
     globals: true,
     exclude: ["**/node_modules/**", "**/.worktrees/**", "**/e2e/**"],
+    coverage: {
+      provider: "istanbul",
+      reporter: ["text", "json-summary"],
+      reportsDirectory: "./coverage",
+      exclude: [
+        "**/node_modules/**",
+        "**/.next/**",
+        "**/migrations/**",
+        "**/e2e/**",
+        "**/scripts/**",
+      ],
+    },
   },
   resolve: {
     alias: { "@": resolve(__dirname, ".") },

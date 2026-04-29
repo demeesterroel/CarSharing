@@ -48,3 +48,4 @@ public/workbox-*.js
 public/workbox-*.js.map
 .worktrees/
 data
+coverage/

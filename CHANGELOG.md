@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.2.0](https://github.com/demeesterroel/CarSharing/compare/carsharing-v1.1.2...carsharing-v1.2.0) (2026-04-29)
+
+
+### ✨ New features
+
+* **owner:** filter admin inbox and data hygiene to owner's cars only ([#69](https://github.com/demeesterroel/CarSharing/issues/69)) ([#71](https://github.com/demeesterroel/CarSharing/issues/71)) ([960b39a](https://github.com/demeesterroel/CarSharing/commit/960b39a184692204c452f1fac0ab556e711e450a))
+* **ux:** add language switcher to login screen ([#74](https://github.com/demeesterroel/CarSharing/issues/74)) ([#75](https://github.com/demeesterroel/CarSharing/issues/75)) ([fb087d0](https://github.com/demeesterroel/CarSharing/commit/fb087d02cc17bced2f90c5c8c106d3b140e4a5e4))
+
+
+### 🐛 Bug fixes
+
+* **owner:** apply owner car filter to inbox pending count in subnav ([#69](https://github.com/demeesterroel/CarSharing/issues/69)) ([#73](https://github.com/demeesterroel/CarSharing/issues/73)) ([7a889c9](https://github.com/demeesterroel/CarSharing/commit/7a889c931da5a418d8ead5fdff21a0f67e675868))
+
 ## [1.1.2](https://github.com/demeesterroel/CarSharing/compare/carsharing-v1.1.1...carsharing-v1.1.2) (2026-04-29)
 
 

@@ -1,5 +1,6 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { z, ZodError, type ZodSchema } from "zod";
+import { validateCsrfToken } from "./csrf";
 
 export class HttpError extends Error {
   constructor(
@@ -23,9 +24,16 @@ type Handler<T> = (
   ctx: { params: Promise<Record<string, string>> }
 ) => Promise<T> | T;
 
+const MUTATING_METHODS = ["POST", "PUT", "PATCH", "DELETE"];
+
 export function json<T>(handler: Handler<T>) {
   return async (req: Request, ctx: { params: Promise<Record<string, string>> }) => {
     try {
+      if (MUTATING_METHODS.includes(req.method ?? "")) {
+        if (!validateCsrfToken(req as NextRequest)) {
+          return NextResponse.json({ error: "invalid_csrf" }, { status: 403 });
+        }
+      }
       const result = await handler(req, ctx);
       if (result instanceof NextResponse) return result;
       return NextResponse.json(result);

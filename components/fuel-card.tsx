@@ -3,6 +3,7 @@ import type { FuelFillup } from "@/types";
 import { paper, fontMono, fontSerif, fmtMoney, fmtDate } from "@/lib/paper-theme";
 import { useT, useLocale } from "@/components/locale-provider";
 import { CarBadge } from "@/components/car-badge";
+import { PendingBadge } from "@/components/pending-badge";
 
 export interface FuelCardProps {
   fuel: FuelFillup;
@@ -48,6 +49,7 @@ export function FuelCard({ fuel, onClick }: FuelCardProps) {
           }}
         >
           ⛽ {fuel.location ?? t("dashboard.fillup_label")}
+          {fuel.id < 0 && <PendingBadge />}
         </div>
         <div
           style={{

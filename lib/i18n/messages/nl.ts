@@ -398,6 +398,13 @@ export const nl = {
   "offline.mutation_blocked": "Opslaan niet mogelijk zonder verbinding.",
   "form.offline_start_km_hint": "Offline — start KM is van laatste sync.",
   "form.offline_reservation_hint": "Offline — controleer beschikbaarheid bij verbinding.",
+
+  // Offline queue & sync
+  "offline.pending": "Sync.",
+  "offline.pending_tooltip": "Wordt gesynchroniseerd zodra je weer online bent.",
+  "offline.queued_suffix": "{count} wachten",
+  "offline.tooltip_syncing": "Synchroniseren…",
+  "offline.conflict_toast": "Bewerkingsconflict — ververs en probeer opnieuw.",
 } as const;
 
 export type MessageKey = keyof typeof nl;

@@ -51,6 +51,8 @@ export interface Trip {
   location: string | null; // human-readable address (shown in list)
   gps_coords: string | null; // raw "lat, lng" (for map pin)
   parking: string | null;
+  client_id: string | null;
+  updated_at: string;
   // joined
   person_name?: string;
   car_short?: string;
@@ -69,6 +71,8 @@ export interface FuelFillup {
   receipt: string | null;
   location: string | null;
   gps_coords: string | null;
+  client_id: string | null;
+  updated_at: string;
   // joined
   person_name?: string;
   car_short?: string;
@@ -82,6 +86,8 @@ export interface Expense {
   amount: number;
   description: string | null;
   category: ExpenseCategory | null;
+  client_id: string | null;
+  updated_at: string;
   // joined
   person_name?: string;
   car_short?: string;
@@ -92,6 +98,7 @@ export type ExpenseInput = Pick<
   "person_id" | "car_id" | "date" | "amount" | "description"
 > & {
   category?: ExpenseCategory | null;
+  client_id?: string | null;
 };
 
 export type ReservationStatus = "pending" | "confirmed" | "rejected";
@@ -104,6 +111,8 @@ export interface Reservation {
   end_date: string;
   status: ReservationStatus;
   note: string | null;
+  client_id: string | null;
+  updated_at: string;
   // joined
   person_name?: string;
   car_short?: string;
@@ -152,15 +161,15 @@ export type CarInput = Pick<Car, "short" | "name" | "price_per_km" | "brand" | "
 export type TripInput = Pick<
   Trip,
   "person_id" | "car_id" | "date" | "start_odometer" | "end_odometer" | "location"
-> & { parking?: string | null; gps_coords?: string | null };
+> & { parking?: string | null; gps_coords?: string | null; client_id?: string | null };
 export type FuelFillupInput = Pick<
   FuelFillup,
   "person_id" | "car_id" | "date" | "amount" | "liters" | "odometer" | "receipt" | "location"
-> & { gps_coords?: string | null; full_tank?: 0 | 1 };
+> & { gps_coords?: string | null; full_tank?: 0 | 1; client_id?: string | null };
 export type ReservationInput = Pick<
   Reservation,
   "person_id" | "car_id" | "start_date" | "end_date"
-> & { note?: string | null; status?: ReservationStatus };
+> & { note?: string | null; status?: ReservationStatus; client_id?: string | null };
 export type PaymentInput = Pick<Payment, "person_id" | "date" | "amount" | "note">;
 
 // Derived "last known" state for a car, used to prefill trip/fuel forms on car selection.

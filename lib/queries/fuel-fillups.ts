@@ -2,6 +2,13 @@ import type Database from "better-sqlite3";
 import type { FuelFillup, FuelFillupInput } from "@/types";
 import { calcPricePerLiter } from "@/lib/formulas";
 
+export class ConflictError extends Error {
+  constructor(message = "Conflict") {
+    super(message);
+    this.name = "ConflictError";
+  }
+}
+
 export function getFuelFillups(db: Database.Database): FuelFillup[] {
   return db
     .prepare(
@@ -33,12 +40,19 @@ export function getFuelFillupById(db: Database.Database, id: number): FuelFillup
 }
 
 export function insertFuelFillup(db: Database.Database, input: FuelFillupInput): number {
+  // Idempotency: if a client_id is provided and already exists, return that row's id.
+  if (input.client_id) {
+    const existing = db
+      .prepare("SELECT id FROM fuel_fillups WHERE client_id = ?")
+      .get(input.client_id) as { id: number } | undefined;
+    if (existing) return existing.id;
+  }
   const price_per_liter = calcPricePerLiter(input.amount, input.liters);
   const result = db
     .prepare(
       `
-    INSERT INTO fuel_fillups (person_id,car_id,date,amount,liters,price_per_liter,full_tank,odometer,receipt,location,gps_coords)
-    VALUES (?,?,?,?,?,?,?,?,?,?,?)
+    INSERT INTO fuel_fillups (person_id,car_id,date,amount,liters,price_per_liter,full_tank,odometer,receipt,location,gps_coords,client_id,updated_at)
+    VALUES (?,?,?,?,?,?,?,?,?,?,?,?,datetime('now'))
   `
     )
     .run(
@@ -52,12 +66,27 @@ export function insertFuelFillup(db: Database.Database, input: FuelFillupInput):
       input.odometer ?? null,
       input.receipt ?? null,
       input.location ?? null,
-      input.gps_coords ?? null
+      input.gps_coords ?? null,
+      input.client_id ?? null
     );
   return result.lastInsertRowid as number;
 }
 
-export function updateFuelFillup(db: Database.Database, id: number, input: FuelFillupInput): void {
+export function updateFuelFillup(
+  db: Database.Database,
+  id: number,
+  input: FuelFillupInput,
+  opts?: { expectedUpdatedAt?: string }
+): void {
+  if (opts?.expectedUpdatedAt) {
+    const cur = db.prepare("SELECT updated_at FROM fuel_fillups WHERE id = ?").get(id) as
+      | { updated_at: string }
+      | undefined;
+    if (!cur) throw new ConflictError("Fuel fillup no longer exists");
+    if (cur.updated_at !== opts.expectedUpdatedAt) {
+      throw new ConflictError("Fuel fillup was modified after this offline edit");
+    }
+  }
   const price_per_liter = calcPricePerLiter(input.amount, input.liters);
   db.prepare(
     `

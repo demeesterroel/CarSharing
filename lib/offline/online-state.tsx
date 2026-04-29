@@ -17,7 +17,9 @@ export interface OnlineState {
   online: boolean;
   lastSyncAt: number | null;
   staleness: Staleness;
+  pendingCount: number;
   markSynced: () => void;
+  setPendingCount: (n: number) => void;
 }
 
 const Ctx = createContext<OnlineState | null>(null);
@@ -53,6 +55,7 @@ export function OnlineStateProvider({ children }: { children: React.ReactNode })
   }, []);
   const [lastSyncAt, setLastSyncAt] = useState<number | null>(null);
   const [now, setNow] = useState(() => Date.now());
+  const [pendingCount, setPendingCount] = useState(0);
   const heartbeatRunningRef = useRef(false);
 
   const markSynced = useCallback(() => setLastSyncAt(Date.now()), []);
@@ -120,7 +123,9 @@ export function OnlineStateProvider({ children }: { children: React.ReactNode })
     online,
     lastSyncAt,
     staleness: computeStaleness(lastSyncAt, now),
+    pendingCount,
     markSynced,
+    setPendingCount,
   };
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;

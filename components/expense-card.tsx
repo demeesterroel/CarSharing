@@ -3,6 +3,7 @@ import type { Expense } from "@/types";
 import { paper, fontMono, fontSerif, fmtMoney, fmtDate } from "@/lib/paper-theme";
 import { useT, useLocale } from "@/components/locale-provider";
 import { CarBadge } from "@/components/car-badge";
+import { PendingBadge } from "@/components/pending-badge";
 
 export interface ExpenseCardProps {
   expense: Expense;
@@ -48,6 +49,7 @@ export function ExpenseCard({ expense, onClick }: ExpenseCardProps) {
           }}
         >
           {expense.description ?? t("dashboard.maintenance_label")}
+          {expense.id < 0 && <PendingBadge />}
         </div>
         <div
           style={{

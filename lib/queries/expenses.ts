@@ -1,6 +1,13 @@
 import type Database from "better-sqlite3";
 import type { Expense, ExpenseInput } from "@/types";
 
+export class ConflictError extends Error {
+  constructor(message = "Conflict") {
+    super(message);
+    this.name = "ConflictError";
+  }
+}
+
 export function getExpenses(db: Database.Database): Expense[] {
   return db
     .prepare(
@@ -32,10 +39,17 @@ export function getExpenseById(db: Database.Database, id: number): Expense | nul
 }
 
 export function insertExpense(db: Database.Database, input: ExpenseInput): number {
+  // Idempotency: if a client_id is provided and already exists, return that row's id.
+  if (input.client_id) {
+    const existing = db
+      .prepare("SELECT id FROM expenses WHERE client_id = ?")
+      .get(input.client_id) as { id: number } | undefined;
+    if (existing) return existing.id;
+  }
   const result = db
     .prepare(
       `
-    INSERT INTO expenses (person_id,car_id,date,amount,description,category) VALUES (?,?,?,?,?,?)
+    INSERT INTO expenses (person_id,car_id,date,amount,description,category,client_id,updated_at) VALUES (?,?,?,?,?,?,?,datetime('now'))
   `
     )
     .run(
@@ -44,12 +58,27 @@ export function insertExpense(db: Database.Database, input: ExpenseInput): numbe
       input.date,
       input.amount,
       input.description ?? null,
-      input.category ?? null
+      input.category ?? null,
+      input.client_id ?? null
     );
   return result.lastInsertRowid as number;
 }
 
-export function updateExpense(db: Database.Database, id: number, input: ExpenseInput): void {
+export function updateExpense(
+  db: Database.Database,
+  id: number,
+  input: ExpenseInput,
+  opts?: { expectedUpdatedAt?: string }
+): void {
+  if (opts?.expectedUpdatedAt) {
+    const cur = db.prepare("SELECT updated_at FROM expenses WHERE id = ?").get(id) as
+      | { updated_at: string }
+      | undefined;
+    if (!cur) throw new ConflictError("Expense no longer exists");
+    if (cur.updated_at !== opts.expectedUpdatedAt) {
+      throw new ConflictError("Expense was modified after this offline edit");
+    }
+  }
   db.prepare(
     `
     UPDATE expenses SET person_id=?,car_id=?,date=?,amount=?,description=?,category=? WHERE id=?

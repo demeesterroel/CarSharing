@@ -17,7 +17,7 @@ const PUBLIC_PATHS = [
 // Pages only admins can visit (non-admins get redirected to /).
 const ADMIN_ONLY_PAGES = ["/cars", "/people", "/payments"];
 
-export async function middleware(req: NextRequest) {
+export async function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
   // Static assets and Next.js internals are excluded via the matcher below.

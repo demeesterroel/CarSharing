@@ -149,6 +149,7 @@ export function PickCalendar({
               <button
                 type="button"
                 onClick={() => setPickFrom(null)}
+                aria-label={t("action.cancel_selection")}
                 style={{
                   border: "none",
                   background: "transparent",
@@ -167,10 +168,10 @@ export function PickCalendar({
             <span style={{ color: paper.inkDim }}>{monthRange(days[0], days[13], locale)}</span>
           )}
         </div>
-        <button type="button" onClick={() => setWeekOffset((o) => o - 1)} style={navBtn}>
+        <button type="button" onClick={() => setWeekOffset((o) => o - 1)} aria-label={t("calendar.prev_weeks")} style={navBtn}>
           ‹
         </button>
-        <button type="button" onClick={() => setWeekOffset((o) => o + 1)} style={navBtn}>
+        <button type="button" onClick={() => setWeekOffset((o) => o + 1)} aria-label={t("calendar.next_weeks")} style={navBtn}>
           ›
         </button>
       </div>

@@ -264,6 +264,7 @@ export function FixedCostEditor({
           />
           <button
             onClick={() => remove(item.id)}
+            aria-label={lang === "nl" ? "Item verwijderen" : "Remove item"}
             style={{
               padding: "4px 7px",
               background: "transparent",

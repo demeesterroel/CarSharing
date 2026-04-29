@@ -116,6 +116,7 @@ export function ExpenseForm({ defaultValues, onSubmit, onCancel, onDelete }: Pro
         <button
           type="button"
           onClick={onCancel}
+          aria-label={t("action.close")}
           style={{
             fontFamily: fontMono,
             fontSize: 16,

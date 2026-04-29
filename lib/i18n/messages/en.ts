@@ -59,8 +59,12 @@ export const en: Messages = {
   "action.login": "Log in",
   "action.save": "Save",
   "action.cancel": "Cancel",
+  "action.close": "Close",
   "action.delete": "Delete",
   "action.see_all": "All →",
+  "action.clear_gps": "Clear GPS pin",
+  "action.cancel_selection": "Cancel selection",
+  "action.remove_item": "Remove item",
 
   // Filter toggle
   "filter.all": "All",
@@ -230,6 +234,9 @@ export const en: Messages = {
   "calendar.upcoming": "Upcoming",
   "calendar.all_filter": "All",
   "calendar.mine_filter": "Mine",
+  "calendar.prev_weeks": "Previous weeks",
+  "calendar.next_weeks": "Next weeks",
+  "location.use_gps": "Use current location",
 
   // Person
   "person.inactive": "Inactive",
@@ -239,6 +246,7 @@ export const en: Messages = {
   "fab.fuel": "Fill-up",
   "fab.expense": "Expense",
   "fab.reservation": "Reservation",
+  "fab.open_menu": "Open action menu",
 
   // Admin page
   "admin.subtitle": "Co-op admin · {year}",

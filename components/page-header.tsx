@@ -57,6 +57,7 @@ export function PageHeader({ title, subtitle, right }: Props) {
           <button
             onClick={handleLogout}
             title={t("nav.logout")}
+            aria-label={t("nav.logout")}
             style={{
               padding: "3px 8px",
               fontFamily: fontMono,

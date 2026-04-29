@@ -57,8 +57,12 @@ export const nl = {
   "action.login": "Inloggen",
   "action.save": "Opslaan",
   "action.cancel": "Annuleer",
+  "action.close": "Sluiten",
   "action.delete": "Verwijderen",
   "action.see_all": "Alles →",
+  "action.clear_gps": "GPS-pin wissen",
+  "action.cancel_selection": "Selectie annuleren",
+  "action.remove_item": "Item verwijderen",
 
   // Filter toggle
   "filter.all": "Alle",
@@ -228,6 +232,9 @@ export const nl = {
   "calendar.upcoming": "Aankomend",
   "calendar.all_filter": "Alles",
   "calendar.mine_filter": "Mijn",
+  "calendar.prev_weeks": "Vorige weken",
+  "calendar.next_weeks": "Volgende weken",
+  "location.use_gps": "Huidige locatie gebruiken",
 
   // Person
   "person.inactive": "Inactief",
@@ -237,6 +244,7 @@ export const nl = {
   "fab.fuel": "Tankbeurt",
   "fab.expense": "Extra kost",
   "fab.reservation": "Reservering",
+  "fab.open_menu": "Actiemenu openen",
 
   // Admin page
   "admin.subtitle": "Co-op administratie · {year}",

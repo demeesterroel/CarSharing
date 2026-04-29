@@ -186,6 +186,7 @@ export function TripForm({ defaultValues, onSubmit, onCancel, onDelete }: Props)
         <button
           type="button"
           onClick={onCancel}
+          aria-label={t("action.close")}
           style={{
             fontFamily: fontMono,
             fontSize: 16,

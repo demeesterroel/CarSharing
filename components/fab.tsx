@@ -129,6 +129,8 @@ export function MultiFab({ onPick }: { onPick: (action: string) => void }) {
           }
           setOpen((o) => !o);
         }}
+        aria-label={t("fab.open_menu")}
+        aria-expanded={open}
         style={{
           width: 60,
           height: 60,

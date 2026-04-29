@@ -125,10 +125,10 @@ describe("BottomTabBar", () => {
     expect(screen.getByText("Beheer")).toBeInTheDocument();
   });
 
-  it("hides admin tab when cloaked", () => {
-    mockUseMe.mockReturnValue({ data: { isAdmin: true, isOwner: true, isCloaked: true } });
+  it("shows admin tab when cloaked as owner (exit cloak is in the amber banner)", () => {
+    mockUseMe.mockReturnValue({ data: { isAdmin: false, isOwner: true, isCloaked: true } });
     render(<BottomTabBar />);
-    expect(screen.queryByText("Beheer")).not.toBeInTheDocument();
+    expect(screen.getByText("Beheer")).toBeInTheDocument();
   });
 
   it("hides admin tab for regular users", () => {

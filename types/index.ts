@@ -17,6 +17,8 @@ export interface Car {
   brand: string | null;
   color: string | null;
   owner_name: string | null;
+  owner_from: string | null; // 'YYYY-MM-DD', inclusive
+  owner_to: string | null; // 'YYYY-MM-DD', inclusive; NULL = ongoing
   long_threshold: number;
   fixed_costs_json: string | null;
   active: 0 | 1;
@@ -179,4 +181,46 @@ export interface CarState {
   odometer: number | null;
   location: string | null;
   source: "trip" | "fuel";
+}
+
+export interface CarEraBalance {
+  car_name: string;
+  car_short: string;
+  owner_name: string;
+  owner_from: string;
+  owner_to: string | null;
+  trip_amount: number;
+  fuel_amount: number;
+  expense_amount: number;
+  balance: number; // b(p, c*) for this person; or N(c*) for the owner's own car row
+  n_c_star?: number; // N(c*) — only set on the owner's own car rows
+}
+
+export interface MemberStatement {
+  person_id: number;
+  person_name: string;
+  is_owner: boolean;
+  s1?: number; // non-owner: net balance with co-op
+  s2?: number; // owner: co-op payout
+  x?: number; // owner: cross-owner net position
+  net?: number; // owner: s2 + x
+  car_eras: CarEraBalance[];
+}
+
+export interface Transfer {
+  from: string; // person_name or "co-op"
+  to: string;
+  amount: number;
+  step: 1 | 2 | 3;
+  label: string;
+}
+
+export interface SettlementResult {
+  year: number;
+  frozen: boolean;
+  settled_at: string | null;
+  settled_by: string | null;
+  members: MemberStatement[];
+  transfers: Transfer[];
+  verify_ok: boolean;
 }

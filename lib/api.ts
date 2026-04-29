@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z, ZodError, type ZodSchema } from "zod";
 import { validateCsrfToken } from "./csrf";
 import { checkRateLimit } from "./rate-limit";
+import type { SessionData } from "./session";
 
 export class HttpError extends Error {
   constructor(
@@ -31,7 +32,7 @@ export function forbidden(msg = "Forbidden"): never {
 export async function requireAdmin(req: Request) {
   const { getIronSession } = await import("iron-session");
   const { sessionOptions } = await import("./session");
-  const session = await getIronSession(req, NextResponse.next(), sessionOptions);
+  const session = await getIronSession<SessionData>(req, NextResponse.next(), sessionOptions);
   if (!session.isAdmin) forbidden();
   return session;
 }

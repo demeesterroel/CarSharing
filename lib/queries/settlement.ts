@@ -320,7 +320,23 @@ export function getSettlement(db: Database.Database, year: number): SettlementRe
   for (const o of owners) {
     const s2 = S2.get(o.name) ?? 0;
     if (Math.abs(s2) < 0.005) continue;
-    transfers.push({ from: "co-op", to: o.name, amount: s2, step: 2, label: `co-op → ${o.name}` });
+    if (s2 > 0) {
+      transfers.push({
+        from: "co-op",
+        to: o.name,
+        amount: s2,
+        step: 2,
+        label: `co-op → ${o.name}`,
+      });
+    } else {
+      transfers.push({
+        from: o.name,
+        to: "co-op",
+        amount: round2(-s2),
+        step: 2,
+        label: `${o.name} → co-op`,
+      });
+    }
   }
 
   const xPositions = new Map<string, number>();

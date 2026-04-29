@@ -1,7 +1,7 @@
 import nextConfig from "eslint-config-next";
 
 const config = [
-  { ignores: ["docs/**", ".next/**", "public/**", "scripts/**"] },
+  { ignores: ["docs/**", ".next/**", "public/**", "scripts/**", ".worktrees/**"] },
   ...nextConfig,
   {
     rules: {

@@ -20,6 +20,7 @@ import type { FuelFillup } from "@/types";
 import { paper, fontMono, fmtYearMonth } from "@/lib/paper-theme";
 import { useT } from "@/components/locale-provider";
 import { FuelCard } from "@/components/fuel-card";
+import { ErrorBoundary } from "@/components/error-boundary";
 
 const overlayStyle: React.CSSProperties = {
   position: "fixed",
@@ -300,7 +301,9 @@ function FuelContent() {
 export default function FuelPage() {
   return (
     <Suspense>
-      <FuelContent />
+      <ErrorBoundary>
+        <FuelContent />
+      </ErrorBoundary>
     </Suspense>
   );
 }

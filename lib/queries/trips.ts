@@ -2,6 +2,13 @@ import type Database from "better-sqlite3";
 import type { Trip, TripInput } from "@/types";
 import { calcTripAmount } from "@/lib/formulas";
 
+export class ConflictError extends Error {
+  constructor(message = "Conflict") {
+    super(message);
+    this.name = "ConflictError";
+  }
+}
+
 export function getTrips(db: Database.Database): Trip[] {
   return db
     .prepare(
@@ -46,12 +53,19 @@ function compute(db: Database.Database, input: TripInput) {
 }
 
 export function insertTrip(db: Database.Database, input: TripInput): number {
+  // Idempotency: if a client_id is provided and already exists, return that row's id.
+  if (input.client_id) {
+    const existing = db
+      .prepare("SELECT id FROM trips WHERE client_id = ?")
+      .get(input.client_id) as { id: number } | undefined;
+    if (existing) return existing.id;
+  }
   const { km, amount } = compute(db, input);
   const result = db
     .prepare(
       `
-    INSERT INTO trips (person_id,car_id,date,start_odometer,end_odometer,km,amount,location,parking,gps_coords)
-    VALUES (?,?,?,?,?,?,?,?,?,?)
+    INSERT INTO trips (person_id,car_id,date,start_odometer,end_odometer,km,amount,location,parking,gps_coords,client_id,updated_at)
+    VALUES (?,?,?,?,?,?,?,?,?,?,?,datetime('now'))
   `
     )
     .run(
@@ -64,12 +78,27 @@ export function insertTrip(db: Database.Database, input: TripInput): number {
       amount,
       input.location ?? null,
       input.parking ?? null,
-      input.gps_coords ?? null
+      input.gps_coords ?? null,
+      input.client_id ?? null
     );
   return result.lastInsertRowid as number;
 }
 
-export function updateTrip(db: Database.Database, id: number, input: TripInput): void {
+export function updateTrip(
+  db: Database.Database,
+  id: number,
+  input: TripInput,
+  opts?: { expectedUpdatedAt?: string }
+): void {
+  if (opts?.expectedUpdatedAt) {
+    const cur = db.prepare("SELECT updated_at FROM trips WHERE id = ?").get(id) as
+      | { updated_at: string }
+      | undefined;
+    if (!cur) throw new ConflictError("Trip no longer exists");
+    if (cur.updated_at !== opts.expectedUpdatedAt) {
+      throw new ConflictError("Trip was modified after this offline edit");
+    }
+  }
   const { km, amount } = compute(db, input);
   db.prepare(
     `

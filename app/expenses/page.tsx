@@ -20,6 +20,7 @@ import type { Expense } from "@/types";
 import { paper, fontMono, fmtYearMonth } from "@/lib/paper-theme";
 import { useT } from "@/components/locale-provider";
 import { ExpenseCard } from "@/components/expense-card";
+import { ErrorBoundary } from "@/components/error-boundary";
 
 const overlayStyle: React.CSSProperties = {
   position: "fixed",
@@ -300,7 +301,9 @@ function ExpensesContent() {
 export default function ExpensesPage() {
   return (
     <Suspense>
-      <ExpensesContent />
+      <ErrorBoundary>
+        <ExpensesContent />
+      </ErrorBoundary>
     </Suspense>
   );
 }

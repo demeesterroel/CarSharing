@@ -15,6 +15,7 @@ import type { Trip } from "@/types";
 import { paper, fontMono, fmtYearMonth } from "@/lib/paper-theme";
 import { useT } from "@/components/locale-provider";
 import { TripCard } from "@/components/trip-card";
+import { ErrorBoundary } from "@/components/error-boundary";
 
 const overlayStyle: React.CSSProperties = {
   position: "fixed",
@@ -297,7 +298,9 @@ function TripsContent() {
 export default function TripsPage() {
   return (
     <Suspense>
-      <TripsContent />
+      <ErrorBoundary>
+        <TripsContent />
+      </ErrorBoundary>
     </Suspense>
   );
 }

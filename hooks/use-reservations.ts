@@ -1,11 +1,173 @@
-import { createResourceHooks } from "./use-resource";
+"use client";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
+import { apiFetch } from "@/lib/api/client";
+import { newUuid } from "@/lib/offline/uuid";
+import { enqueue } from "@/lib/offline/outbox";
+import { applyCreate, replaceCreate, rollbackCreate, applyUpdate, applyDelete } from "@/lib/offline/optimistic";
 import type { Reservation, ReservationInput } from "@/types";
 
-export const reservationsHooks = createResourceHooks<Reservation, ReservationInput>(
-  "reservations",
-  "/api/reservations"
-);
-export const useReservations = reservationsHooks.useList;
-export const useCreateReservation = reservationsHooks.useCreate;
-export const useUpdateReservation = reservationsHooks.useUpdate;
-export const useDeleteReservation = reservationsHooks.useDelete;
+const QUERY_KEY = "reservations";
+const PATH = "/api/reservations";
+
+function invalidateAll(qc: ReturnType<typeof useQueryClient>) {
+  qc.invalidateQueries({ queryKey: [QUERY_KEY] });
+}
+
+function getCsrfToken(): string {
+  return document.cookie.match(/csrf-token=([^;]+)/)?.[1] ?? "";
+}
+
+export function useReservations() {
+  return useQuery<Reservation[]>({
+    queryKey: [QUERY_KEY],
+    queryFn: () => apiFetch<Reservation[]>(PATH),
+  });
+}
+
+export function useCreateReservation() {
+  const qc = useQueryClient();
+  return useMutation<Reservation, Error, ReservationInput>({
+    mutationFn: async (input: ReservationInput): Promise<Reservation> => {
+      const client_id = newUuid();
+      const optimistic: Reservation = {
+        id: -Date.now(),
+        client_id,
+        person_id: input.person_id,
+        car_id: input.car_id,
+        start_date: input.start_date,
+        end_date: input.end_date,
+        status: input.status ?? "pending",
+        note: input.note ?? null,
+        updated_at: new Date().toISOString(),
+      };
+      applyCreate<Reservation>(qc, [QUERY_KEY], optimistic);
+
+      try {
+        const res = await fetch(PATH, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "x-csrf-token": getCsrfToken() },
+          body: JSON.stringify({ ...input, client_id }),
+        });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const server = (await res.json()) as Reservation;
+        replaceCreate<Reservation>(qc, [QUERY_KEY], client_id, server);
+        invalidateAll(qc);
+        return server;
+      } catch {
+        if (typeof navigator !== "undefined" && !navigator.onLine) {
+          await enqueue({
+            url: PATH,
+            method: "POST",
+            body: { ...input, client_id },
+            resource: "reservations",
+            client_id,
+          });
+          return optimistic;
+        }
+        rollbackCreate<Reservation>(qc, [QUERY_KEY], client_id);
+        throw new Error("Failed to create reservation");
+      }
+    },
+  });
+}
+
+export function useUpdateReservation() {
+  const qc = useQueryClient();
+  return useMutation<unknown, Error, ReservationInput & { id: number }>({
+    mutationFn: async ({ id, ...input }) => {
+      const existing = qc.getQueryData<Reservation[]>([QUERY_KEY])?.find((r) => r.id === id);
+      applyUpdate<Reservation>(qc, [QUERY_KEY], id, input as Partial<Reservation>);
+
+      try {
+        const headers: Record<string, string> = {
+          "Content-Type": "application/json",
+          "x-csrf-token": getCsrfToken(),
+        };
+        if (existing?.updated_at) headers["X-Expected-Updated-At"] = existing.updated_at;
+        const res = await fetch(`${PATH}/${id}`, {
+          method: "PUT",
+          headers,
+          body: JSON.stringify(input),
+        });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        invalidateAll(qc);
+        return res.json();
+      } catch {
+        if (typeof navigator !== "undefined" && !navigator.onLine) {
+          await enqueue({
+            url: `${PATH}/${id}`,
+            method: "PUT",
+            body: input,
+            resource: "reservations",
+            resource_id: id,
+            expectedUpdatedAt: existing?.updated_at,
+          });
+          return {};
+        }
+        if (existing) applyUpdate<Reservation>(qc, [QUERY_KEY], id, existing);
+        throw new Error("Failed to update reservation");
+      }
+    },
+  });
+}
+
+export function useDeleteReservation() {
+  const qc = useQueryClient();
+  return useMutation<unknown, Error, number>({
+    mutationFn: async (id: number) => {
+      applyDelete<Reservation>(qc, [QUERY_KEY], id);
+
+      try {
+        const res = await fetch(`${PATH}/${id}`, {
+          method: "DELETE",
+          headers: { "x-csrf-token": getCsrfToken() },
+        });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        invalidateAll(qc);
+        return res.json();
+      } catch {
+        if (typeof navigator !== "undefined" && !navigator.onLine) {
+          await enqueue({
+            url: `${PATH}/${id}`,
+            method: "DELETE",
+            body: null,
+            resource: "reservations",
+            resource_id: id,
+          });
+          return {};
+        }
+        invalidateAll(qc);
+        throw new Error("Failed to delete reservation");
+      }
+    },
+  });
+}
+
+export function useUpdateReservationStatus() {
+  const qc = useQueryClient();
+  return useMutation<unknown, Error, { id: number; status: string }>({
+    mutationFn: async ({ id, status }) => {
+      // Status changes (confirm/reject) are admin-only and require connectivity.
+      if (typeof navigator !== "undefined" && !navigator.onLine) {
+        toast.error("Bevestigen/afwijzen kan alleen online.");
+        throw new Error("offline");
+      }
+      const res = await fetch(`${PATH}/${id}/status`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json", "x-csrf-token": getCsrfToken() },
+        body: JSON.stringify({ status }),
+      });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      invalidateAll(qc);
+      return res.json();
+    },
+  });
+}
+
+export const reservationsHooks = {
+  useList: useReservations,
+  useCreate: useCreateReservation,
+  useUpdate: useUpdateReservation,
+  useDelete: useDeleteReservation,
+};

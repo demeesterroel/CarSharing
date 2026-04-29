@@ -25,10 +25,15 @@ describe("json wrapper", () => {
       const body = await readBody(req, schema);
       return body;
     });
+    const token = "test-csrf-token";
     const req = new Request("http://x", {
       method: "POST",
       body: JSON.stringify({ n: "not-a-number" }),
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        "Cookie": `csrf-token=${token}`,
+        "x-csrf-token": token,
+      },
     });
     const res = await handler(req, { params: Promise.resolve({}) });
     expect(res.status).toBe(400);

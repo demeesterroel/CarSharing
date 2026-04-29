@@ -6,7 +6,20 @@ export function generateCsrfToken(): string {
 }
 
 export function validateCsrfToken(req: NextRequest): boolean {
-  const cookie = req.cookies.get("csrf-token")?.value;
+  // NextRequest has .cookies; plain Request (tests) doesn't — fall back to Cookie header
+  const cookieFromParsed = req.cookies?.get("csrf-token")?.value;
+  const cookieFromHeader = parseCookieHeader(req.headers.get("cookie") ?? "")["csrf-token"];
+  const cookie = cookieFromParsed ?? cookieFromHeader;
   const header = req.headers.get("x-csrf-token");
   return !!cookie && !!header && cookie === header;
+}
+
+function parseCookieHeader(raw: string): Record<string, string> {
+  return Object.fromEntries(
+    raw
+      .split(";")
+      .map((c) => c.trim().split("="))
+      .filter((p) => p.length === 2)
+      .map(([k, v]) => [k.trim(), decodeURIComponent(v.trim())])
+  );
 }

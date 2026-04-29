@@ -390,6 +390,23 @@ export const en: Messages = {
   "admin.is_admin_label": "Admin",
   "admin.no_username": "No login yet",
 
+  // Fixed cost editor (admin)
+  "admin.fixed_costs_header": "Fixed costs",
+  "admin.fixed_cost_description_placeholder": "description",
+  "admin.fixed_cost_add": "add",
+  "admin.fixed_cost_total": "Total",
+  "admin.cost.belastingen": "Road tax",
+  "admin.cost.verzekeringen": "Insurance",
+  "admin.cost.onderhoud": "Maintenance",
+  "admin.cost.keuring": "Inspection",
+  "admin.cost.diversen": "Miscellaneous",
+
+  // Tab bar exit cloak
+  "nav.tab.exit_cloak": "Exit",
+
+  // Form placeholders
+  "form.parking_placeholder": "e.g. underground parking, floor -1",
+
   // Cloaking
   "cloak.viewing_as": "Viewing as {name} ({role})",
   "cloak.exit": "Exit cloaking",

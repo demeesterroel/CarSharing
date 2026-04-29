@@ -444,7 +444,7 @@ export function TripForm({ defaultValues, onSubmit, onCancel, onDelete }: Props)
           <input
             {...register("parking")}
             type="text"
-            placeholder="bv. ondergrondse parking, verdieping -1"
+            placeholder={t("form.parking_placeholder")}
             style={{
               fontFamily: fontSerif,
               fontSize: 16,

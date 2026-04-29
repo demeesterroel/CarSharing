@@ -102,7 +102,7 @@ export function BottomTabBar() {
           }}
         >
           <span style={{ fontSize: 15, lineHeight: 1 }}>✕</span>
-          <span style={labelStyle}>Exit</span>
+          <span style={labelStyle}>{t("nav.tab.exit_cloak")}</span>
         </button>
       )}
     </nav>

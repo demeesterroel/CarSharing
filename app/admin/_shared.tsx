@@ -1,5 +1,6 @@
 "use client";
 import { paper, fontMono } from "@/lib/paper-theme";
+import { useT, useLocale } from "@/components/locale-provider";
 
 // ── Primitives ────────────────────────────────────────────────
 export function Perf({ margin = "12px 0" }: { margin?: string }) {
@@ -191,12 +192,12 @@ export const FIXED_COST_LABELS: Record<FixedCostCategory, { nl: string; en: stri
 export function FixedCostEditor({
   items,
   onChange,
-  lang = "nl",
 }: {
   items: FixedCostItem[];
   onChange: (items: FixedCostItem[]) => void;
-  lang?: string;
 }) {
+  const t = useT();
+  const { locale } = useLocale();
   const inputStyle: React.CSSProperties = {
     padding: "5px 6px",
     border: `1px solid ${paper.paperDark}`,
@@ -232,7 +233,7 @@ export function FixedCostEditor({
           marginBottom: 6,
         }}
       >
-        {lang === "nl" ? "Vaste kosten" : "Fixed costs"}
+        {t("admin.fixed_costs_header")}
       </div>
       {items.map((item) => (
         <div
@@ -246,14 +247,14 @@ export function FixedCostEditor({
           >
             {FIXED_COST_CATEGORIES.map((c) => (
               <option key={c} value={c}>
-                {FIXED_COST_LABELS[c][lang === "nl" ? "nl" : "en"]}
+                {FIXED_COST_LABELS[c][locale]}
               </option>
             ))}
           </select>
           <input
             value={item.description}
             onChange={(e) => update(item.id, { description: e.target.value })}
-            placeholder={lang === "nl" ? "omschrijving" : "description"}
+            placeholder={t("admin.fixed_cost_description_placeholder")}
             style={{ ...inputStyle, flex: 1, minWidth: 0 }}
           />
           <input
@@ -264,7 +265,7 @@ export function FixedCostEditor({
           />
           <button
             onClick={() => remove(item.id)}
-            aria-label={lang === "nl" ? "Item verwijderen" : "Remove item"}
+            aria-label={t("action.remove_item")}
             style={{
               padding: "4px 7px",
               background: "transparent",
@@ -301,11 +302,11 @@ export function FixedCostEditor({
             color: paper.inkDim,
           }}
         >
-          + {lang === "nl" ? "toevoegen" : "add"}
+          + {t("admin.fixed_cost_add")}
         </button>
         {items.length > 0 && (
           <span style={{ fontFamily: fontMono, fontSize: 11, color: paper.ink, fontWeight: 700 }}>
-            {lang === "nl" ? "Totaal" : "Total"}: €{" "}
+            {t("admin.fixed_cost_total")}: €{" "}
             {total.toLocaleString("nl-BE", { minimumFractionDigits: 2 })}
           </span>
         )}

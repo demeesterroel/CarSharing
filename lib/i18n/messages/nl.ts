@@ -389,6 +389,23 @@ export const nl = {
   "admin.is_admin_label": "Admin",
   "admin.no_username": "Nog geen login",
 
+  // Fixed cost editor (admin)
+  "admin.fixed_costs_header": "Vaste kosten",
+  "admin.fixed_cost_description_placeholder": "omschrijving",
+  "admin.fixed_cost_add": "toevoegen",
+  "admin.fixed_cost_total": "Totaal",
+  "admin.cost.belastingen": "Belastingen",
+  "admin.cost.verzekeringen": "Verzekeringen",
+  "admin.cost.onderhoud": "Onderhoud",
+  "admin.cost.keuring": "Keuring",
+  "admin.cost.diversen": "Diversen",
+
+  // Tab bar exit cloak
+  "nav.tab.exit_cloak": "Stop",
+
+  // Form placeholders
+  "form.parking_placeholder": "bv. ondergrondse parking, verdieping -1",
+
   // Cloaking
   "cloak.viewing_as": "Kijken als {name} ({role})",
   "cloak.exit": "Stop met kijken",

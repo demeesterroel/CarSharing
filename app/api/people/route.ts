@@ -1,12 +1,13 @@
 import { NextResponse } from "next/server";
 import { getDb } from "@/lib/db";
 import { getPeople, insertPerson } from "@/lib/queries/people";
-import { json, readBody } from "@/lib/api";
+import { json, readBody, requireAdmin } from "@/lib/api";
 import { personSchema } from "@/lib/schemas/person";
 
 export const GET = json(async () => getPeople(getDb()));
 
 export const POST = json(async (req) => {
+  await requireAdmin(req);
   const data = await readBody(req, personSchema);
   const id = insertPerson(getDb(), {
     ...data,

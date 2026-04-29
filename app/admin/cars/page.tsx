@@ -1,5 +1,8 @@
 "use client";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
+import { useMe } from "@/hooks/use-me";
 import { paper, fontMono, fontSerif, fmtMoney } from "@/lib/paper-theme";
 import { useT } from "@/components/locale-provider";
 import type {
@@ -1239,5 +1242,11 @@ function FleetTiles() {
 
 // ── Page ──────────────────────────────────────────────────────
 export default function AdminWagensPage() {
+  const { data: me } = useMe();
+  const router = useRouter();
+  useEffect(() => {
+    if (me && !me.isAdmin) router.replace("/admin");
+  }, [me, router]);
+  if (!me?.isAdmin) return null;
   return <FleetTiles />;
 }

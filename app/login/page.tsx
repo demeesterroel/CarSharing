@@ -1,11 +1,13 @@
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useQueryClient } from "@tanstack/react-query";
 import { t } from "@/lib/i18n";
 import { paper, fontMono, fontSerif } from "@/lib/paper-theme";
 
 export default function LoginPage() {
   const router = useRouter();
+  const qc = useQueryClient();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -22,6 +24,7 @@ export default function LoginPage() {
         body: JSON.stringify({ username, password }),
       });
       if (res.ok) {
+        qc.clear();
         router.replace("/");
       } else {
         setError(t("error.invalid_credentials"));

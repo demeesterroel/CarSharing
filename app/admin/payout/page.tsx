@@ -1,5 +1,7 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { useMe } from "@/hooks/use-me";
 import { paper, fontMono, fontSerif, fmtMoney } from "@/lib/paper-theme";
 import { useT } from "@/components/locale-provider";
 import { useAdminSummary, Card, Row, Perf } from "../_shared";
@@ -8,10 +10,20 @@ import { useEarliestDashboardYear } from "@/hooks/use-dashboard";
 // ── Owner Payout Page ─────────────────────────────────────────
 export default function AdminPayoutPage() {
   const t = useT();
+  const { data: me } = useMe();
+  const router = useRouter();
   const currentYear = new Date().getFullYear();
   const [year, setYear] = useState(currentYear);
+
   const { data: earliestYear = currentYear } = useEarliestDashboardYear();
   const { data } = useAdminSummary(year);
+
+  useEffect(() => {
+    if (me && !me.isAdmin) router.replace("/admin");
+  }, [me, router]);
+
+  if (!me?.isAdmin) return null;
+
   const cars = data?.carPnL ?? [];
 
   const byOwner: Record<string, typeof cars> = {};

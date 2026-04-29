@@ -47,9 +47,13 @@ export async function middleware(req: NextRequest) {
     }
   }
 
-  // While cloaking, block /admin/* entirely (redirect to dashboard)
-  if (session.cloakedAs && (pathname === "/admin" || pathname.startsWith("/admin/"))) {
-    return NextResponse.redirect(new URL("/", req.url));
+  // While cloaking as a non-admin, block admin-only pages (redirect to dashboard).
+  // Owner-accessible pages (/admin, /admin/hygiene, /admin/settlement) are still allowed.
+  if (session.cloakedAs && !session.cloakedAs.isAdmin) {
+    const adminOnlyPaths = ["/admin/cars", "/admin/members", "/admin/payout"];
+    if (adminOnlyPaths.some((p) => pathname === p || pathname.startsWith(p + "/"))) {
+      return NextResponse.redirect(new URL("/admin", req.url));
+    }
   }
 
   return res;

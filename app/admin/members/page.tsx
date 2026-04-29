@@ -1,7 +1,8 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
+import { useMe } from "@/hooks/use-me";
 import { paper, fontMono, fontSerif } from "@/lib/paper-theme";
 import { useT } from "@/components/locale-provider";
 import type { Person } from "@/types";
@@ -446,11 +447,16 @@ function PersonRow({
 // ── Members Page ──────────────────────────────────────────────
 export default function AdminLedenPage() {
   const t = useT();
+  const { data: me } = useMe();
   const { data: people = [] } = usePeople();
   const qc = useQueryClient();
   const router = useRouter();
   const [expanded, setExpanded] = useState<number | null>(null);
   const [savingId, setSavingId] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (me && !me.isAdmin) router.replace("/admin");
+  }, [me, router]);
 
   const toggle = (id: number) => setExpanded((prev) => (prev === id ? null : id));
 
@@ -486,9 +492,10 @@ export default function AdminLedenPage() {
       body: JSON.stringify({ personId }),
     });
     if (!res.ok) return;
-    qc.invalidateQueries({ queryKey: ["me"] });
-    router.push("/");
+    window.location.href = "/";
   }
+
+  if (!me?.isAdmin) return null;
 
   const active = people.filter((p) => p.active);
   const inactive = people.filter((p) => !p.active);

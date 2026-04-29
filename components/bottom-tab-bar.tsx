@@ -49,7 +49,7 @@ export function BottomTabBar() {
 
   if (pathname === "/login" || pathname.startsWith("/invite")) return null;
 
-  const showAdmin = (me?.isAdmin || me?.isOwner) && !me?.isCloaked;
+  const showAdmin = me?.isAdmin || me?.isOwner;
   const tabs = showAdmin ? [...BASE_TABS, ADMIN_TAB] : BASE_TABS;
 
   return (

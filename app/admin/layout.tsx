@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { PageHeader } from "@/components/page-header";
 import { paper, fontMono } from "@/lib/paper-theme";
 import { useT } from "@/components/locale-provider";
-import { useReservations } from "./_shared";
+import { useReservations, useOwnerCarShorts } from "./_shared";
 import { useMe } from "@/hooks/use-me";
 
 const OWNER_PAGES = ["/admin", "/admin/hygiene", "/admin/settlement"];
@@ -15,7 +15,10 @@ function SubNav() {
   const pathname = usePathname();
   const { data: reservations = [] } = useReservations();
   const { data: me } = useMe();
-  const pendingCount = reservations.filter((r) => r.status === "pending").length;
+  const ownerCarShorts = useOwnerCarShorts();
+  const pendingCount = reservations.filter(
+    (r) => r.status === "pending" && (!ownerCarShorts || ownerCarShorts.has(r.car_short ?? ""))
+  ).length;
 
   const year = new Date().getFullYear();
 

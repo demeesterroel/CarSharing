@@ -1,13 +1,9 @@
 "use client";
-import { useRouter } from "next/navigation";
-import { useQueryClient } from "@tanstack/react-query";
 import { useMe } from "@/hooks/use-me";
 import { paper, fontMono } from "@/lib/paper-theme";
 
 export function CloakBanner() {
   const { data: me } = useMe();
-  const router = useRouter();
-  const qc = useQueryClient();
 
   if (!me?.isCloaked) return null;
 
@@ -18,8 +14,7 @@ export function CloakBanner() {
 
   async function handleExit() {
     await fetch("/api/auth/uncloak", { method: "POST" });
-    qc.removeQueries({ queryKey: ["me"] });
-    router.push("/admin");
+    window.location.href = "/admin/members";
   }
 
   return (

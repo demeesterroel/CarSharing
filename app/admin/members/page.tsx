@@ -492,8 +492,7 @@ export default function AdminLedenPage() {
       body: JSON.stringify({ personId }),
     });
     if (!res.ok) return;
-    qc.removeQueries({ queryKey: ["me"] });
-    router.push("/");
+    window.location.href = "/";
   }
 
   if (!me?.isAdmin) return null;

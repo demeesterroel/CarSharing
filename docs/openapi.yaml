@@ -33,6 +33,14 @@ components:
           type: boolean
           example: true
 
+    DeletedResponse:
+      type: object
+      required: [deleted]
+      properties:
+        deleted:
+          type: boolean
+          example: true
+
     CreatedResponse:
       type: object
       required: [id]
@@ -258,6 +266,257 @@ components:
           nullable: true
           description: Client-generated idempotency key.
 
+    FuelFillup:
+      type: object
+      required: [id, person_id, car_id, date, amount, liters]
+      properties:
+        id:
+          type: integer
+        person_id:
+          type: integer
+        car_id:
+          type: integer
+        date:
+          type: string
+          format: date
+        amount:
+          type: number
+          format: float
+          description: Cost in EUR.
+        liters:
+          type: number
+          format: float
+        full_tank:
+          type: integer
+          enum: [0, 1]
+          default: 0
+        odometer:
+          type: integer
+          nullable: true
+        receipt:
+          type: string
+          nullable: true
+        location:
+          type: string
+          nullable: true
+        gps_coords:
+          type: string
+          nullable: true
+        person_name:
+          type: string
+        car_short:
+          type: string
+        updated_at:
+          type: string
+          format: date-time
+
+    FuelFillupInput:
+      type: object
+      required: [person_id, car_id, date, amount, liters]
+      properties:
+        person_id:
+          type: integer
+          minimum: 1
+        car_id:
+          type: integer
+          minimum: 1
+        date:
+          type: string
+          format: date
+        amount:
+          type: number
+          format: float
+          exclusiveMinimum: 0
+        liters:
+          type: number
+          format: float
+          exclusiveMinimum: 0
+        full_tank:
+          type: integer
+          enum: [0, 1]
+          default: 0
+        odometer:
+          type: integer
+          minimum: 0
+          nullable: true
+        receipt:
+          type: string
+          nullable: true
+        location:
+          type: string
+          nullable: true
+        gps_coords:
+          type: string
+          nullable: true
+        client_id:
+          type: string
+          nullable: true
+          description: Client-generated idempotency key.
+
+    Expense:
+      type: object
+      required: [id, person_id, car_id, date, amount]
+      properties:
+        id:
+          type: integer
+        person_id:
+          type: integer
+        car_id:
+          type: integer
+        date:
+          type: string
+          format: date
+        amount:
+          type: number
+          format: float
+        description:
+          type: string
+          nullable: true
+        category:
+          type: string
+          enum: [onderhoud, keuring, belasting, verzekering, diversen]
+          nullable: true
+        person_name:
+          type: string
+        car_short:
+          type: string
+        updated_at:
+          type: string
+          format: date-time
+
+    ExpenseInput:
+      type: object
+      required: [person_id, car_id, date, amount]
+      properties:
+        person_id:
+          type: integer
+          minimum: 1
+        car_id:
+          type: integer
+          minimum: 1
+        date:
+          type: string
+          format: date
+        amount:
+          type: number
+          format: float
+          exclusiveMinimum: 0
+        description:
+          type: string
+          nullable: true
+        category:
+          type: string
+          enum: [onderhoud, keuring, belasting, verzekering, diversen]
+          nullable: true
+        client_id:
+          type: string
+          nullable: true
+          description: Client-generated idempotency key.
+
+    Payment:
+      type: object
+      required: [id, person_id, date, amount]
+      properties:
+        id:
+          type: integer
+        person_id:
+          type: integer
+        date:
+          type: string
+          format: date
+        amount:
+          type: number
+          format: float
+        note:
+          type: string
+          nullable: true
+        person_name:
+          type: string
+        updated_at:
+          type: string
+          format: date-time
+
+    PaymentInput:
+      type: object
+      required: [person_id, date, amount]
+      properties:
+        person_id:
+          type: integer
+          minimum: 1
+        date:
+          type: string
+          format: date
+        amount:
+          type: number
+          format: float
+          exclusiveMinimum: 0
+        note:
+          type: string
+          nullable: true
+
+    Person:
+      type: object
+      required: [id, name]
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        discount:
+          type: number
+          format: float
+          minimum: 0
+          maximum: 1
+          default: 0
+        discount_long:
+          type: number
+          format: float
+          minimum: 0
+          maximum: 1
+          default: 0
+        active:
+          type: integer
+          enum: [0, 1]
+          default: 1
+        username:
+          type: string
+          nullable: true
+        is_admin:
+          type: integer
+          enum: [0, 1]
+          default: 0
+
+    PersonInput:
+      type: object
+      required: [name]
+      properties:
+        name:
+          type: string
+          minLength: 1
+        discount:
+          type: number
+          format: float
+          minimum: 0
+          maximum: 1
+          default: 0
+        discount_long:
+          type: number
+          format: float
+          minimum: 0
+          maximum: 1
+          default: 0
+        active:
+          type: integer
+          enum: [0, 1]
+          default: 1
+        username:
+          type: string
+          nullable: true
+        is_admin:
+          type: integer
+          enum: [0, 1]
+          default: 0
+
     DashboardRow:
       type: object
       required: [person_id, person_name, year]
@@ -291,9 +550,60 @@ components:
         balance:
           type: number
 
+  parameters:
+    idPath:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: integer
+      description: Resource ID.
+
+    yearQuery:
+      name: year
+      in: query
+      schema:
+        type: integer
+        example: 2025
+      description: Calendar year; defaults to the current year.
+
+  responses:
+    Unauthorized:
+      description: Not authenticated.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+    NotFound:
+      description: Resource not found.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+    Conflict:
+      description: Optimistic concurrency conflict — resource was modified since last read.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+    ValidationError:
+      description: Request body failed validation.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+    CsrfError:
+      description: CSRF token missing or invalid.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+
 paths:
+  # ── Auth ────────────────────────────────────────────────────────
   /auth/login:
     post:
+      tags: [Auth]
       summary: Log in with username and password.
       security: []
       requestBody:
@@ -325,6 +635,7 @@ paths:
 
   /auth/logout:
     post:
+      tags: [Auth]
       summary: Destroy the current session.
       responses:
         "200":
@@ -334,9 +645,47 @@ paths:
               schema:
                 $ref: "#/components/schemas/OkResponse"
 
+  /auth/cloak:
+    post:
+      tags: [Auth]
+      summary: Cloak as another user (admin only).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [personId]
+              properties:
+                personId:
+                  type: integer
+      responses:
+        "200":
+          description: Now cloaked as the target person.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OkResponse"
+        "403":
+          $ref: "#/components/responses/Unauthorized"
+
+  /auth/uncloak:
+    post:
+      tags: [Auth]
+      summary: Exit cloak mode and return to admin identity.
+      responses:
+        "200":
+          description: Cloak removed.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OkResponse"
+
+  # ── Me ─────────────────────────────────────────────────────────
   /me:
     get:
-      summary: Return the currently authenticated user, or null if unauthenticated.
+      tags: [Auth]
+      summary: Return the currently authenticated user.
       security: []
       responses:
         "200":
@@ -348,8 +697,10 @@ paths:
                   - $ref: "#/components/schemas/MeResponse"
                   - type: "null"
 
+  # ── Trips ───────────────────────────────────────────────────────
   /trips:
     get:
+      tags: [Trips]
       summary: List all trips ordered by date descending.
       responses:
         "200":
@@ -361,6 +712,7 @@ paths:
                 items:
                   $ref: "#/components/schemas/Trip"
     post:
+      tags: [Trips]
       summary: Record a new trip.
       requestBody:
         required: true
@@ -376,20 +728,69 @@ paths:
               schema:
                 $ref: "#/components/schemas/CreatedResponse"
         "400":
-          description: Validation error.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
+          $ref: "#/components/responses/ValidationError"
         "403":
-          description: CSRF token missing or invalid.
+          $ref: "#/components/responses/CsrfError"
+
+  /trips/{id}:
+    parameters:
+      - $ref: "#/components/parameters/idPath"
+    get:
+      tags: [Trips]
+      summary: Get a single trip by ID.
+      responses:
+        "200":
+          description: Trip object.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Error"
+                $ref: "#/components/schemas/Trip"
+        "404":
+          $ref: "#/components/responses/NotFound"
+    put:
+      tags: [Trips]
+      summary: Update a trip.
+      parameters:
+        - name: X-Expected-Updated-At
+          in: header
+          schema:
+            type: string
+            format: date-time
+          description: Optimistic concurrency check — the `updated_at` value last seen by the client.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TripInput"
+      responses:
+        "200":
+          description: Trip updated.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OkResponse"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+    delete:
+      tags: [Trips]
+      summary: Delete a trip.
+      responses:
+        "200":
+          description: Deletion result.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DeletedResponse"
 
+  # ── Reservations ────────────────────────────────────────────────
   /reservations:
     get:
+      tags: [Reservations]
       summary: List all reservations ordered by start_date descending.
       responses:
         "200":
@@ -401,6 +802,7 @@ paths:
                 items:
                   $ref: "#/components/schemas/Reservation"
     post:
+      tags: [Reservations]
       summary: Create a new reservation.
       requestBody:
         required: true
@@ -416,20 +818,451 @@ paths:
               schema:
                 $ref: "#/components/schemas/CreatedResponse"
         "400":
-          description: Validation error.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
+          $ref: "#/components/responses/ValidationError"
         "403":
-          description: CSRF token missing or invalid.
+          $ref: "#/components/responses/CsrfError"
+
+  /reservations/{id}:
+    parameters:
+      - $ref: "#/components/parameters/idPath"
+    get:
+      tags: [Reservations]
+      summary: Get a single reservation by ID.
+      responses:
+        "200":
+          description: Reservation object.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Error"
+                $ref: "#/components/schemas/Reservation"
+        "404":
+          $ref: "#/components/responses/NotFound"
+    put:
+      tags: [Reservations]
+      summary: Update a reservation.
+      parameters:
+        - name: X-Expected-Updated-At
+          in: header
+          schema:
+            type: string
+            format: date-time
+          description: Optimistic concurrency check.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ReservationInput"
+      responses:
+        "200":
+          description: Reservation updated.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OkResponse"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+    delete:
+      tags: [Reservations]
+      summary: Delete a reservation.
+      responses:
+        "200":
+          description: Deletion result.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DeletedResponse"
 
+  /reservations/{id}/status:
+    parameters:
+      - $ref: "#/components/parameters/idPath"
+    patch:
+      tags: [Reservations]
+      summary: Update only the status of a reservation (admin).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [status]
+              properties:
+                status:
+                  type: string
+                  enum: [pending, confirmed, rejected]
+      responses:
+        "200":
+          description: Status updated.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OkResponse"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  # ── Fuel ────────────────────────────────────────────────────────
+  /fuel:
+    get:
+      tags: [Fuel]
+      summary: List all fuel fill-ups ordered by date descending.
+      responses:
+        "200":
+          description: Array of fuel fill-ups.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/FuelFillup"
+    post:
+      tags: [Fuel]
+      summary: Record a new fuel fill-up.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FuelFillupInput"
+      responses:
+        "201":
+          description: Fill-up created.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CreatedResponse"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "403":
+          $ref: "#/components/responses/CsrfError"
+
+  /fuel/{id}:
+    parameters:
+      - $ref: "#/components/parameters/idPath"
+    get:
+      tags: [Fuel]
+      summary: Get a single fuel fill-up by ID.
+      responses:
+        "200":
+          description: Fill-up object.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FuelFillup"
+        "404":
+          $ref: "#/components/responses/NotFound"
+    put:
+      tags: [Fuel]
+      summary: Update a fuel fill-up.
+      parameters:
+        - name: X-Expected-Updated-At
+          in: header
+          schema:
+            type: string
+            format: date-time
+          description: Optimistic concurrency check.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FuelFillupInput"
+      responses:
+        "200":
+          description: Fill-up updated.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OkResponse"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+    delete:
+      tags: [Fuel]
+      summary: Delete a fuel fill-up.
+      responses:
+        "200":
+          description: Deletion result.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DeletedResponse"
+
+  # ── Expenses ────────────────────────────────────────────────────
+  /expenses:
+    get:
+      tags: [Expenses]
+      summary: List all expenses ordered by date descending.
+      responses:
+        "200":
+          description: Array of expenses.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Expense"
+    post:
+      tags: [Expenses]
+      summary: Record a new expense.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ExpenseInput"
+      responses:
+        "201":
+          description: Expense created.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CreatedResponse"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "403":
+          $ref: "#/components/responses/CsrfError"
+
+  /expenses/{id}:
+    parameters:
+      - $ref: "#/components/parameters/idPath"
+    get:
+      tags: [Expenses]
+      summary: Get a single expense by ID.
+      responses:
+        "200":
+          description: Expense object.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Expense"
+        "404":
+          $ref: "#/components/responses/NotFound"
+    put:
+      tags: [Expenses]
+      summary: Update an expense.
+      parameters:
+        - name: X-Expected-Updated-At
+          in: header
+          schema:
+            type: string
+            format: date-time
+          description: Optimistic concurrency check.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ExpenseInput"
+      responses:
+        "200":
+          description: Expense updated.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OkResponse"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+    delete:
+      tags: [Expenses]
+      summary: Delete an expense.
+      responses:
+        "200":
+          description: Deletion result.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DeletedResponse"
+
+  # ── Payments ────────────────────────────────────────────────────
+  /payments:
+    get:
+      tags: [Payments]
+      summary: List all payments ordered by date descending.
+      responses:
+        "200":
+          description: Array of payments.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Payment"
+    post:
+      tags: [Payments]
+      summary: Record a new payment.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PaymentInput"
+      responses:
+        "201":
+          description: Payment created.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CreatedResponse"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "403":
+          $ref: "#/components/responses/CsrfError"
+
+  /payments/{id}:
+    parameters:
+      - $ref: "#/components/parameters/idPath"
+    get:
+      tags: [Payments]
+      summary: Get a single payment by ID.
+      responses:
+        "200":
+          description: Payment object.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Payment"
+        "404":
+          $ref: "#/components/responses/NotFound"
+    put:
+      tags: [Payments]
+      summary: Update a payment.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PaymentInput"
+      responses:
+        "200":
+          description: Payment updated.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OkResponse"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "404":
+          $ref: "#/components/responses/NotFound"
+    delete:
+      tags: [Payments]
+      summary: Delete a payment.
+      responses:
+        "200":
+          description: Deletion result.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DeletedResponse"
+
+  # ── People ──────────────────────────────────────────────────────
+  /people:
+    get:
+      tags: [People]
+      summary: List all people.
+      responses:
+        "200":
+          description: Array of people.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Person"
+    post:
+      tags: [People]
+      summary: Create a new person (admin only).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PersonInput"
+      responses:
+        "201":
+          description: Person created.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CreatedResponse"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+
+  /people/{id}:
+    parameters:
+      - $ref: "#/components/parameters/idPath"
+    get:
+      tags: [People]
+      summary: Get a single person by ID.
+      responses:
+        "200":
+          description: Person object.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Person"
+        "404":
+          $ref: "#/components/responses/NotFound"
+    put:
+      tags: [People]
+      summary: Update a person (admin only).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PersonInput"
+      responses:
+        "200":
+          description: Person updated.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OkResponse"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /people/{id}/invite:
+    parameters:
+      - $ref: "#/components/parameters/idPath"
+    post:
+      tags: [People]
+      summary: Generate a one-time invite link for a person (admin only).
+      responses:
+        "200":
+          description: Invite URL valid for 7 days.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [url]
+                properties:
+                  url:
+                    type: string
+                    format: uri
+        "403":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  # ── Cars ────────────────────────────────────────────────────────
   /cars:
     get:
+      tags: [Cars]
       summary: List all cars ordered by short name.
       responses:
         "200":
@@ -441,7 +1274,8 @@ paths:
                 items:
                   $ref: "#/components/schemas/Car"
     post:
-      summary: Add a new car.
+      tags: [Cars]
+      summary: Add a new car (admin only).
       requestBody:
         required: true
         content:
@@ -456,28 +1290,75 @@ paths:
               schema:
                 $ref: "#/components/schemas/CreatedResponse"
         "400":
-          description: Validation error.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
+          $ref: "#/components/responses/ValidationError"
         "403":
-          description: CSRF token missing or invalid.
+          $ref: "#/components/responses/CsrfError"
+
+  /cars/{id}:
+    parameters:
+      - $ref: "#/components/parameters/idPath"
+    get:
+      tags: [Cars]
+      summary: Get a single car by ID.
+      responses:
+        "200":
+          description: Car object.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Error"
+                $ref: "#/components/schemas/Car"
+        "404":
+          $ref: "#/components/responses/NotFound"
+    put:
+      tags: [Cars]
+      summary: Update a car (admin only).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CarInput"
+      responses:
+        "200":
+          description: Car updated.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OkResponse"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "404":
+          $ref: "#/components/responses/NotFound"
 
+  /cars/{id}/last-state:
+    parameters:
+      - $ref: "#/components/parameters/idPath"
+    get:
+      tags: [Cars]
+      summary: Return the most recent odometer reading and date for a car.
+      responses:
+        "200":
+          description: Last known state.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  odometer:
+                    type: integer
+                    nullable: true
+                  date:
+                    type: string
+                    format: date
+                    nullable: true
+
+  # ── Dashboard ───────────────────────────────────────────────────
   /dashboard:
     get:
+      tags: [Dashboard]
       summary: Return per-person annual summary (trips, fuel, expenses, balance).
       parameters:
-        - name: year
-          in: query
-          schema:
-            type: integer
-            example: 2025
-          description: Calendar year to summarise; defaults to the current year.
+        - $ref: "#/components/parameters/yearQuery"
       responses:
         "200":
           description: Array of dashboard rows, one per person.
@@ -488,8 +1369,96 @@ paths:
                 items:
                   $ref: "#/components/schemas/DashboardRow"
         "400":
-          description: Invalid year parameter.
+          $ref: "#/components/responses/ValidationError"
+
+  /dashboard/earliest-year:
+    get:
+      tags: [Dashboard]
+      summary: Return the earliest year that has any recorded activity.
+      responses:
+        "200":
+          description: Earliest year.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Error"
+                type: object
+                required: [year]
+                properties:
+                  year:
+                    type: integer
+                    nullable: true
+                    example: 2022
+
+  # ── Admin ───────────────────────────────────────────────────────
+  /admin/summary:
+    get:
+      tags: [Admin]
+      summary: Return full fleet economics summary (admin/owner only).
+      parameters:
+        - $ref: "#/components/parameters/yearQuery"
+      responses:
+        "200":
+          description: Aggregated fleet data for the requested year.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  carPnL:
+                    type: array
+                    items:
+                      type: object
+                      description: Per-car profit & loss including fixed costs and trip revenue.
+                  settlement:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/DashboardRow"
+                  kmGaps:
+                    type: array
+                    items:
+                      type: object
+                      description: Trips with odometer gaps (missing km records).
+                  zeroKmTrips:
+                    type: array
+                    items:
+                      type: object
+                      description: Trips recorded with 0 km.
+                  monthlyCarKm:
+                    type: array
+                    items:
+                      type: object
+                      description: Monthly km per car for the selected year.
+                  personContributions:
+                    type: array
+                    items:
+                      type: object
+                      description: Per-person km and cost contribution.
+                  historicalCarKm:
+                    type: array
+                    items:
+                      type: object
+                      description: Annual km per car across all years.
+                  priceHistory:
+                    type: array
+                    items:
+                      type: object
+                      description: Historical price-per-km changes per car.
+
+  # ── Health ──────────────────────────────────────────────────────
+  /health:
+    get:
+      tags: [Health]
+      summary: Liveness probe.
+      security: []
+      responses:
+        "200":
+          description: Service is healthy.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [ok]
+                properties:
+                  ok:
+                    type: boolean
+                    example: true

@@ -1,9 +1,13 @@
 import { useQuery, useMutation, useQueryClient, type QueryKey } from "@tanstack/react-query";
 import { apiFetch } from "@/lib/api/client";
 
+interface OptimisticContext<T> {
+  previous: T[] | undefined;
+}
+
 interface Factory<T extends { id: number }, TInput> {
   useList: () => ReturnType<typeof useQuery<T[]>>;
-  useCreate: () => ReturnType<typeof useMutation<{ id: number }, Error, TInput>>;
+  useCreate: () => ReturnType<typeof useMutation<{ id: number }, Error, TInput, OptimisticContext<T>>>;
   useUpdate: () => ReturnType<typeof useMutation<unknown, Error, TInput & { id: number }>>;
   useDelete: () => ReturnType<typeof useMutation<unknown, Error, number>>;
 }
@@ -23,14 +27,28 @@ export function createResourceHooks<T extends { id: number }, TInput>(
 
     useCreate: () => {
       const qc = useQueryClient();
-      return useMutation<{ id: number }, Error, TInput>({
+      return useMutation<{ id: number }, Error, TInput, OptimisticContext<T>>({
         mutationFn: (data) =>
           apiFetch(path, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(data),
           }),
-        onSuccess: () => invalidate(qc),
+        onMutate: async (newData) => {
+          await qc.cancelQueries({ queryKey: [key] });
+          const previous = qc.getQueryData<T[]>([key]);
+          qc.setQueryData<T[]>([key], (old) => [
+            ...(old ?? []),
+            { ...newData, id: -Date.now() } as unknown as T,
+          ]);
+          return { previous };
+        },
+        onError: (_err, _vars, context) => {
+          if (context?.previous !== undefined) {
+            qc.setQueryData<T[]>([key], context.previous);
+          }
+        },
+        onSettled: () => invalidate(qc),
       });
     },
 

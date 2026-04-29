@@ -14,6 +14,7 @@ on:
 
 jobs:
   build:
+    if: github.event_name != 'push' || !startsWith(github.event.head_commit.message, 'chore(main): release')
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -31,6 +32,11 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Extract semver from release tag
+        if: github.event_name == 'release'
+        id: semver
+        run: echo "value=${GITHUB_REF_NAME#carsharing-}" >> $GITHUB_OUTPUT
+
       - name: Extract Docker metadata
         id: meta
         uses: docker/metadata-action@v5
@@ -40,6 +46,7 @@ jobs:
             type=raw,value=latest,enable={{is_default_branch}}
             type=sha,prefix=,format=short,enable={{is_default_branch}}
             type=raw,value={{tag}},enable=${{ github.event_name == 'release' }}
+            type=raw,value=${{ steps.semver.outputs.value }},enable=${{ github.event_name == 'release' }}
             type=raw,value=${{ inputs.version }},enable=${{ github.event_name == 'workflow_dispatch' && inputs.version != '' }}
 
       - name: Build and push

@@ -137,27 +137,9 @@ describe("BottomTabBar", () => {
     expect(screen.queryByText("Beheer")).not.toBeInTheDocument();
   });
 
-  it("shows Exit Cloak button when cloaked", () => {
+  it("never shows Exit Cloak button in tab bar (exit cloak is in the top banner)", () => {
     mockUseMe.mockReturnValue({ data: { isAdmin: true, isOwner: false, isCloaked: true } });
-    render(<BottomTabBar />);
-    expect(screen.getByRole("button", { name: /Exit/i })).toBeInTheDocument();
-  });
-
-  it("does not show Exit Cloak button when not cloaked", () => {
-    mockUseMe.mockReturnValue({ data: { isAdmin: true, isOwner: false, isCloaked: false } });
     render(<BottomTabBar />);
     expect(screen.queryByRole("button", { name: /Exit/i })).not.toBeInTheDocument();
-  });
-
-  it("Exit Cloak button calls uncloak endpoint and redirects", async () => {
-    mockUseMe.mockReturnValue({ data: { isAdmin: true, isOwner: false, isCloaked: true } });
-    global.fetch = vi.fn().mockResolvedValue({ ok: true });
-
-    render(<BottomTabBar />);
-    const btn = screen.getByRole("button", { name: /Exit/i });
-    await userEvent.click(btn);
-
-    expect(global.fetch).toHaveBeenCalledWith("/api/auth/uncloak", { method: "POST" });
-    expect(mockPush).toHaveBeenCalledWith("/admin");
   });
 });

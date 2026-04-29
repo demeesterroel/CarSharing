@@ -1,7 +1,6 @@
 "use client";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
-import { useQueryClient } from "@tanstack/react-query";
+import { usePathname } from "next/navigation";
 import { paper, fontMono } from "@/lib/paper-theme";
 import { useT } from "@/components/locale-provider";
 import { useMe } from "@/hooks/use-me";
@@ -46,20 +45,12 @@ const labelStyle: React.CSSProperties = {
 export function BottomTabBar() {
   const t = useT();
   const pathname = usePathname();
-  const router = useRouter();
-  const qc = useQueryClient();
   const { data: me } = useMe();
 
   if (pathname === "/login" || pathname.startsWith("/invite")) return null;
 
   const showAdmin = (me?.isAdmin || me?.isOwner) && !me?.isCloaked;
   const tabs = showAdmin ? [...BASE_TABS, ADMIN_TAB] : BASE_TABS;
-
-  async function handleExitCloak() {
-    await fetch("/api/auth/uncloak", { method: "POST" });
-    qc.invalidateQueries({ queryKey: ["me"] });
-    router.push("/admin");
-  }
 
   return (
     <nav
@@ -92,19 +83,6 @@ export function BottomTabBar() {
           </Link>
         );
       })}
-      {me?.isCloaked && (
-        <button
-          onClick={handleExitCloak}
-          style={{
-            ...tabStyle(false),
-            background: paper.amber,
-            color: "#fff",
-          }}
-        >
-          <span style={{ fontSize: 15, lineHeight: 1 }}>✕</span>
-          <span style={labelStyle}>{t("nav.tab.exit_cloak")}</span>
-        </button>
-      )}
     </nav>
   );
 }

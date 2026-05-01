@@ -18,6 +18,10 @@ export const CRITICAL_ENDPOINTS: readonly CriticalEndpoint[] = [
   { queryKey: ["cars"], url: "/api/cars" },
 ] as const;
 
+// Pages whose RSC payloads are pre-fetched so the SW caches them in `pages-rsc`.
+// This makes every tab available offline even before the user has navigated to it.
+export const CRITICAL_PAGES = ["/", "/trips", "/fuel", "/calendar", "/expenses"] as const;
+
 export type Fetcher = (url: string) => Promise<unknown>;
 
 async function defaultFetcher(url: string): Promise<unknown> {
@@ -38,6 +42,20 @@ export async function prewarmCriticalEndpoints(
   return Promise.allSettled(tasks);
 }
 
+// Fetches RSC payloads for every critical page so the SW caches them in `pages-rsc`.
+// Must be called while online; errors are silently swallowed (non-critical for UX).
+export async function prewarmPages(pageFetcher?: (url: string) => Promise<unknown>): Promise<void> {
+  const fetch_ =
+    pageFetcher ??
+    ((url: string) =>
+      fetch(url, {
+        method: "GET",
+        headers: { RSC: "1", "Next-Router-Prefetch": "1" },
+        cache: "no-cache",
+      }));
+  await Promise.allSettled(CRITICAL_PAGES.map((url) => fetch_(url).catch(() => undefined)));
+}
+
 export function useBootPrewarm(authReady: boolean): void {
   const qc = useQueryClient();
   const { online, markSynced } = useOnlineState();
@@ -51,5 +69,6 @@ export function useBootPrewarm(authReady: boolean): void {
       const anyOk = results.some((r) => r.status === "fulfilled");
       if (anyOk) markSynced();
     });
+    prewarmPages();
   }, [authReady, online, qc, markSynced]);
 }

@@ -49,6 +49,7 @@ export function ReceiptUpload({ value, onChange }: Props) {
         }}
       />
       {value ? (
+        // eslint-disable-next-line @next/next/no-img-element
         <img src={value} alt={t("form.receipt")} className="max-h-32 rounded object-contain" />
       ) : (
         <>

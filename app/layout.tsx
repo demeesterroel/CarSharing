@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Fraunces, Inter } from "next/font/google";
+import { Fraunces, Inter, Courier_Prime } from "next/font/google";
 import "./globals.css";
 import { Providers } from "./providers";
 import { BottomTabBar } from "@/components/bottom-tab-bar";
@@ -16,6 +16,13 @@ const fraunces = Fraunces({
 const inter = Inter({
   subsets: ["latin"],
   variable: "--font-inter",
+  display: "swap",
+});
+
+const courierPrime = Courier_Prime({
+  subsets: ["latin"],
+  variable: "--font-courier-prime",
+  weight: ["400", "700"],
   display: "swap",
 });
 
@@ -47,15 +54,8 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="nl" className={`${fraunces.variable} ${inter.variable}`}>
-      <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
-        <link
-          href="https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&display=swap"
-          rel="stylesheet"
-        />
-      </head>
+    <html lang="nl" className={`${fraunces.variable} ${inter.variable} ${courierPrime.variable}`}>
+      <head></head>
       <body>
         <LocaleProvider>
           <Providers>

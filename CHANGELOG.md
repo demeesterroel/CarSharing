@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.3.0](https://github.com/demeesterroel/CarSharing/compare/carsharing-v1.2.1...carsharing-v1.3.0) (2026-05-01)
+
+
+### ✨ New features
+
+* **deps:** upgrade Next.js 15 → 16.2.4 with webpack mode for PWA ([#81](https://github.com/demeesterroel/CarSharing/issues/81)) ([4ffeaad](https://github.com/demeesterroel/CarSharing/commit/4ffeaad2462b334c740defaab3a02220ede62688))
+* **e2e:** add CRUD and reservation approval E2E tests ([#60](https://github.com/demeesterroel/CarSharing/issues/60)) ([#79](https://github.com/demeesterroel/CarSharing/issues/79)) ([43a77be](https://github.com/demeesterroel/CarSharing/commit/43a77beb3cba9d52cdabbebfd421cc72925eac7b))
+* **settlement:** annual owner payout settlement ([#7](https://github.com/demeesterroel/CarSharing/issues/7)) ([#82](https://github.com/demeesterroel/CarSharing/issues/82)) ([88534d6](https://github.com/demeesterroel/CarSharing/commit/88534d6c9afeff71cc3c186e41042c607196bc1b))
+
 ## [1.2.1](https://github.com/demeesterroel/CarSharing/compare/carsharing-v1.2.0...carsharing-v1.2.1) (2026-04-29)
 
 

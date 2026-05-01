@@ -10,6 +10,7 @@ export default function AdminSettingsPage() {
   const [bankAccount, setBankAccount] = useState("");
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     if (data) setBankAccount(data.coop_bank_account);
   }, [data]);
 

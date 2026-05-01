@@ -1,6 +1,11 @@
 import { describe, it, expect, vi } from "vitest";
 import { QueryClient } from "@tanstack/react-query";
-import { prewarmCriticalEndpoints, CRITICAL_ENDPOINTS } from "./prewarm";
+import {
+  prewarmCriticalEndpoints,
+  CRITICAL_ENDPOINTS,
+  prewarmPages,
+  CRITICAL_PAGES,
+} from "./prewarm";
 
 describe("prewarmCriticalEndpoints", () => {
   it("calls fetcher for every critical endpoint in parallel", async () => {
@@ -37,5 +42,32 @@ describe("prewarmCriticalEndpoints", () => {
     const results = await prewarmCriticalEndpoints(qc, fetcher);
     expect(results).toHaveLength(CRITICAL_ENDPOINTS.length);
     expect(results.every((r) => r.status === "fulfilled")).toBe(true);
+  });
+});
+
+describe("prewarmPages", () => {
+  it("fetches every critical page", async () => {
+    const fetcher = vi.fn().mockResolvedValue(undefined);
+    await prewarmPages(fetcher);
+    expect(fetcher).toHaveBeenCalledTimes(CRITICAL_PAGES.length);
+    for (const page of CRITICAL_PAGES) {
+      expect(fetcher).toHaveBeenCalledWith(page);
+    }
+  });
+
+  it("does not throw when an individual page fetch fails", async () => {
+    const fetcher = vi
+      .fn()
+      .mockImplementation((url: string) =>
+        url === "/trips" ? Promise.reject(new Error("network error")) : Promise.resolve(undefined)
+      );
+    await expect(prewarmPages(fetcher)).resolves.toBeUndefined();
+  });
+
+  it("covers all tab-bar destinations", () => {
+    const tabs = ["/", "/trips", "/fuel", "/calendar", "/expenses"];
+    for (const tab of tabs) {
+      expect(CRITICAL_PAGES).toContain(tab);
+    }
   });
 });

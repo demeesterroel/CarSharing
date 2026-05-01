@@ -19,16 +19,14 @@ export function LocaleProvider({ children }: { children: React.ReactNode }) {
   // activeLocale to "nl" so the initial render always matches the server HTML.
   // Without this, stale HMR state can leave activeLocale as "en" before effects run.
   const [locale, setLocaleState] = useState<Locale>(() => {
-    if (typeof window !== "undefined") setModuleLocale("nl");
-    return "nl";
+    if (typeof window === "undefined") return "nl";
+    const stored = localStorage.getItem(STORAGE_KEY) as Locale | null;
+    return stored === "en" || stored === "nl" ? stored : "nl";
   });
 
   useEffect(() => {
-    const stored = localStorage.getItem(STORAGE_KEY) as Locale | null;
-    const active = stored === "en" || stored === "nl" ? stored : "nl";
-    setModuleLocale(active);
-    setLocaleState(active);
-  }, []);
+    setModuleLocale(locale);
+  }, [locale]);
 
   const handleSetLocale = (l: Locale) => {
     localStorage.setItem(STORAGE_KEY, l);

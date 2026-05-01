@@ -254,6 +254,7 @@ export const nl = {
   "admin.sub_data": "Data",
   "admin.sub_settlement": "Afrek.",
   "admin.sub_payout": "Uitbetaling",
+  "admin.sub_settings": "Instellingen",
   "admin.inbox_empty": "Niets te bevestigen",
   "admin.confirm": "✓ Bevestigen",
   "admin.reject": "✗ Weigeren",
@@ -450,6 +451,11 @@ export const nl = {
   "offline.mutation_blocked": "Opslaan niet mogelijk zonder verbinding.",
   "form.offline_start_km_hint": "Offline — start KM is van laatste sync.",
   "form.offline_reservation_hint": "Offline — controleer beschikbaarheid bij verbinding.",
+
+  // Settled outside
+  "form.settled_outside": "VERREKEND BUITEN DE APP",
+  "form.settled_outside_hint": "Bedrag niet meer meegeteld in de afrekening",
+  "badge.settled_outside": "extern",
 
   // Offline queue & sync
   "offline.pending": "Sync.",

@@ -20,11 +20,14 @@ describe("migration 0004 — car owner era", () => {
       CREATE TABLE cars (id INTEGER PRIMARY KEY AUTOINCREMENT, short TEXT NOT NULL, name TEXT NOT NULL, price_per_km REAL NOT NULL, owner_name TEXT);
       INSERT INTO cars (short, name, price_per_km, owner_name) VALUES ('XX', 'Test', 0.2, 'Alice');
     `);
-    // Mark all previous migrations as already applied so only 0004 runs
+    // Mark all migrations except 0004 as already applied so only the backfill runs
     db2.exec(`
       INSERT INTO _migrations (filename) VALUES ('0001_initial_schema.sql');
       INSERT INTO _migrations (filename) VALUES ('0002_data_corrections_trips.sql');
       INSERT INTO _migrations (filename) VALUES ('0003_add_client_id_and_updated_at.sql');
+      INSERT INTO _migrations (filename) VALUES ('0005_add_settlements_table.sql');
+      INSERT INTO _migrations (filename) VALUES ('0006_settings_table.sql');
+      INSERT INTO _migrations (filename) VALUES ('0007_settled_outside.sql');
     `);
     runMigrations(db2);
     const car = db2.prepare("SELECT owner_from FROM cars WHERE short = 'XX'").get() as {

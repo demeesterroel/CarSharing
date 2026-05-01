@@ -69,11 +69,29 @@ export function FuelCard({ fuel, onClick }: FuelCardProps) {
             fontFamily: fontMono,
             fontSize: 14,
             fontWeight: 700,
-            color: paper.green,
+            color: fuel.settled_outside === 1 ? paper.inkMute : paper.green,
             whiteSpace: "nowrap",
           }}
         >
           {fmtMoney(fuel.amount)}
+          {fuel.settled_outside === 1 && (
+            <span
+              style={{
+                display: "inline-block",
+                padding: "1px 5px",
+                fontFamily: fontMono,
+                fontSize: 8,
+                letterSpacing: 1,
+                textTransform: "uppercase",
+                color: paper.inkMute,
+                border: `1px solid ${paper.paperDark}`,
+                marginLeft: 5,
+                verticalAlign: "middle",
+              }}
+            >
+              {t("badge.settled_outside")}
+            </span>
+          )}
         </div>
         {fuel.price_per_liter && (
           <div style={{ fontFamily: fontMono, fontSize: 10, color: paper.inkDim }}>

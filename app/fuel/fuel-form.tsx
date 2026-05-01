@@ -24,6 +24,7 @@ const schema = z.object({
   amount: z.coerce.number().positive(),
   liters: z.coerce.number().positive(),
   full_tank: z.boolean().default(false),
+  settled_outside: z.boolean().default(false),
   odometer: z.coerce
     .number()
     .int()
@@ -92,6 +93,7 @@ export function FuelForm({ defaultValues, onSubmit, onCancel, onDelete }: Props)
       amount: defaultValues?.amount ?? 0,
       liters: defaultValues?.liters ?? 0,
       full_tank: defaultValues?.full_tank === 1,
+      settled_outside: defaultValues?.settled_outside === 1,
       odometer: defaultValues?.odometer ?? null,
       receipt: defaultValues?.receipt ?? null,
       location: defaultValues?.location ?? null,
@@ -99,9 +101,9 @@ export function FuelForm({ defaultValues, onSubmit, onCancel, onDelete }: Props)
     },
   });
 
-  const [amount, liters, carId, personId, date, fullTank] = useWatch({
+  const [amount, liters, carId, personId, date, fullTank, settledOutside] = useWatch({
     control,
-    name: ["amount", "liters", "car_id", "person_id", "date", "full_tank"],
+    name: ["amount", "liters", "car_id", "person_id", "date", "full_tank", "settled_outside"],
   });
   const pricePerLiter = calcPricePerLiter(Number(amount) || 0, Number(liters) || 0);
   const person = people.find((p) => p.id === personId);
@@ -131,6 +133,7 @@ export function FuelForm({ defaultValues, onSubmit, onCancel, onDelete }: Props)
       amount: data.amount,
       liters: data.liters,
       full_tank: data.full_tank ? 1 : 0,
+      settled_outside: data.settled_outside ? 1 : 0,
       odometer: data.odometer,
       receipt: data.receipt,
       location: data.location,
@@ -462,6 +465,34 @@ export function FuelForm({ defaultValues, onSubmit, onCancel, onDelete }: Props)
         </label>
         <span style={{ fontFamily: fontMono, fontSize: 9, color: paper.inkMute, letterSpacing: 1 }}>
           — {t("form.full_tank_hint")}
+        </span>
+      </div>
+
+      {/* Settled outside checkbox */}
+      <div style={{ padding: "0 14px 8px", display: "flex", alignItems: "center", gap: 10 }}>
+        <input
+          type="checkbox"
+          id="fuel_settled_outside"
+          checked={!!settledOutside}
+          onChange={(e) => setValue("settled_outside", e.target.checked)}
+          style={{ width: 16, height: 16, cursor: "pointer", accentColor: paper.inkMute }}
+        />
+        <label
+          htmlFor="fuel_settled_outside"
+          style={{
+            fontFamily: fontMono,
+            fontSize: 10,
+            fontWeight: 700,
+            letterSpacing: 2,
+            textTransform: "uppercase",
+            color: paper.inkDim,
+            cursor: "pointer",
+          }}
+        >
+          {t("form.settled_outside")}
+        </label>
+        <span style={{ fontFamily: fontMono, fontSize: 9, color: paper.inkMute, letterSpacing: 1 }}>
+          — {t("form.settled_outside_hint")}
         </span>
       </div>
 

@@ -73,6 +73,7 @@ export interface FuelFillup {
   receipt: string | null;
   location: string | null;
   gps_coords: string | null;
+  settled_outside: 0 | 1;
   client_id: string | null;
   updated_at: string;
   // joined
@@ -88,6 +89,7 @@ export interface Expense {
   amount: number;
   description: string | null;
   category: ExpenseCategory | null;
+  settled_outside: 0 | 1;
   client_id: string | null;
   updated_at: string;
   // joined
@@ -100,6 +102,7 @@ export type ExpenseInput = Pick<
   "person_id" | "car_id" | "date" | "amount" | "description"
 > & {
   category?: ExpenseCategory | null;
+  settled_outside?: 0 | 1;
   client_id?: string | null;
 };
 
@@ -167,7 +170,12 @@ export type TripInput = Pick<
 export type FuelFillupInput = Pick<
   FuelFillup,
   "person_id" | "car_id" | "date" | "amount" | "liters" | "odometer" | "receipt" | "location"
-> & { gps_coords?: string | null; full_tank?: 0 | 1; client_id?: string | null };
+> & {
+  gps_coords?: string | null;
+  full_tank?: 0 | 1;
+  settled_outside?: 0 | 1;
+  client_id?: string | null;
+};
 export type ReservationInput = Pick<
   Reservation,
   "person_id" | "car_id" | "start_date" | "end_date"
@@ -183,6 +191,31 @@ export interface CarState {
   source: "trip" | "fuel";
 }
 
+export interface CarMemberContribution {
+  person_name: string;
+  trip_km: number;
+  fuel_liters: number;
+  expense_amount: number;
+  contribution: number; // trips − fuel − expenses; positive = member owes co-op for this car
+  fuel_settled_count?: number;
+  fuel_settled_liters?: number;
+  expense_settled_count?: number;
+  expense_settled_amount?: number;
+}
+
+export interface CrossOwnerBalance {
+  other_owner_name: string;
+  net: number; // M[this][other] − M[other][this]; positive = I receive (used for sorting/filtering)
+  my_balance: number; // M[this][other] = b(me, other's cars); negative = I owe
+  my_trip_km: number; // km I drove in their cars
+  my_fuel_liters: number; // liters I paid for their cars
+  my_expense_amount: number; // expenses I paid for their cars
+  my_fuel_settled_count?: number;
+  my_fuel_settled_liters?: number;
+  my_expense_settled_count?: number;
+  my_expense_settled_amount?: number;
+}
+
 export interface CarEraBalance {
   car_name: string;
   car_short: string;
@@ -190,10 +223,17 @@ export interface CarEraBalance {
   owner_from: string;
   owner_to: string | null;
   trip_amount: number;
+  trip_km: number;
   fuel_amount: number;
+  fuel_liters: number;
   expense_amount: number;
   balance: number; // b(p, c*) for this person; or N(c*) for the owner's own car row
   n_c_star?: number; // N(c*) — only set on the owner's own car rows
+  member_contributions?: CarMemberContribution[]; // non-owner contributions; only on owner's car rows
+  fuel_settled_count?: number;
+  fuel_settled_liters?: number;
+  expense_settled_count?: number;
+  expense_settled_amount?: number;
 }
 
 export interface MemberStatement {
@@ -205,6 +245,7 @@ export interface MemberStatement {
   x?: number; // owner: cross-owner net position
   net?: number; // owner: s2 + x
   car_eras: CarEraBalance[];
+  cross_owner_balances?: CrossOwnerBalance[]; // only on owner rows
 }
 
 export interface Transfer {

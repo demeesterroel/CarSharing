@@ -256,6 +256,7 @@ export const en: Messages = {
   "admin.sub_data": "Data",
   "admin.sub_settlement": "Settl.",
   "admin.sub_payout": "Payout",
+  "admin.sub_settings": "Settings",
   "admin.inbox_empty": "Nothing to confirm",
   "admin.confirm": "✓ Confirm",
   "admin.reject": "✗ Reject",
@@ -451,6 +452,11 @@ export const en: Messages = {
   "offline.mutation_blocked": "Saving is not available without a connection.",
   "form.offline_start_km_hint": "Offline — start KM is from last sync.",
   "form.offline_reservation_hint": "Offline — verify availability when reconnected.",
+
+  // Settled outside
+  "form.settled_outside": "SETTLED OUTSIDE THE APP",
+  "form.settled_outside_hint": "Amount excluded from settlement",
+  "badge.settled_outside": "extern",
 
   // Offline queue & sync
   "offline.pending": "Sync",

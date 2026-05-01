@@ -51,8 +51,8 @@ export function insertFuelFillup(db: Database.Database, input: FuelFillupInput):
   const result = db
     .prepare(
       `
-    INSERT INTO fuel_fillups (person_id,car_id,date,amount,liters,price_per_liter,full_tank,odometer,receipt,location,gps_coords,client_id,updated_at)
-    VALUES (?,?,?,?,?,?,?,?,?,?,?,?,datetime('now'))
+    INSERT INTO fuel_fillups (person_id,car_id,date,amount,liters,price_per_liter,full_tank,odometer,receipt,location,gps_coords,settled_outside,client_id,updated_at)
+    VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,datetime('now'))
   `
     )
     .run(
@@ -67,6 +67,7 @@ export function insertFuelFillup(db: Database.Database, input: FuelFillupInput):
       input.receipt ?? null,
       input.location ?? null,
       input.gps_coords ?? null,
+      input.settled_outside ?? 0,
       input.client_id ?? null
     );
   return result.lastInsertRowid as number;
@@ -91,7 +92,7 @@ export function updateFuelFillup(
   db.prepare(
     `
     UPDATE fuel_fillups
-    SET person_id=?,car_id=?,date=?,amount=?,liters=?,price_per_liter=?,full_tank=?,odometer=?,receipt=?,location=?,gps_coords=?
+    SET person_id=?,car_id=?,date=?,amount=?,liters=?,price_per_liter=?,full_tank=?,odometer=?,receipt=?,location=?,gps_coords=?,settled_outside=?
     WHERE id=?
   `
   ).run(
@@ -106,6 +107,7 @@ export function updateFuelFillup(
     input.receipt ?? null,
     input.location ?? null,
     input.gps_coords ?? null,
+    input.settled_outside ?? 0,
     id
   );
 }

@@ -32,6 +32,7 @@ function SubNav() {
     { href: "/admin/hygiene", label: t("admin.sub_data") },
     { href: "/admin/settlement", label: t("admin.sub_settlement") },
     { href: "/admin/payout", label: t("admin.sub_payout") },
+    { href: "/admin/settings", label: t("admin.sub_settings") },
   ];
 
   const SUB_PAGES = me?.isAdmin ? ALL_PAGES : ALL_PAGES.filter((p) => OWNER_PAGES.includes(p.href));

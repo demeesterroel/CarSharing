@@ -35,6 +35,24 @@ function buildMap(rows: AmountRow[]): Map<number, Map<number, number>> {
   return m;
 }
 
+interface SettledRow {
+  person_id: number;
+  car_id: number;
+  cnt: number;
+  amount: number;
+}
+
+function buildSettledMap(
+  rows: SettledRow[]
+): Map<number, Map<number, { cnt: number; amount: number }>> {
+  const m = new Map<number, Map<number, { cnt: number; amount: number }>>();
+  for (const r of rows) {
+    if (!m.has(r.person_id)) m.set(r.person_id, new Map());
+    m.get(r.person_id)!.set(r.car_id, { cnt: r.cnt, amount: r.amount });
+  }
+  return m;
+}
+
 function get(m: Map<number, Map<number, number>>, pid: number, cid: number): number {
   return m.get(pid)?.get(cid) ?? 0;
 }
@@ -105,10 +123,8 @@ export function getSettlement(db: Database.Database, year: number): SettlementRe
     };
   }
 
-  // 3. All active people
-  const people = db
-    .prepare("SELECT id, name FROM people WHERE active = 1 ORDER BY name")
-    .all() as PersonRow[];
+  // 3. All people — active filter omitted so former members still appear in past years
+  const people = db.prepare("SELECT id, name FROM people ORDER BY name").all() as PersonRow[];
 
   // 4. Classify owners vs non-owners
   const ownerNames = new Set(carEras.map((e) => e.owner_name));
@@ -130,9 +146,23 @@ export function getSettlement(db: Database.Database, year: number): SettlementRe
     )
     .all(yearStr) as AmountRow[];
 
+  const tripKmRows = db
+    .prepare(
+      `SELECT t.person_id, t.car_id, COALESCE(SUM(t.km), 0) AS amount
+       FROM trips t
+       JOIN cars c ON c.id = t.car_id
+       WHERE strftime('%Y', t.date) = ?
+         AND c.owner_name IS NOT NULL
+         AND c.owner_from IS NOT NULL
+         AND t.date >= c.owner_from
+         AND (c.owner_to IS NULL OR t.date <= c.owner_to)
+       GROUP BY t.person_id, t.car_id`
+    )
+    .all(yearStr) as AmountRow[];
+
   const fuelRows = db
     .prepare(
-      `SELECT f.person_id, f.car_id, COALESCE(SUM(f.amount), 0) AS amount
+      `SELECT f.person_id, f.car_id, COALESCE(SUM(CASE WHEN f.settled_outside = 0 THEN f.amount ELSE 0 END), 0) AS amount
        FROM fuel_fillups f
        JOIN cars c ON c.id = f.car_id
        WHERE strftime('%Y', f.date) = ?
@@ -144,9 +174,53 @@ export function getSettlement(db: Database.Database, year: number): SettlementRe
     )
     .all(yearStr) as AmountRow[];
 
+  const fuelLiterRows = db
+    .prepare(
+      `SELECT f.person_id, f.car_id, COALESCE(SUM(f.liters), 0) AS amount
+       FROM fuel_fillups f
+       JOIN cars c ON c.id = f.car_id
+       WHERE strftime('%Y', f.date) = ?
+         AND c.owner_name IS NOT NULL
+         AND c.owner_from IS NOT NULL
+         AND f.date >= c.owner_from
+         AND (c.owner_to IS NULL OR f.date <= c.owner_to)
+       GROUP BY f.person_id, f.car_id`
+    )
+    .all(yearStr) as AmountRow[];
+
+  const fuelSettledRows = db
+    .prepare(
+      `SELECT f.person_id, f.car_id, COUNT(*) as cnt, COALESCE(SUM(f.liters), 0) as amount
+       FROM fuel_fillups f
+       JOIN cars c ON c.id = f.car_id
+       WHERE strftime('%Y', f.date) = ?
+         AND c.owner_name IS NOT NULL
+         AND c.owner_from IS NOT NULL
+         AND f.date >= c.owner_from
+         AND (c.owner_to IS NULL OR f.date <= c.owner_to)
+         AND f.settled_outside = 1
+       GROUP BY f.person_id, f.car_id`
+    )
+    .all(yearStr) as SettledRow[];
+
+  const expSettledRows = db
+    .prepare(
+      `SELECT e.person_id, e.car_id, COUNT(*) as cnt, COALESCE(SUM(e.amount), 0) as amount
+       FROM expenses e
+       JOIN cars c ON c.id = e.car_id
+       WHERE strftime('%Y', e.date) = ?
+         AND c.owner_name IS NOT NULL
+         AND c.owner_from IS NOT NULL
+         AND e.date >= c.owner_from
+         AND (c.owner_to IS NULL OR e.date <= c.owner_to)
+         AND e.settled_outside = 1
+       GROUP BY e.person_id, e.car_id`
+    )
+    .all(yearStr) as SettledRow[];
+
   const expRows = db
     .prepare(
-      `SELECT e.person_id, e.car_id, COALESCE(SUM(e.amount), 0) AS amount
+      `SELECT e.person_id, e.car_id, COALESCE(SUM(CASE WHEN e.settled_outside = 0 THEN e.amount ELSE 0 END), 0) AS amount
        FROM expenses e
        JOIN cars c ON c.id = e.car_id
        WHERE strftime('%Y', e.date) = ?
@@ -159,8 +233,12 @@ export function getSettlement(db: Database.Database, year: number): SettlementRe
     .all(yearStr) as AmountRow[];
 
   const trips = buildMap(tripRows);
+  const tripKm = buildMap(tripKmRows);
   const fuel = buildMap(fuelRows);
+  const fuelLiters = buildMap(fuelLiterRows);
   const exp = buildMap(expRows);
+  const fuelSettled = buildSettledMap(fuelSettledRows);
+  const expSettled = buildSettledMap(expSettledRows);
 
   // 6. Car-era lookups
   const carsByOwner = new Map<string, CarEraRow[]>();
@@ -239,6 +317,8 @@ export function getSettlement(db: Database.Database, year: number): SettlementRe
         const tripAmt = get(trips, p.id, era.id);
         const fuelAmt = get(fuel, p.id, era.id);
         const expAmt = get(exp, p.id, era.id);
+        const fs = fuelSettled.get(p.id)?.get(era.id);
+        const es = expSettled.get(p.id)?.get(era.id);
         return {
           car_name: era.name,
           car_short: era.short,
@@ -246,14 +326,22 @@ export function getSettlement(db: Database.Database, year: number): SettlementRe
           owner_from: era.owner_from,
           owner_to: era.owner_to === "9999-12-31" ? null : era.owner_to,
           trip_amount: tripAmt,
+          trip_km: get(tripKm, p.id, era.id),
           fuel_amount: fuelAmt,
+          fuel_liters: get(fuelLiters, p.id, era.id),
           expense_amount: expAmt,
           balance: round2(-tripAmt + fuelAmt + expAmt),
+          fuel_settled_count: fs?.cnt,
+          fuel_settled_liters: fs?.amount,
+          expense_settled_count: es?.cnt,
+          expense_settled_amount: es?.amount,
         };
       })
       .filter((e) => e.trip_amount > 0 || e.fuel_amount > 0 || e.expense_amount > 0);
 
-    members.push({ person_id: p.id, person_name: p.name, is_owner: false, s1, car_eras });
+    if (car_eras.length > 0) {
+      members.push({ person_id: p.id, person_name: p.name, is_owner: false, s1, car_eras });
+    }
   }
 
   for (const o of owners) {
@@ -267,11 +355,75 @@ export function getSettlement(db: Database.Database, year: number): SettlementRe
       owner_from: era.owner_from,
       owner_to: era.owner_to === "9999-12-31" ? null : era.owner_to,
       trip_amount: 0,
+      trip_km: 0,
       fuel_amount: 0,
+      fuel_liters: 0,
       expense_amount: 0,
       balance: N.get(era.id) ?? 0,
       n_c_star: N.get(era.id) ?? 0,
+      member_contributions: nonOwners
+        .map((p) => {
+          const fs = fuelSettled.get(p.id)?.get(era.id);
+          const es = expSettled.get(p.id)?.get(era.id);
+          return {
+            person_name: p.name,
+            trip_km: get(tripKm, p.id, era.id),
+            fuel_liters: get(fuelLiters, p.id, era.id),
+            expense_amount: get(exp, p.id, era.id),
+            contribution: round2(
+              get(trips, p.id, era.id) - get(fuel, p.id, era.id) - get(exp, p.id, era.id)
+            ),
+            fuel_settled_count: fs?.cnt ?? 0,
+            fuel_settled_liters: fs?.amount ?? 0,
+            expense_settled_count: es?.cnt ?? 0,
+            expense_settled_amount: es?.amount ?? 0,
+          };
+        })
+        .filter((c) => Math.abs(c.contribution) > 0.005)
+        .sort((a, b) => b.contribution - a.contribution),
     }));
+
+    const cross_owner_balances = owners
+      .filter((j) => j.name !== o.name)
+      .map((j) => {
+        const jOwnedCars = carsByOwner.get(j.name) ?? [];
+        let my_trip_km = 0;
+        let my_fuel_liters = 0;
+        let my_expense_amount = 0;
+        let my_fuel_settled_count = 0;
+        let my_fuel_settled_liters = 0;
+        let my_expense_settled_count = 0;
+        let my_expense_settled_amount = 0;
+        for (const c of jOwnedCars) {
+          my_trip_km += get(tripKm, o.id, c.id);
+          my_fuel_liters += get(fuelLiters, o.id, c.id);
+          my_expense_amount += get(exp, o.id, c.id);
+          const fs = fuelSettled.get(o.id)?.get(c.id);
+          if (fs) {
+            my_fuel_settled_count += fs.cnt;
+            my_fuel_settled_liters += fs.amount;
+          }
+          const es = expSettled.get(o.id)?.get(c.id);
+          if (es) {
+            my_expense_settled_count += es.cnt;
+            my_expense_settled_amount += es.amount;
+          }
+        }
+        return {
+          other_owner_name: j.name,
+          net: round2((Mx.get(o.name)?.get(j.name) ?? 0) - (Mx.get(j.name)?.get(o.name) ?? 0)),
+          my_balance: Mx.get(o.name)?.get(j.name) ?? 0,
+          my_trip_km,
+          my_fuel_liters: round2(my_fuel_liters),
+          my_expense_amount: round2(my_expense_amount),
+          my_fuel_settled_count,
+          my_fuel_settled_liters: round2(my_fuel_settled_liters),
+          my_expense_settled_count,
+          my_expense_settled_amount: round2(my_expense_settled_amount),
+        };
+      })
+      .filter((b) => Math.abs(b.net) > 0.005)
+      .sort((a, b) => Math.abs(b.net) - Math.abs(a.net));
 
     members.push({
       person_id: o.id,
@@ -281,6 +433,7 @@ export function getSettlement(db: Database.Database, year: number): SettlementRe
       x,
       net: round2(s2 + x),
       car_eras,
+      cross_owner_balances,
     });
   }
 

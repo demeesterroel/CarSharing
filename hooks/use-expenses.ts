@@ -3,7 +3,13 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiFetch } from "@/lib/api/client";
 import { newUuid } from "@/lib/offline/uuid";
 import { enqueue } from "@/lib/offline/outbox";
-import { applyCreate, replaceCreate, rollbackCreate, applyUpdate, applyDelete } from "@/lib/offline/optimistic";
+import {
+  applyCreate,
+  replaceCreate,
+  rollbackCreate,
+  applyUpdate,
+  applyDelete,
+} from "@/lib/offline/optimistic";
 import type { Expense, ExpenseInput } from "@/types";
 
 const QUERY_KEY = "expenses";
@@ -40,6 +46,7 @@ export function useCreateExpense() {
         amount: input.amount,
         description: input.description ?? null,
         category: input.category ?? null,
+        settled_outside: input.settled_outside ?? 0,
         updated_at: new Date().toISOString(),
       };
       applyCreate<Expense>(qc, [QUERY_KEY], optimistic);

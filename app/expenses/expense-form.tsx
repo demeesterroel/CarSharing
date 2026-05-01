@@ -36,6 +36,7 @@ const schema = z.object({
     .nullable()
     .optional()
     .transform((v) => v ?? null),
+  settled_outside: z.boolean().default(false),
 });
 type FormInput = z.input<typeof schema>;
 type FormData = z.output<typeof schema>;
@@ -71,12 +72,16 @@ export function ExpenseForm({ defaultValues, onSubmit, onCancel, onDelete }: Pro
       amount: defaultValues?.amount ?? 0,
       description: defaultValues?.description ?? null,
       category: defaultValues?.category ?? null,
+      settled_outside: defaultValues?.settled_outside === 1,
       person_id: defaultValues?.person_id,
       car_id: defaultValues?.car_id,
     },
   });
 
-  const [personId, category] = useWatch({ control, name: ["person_id", "category"] });
+  const [personId, category, settledOutside] = useWatch({
+    control,
+    name: ["person_id", "category", "settled_outside"],
+  });
   const person = people.find((p) => p.id === personId);
 
   useEffect(() => {
@@ -84,6 +89,18 @@ export function ExpenseForm({ defaultValues, onSubmit, onCancel, onDelete }: Pro
       setValue("person_id", me.personId);
     }
   }, [me, isAddMode, setValue, getValues]);
+
+  function handleSubmitForm(data: FormData) {
+    onSubmit({
+      person_id: data.person_id,
+      car_id: data.car_id,
+      date: data.date,
+      amount: data.amount,
+      description: data.description,
+      category: (data.category as ExpenseCategory) ?? null,
+      settled_outside: data.settled_outside ? 1 : 0,
+    });
+  }
 
   return (
     <form
@@ -93,7 +110,7 @@ export function ExpenseForm({ defaultValues, onSubmit, onCancel, onDelete }: Pro
           toast.error(t("offline.mutation_blocked"));
           return;
         }
-        handleSubmit(onSubmit as any)(e);
+        handleSubmit(handleSubmitForm)(e);
       }}
       style={{ background: paper.paperDeep }}
     >
@@ -411,6 +428,34 @@ export function ExpenseForm({ defaultValues, onSubmit, onCancel, onDelete }: Pro
             }}
           />
         </div>
+      </div>
+
+      {/* Settled outside checkbox */}
+      <div style={{ padding: "8px 14px 4px", display: "flex", alignItems: "center", gap: 10 }}>
+        <input
+          type="checkbox"
+          id="expense_settled_outside"
+          checked={!!settledOutside}
+          onChange={(e) => setValue("settled_outside", e.target.checked)}
+          style={{ width: 16, height: 16, cursor: "pointer", accentColor: paper.inkMute }}
+        />
+        <label
+          htmlFor="expense_settled_outside"
+          style={{
+            fontFamily: fontMono,
+            fontSize: 10,
+            fontWeight: 700,
+            letterSpacing: 2,
+            textTransform: "uppercase",
+            color: paper.inkDim,
+            cursor: "pointer",
+          }}
+        >
+          {t("form.settled_outside")}
+        </label>
+        <span style={{ fontFamily: fontMono, fontSize: 9, color: paper.inkMute, letterSpacing: 1 }}>
+          — {t("form.settled_outside_hint")}
+        </span>
       </div>
 
       {onDelete && (

@@ -1,33 +1,29 @@
 "use client";
-import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
-import { useMe } from "@/hooks/use-me";
+import { useState } from "react";
 import { paper, fontMono, fontSerif, fmtMoney } from "@/lib/paper-theme";
 import { useT } from "@/components/locale-provider";
-import { useAdminSummary, Card, Row, Perf } from "../_shared";
+import { useAdminSummary, Card, Row, Perf, useOwnerCarShorts } from "../_shared";
 import { useEarliestDashboardYear } from "@/hooks/use-dashboard";
+import { useSettlement } from "@/hooks/use-settlement";
+import Link from "next/link";
 
 // ── Owner Payout Page ─────────────────────────────────────────
 export default function AdminPayoutPage() {
   const t = useT();
-  const { data: me } = useMe();
-  const router = useRouter();
   const currentYear = new Date().getFullYear();
   const [year, setYear] = useState(currentYear);
 
   const { data: earliestYear = currentYear } = useEarliestDashboardYear();
   const { data } = useAdminSummary(year);
-
-  useEffect(() => {
-    if (me && !me.isAdmin) router.replace("/admin");
-  }, [me, router]);
-
-  if (!me?.isAdmin) return null;
+  const { data: settlement } = useSettlement(year);
+  const [showOwnTrips, setShowOwnTrips] = useState(false);
+  const ownerCarShorts = useOwnerCarShorts();
 
   const cars = data?.carPnL ?? [];
+  const visibleCars = ownerCarShorts ? cars.filter((c) => ownerCarShorts.has(c.car_short)) : cars;
 
   const byOwner: Record<string, typeof cars> = {};
-  for (const car of cars) {
+  for (const car of visibleCars) {
     const owner = car.owner_name ?? "—";
     (byOwner[owner] ??= []).push(car);
   }
@@ -107,8 +103,81 @@ export default function AdminPayoutPage() {
         {t("admin.payout_subtitle")}
       </div>
 
+      {settlement && settlement.members.some((m) => m.is_owner) && (
+        <div style={{ marginBottom: 12 }}>
+          {Object.keys(byOwner).map((owner) => {
+            const ownerMember = settlement.members.find(
+              (m) => m.is_owner && m.person_name === owner
+            );
+            if (!ownerMember) return null;
+            const net = ownerMember.net ?? 0;
+            const s2 = ownerMember.s2 ?? 0;
+            const x = ownerMember.x ?? 0;
+            return (
+              <div
+                key={owner}
+                style={{
+                  padding: "10px 14px",
+                  background: paper.paperDeep,
+                  borderLeft: `3px solid ${paper.blue}`,
+                  marginBottom: 6,
+                }}
+              >
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                  }}
+                >
+                  <div
+                    style={{
+                      fontFamily: fontMono,
+                      fontSize: 9,
+                      color: paper.inkDim,
+                      letterSpacing: 1.5,
+                      textTransform: "uppercase",
+                    }}
+                  >
+                    {t("payout.s2_banner", { net: fmtMoney(net) })}
+                  </div>
+                  <Link
+                    href="/admin/settlement"
+                    style={{
+                      fontFamily: fontMono,
+                      fontSize: 8,
+                      color: paper.blue,
+                      textDecoration: "none",
+                      letterSpacing: 1,
+                    }}
+                  >
+                    {t("settlement.transfers_title")} →
+                  </Link>
+                </div>
+                <div
+                  style={{
+                    fontFamily: fontMono,
+                    fontSize: 8,
+                    color: paper.inkMute,
+                    marginTop: 2,
+                  }}
+                >
+                  {t("payout.s2_banner_sub", {
+                    s2: fmtMoney(s2),
+                    x: (x >= 0 ? "+" : "") + fmtMoney(x),
+                  })}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
       {Object.entries(byOwner).map(([owner, ownerCars]) => {
-        const totalNet = ownerCars.reduce((s, c) => s + c.net_to_owner, 0);
+        const totalNet = ownerCars.reduce(
+          (s, c) => s + (showOwnTrips ? c.net_to_owner : c.net_to_owner - c.owner_trip_amount),
+          0
+        );
         const positive = totalNet >= 0;
         return (
           <Card key={owner}>
@@ -217,39 +286,100 @@ export default function AdminPayoutPage() {
                     </div>
                   )}
 
-                  <Row label={t("admin.trip_revenue")} value={fmtMoney(car.trip_revenue)} />
-                  <Row label={t("admin.fuel_cost")} value={`− ${fmtMoney(car.fuel_amount)}`} />
-                  <Row
-                    label={t("admin.maintenance_costs")}
-                    value={`− ${fmtMoney(car.expense_amount)}`}
-                  />
-                  <Row label={t("admin.fixed_cost")} value={`− ${fmtMoney(car.fixed_total)}`} />
-                  <div
-                    style={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                      fontFamily: fontMono,
-                      fontSize: 12,
-                      fontWeight: 700,
-                      padding: "4px 0",
-                      color: car.net_to_owner >= 0 ? paper.green : paper.accent,
-                    }}
-                  >
-                    <span
+                  {car.owner_name && (
+                    <div
                       style={{
-                        textTransform: "uppercase",
-                        letterSpacing: 1,
-                        fontSize: 10,
-                        color: paper.inkDim,
+                        marginBottom: 8,
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 8,
                       }}
                     >
-                      {t("admin.net_owner")}
-                    </span>
-                    <span>
-                      {car.net_to_owner >= 0 ? "+" : ""}
-                      {fmtMoney(car.net_to_owner)}
-                    </span>
-                  </div>
+                      <label
+                        style={{
+                          fontFamily: fontMono,
+                          fontSize: 9,
+                          color: paper.inkDim,
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 6,
+                          cursor: "pointer",
+                        }}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={showOwnTrips}
+                          onChange={(e) => setShowOwnTrips(e.target.checked)}
+                          style={{ accentColor: paper.ink }}
+                        />
+                        {t("payout.own_trips_toggle")}
+                      </label>
+                      {!showOwnTrips && car.owner_trip_amount > 0 && (
+                        <span
+                          style={{
+                            fontFamily: fontMono,
+                            fontSize: 8,
+                            color: paper.inkMute,
+                            letterSpacing: 0.5,
+                          }}
+                        >
+                          ({t("payout.own_trips_disclaimer")})
+                        </span>
+                      )}
+                    </div>
+                  )}
+                  {(() => {
+                    const displayedTripRevenue = showOwnTrips
+                      ? car.trip_revenue
+                      : car.trip_revenue - car.owner_trip_amount;
+                    const displayedNet = displayedTripRevenue - car.total_cost;
+                    return (
+                      <>
+                        <Row
+                          label={t("admin.trip_revenue")}
+                          value={fmtMoney(displayedTripRevenue)}
+                        />
+                        <Row
+                          label={t("admin.fuel_cost")}
+                          value={`− ${fmtMoney(car.fuel_amount)}`}
+                        />
+                        <Row
+                          label={t("admin.maintenance_costs")}
+                          value={`− ${fmtMoney(car.expense_amount)}`}
+                        />
+                        <Row
+                          label={t("admin.fixed_cost")}
+                          value={`− ${fmtMoney(car.fixed_total)}`}
+                        />
+                        <div
+                          style={{
+                            display: "flex",
+                            justifyContent: "space-between",
+                            fontFamily: fontMono,
+                            fontSize: 12,
+                            fontWeight: 700,
+                            padding: "4px 0",
+                            color: displayedNet >= 0 ? paper.green : paper.accent,
+                          }}
+                        >
+                          <span
+                            style={{
+                              textTransform: "uppercase",
+                              letterSpacing: 1,
+                              fontSize: 10,
+                              color: paper.inkDim,
+                            }}
+                          >
+                            {t("admin.net_owner")}
+                          </span>
+                          <span>
+                            {displayedNet >= 0 ? "+" : ""}
+                            {fmtMoney(displayedNet)}
+                          </span>
+                        </div>
+                      </>
+                    );
+                  })()}
                 </div>
               );
             })}

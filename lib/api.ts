@@ -37,6 +37,21 @@ export async function requireAdmin(req: Request) {
   return session;
 }
 
+/** Throws 403 if the session user is neither admin nor an owner. Returns session. */
+export async function requireAdminOrOwner(req: Request) {
+  const { getIronSession } = await import("iron-session");
+  const { sessionOptions } = await import("./session");
+  const session = await getIronSession<SessionData>(req, NextResponse.next(), sessionOptions);
+  if (session.isAdmin) return session;
+  const name = session.personName;
+  if (!name) forbidden();
+  // isOwner is not stored in the session — check DB at runtime
+  const { getDb } = await import("./db");
+  const { isOwner } = await import("./queries/people");
+  if (!isOwner(getDb(), name)) forbidden();
+  return session;
+}
+
 type Handler<T> = (
   req: Request,
   ctx: { params: Promise<Record<string, string>> }

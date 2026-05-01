@@ -3,7 +3,7 @@ import Database from "better-sqlite3";
 import { runMigrations } from "../db/migrate";
 
 describe("runMigrations", () => {
-  it("creates all 9 tables", () => {
+  it("creates all 11 tables", () => {
     const db = new Database(":memory:");
     runMigrations(db);
     const tables = db
@@ -22,6 +22,8 @@ describe("runMigrations", () => {
       "payments",
       "people",
       "reservations",
+      "settings",
+      "settlements",
       "trips",
     ]);
   });

@@ -1,0 +1,2 @@
+ALTER TABLE fuel_fillups ADD COLUMN settled_outside INTEGER NOT NULL DEFAULT 0;
+ALTER TABLE expenses ADD COLUMN settled_outside INTEGER NOT NULL DEFAULT 0;

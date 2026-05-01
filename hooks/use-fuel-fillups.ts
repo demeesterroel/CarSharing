@@ -3,7 +3,13 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiFetch } from "@/lib/api/client";
 import { newUuid } from "@/lib/offline/uuid";
 import { enqueue } from "@/lib/offline/outbox";
-import { applyCreate, replaceCreate, rollbackCreate, applyUpdate, applyDelete } from "@/lib/offline/optimistic";
+import {
+  applyCreate,
+  replaceCreate,
+  rollbackCreate,
+  applyUpdate,
+  applyDelete,
+} from "@/lib/offline/optimistic";
 import type { FuelFillup, FuelFillupInput } from "@/types";
 
 const QUERY_KEY = "fuel-fillups";
@@ -41,6 +47,7 @@ export function useCreateFuelFillup() {
         liters: input.liters,
         price_per_liter: input.liters > 0 ? input.amount / input.liters : 0,
         full_tank: input.full_tank ?? 0,
+        settled_outside: input.settled_outside ?? 0,
         odometer: input.odometer ?? null,
         receipt: input.receipt ?? null,
         location: input.location ?? null,

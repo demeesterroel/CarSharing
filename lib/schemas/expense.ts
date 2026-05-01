@@ -17,4 +17,12 @@ export const expenseSchema = z.object({
     .optional()
     .transform((v) => v ?? null),
   category: expenseCategorySchema,
+  settled_outside: z
+    .number()
+    .int()
+    .min(0)
+    .max(1)
+    .optional()
+    .default(0)
+    .transform((v) => v as 0 | 1),
 });

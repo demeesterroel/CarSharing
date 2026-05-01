@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.3.1](https://github.com/demeesterroel/CarSharing/compare/carsharing-v1.3.0...carsharing-v1.3.1) (2026-05-01)
+
+
+### 🐛 Bug fixes
+
+* **build:** clean up Next.js 16 build warnings ([#84](https://github.com/demeesterroel/CarSharing/issues/84)) ([eae7238](https://github.com/demeesterroel/CarSharing/commit/eae72382954c018912fe6055795b5be00c3016da))
+* **build:** use --webpack flag for Next.js 16 compatibility with next-pwa ([a4b1e05](https://github.com/demeesterroel/CarSharing/commit/a4b1e054bfeb80f6b4bba038007f4805a8139eb7))
+* **docker:** add python3/make/g++ to builder for better-sqlite3 fallback ([4defb55](https://github.com/demeesterroel/CarSharing/commit/4defb556f54855c41cf952365fc241d0d1755cac))
+
 ## [1.3.0](https://github.com/demeesterroel/CarSharing/compare/carsharing-v1.2.1...carsharing-v1.3.0) (2026-05-01)
 
 

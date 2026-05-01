@@ -8,6 +8,7 @@ import {
   insertPayment,
   updatePayment,
   deletePayment,
+  getPaymentsByYear,
 } from "../queries/payments";
 
 function makeDb() {
@@ -169,5 +170,40 @@ describe("deletePayment", () => {
     const db = makeDb();
     seed(db);
     expect(() => deletePayment(db, 9999)).not.toThrow();
+  });
+});
+
+describe("getPaymentsByYear", () => {
+  it("returns empty map when no payments exist for year", () => {
+    const db = makeDb();
+    seed(db);
+    const map = getPaymentsByYear(db, 2025);
+    expect(map.size).toBe(0);
+  });
+
+  it("sums payments per person for the correct year", () => {
+    const db = makeDb();
+    seed(db);
+    // Alice pays 100 for year 2025 (date 2026-03-01 → year = 2025)
+    insertPayment(db, { person_id: 1, date: "2026-03-01", amount: 100, note: null });
+    insertPayment(db, { person_id: 1, date: "2026-04-01", amount: 50, note: null });
+    // Bob pays for 2025
+    insertPayment(db, { person_id: 2, date: "2026-02-01", amount: 75, note: null });
+    // Alice pays for 2026 (date 2027-03-01 → year = 2026) — must NOT appear
+    insertPayment(db, { person_id: 1, date: "2027-03-01", amount: 999, note: null });
+
+    const map = getPaymentsByYear(db, 2025);
+    expect(map.get(1)).toBeCloseTo(150, 2);
+    expect(map.get(2)).toBeCloseTo(75, 2);
+    expect(map.has(1)).toBe(true);
+    expect(map.size).toBe(2);
+  });
+
+  it("returns 0 for year with no payments", () => {
+    const db = makeDb();
+    seed(db);
+    insertPayment(db, { person_id: 1, date: "2026-03-01", amount: 100, note: null });
+    const map = getPaymentsByYear(db, 2024);
+    expect(map.size).toBe(0);
   });
 });

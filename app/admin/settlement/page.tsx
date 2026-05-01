@@ -9,7 +9,7 @@ import { useMe } from "@/hooks/use-me";
 import { useAdminSettings } from "@/hooks/use-admin-settings";
 import { apiFetch } from "@/lib/api/client";
 import { Card, Row, Perf } from "../_shared";
-import type { MemberStatement, Transfer } from "@/types";
+import type { MemberStatement, AnnotatedTransfer } from "@/types";
 
 function fmtL(liters: number): string {
   return liters.toLocaleString("nl-BE", { minimumFractionDigits: 1, maximumFractionDigits: 1 });
@@ -240,15 +240,132 @@ function BreakdownCarRow({
   );
 }
 
+function TransferPaymentRow({
+  transfer,
+}: {
+  transfer: AnnotatedTransfer;
+}) {
+  const t = useT();
+  const ps = transfer.payment_status;
+  if (!ps) return null; // co-op is the payer, no tracking
+
+  const pct = transfer.amount > 0 ? Math.min(1, ps.paid / transfer.amount) : 1;
+  const barFilled = Math.round(pct * 10);
+  const statusColor =
+    ps.open < 0.005 ? paper.green : ps.paid > 0.005 ? paper.blue : paper.accent;
+  const statusLabel =
+    ps.open < 0.005
+      ? t("settlement.fully_paid")
+      : ps.paid > 0.005
+        ? t("settlement.partially_paid")
+        : t("settlement.unpaid");
+
+  return (
+    <div
+      style={{
+        padding: "6px 14px 10px",
+        borderTop: `1px dashed ${paper.paperDark}`,
+        background: paper.paperDeep,
+      }}
+    >
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          fontFamily: fontMono,
+          fontSize: 9,
+          color: paper.inkDim,
+          letterSpacing: 1,
+          marginBottom: 4,
+        }}
+      >
+        <span>{t("settlement.payment_due")}: {fmtMoney(transfer.amount)}</span>
+        <span style={{ color: statusColor, fontWeight: 700 }}>{statusLabel}</span>
+      </div>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          fontFamily: fontMono,
+          fontSize: 9,
+          color: paper.inkDim,
+          letterSpacing: 0.5,
+          marginBottom: 4,
+        }}
+      >
+        <span>
+          {t("settlement.payment_paid")}: {fmtMoney(ps.paid)}
+        </span>
+        <span style={{ color: ps.open > 0.005 ? paper.accent : paper.inkMute }}>
+          {t("settlement.payment_open")}: {fmtMoney(ps.open)}
+        </span>
+      </div>
+      {/* Simple progress bar */}
+      <div
+        style={{
+          fontFamily: fontMono,
+          fontSize: 9,
+          color: statusColor,
+          letterSpacing: 2,
+        }}
+      >
+        {"●".repeat(barFilled)}{"○".repeat(10 - barFilled)}
+        {" "}
+        {Math.round(pct * 100)}%
+      </div>
+    </div>
+  );
+}
+
+function PaymentSummaryBanner({ data }: { data: { all_paid: boolean; transfers: AnnotatedTransfer[] } }) {
+  const t = useT();
+  const outstanding = data.transfers.filter(
+    (tr) => tr.payment_status !== null && (tr.payment_status?.open ?? 0) > 0.005
+  );
+  const count = outstanding.length;
+  const isAllPaid = data.all_paid;
+
+  if (data.transfers.filter((tr) => tr.payment_status !== null).length === 0) return null;
+
+  return (
+    <div
+      style={{
+        padding: "10px 14px",
+        background: isAllPaid ? paper.green : paper.accent,
+        color: paper.paper,
+        marginBottom: 12,
+        display: "flex",
+        alignItems: "center",
+        gap: 8,
+      }}
+    >
+      <span style={{ fontFamily: fontMono, fontSize: 12, fontWeight: 700 }}>
+        {isAllPaid ? "✓" : "!"}
+      </span>
+      <span style={{ fontFamily: fontMono, fontSize: 9, letterSpacing: 0.5 }}>
+        {isAllPaid
+          ? t("settlement.payment_all_paid")
+          : t("settlement.payment_outstanding", {
+              count,
+              plural: count === 1 ? "" : "en",
+            })}
+      </span>
+    </div>
+  );
+}
+
 function NonOwnerMemberCard({
   m,
   year,
   bankAccount,
+  settlementTransfer,
 }: {
   m: MemberStatement;
   year: number;
   bankAccount: string;
+  settlementTransfer: AnnotatedTransfer | undefined;
 }) {
+  const t = useT();
   const [open, setOpen] = useState(false);
   const [msgCopied, setMsgCopied] = useState(false);
 
@@ -514,6 +631,25 @@ function NonOwnerMemberCard({
               {fmtMoney(s1)}
             </span>
           </div>
+
+          {/* Payment status */}
+          {settlementTransfer && (
+            <div style={{ marginTop: 10 }}>
+              <div
+                style={{
+                  fontFamily: fontMono,
+                  fontSize: 9,
+                  color: paper.inkDim,
+                  letterSpacing: 1.5,
+                  textTransform: "uppercase",
+                  marginBottom: 4,
+                }}
+              >
+                {t("settlement.payment_status_title")}
+              </div>
+              <TransferPaymentRow transfer={settlementTransfer} />
+            </div>
+          )}
         </div>
       )}
     </div>
@@ -524,11 +660,14 @@ function OwnerMemberCard({
   m,
   year,
   bankAccount,
+  settlementTransfer,
 }: {
   m: MemberStatement;
   year: number;
   bankAccount: string;
+  settlementTransfer: AnnotatedTransfer | undefined;
 }) {
+  const t = useT();
   const [open, setOpen] = useState(false);
   const [msgCopied, setMsgCopied] = useState(false);
   const s2 = m.s2 ?? 0;
@@ -792,6 +931,25 @@ function OwnerMemberCard({
                 coöp ({bankAccount}) → {m.person_name}
               </div>
             )}
+
+            {/* Payment status */}
+            {settlementTransfer && (
+              <div style={{ marginTop: 10 }}>
+                <div
+                  style={{
+                    fontFamily: fontMono,
+                    fontSize: 9,
+                    color: paper.inkDim,
+                    letterSpacing: 1.5,
+                    textTransform: "uppercase",
+                    marginBottom: 4,
+                  }}
+                >
+                  {t("settlement.payment_status_title")}
+                </div>
+                <TransferPaymentRow transfer={settlementTransfer} />
+              </div>
+            )}
           </div>
         </div>
       )}
@@ -1035,6 +1193,9 @@ export default function AdminSettlementPage() {
                       m={m}
                       year={year}
                       bankAccount={settings?.coop_bank_account ?? ""}
+                      settlementTransfer={data.transfers.find(
+                        (tr) => tr.step === 1 && tr.from === m.person_name
+                      )}
                     />
                   ))}
 
@@ -1071,6 +1232,9 @@ export default function AdminSettlementPage() {
                       m={m}
                       year={year}
                       bankAccount={settings?.coop_bank_account ?? ""}
+                      settlementTransfer={data.transfers.find(
+                        (tr) => tr.step === 2 && tr.from === m.person_name
+                      )}
                     />
                   ))}
 
@@ -1142,26 +1306,32 @@ export default function AdminSettlementPage() {
                     <div
                       style={{
                         marginTop: 8,
-                        padding: "9px 14px",
-                        background: paper.green,
-                        color: paper.paper,
+                        background: paper.paper,
+                        boxShadow: "0 1px 4px rgba(0,0,0,0.07)",
+                        borderLeft: `3px solid ${paper.green}`,
+                        overflow: "hidden",
                       }}
                     >
                       {step3.map((tr, i) => (
-                        <div
-                          key={i}
-                          style={{
-                            display: "flex",
-                            justifyContent: "space-between",
-                            alignItems: "center",
-                          }}
-                        >
-                          <span style={{ fontFamily: fontMono, fontSize: 9, letterSpacing: 0.5 }}>
-                            {tr.from} → {tr.to}
-                          </span>
-                          <span style={{ fontFamily: fontMono, fontSize: 13, fontWeight: 700 }}>
-                            {fmtMoney(tr.amount)}
-                          </span>
+                        <div key={i}>
+                          <div
+                            style={{
+                              display: "flex",
+                              justifyContent: "space-between",
+                              alignItems: "center",
+                              padding: "9px 14px",
+                              background: paper.green,
+                              color: paper.paper,
+                            }}
+                          >
+                            <span style={{ fontFamily: fontMono, fontSize: 9, letterSpacing: 0.5 }}>
+                              {tr.from} → {tr.to}
+                            </span>
+                            <span style={{ fontFamily: fontMono, fontSize: 13, fontWeight: 700 }}>
+                              {fmtMoney(tr.amount)}
+                            </span>
+                          </div>
+                          <TransferPaymentRow transfer={tr} />
                         </div>
                       ))}
                     </div>
@@ -1170,6 +1340,8 @@ export default function AdminSettlementPage() {
               </>
             );
           })()}
+
+          {data && <PaymentSummaryBanner data={data} />}
 
           {me?.isAdmin && (
             <button

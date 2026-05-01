@@ -51,3 +51,20 @@ export function updatePayment(db: Database.Database, id: number, input: PaymentI
 export function deletePayment(db: Database.Database, id: number): void {
   db.prepare("DELETE FROM payments WHERE id=?").run(id);
 }
+
+/**
+ * Returns a Map<person_id, total_paid> for all payments in the given settlement year.
+ * Payments are associated with a settlement year via the `year` column
+ * (set to date.year − 1 at insert time, so a 2026 payment settles 2025).
+ */
+export function getPaymentsByYear(db: Database.Database, year: number): Map<number, number> {
+  const rows = db
+    .prepare(
+      `SELECT person_id, COALESCE(SUM(amount), 0) AS total
+       FROM payments
+       WHERE year = ?
+       GROUP BY person_id`
+    )
+    .all(year) as { person_id: number; total: number }[];
+  return new Map(rows.map((r) => [r.person_id, r.total]));
+}

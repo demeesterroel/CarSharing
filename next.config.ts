@@ -185,6 +185,7 @@ const withPWA = withPWAInit({
 
 const nextConfig: NextConfig = {
   output: "standalone",
+  outputFileTracingRoot: __dirname,
   serverExternalPackages: ["better-sqlite3"],
   async rewrites() {
     return [{ source: "/uploads/:path*", destination: "/api/static/:path*" }];

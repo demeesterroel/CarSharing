@@ -18,6 +18,7 @@ import { ReservationForm } from "@/app/calendar/reservation-form";
 import { toast } from "sonner";
 import { useT } from "@/components/locale-provider";
 import { LangSwitcher } from "@/components/lang-switcher";
+import { OfflineBadge } from "@/components/offline-badge";
 import { TripCard } from "@/components/trip-card";
 import { FuelCard } from "@/components/fuel-card";
 import { ExpenseCard } from "@/components/expense-card";
@@ -718,6 +719,7 @@ function DashboardContent() {
             {t("brand.tagline")}
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <OfflineBadge />
             <LangSwitcher />
             <button
               onClick={handleLogout}

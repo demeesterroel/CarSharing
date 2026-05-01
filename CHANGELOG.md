@@ -147,6 +147,7 @@
 * create uploads dir on first upload, harden path traversal guard ([706ec8c](https://github.com/demeesterroel/CarSharing/commit/706ec8ceb2bba598b64b2f836ddffbfa01eaf20a))
 * **dashboard:** defer toLocaleDateString to client to prevent SSR hydration mismatch ([91eaa9d](https://github.com/demeesterroel/CarSharing/commit/91eaa9d300eb27c320281f2443b609bb03734f11))
 * **dashboard:** guard paid_amount sign in receipt display ([ce0d588](https://github.com/demeesterroel/CarSharing/commit/ce0d588eb3c898201f2a2d599f39d194d9733269))
+* **dashboard:** show offline badge on root page ([#92](https://github.com/demeesterroel/CarSharing/issues/92)) ([d18b256](https://github.com/demeesterroel/CarSharing/commit/d18b256b62c1542669e1d1ae64e07115bb0791df))
 * **db:** disable FK checks during migrations and update test/seed imports ([cbcaa8b](https://github.com/demeesterroel/CarSharing/commit/cbcaa8b1367d5ce601d0f7c9e508130a7577c87f))
 * **docker:** add python3/make/g++ to builder for better-sqlite3 fallback ([4defb55](https://github.com/demeesterroel/CarSharing/commit/4defb556f54855c41cf952365fc241d0d1755cac))
 * **docker:** provide SESSION_PASSWORD placeholder for next build ([b2fced6](https://github.com/demeesterroel/CarSharing/commit/b2fced61d92043d7f1efc22bb3502d69a08ee1ba))

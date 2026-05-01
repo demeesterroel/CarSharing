@@ -6,6 +6,9 @@
 FROM node:20-slim AS builder
 WORKDIR /app
 
+# Build tools needed if better-sqlite3 prebuild download fails and falls back to node-gyp
+RUN apt-get update && apt-get install -y python3 make g++ && rm -rf /var/lib/apt/lists/*
+
 COPY package.json package-lock.json ./
 RUN npm ci
 

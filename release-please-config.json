@@ -12,6 +12,7 @@
     { "type": "build", "hidden": true },
     { "type": "ci", "hidden": true }
   ],
+  "include-component-in-tag": false,
   "packages": {
     ".": {}
   }

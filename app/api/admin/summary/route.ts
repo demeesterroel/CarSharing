@@ -1,4 +1,3 @@
-import { NextResponse } from "next/server";
 import { getDb } from "@/lib/db";
 import {
   getCarPnL,
@@ -10,13 +9,15 @@ import {
   getPriceHistory,
 } from "@/lib/queries/admin";
 import { getDashboard } from "@/lib/queries/dashboard";
+import { json, requireAdminOrOwner } from "@/lib/api";
 
-export function GET(request: Request) {
-  const { searchParams } = new URL(request.url);
+export const GET = json(async (req) => {
+  await requireAdminOrOwner(req);
+  const { searchParams } = new URL(req.url);
   const year = parseInt(searchParams.get("year") ?? String(new Date().getFullYear()), 10);
   const db = getDb();
 
-  return NextResponse.json({
+  return {
     carPnL: getCarPnL(db, year),
     settlement: getDashboard(db, year),
     kmGaps: getKmGaps(db),
@@ -25,5 +26,5 @@ export function GET(request: Request) {
     personContributions: getPersonContributions(db, year),
     historicalCarKm: getHistoricalCarKm(db, year),
     priceHistory: getPriceHistory(db),
-  });
-}
+  };
+});

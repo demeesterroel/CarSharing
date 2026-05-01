@@ -464,4 +464,10 @@ export const en: Messages = {
   "offline.queued_suffix": "{count} pending",
   "offline.tooltip_syncing": "Syncing…",
   "offline.conflict_toast": "Edit conflict — refresh and retry.",
+
+  // Owner dashboard
+  "owner.title": "My cars",
+  "owner.subtitle": "Fleet economics · {year}",
+  "owner.no_cars": "You have no cars in the co-op.",
+  "owner.back_fleet": "← Fleet",
 };

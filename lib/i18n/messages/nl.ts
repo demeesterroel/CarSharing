@@ -463,6 +463,12 @@ export const nl = {
   "offline.queued_suffix": "{count} wachten",
   "offline.tooltip_syncing": "Synchroniseren…",
   "offline.conflict_toast": "Bewerkingsconflict — ververs en probeer opnieuw.",
+
+  // Owner dashboard
+  "owner.title": "Mijn wagens",
+  "owner.subtitle": "Economische gezondheid · {year}",
+  "owner.no_cars": "Je hebt geen wagens in de co-op.",
+  "owner.back_fleet": "← Vloot",
 } as const;
 
 export type MessageKey = keyof typeof nl;

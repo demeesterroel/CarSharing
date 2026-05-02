@@ -84,6 +84,7 @@ export const nl = {
   "form.price_per_liter": "Prijs/liter",
   "form.brand": "Merk",
   "form.color": "Kleur",
+  "form.short": "Afkorting (bijv. ETH)",
   "form.date": "Datum *",
   "form.date_from": "Van *",
   "form.date_to": "Tot *",
@@ -479,6 +480,10 @@ export const nl = {
   "owner.subtitle": "Economische gezondheid · {year}",
   "owner.no_cars": "Je hebt geen wagens in de co-op.",
   "owner.back_fleet": "← Vloot",
+  "owner.add_car": "Nieuwe wagen",
+  "owner.edit_car": "Bewerken",
+  "owner.delete_confirm": "Zeker verwijderen?",
+  "owner.car_has_history": "Kan niet verwijderen: wagen heeft al ritten of reservaties. Deactiveer de wagen.",
 } as const;
 
 export type MessageKey = keyof typeof nl;

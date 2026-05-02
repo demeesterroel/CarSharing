@@ -86,6 +86,7 @@ export const en: Messages = {
   "form.price_per_liter": "Price/liter",
   "form.brand": "Brand",
   "form.color": "Color",
+  "form.short": "Short code (e.g. ETH)",
   "form.date": "Date *",
   "form.date_from": "From *",
   "form.date_to": "Until *",
@@ -480,4 +481,8 @@ export const en: Messages = {
   "owner.subtitle": "Fleet economics · {year}",
   "owner.no_cars": "You have no cars in the co-op.",
   "owner.back_fleet": "← Fleet",
+  "owner.add_car": "New car",
+  "owner.edit_car": "Edit",
+  "owner.delete_confirm": "Sure? Tap again to delete.",
+  "owner.car_has_history": "Cannot delete: car has trips or reservations. Deactivate instead.",
 };

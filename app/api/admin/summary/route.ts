@@ -7,6 +7,9 @@ import {
   getPersonContributions,
   getHistoricalCarKm,
   getPriceHistory,
+  getRollingFuelPerKm,
+  getHistoricalOwnerSplit,
+  getHistoricalExpenses,
 } from "@/lib/queries/admin";
 import { getDashboard } from "@/lib/queries/dashboard";
 import { json, requireAdminOrOwner } from "@/lib/api";
@@ -26,5 +29,8 @@ export const GET = json(async (req) => {
     personContributions: getPersonContributions(db, year),
     historicalCarKm: getHistoricalCarKm(db, year),
     priceHistory: getPriceHistory(db),
+    rollingFuelPerKm: getRollingFuelPerKm(db),
+    historicalOwnerSplit: getHistoricalOwnerSplit(db, year),
+    historicalExpenses: getHistoricalExpenses(db, year),
   };
 });

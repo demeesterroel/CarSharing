@@ -89,6 +89,9 @@ import type {
   PersonContribution,
   CarYearKm,
   CarPriceHistory,
+  CarRollingFuel,
+  CarOwnerSplit,
+  CarYearExpenses,
 } from "@/lib/queries/admin";
 import type { DashboardRow, Reservation, Person } from "@/types";
 import { useMe } from "@/hooks/use-me";
@@ -103,6 +106,9 @@ export interface AdminSummary {
   personContributions: PersonContribution[];
   historicalCarKm: CarYearKm[];
   priceHistory: CarPriceHistory[];
+  rollingFuelPerKm: CarRollingFuel[];
+  historicalOwnerSplit: CarOwnerSplit[];
+  historicalExpenses: CarYearExpenses[];
 }
 
 export function useAdminSummary(year: number) {

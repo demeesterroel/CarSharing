@@ -13,14 +13,13 @@ import { useEarliestDashboardYear } from "@/hooks/use-dashboard";
 import { toast } from "sonner";
 import { CarBadge } from "@/components/car-badge";
 import { BreakEvenCard } from "@/components/break-even-card";
-import { RateAssistant } from "@/components/rate-assistant";
+import { CostCoverageScreen } from "@/components/cost-coverage-screen";
 import { Fab } from "@/components/fab";
 
 // ── Owner screen state ────────────────────────────────────────
 type OwnerScreen =
   | { view: "fleet" }
-  | { view: "detail"; carId: number }
-  | { view: "rate"; carId: number };
+  | { view: "detail"; carId: number };
 
 const overlayStyle: React.CSSProperties = {
   position: "fixed",
@@ -443,7 +442,6 @@ function OwnerCarTile({
   car,
   pnlData,
   onDetail,
-  onRate,
   editOpen,
   onEditOpen,
   onEditClose,
@@ -451,7 +449,6 @@ function OwnerCarTile({
   car: Car;
   pnlData: ReturnType<typeof beMetrics> | null;
   onDetail: () => void;
-  onRate: () => void;
   editOpen: boolean;
   onEditOpen: () => void;
   onEditClose: () => void;
@@ -638,22 +635,14 @@ function OwnerCarTile({
                 </div>
               </div>
 
-              {/* Break-even + Rate Assistant */}
+              {/* Cost Coverage */}
               {pnlData && (
-                <div style={{ display: "flex", gap: 6, marginBottom: 16 }}>
-                  <button
-                    onClick={onDetail}
-                    style={{ flex: 1, padding: "10px 8px", background: paper.ink, color: paper.paper, border: "none", cursor: "pointer", fontFamily: fontMono, fontSize: 9, fontWeight: 700, letterSpacing: 1.5, textTransform: "uppercase" }}
-                  >
-                    {t("fleet.see_breakeven")} →
-                  </button>
-                  <button
-                    onClick={onRate}
-                    style={{ flex: 1, padding: "10px 8px", background: "transparent", color: paper.ink, border: `1.5px solid ${paper.ink}`, cursor: "pointer", fontFamily: fontMono, fontSize: 9, fontWeight: 700, letterSpacing: 1.5, textTransform: "uppercase" }}
-                  >
-                    {t("rate.open")}
-                  </button>
-                </div>
+                <button
+                  onClick={onDetail}
+                  style={{ width: "100%", marginBottom: 16, padding: "10px 8px", background: paper.ink, color: paper.paper, border: "none", cursor: "pointer", fontFamily: fontMono, fontSize: 9, fontWeight: 700, letterSpacing: 1.5, textTransform: "uppercase" }}
+                >
+                  {t("coverage.title")} →
+                </button>
               )}
 
               {/* Delete */}
@@ -773,7 +762,6 @@ function OwnerFleet({ myName }: { myName: string | null }) {
 
   const screen: OwnerScreen =
     viewParam === "detail" && screenCarId ? { view: "detail", carId: screenCarId } :
-    viewParam === "rate" && screenCarId ? { view: "rate", carId: screenCarId } :
     { view: "fleet" };
 
   const setYear = (newYear: number) => {
@@ -789,9 +777,10 @@ function OwnerFleet({ myName }: { myName: string | null }) {
   const myCars = myName ? cars.filter((c) => c.owner_name === myName) : cars;
   const allPnL = summary?.carPnL ?? [];
   const monthlyKm = summary?.monthlyCarKm ?? [];
-  const contributions = summary?.personContributions ?? [];
   const historicalKm = summary?.historicalCarKm ?? [];
-  const priceHistory = summary?.priceHistory ?? [];
+  const rollingFuel = summary?.rollingFuelPerKm ?? [];
+  const ownerSplitAll = summary?.historicalOwnerSplit ?? [];
+  const historicalExpensesAll = summary?.historicalExpenses ?? [];
 
   const goToDetail = (id: number) => {
     const p = new URLSearchParams();
@@ -800,14 +789,6 @@ function OwnerFleet({ myName }: { myName: string | null }) {
     if (year !== currentYear) p.set("year", String(year));
     router.push(`${pathname}?${p.toString()}`, { scroll: false });
   };
-  const goToRate = (id: number) => {
-    const p = new URLSearchParams();
-    p.set("view", "rate");
-    p.set("car", String(id));
-    if (year !== currentYear) p.set("year", String(year));
-    router.push(`${pathname}?${p.toString()}`, { scroll: false });
-  };
-
   const adding = searchParams.get("action") === "add";
   const openAdd = () => {
     const p = new URLSearchParams(searchParams.toString());
@@ -847,39 +828,21 @@ function OwnerFleet({ myName }: { myName: string | null }) {
   if (screen.view === "detail") {
     const pnlCar = allPnL.find((c) => c.car_id === screen.carId);
     if (!pnlCar) return null;
+    const carRollingFuel = rollingFuel.find((r) => r.car_id === screen.carId);
     return (
       <div style={{ padding: "16px" }}>
         {yearSelector}
         <button onClick={() => router.back()} style={backBtnStyle}>
           ← {t("owner.back_fleet")}
         </button>
-        <BreakEvenCard
-          car={pnlCar}
-          fullCar={carMap.get(screen.carId)}
-          contributions={contributions.filter((c) => c.car_id === screen.carId)}
-          historicalKm={historicalKm.filter((h) => h.car_id === screen.carId)}
-          priceHistory={priceHistory.filter((h) => h.car_id === screen.carId)}
-          year={year}
-          onRateOpen={() => goToRate(screen.carId)}
-        />
-      </div>
-    );
-  }
-
-  if (screen.view === "rate") {
-    const pnlCar = allPnL.find((c) => c.car_id === screen.carId);
-    if (!pnlCar) return null;
-    return (
-      <div style={{ padding: "16px" }}>
-        <button onClick={() => router.back()} style={backBtnStyle}>
-          ← {t("fleet.see_breakeven")}
-        </button>
-        <RateAssistant
+        <CostCoverageScreen
           car={pnlCar}
           fullCar={carMap.get(screen.carId)}
           historicalKm={historicalKm.filter((h) => h.car_id === screen.carId)}
+          ownerSplit={ownerSplitAll.filter((s) => s.car_id === screen.carId)}
+          historicalExpenses={historicalExpensesAll.filter((e) => e.car_id === screen.carId)}
+          rollingFuelPerKm={carRollingFuel?.fuel_per_km ?? 0}
           year={year}
-          onCommit={() => router.push(pathname, { scroll: false })}
         />
       </div>
     );
@@ -905,7 +868,6 @@ function OwnerFleet({ myName }: { myName: string | null }) {
         onEditOpen={() => openEdit(car.id)}
         onEditClose={closeEdit}
         onDetail={() => goToDetail(car.id)}
-        onRate={() => goToRate(car.id)}
       />
     );
   };

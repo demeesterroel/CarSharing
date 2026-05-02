@@ -354,6 +354,7 @@ export const nl = {
   "admin.deactivate": "Deactiveren",
   "admin.zero_km_title": "Ritten met 0 km",
   "admin.no_zero_km": "Geen gevonden",
+  "admin.car_active": "Actief",
   "admin.car_inactive": "Inactief",
   "admin.car_deactivated_section": "Inactieve wagens",
   "admin.sub_breakeven": "Break-even",
@@ -376,6 +377,10 @@ export const nl = {
   "fleet.prev_year_km": "Vorig jaar: {km} km",
 
   // Break-even detail (prijs tab)
+  "breakeven.revenue": "Inkomsten ritten",
+  "breakeven.expenses": "Variabele kosten",
+  "breakeven.net": "Netto",
+  "breakeven.projected_net": "Verwacht netto",
   "breakeven.helpers": "Grootste bijdragen",
   "breakeven.total": "Σ gedekt",
   "breakeven.what_if": "Als prijs zou zijn…",

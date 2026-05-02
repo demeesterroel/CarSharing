@@ -5,7 +5,7 @@ import { useT } from "@/components/locale-provider";
 import { useUpdateCar } from "@/hooks/use-cars";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { beMetrics, Card, Row } from "@/app/admin/_shared";
+import { Card, Row } from "@/app/admin/_shared";
 import type { CarPnL, CarYearKm } from "@/lib/queries/admin";
 import type { Car } from "@/types";
 
@@ -14,7 +14,6 @@ export interface RateAssistantProps {
   fullCar: Car | undefined;
   historicalKm: CarYearKm[];
   year: number;
-  /** Called after a successful rate save */
   onCommit?: () => void;
 }
 
@@ -23,8 +22,7 @@ export function RateAssistant({ car, fullCar, historicalKm, year, onCommit }: Ra
   const qc = useQueryClient();
   const updateCar = useUpdateCar();
 
-  const m = beMetrics(car);
-  const variablePerKm = m.variablePerKm;
+  const variablePerKm = car.trip_km > 0 ? car.variable_total / car.trip_km : 0;
 
   const avgKm =
     historicalKm.length > 0
@@ -33,13 +31,11 @@ export function RateAssistant({ car, fullCar, historicalKm, year, onCommit }: Ra
   const [expectedKm, setExpectedKm] = useState(
     car.expected_km ?? (car.prev_year_trip_km || avgKm || 5000)
   );
-  const [coverage, setCoverage] = useState(0.7);
 
-  const suggestedRate =
-    expectedKm > 0 ? variablePerKm + (car.fixed_total * coverage) / expectedKm : variablePerKm;
-  const newContrib = suggestedRate - variablePerKm;
-  const breakEvenAtRate = newContrib > 0 ? Math.round(car.fixed_total / newContrib) : Infinity;
-  const projBurden = car.fixed_total - newContrib * expectedKm;
+  const suggestedRate = Math.max(car.car_price_per_km, variablePerKm * 1.1);
+  const projectedRevenue = suggestedRate * expectedKm;
+  const projectedExpenses = variablePerKm * expectedKm;
+  const projectedNet = projectedRevenue - projectedExpenses;
   const maxHistKm = Math.max(1, ...historicalKm.map((h) => h.km), expectedKm);
 
   function handleCommitRate() {
@@ -206,32 +202,6 @@ export function RateAssistant({ car, fullCar, historicalKm, year, onCommit }: Ra
         </div>
       </div>
 
-      <div style={{ marginBottom: 12 }}>
-        <div style={{ fontFamily: fontSerif, fontSize: 13, marginBottom: 6 }}>{t("rate.q2")}</div>
-        <input
-          type="range"
-          min={0.2}
-          max={1}
-          step={0.05}
-          value={coverage}
-          onChange={(e) => setCoverage(parseFloat(e.target.value))}
-          style={{ width: "100%", accentColor: paper.green }}
-        />
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            fontFamily: fontMono,
-            fontSize: 8,
-            color: paper.inkMute,
-          }}
-        >
-          <span>{t("rate.members_friendly")}</span>
-          <span style={{ fontWeight: 700, color: paper.green }}>{Math.round(coverage * 100)}%</span>
-          <span>{t("rate.full_recovery")}</span>
-        </div>
-      </div>
-
       <div style={{ background: paper.paperDeep, padding: "12px", marginBottom: 10 }}>
         <div
           style={{
@@ -269,21 +239,13 @@ export function RateAssistant({ car, fullCar, historicalKm, year, onCommit }: Ra
         >
           {t("rate.per_km_others")}
         </div>
-        <Row
-          label={t("fleet.break_even_km")}
-          value={isFinite(breakEvenAtRate) ? breakEvenAtRate.toLocaleString("nl-BE") + " km" : "∞"}
-        />
+        <Row label={t("breakeven.variable_km")} value={`€ ${variablePerKm.toFixed(4)}/km`} />
         <Row label={t("rate.expected_km")} value={expectedKm.toLocaleString("nl-BE") + " km"} />
         <Row
-          label={t("breakeven.projected_burden")}
-          value={fmtMoney(Math.max(0, projBurden))}
-          color={
-            projBurden <= 0
-              ? paper.green
-              : projBurden < car.fixed_total * 0.5
-                ? paper.amber
-                : paper.accent
-          }
+          label={t("breakeven.projected_net")}
+          value={fmtMoney(Math.abs(projectedNet))}
+          color={projectedNet >= 0 ? paper.green : paper.accent}
+          big
         />
       </div>
 

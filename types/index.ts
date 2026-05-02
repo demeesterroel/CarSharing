@@ -20,26 +20,11 @@ export interface Car {
   owner_from: string | null; // 'YYYY-MM-DD', inclusive
   owner_to: string | null; // 'YYYY-MM-DD', inclusive; NULL = ongoing
   long_threshold: number;
-  fixed_costs_json: string | null;
   active: 0 | 1;
   expected_km: number | null;
 }
 
-export type FixedCostCategory =
-  | "belastingen"
-  | "verzekeringen"
-  | "onderhoud"
-  | "keuring"
-  | "diversen";
-
 export type ExpenseCategory = "onderhoud" | "keuring" | "belasting" | "verzekering" | "diversen";
-
-export interface FixedCostItem {
-  id: string;
-  category: FixedCostCategory;
-  description: string;
-  amount: number;
-}
 
 export interface Trip {
   id: number;

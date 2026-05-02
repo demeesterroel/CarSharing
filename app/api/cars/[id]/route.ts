@@ -26,7 +26,6 @@ export const PUT = json(async (req, ctx) => {
       color: current.color,
       owner_name: current.owner_name,
       long_threshold: current.long_threshold,
-      fixed_costs_json: current.fixed_costs_json,
       active: patch.active ?? current.active,
       expected_km: current.expected_km,
     });

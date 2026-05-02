@@ -355,6 +355,7 @@ export const en: Messages = {
   "admin.deactivate": "Deactivate",
   "admin.zero_km_title": "Zero-km trips",
   "admin.no_zero_km": "None found",
+  "admin.car_active": "Active",
   "admin.car_inactive": "Inactive",
   "admin.car_deactivated_section": "Inactive cars",
   "admin.sub_breakeven": "Break-even",
@@ -377,6 +378,10 @@ export const en: Messages = {
   "fleet.prev_year_km": "Last year: {km} km",
 
   // Break-even detail (prijs tab)
+  "breakeven.revenue": "Trip revenue",
+  "breakeven.expenses": "Variable costs",
+  "breakeven.net": "Net",
+  "breakeven.projected_net": "Projected net",
   "breakeven.helpers": "Biggest helpers",
   "breakeven.total": "Σ covered",
   "breakeven.what_if": "If rate were…",

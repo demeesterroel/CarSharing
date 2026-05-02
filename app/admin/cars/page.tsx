@@ -8,7 +8,7 @@ import { useT } from "@/components/locale-provider";
 import type { Car } from "@/types";
 import { useCars, useCreateCar, useUpdateCar, useDeleteCar } from "@/hooks/use-cars";
 import { usePeople } from "@/hooks/use-people";
-import { useAdminSummary, beMetrics, Card, Perf } from "../_shared";
+import { useAdminSummary, beMetrics, Card } from "../_shared";
 import { useEarliestDashboardYear } from "@/hooks/use-dashboard";
 import { toast } from "sonner";
 import { CarBadge } from "@/components/car-badge";
@@ -351,7 +351,6 @@ function FleetTiles() {
           <BreakEvenCard
             car={car}
             fullCar={carMap.get(car.car_id)}
-            monthlyKm={monthlyKm.filter((m) => m.car_id === car.car_id)}
             contributions={contributions.filter((c) => c.car_id === car.car_id)}
             historicalKm={historicalKm.filter((h) => h.car_id === car.car_id)}
             priceHistory={priceHistory.filter((h) => h.car_id === car.car_id)}
@@ -380,16 +379,16 @@ function FleetTiles() {
   return (
     <div style={{ padding: "16px" }}>
       {activeCars.map(renderCar)}
-      {/* Break-even links for cars that have PnL data */}
+      {/* Break-even links for active cars */}
       {pnl.filter((c) => {
         const full = carMap.get(c.car_id);
-        return (!full || full.active !== 0) && c.fixed_total > 0;
+        return !full || full.active !== 0;
       }).length > 0 && (
         <div style={{ marginTop: 8 }}>
           {pnl
             .filter((c) => {
               const full = carMap.get(c.car_id);
-              return (!full || full.active !== 0) && c.fixed_total > 0;
+              return !full || full.active !== 0;
             })
             .map((car) => (
               <button
@@ -439,24 +438,30 @@ function FleetTiles() {
   );
 }
 
-// ── Owner car tile (fleet list item with inline edit) ─────────
+// ── Owner car tile (collapsed row + bottom-sheet edit) ──────────
 function OwnerCarTile({
   car,
   pnlData,
   onDetail,
   onRate,
+  editOpen,
+  onEditOpen,
+  onEditClose,
 }: {
   car: Car;
   pnlData: ReturnType<typeof beMetrics> | null;
   onDetail: () => void;
   onRate: () => void;
+  editOpen: boolean;
+  onEditOpen: () => void;
+  onEditClose: () => void;
 }) {
   const t = useT();
   const updateCar = useUpdateCar();
   const deleteCar = useDeleteCar();
-  const [editOpen, setEditOpen] = useState(false);
   const [name, setName] = useState(car.name);
   const [price, setPrice] = useState(car.price_per_km);
+  const [activeLocal, setActiveLocal] = useState(car.active !== 0);
   const [deleteConfirm, setDeleteConfirm] = useState(false);
 
   const [prevId, setPrevId] = useState(car.id);
@@ -464,18 +469,12 @@ function OwnerCarTile({
     setPrevId(car.id);
     setName(car.name);
     setPrice(car.price_per_km);
-    setEditOpen(false);
+    setActiveLocal(car.active !== 0);
     setDeleteConfirm(false);
   }
 
-  const dirty = name !== car.name || price !== car.price_per_km;
+  const dirty = name !== car.name || price !== car.price_per_km || activeLocal !== (car.active !== 0);
   const isActive = car.active !== 0;
-  const statusColor = pnlData
-    ? pnlData.status === "ahead" ? paper.green : pnlData.status === "on_pace" ? paper.amber : paper.accent
-    : paper.inkMute;
-  const statusLabel = pnlData
-    ? pnlData.status === "ahead" ? t("fleet.stamp_ahead") : pnlData.status === "on_pace" ? t("fleet.stamp_on_pace") : t("fleet.stamp_behind")
-    : null;
 
   const inputStyle: React.CSSProperties = {
     width: "100%",
@@ -498,22 +497,22 @@ function OwnerCarTile({
     marginBottom: 3,
   };
 
+  function resetForm() {
+    setName(car.name);
+    setPrice(car.price_per_km);
+    setActiveLocal(car.active !== 0);
+    setDeleteConfirm(false);
+  }
+
   function handleSave() {
     updateCar.mutate(
-      { ...car, name, price_per_km: price },
+      { ...car, name, price_per_km: price, active: activeLocal ? 1 : 0 },
       {
         onSuccess: () => {
-          setEditOpen(false);
+          onEditClose();
           toast.success(t("toast.saved"));
         },
       }
-    );
-  }
-
-  function handleToggleActive() {
-    updateCar.mutate(
-      { ...car, active: isActive ? 0 : 1 },
-      { onSuccess: () => toast.success(t("toast.saved")) }
     );
   }
 
@@ -532,85 +531,145 @@ function OwnerCarTile({
   }
 
   return (
-    <Card style={{ marginBottom: 10, borderLeft: `3px solid ${isActive ? statusColor : paper.inkMute}`, opacity: isActive ? 1 : 0.6 }}>
-      {/* Header */}
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 8 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <CarBadge short={car.short} active={isActive} />
-          <div style={{ fontFamily: fontSerif, fontSize: 16, fontWeight: 700, color: paper.ink }}>
-            {car.owner_name ?? <span style={{ color: paper.inkMute, fontStyle: "italic" }}>—</span>}
-          </div>
+    <>
+      {/* Collapsed card — click to open edit sheet */}
+      <div
+        role="button"
+        tabIndex={0}
+        onClick={onEditOpen}
+        onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && onEditOpen()}
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: 12,
+          padding: "12px 14px",
+          background: paper.paper,
+          marginBottom: 6,
+          cursor: "pointer",
+          userSelect: "none",
+          opacity: isActive ? 1 : 0.55,
+          boxShadow: "0 1px 2px rgba(0,0,0,0.05), 0 4px 16px rgba(0,0,0,0.06)",
+        }}
+      >
+        <CarBadge short={car.short} active={isActive} />
+        <div style={{ flex: 1, fontFamily: fontSerif, fontSize: 14, fontWeight: 600, color: paper.ink, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+          {car.owner_name ?? <span style={{ color: paper.inkMute, fontStyle: "italic" }}>—</span>}
         </div>
-        {statusLabel && (
-          <div style={{ padding: "3px 8px", border: `1.5px solid ${statusColor}`, color: statusColor, fontFamily: fontMono, fontSize: 8, fontWeight: 700, letterSpacing: 1.5, textTransform: "uppercase", transform: "rotate(-3deg)", flexShrink: 0 }}>
-            {statusLabel}
-          </div>
-        )}
+        <div style={{ fontFamily: fontMono, fontSize: 11, fontWeight: 700, color: paper.ink, flexShrink: 0 }}>
+          €{car.price_per_km.toFixed(2)}/km
+        </div>
       </div>
 
-      {/* Burden summary */}
-      {pnlData && pnlData.fixedCovered < pnlData.remainingBurden + pnlData.fixedCovered && (
-        <>
-          <div style={{ fontFamily: fontSerif, fontSize: 24, fontWeight: 700, color: statusColor, lineHeight: 1, margin: "4px 0 2px" }}>
-            {fmtMoney(pnlData.remainingBurden)}
-          </div>
-          <div style={{ fontFamily: fontMono, fontSize: 9, color: paper.inkDim, letterSpacing: 1, marginBottom: 6 }}>
-            {t("fleet.remaining_burden")} · {t("fleet.pct_covered", { pct: Math.round(pnlData.pctCovered * 100) })}
-          </div>
-          <div style={{ height: 3, background: paper.paperDeep, position: "relative", marginBottom: 8 }}>
-            <div style={{ position: "absolute", top: 0, bottom: 0, left: 0, width: `${Math.min(1, pnlData.pctCovered) * 100}%`, background: statusColor }} />
-          </div>
-        </>
-      )}
+      {/* Bottom-sheet edit dialog */}
+      <Dialog.Root open={editOpen} onOpenChange={(open) => { if (!open) { resetForm(); onEditClose(); } }}>
+        <Dialog.Portal>
+          <Dialog.Overlay style={overlayStyle} />
+          <Dialog.Content style={sheetStyle} aria-describedby={undefined}>
+            <Dialog.Title style={{ position: "absolute", width: 1, height: 1, overflow: "hidden", clip: "rect(0,0,0,0)" }}>
+              {t("owner.edit_car")}
+            </Dialog.Title>
 
-      <Perf margin="8px 0" />
+            {/* Sticky header: × / goal / Save */}
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 16px", height: 52, borderBottom: `1.5px solid ${paper.paperDark}`, background: paper.paper, position: "sticky", top: 0, zIndex: 10, borderRadius: "14px 14px 0 0" }}>
+              <button
+                type="button"
+                onClick={() => { resetForm(); onEditClose(); }}
+                aria-label={t("action.close")}
+                style={{ fontFamily: fontMono, fontSize: 18, fontWeight: 700, background: "transparent", border: "none", cursor: "pointer", color: paper.ink, padding: "0 4px", lineHeight: 1 }}
+              >
+                ×
+              </button>
+              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <CarBadge short={car.short} active={isActive} />
+                <span style={{ fontFamily: fontMono, fontSize: 10, fontWeight: 700, letterSpacing: 2, color: paper.inkDim, textTransform: "uppercase" }}>
+                  {car.owner_name ?? "—"}
+                </span>
+              </div>
+              <button
+                type="button"
+                disabled={!dirty || updateCar.isPending}
+                onClick={handleSave}
+                style={{ fontFamily: fontMono, fontSize: 9, fontWeight: 700, letterSpacing: 2, textTransform: "uppercase", background: dirty && !updateCar.isPending ? paper.accent : paper.paperDark, color: dirty && !updateCar.isPending ? "#fff" : paper.inkMute, border: "none", padding: "8px 14px", cursor: dirty && !updateCar.isPending ? "pointer" : "default" }}
+              >
+                {updateCar.isPending ? "…" : t("action.save")}
+              </button>
+            </div>
 
-      {/* Actions */}
-      <div style={{ display: "flex", gap: 6 }}>
-        <button onClick={onDetail} style={{ flex: 1, padding: "8px", background: paper.ink, color: paper.paper, border: "none", cursor: "pointer", fontFamily: fontMono, fontSize: 9, fontWeight: 700, letterSpacing: 1.5, textTransform: "uppercase" }}>
-          {t("fleet.see_breakeven")}
-        </button>
-        <button onClick={onRate} style={{ flex: 1, padding: "8px", background: "transparent", color: paper.ink, border: `1.5px solid ${paper.ink}`, cursor: "pointer", fontFamily: fontMono, fontSize: 9, fontWeight: 700, letterSpacing: 1.5, textTransform: "uppercase" }}>
-          {t("rate.open")}
-        </button>
-        <button onClick={() => { setEditOpen((o) => !o); setDeleteConfirm(false); }} style={{ padding: "8px 10px", background: editOpen ? paper.paperDark : "transparent", color: paper.ink, border: `1.5px solid ${paper.paperDark}`, cursor: "pointer", fontFamily: fontMono, fontSize: 9, fontWeight: 700, letterSpacing: 1.5, textTransform: "uppercase" }}>
-          {t("owner.edit_car")}
-        </button>
-      </div>
+            {/* Body */}
+            <div style={{ padding: 16 }}>
+              <div style={{ marginBottom: 8 }}>
+                <label style={labelStyle}>{t("form.name")}</label>
+                <input value={name} onChange={(e) => setName(e.target.value)} style={inputStyle} />
+              </div>
+              <div style={{ marginBottom: 12 }}>
+                <label style={labelStyle}>{t("form.price_per_km")}</label>
+                <input type="number" step="0.005" value={price} onChange={(e) => setPrice(parseFloat(e.target.value) || 0)} style={inputStyle} />
+              </div>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
+                <span style={labelStyle}>{activeLocal ? t("admin.car_active") : t("admin.car_inactive")}</span>
+                <div
+                  role="switch"
+                  aria-checked={activeLocal}
+                  tabIndex={0}
+                  onClick={() => setActiveLocal((v) => !v)}
+                  onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && setActiveLocal((v) => !v)}
+                  style={{
+                    width: 44,
+                    height: 24,
+                    borderRadius: 12,
+                    background: activeLocal ? paper.green : paper.paperDark,
+                    position: "relative",
+                    cursor: "pointer",
+                    flexShrink: 0,
+                    transition: "background 0.2s",
+                  }}
+                >
+                  <div style={{
+                    position: "absolute",
+                    top: 2,
+                    left: activeLocal ? 22 : 2,
+                    width: 20,
+                    height: 20,
+                    borderRadius: "50%",
+                    background: paper.paper,
+                    boxShadow: "0 1px 3px rgba(0,0,0,0.25)",
+                    transition: "left 0.18s",
+                  }} />
+                </div>
+              </div>
 
-      {/* Inline edit */}
-      {editOpen && (
-        <div style={{ borderTop: `1px dashed ${paper.paperDark}`, marginTop: 12, paddingTop: 12 }}>
-          <div style={{ marginBottom: 8 }}>
-            <label style={labelStyle}>{t("form.name")}</label>
-            <input value={name} onChange={(e) => setName(e.target.value)} style={inputStyle} />
-          </div>
-          <div style={{ marginBottom: 12 }}>
-            <label style={labelStyle}>{t("form.price_per_km")}</label>
-            <input type="number" step="0.005" value={price} onChange={(e) => setPrice(parseFloat(e.target.value) || 0)} style={inputStyle} />
-          </div>
-          <div style={{ display: "flex", gap: 8, marginBottom: 8 }}>
-            <button onClick={() => { setName(car.name); setPrice(car.price_per_km); setEditOpen(false); setDeleteConfirm(false); }} style={{ flex: 1, padding: "8px", background: "transparent", color: paper.inkDim, border: `1px solid ${paper.paperDark}`, cursor: "pointer", fontFamily: fontMono, fontSize: 9, fontWeight: 700, letterSpacing: 1.5, textTransform: "uppercase" }}>
-              {t("action.cancel")}
-            </button>
-            <button disabled={!dirty || updateCar.isPending} onClick={handleSave} style={{ flex: 2, padding: "8px", background: dirty && !updateCar.isPending ? paper.ink : paper.paperDark, color: dirty && !updateCar.isPending ? paper.paper : paper.inkMute, border: "none", cursor: dirty && !updateCar.isPending ? "pointer" : "default", fontFamily: fontMono, fontSize: 9, fontWeight: 700, letterSpacing: 2, textTransform: "uppercase" }}>
-              {updateCar.isPending ? "…" : t("action.save")}
-            </button>
-          </div>
-          <button onClick={handleToggleActive} disabled={updateCar.isPending} style={{ width: "100%", marginBottom: 6, padding: "8px", background: isActive ? paper.accent : paper.green, color: paper.paper, border: "none", cursor: updateCar.isPending ? "default" : "pointer", opacity: updateCar.isPending ? 0.6 : 1, fontFamily: fontMono, fontSize: 9, fontWeight: 700, letterSpacing: 1.5, textTransform: "uppercase" }}>
-            {isActive ? t("admin.deactivate") : t("admin.activate")}
-          </button>
-          <button onClick={handleDelete} disabled={deleteCar.isPending} style={{ width: "100%", padding: "8px", background: deleteConfirm ? paper.accent : "transparent", color: deleteConfirm ? paper.paper : paper.accent, border: `1px solid ${paper.accent}`, cursor: "pointer", fontFamily: fontMono, fontSize: 9, fontWeight: 700, letterSpacing: 1.5, textTransform: "uppercase" }}>
-            {deleteCar.isPending ? "…" : deleteConfirm ? t("owner.delete_confirm") : t("action.delete")}
-          </button>
-          {deleteConfirm && (
-            <button onClick={() => setDeleteConfirm(false)} style={{ width: "100%", marginTop: 4, padding: "6px", background: "transparent", color: paper.inkDim, border: `1px solid ${paper.paperDark}`, cursor: "pointer", fontFamily: fontMono, fontSize: 8, letterSpacing: 1 }}>
-              {t("action.cancel")}
-            </button>
-          )}
-        </div>
-      )}
-    </Card>
+              {/* Break-even + Rate Assistant */}
+              {pnlData && (
+                <div style={{ display: "flex", gap: 6, marginBottom: 16 }}>
+                  <button
+                    onClick={onDetail}
+                    style={{ flex: 1, padding: "10px 8px", background: paper.ink, color: paper.paper, border: "none", cursor: "pointer", fontFamily: fontMono, fontSize: 9, fontWeight: 700, letterSpacing: 1.5, textTransform: "uppercase" }}
+                  >
+                    {t("fleet.see_breakeven")} →
+                  </button>
+                  <button
+                    onClick={onRate}
+                    style={{ flex: 1, padding: "10px 8px", background: "transparent", color: paper.ink, border: `1.5px solid ${paper.ink}`, cursor: "pointer", fontFamily: fontMono, fontSize: 9, fontWeight: 700, letterSpacing: 1.5, textTransform: "uppercase" }}
+                  >
+                    {t("rate.open")}
+                  </button>
+                </div>
+              )}
+
+              {/* Delete */}
+              <button onClick={handleDelete} disabled={deleteCar.isPending} style={{ width: "100%", padding: "9px", background: deleteConfirm ? paper.accent : "transparent", color: deleteConfirm ? paper.paper : paper.accent, border: `1px solid ${paper.accent}`, cursor: "pointer", fontFamily: fontMono, fontSize: 9, fontWeight: 700, letterSpacing: 1.5, textTransform: "uppercase" }}>
+                {deleteCar.isPending ? "…" : deleteConfirm ? t("owner.delete_confirm") : t("action.delete")}
+              </button>
+              {deleteConfirm && (
+                <button onClick={() => setDeleteConfirm(false)} style={{ width: "100%", marginTop: 4, padding: "6px", background: "transparent", color: paper.inkDim, border: `1px solid ${paper.paperDark}`, cursor: "pointer", fontFamily: fontMono, fontSize: 8, letterSpacing: 1 }}>
+                  {t("action.cancel")}
+                </button>
+              )}
+            </div>
+          </Dialog.Content>
+        </Dialog.Portal>
+      </Dialog.Root>
+    </>
   );
 }
 
@@ -654,14 +713,30 @@ function OwnerCreateForm({ onBack }: { onBack: () => void }) {
   }
 
   return (
-    <div style={{ padding: "16px" }}>
-      <button onClick={onBack} style={{ marginBottom: 12, padding: "7px 14px", background: "transparent", border: `1.5px solid ${paper.ink}`, color: paper.ink, fontFamily: fontMono, fontSize: 9, fontWeight: 700, letterSpacing: 1.5, textTransform: "uppercase", cursor: "pointer" }}>
-        ← {t("owner.back_fleet")}
-      </button>
-      <Card>
-        <div style={{ fontFamily: fontSerif, fontSize: 16, fontWeight: 700, color: paper.ink, marginBottom: 12 }}>
+    <div style={{ background: paper.paperDeep }}>
+      {/* Sheet header: × / goal / Add */}
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 16px", height: 52, borderBottom: `1.5px solid ${paper.paperDark}`, background: paper.paper, position: "sticky", top: 0, zIndex: 10, borderRadius: "14px 14px 0 0" }}>
+        <button
+          type="button"
+          onClick={onBack}
+          aria-label={t("action.close")}
+          style={{ fontFamily: fontMono, fontSize: 18, fontWeight: 700, background: "transparent", border: "none", cursor: "pointer", color: paper.ink, padding: "0 4px", lineHeight: 1 }}
+        >
+          ×
+        </button>
+        <div style={{ fontFamily: fontMono, fontSize: 10, fontWeight: 700, letterSpacing: 3, color: paper.inkDim, textTransform: "uppercase" }}>
           {t("owner.add_car")}
         </div>
+        <button
+          type="button"
+          disabled={!valid || createCar.isPending}
+          onClick={handleSubmit}
+          style={{ fontFamily: fontMono, fontSize: 9, fontWeight: 700, letterSpacing: 2, textTransform: "uppercase", background: valid && !createCar.isPending ? paper.accent : paper.paperDark, color: valid && !createCar.isPending ? "#fff" : paper.inkMute, border: "none", padding: "8px 14px", cursor: valid && !createCar.isPending ? "pointer" : "default" }}
+        >
+          {createCar.isPending ? "…" : t("action.add")}
+        </button>
+      </div>
+      <div style={{ padding: "16px" }}>
         <div style={{ marginBottom: 8 }}>
           <label style={labelStyle}>{t("form.name")}</label>
           <input value={name} onChange={(e) => setName(e.target.value)} style={inputStyle} />
@@ -674,10 +749,7 @@ function OwnerCreateForm({ onBack }: { onBack: () => void }) {
           <label style={labelStyle}>{t("form.price_per_km")}</label>
           <input type="number" step="0.005" min="0.01" value={price} onChange={(e) => setPrice(parseFloat(e.target.value) || 0)} style={inputStyle} />
         </div>
-        <button disabled={!valid || createCar.isPending} onClick={handleSubmit} style={{ width: "100%", padding: "10px", background: valid && !createCar.isPending ? paper.ink : paper.paperDark, color: valid && !createCar.isPending ? paper.paper : paper.inkMute, border: "none", cursor: valid && !createCar.isPending ? "pointer" : "default", fontFamily: fontMono, fontSize: 9, fontWeight: 700, letterSpacing: 2, textTransform: "uppercase" }}>
-          {createCar.isPending ? "…" : t("owner.add_car")}
-        </button>
-      </Card>
+      </div>
     </div>
   );
 }
@@ -686,13 +758,30 @@ function OwnerCreateForm({ onBack }: { onBack: () => void }) {
 function OwnerFleet({ myName }: { myName: string | null }) {
   const t = useT();
   const currentYear = new Date().getFullYear();
-  const [year, setYear] = useState(currentYear);
-  const [screen, setScreen] = useState<OwnerScreen>({ view: "fleet" });
   const searchParams = useSearchParams();
   const pathname = usePathname();
   const router = useRouter();
 
   const { data: earliestYear = currentYear } = useEarliestDashboardYear();
+
+  // Derive all state from URL
+  const viewParam = searchParams.get("view");
+  const carParam = searchParams.get("car");
+  const yearParam = searchParams.get("year");
+  const screenCarId = carParam ? parseInt(carParam, 10) : null;
+  const year = yearParam ? parseInt(yearParam, 10) : currentYear;
+
+  const screen: OwnerScreen =
+    viewParam === "detail" && screenCarId ? { view: "detail", carId: screenCarId } :
+    viewParam === "rate" && screenCarId ? { view: "rate", carId: screenCarId } :
+    { view: "fleet" };
+
+  const setYear = (newYear: number) => {
+    const p = new URLSearchParams(searchParams.toString());
+    if (newYear === currentYear) p.delete("year"); else p.set("year", String(newYear));
+    router.replace(`${pathname}?${p.toString()}`, { scroll: false });
+  };
+
   const { data: cars = [] } = useCars();
   const { data: summary } = useAdminSummary(year);
 
@@ -704,6 +793,21 @@ function OwnerFleet({ myName }: { myName: string | null }) {
   const historicalKm = summary?.historicalCarKm ?? [];
   const priceHistory = summary?.priceHistory ?? [];
 
+  const goToDetail = (id: number) => {
+    const p = new URLSearchParams();
+    p.set("view", "detail");
+    p.set("car", String(id));
+    if (year !== currentYear) p.set("year", String(year));
+    router.push(`${pathname}?${p.toString()}`, { scroll: false });
+  };
+  const goToRate = (id: number) => {
+    const p = new URLSearchParams();
+    p.set("view", "rate");
+    p.set("car", String(id));
+    if (year !== currentYear) p.set("year", String(year));
+    router.push(`${pathname}?${p.toString()}`, { scroll: false });
+  };
+
   const adding = searchParams.get("action") === "add";
   const openAdd = () => {
     const p = new URLSearchParams(searchParams.toString());
@@ -712,23 +816,51 @@ function OwnerFleet({ myName }: { myName: string | null }) {
   };
   const closeAdd = () => router.back();
 
+  const yearSelector = (
+    <div style={{ display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 16 }}>
+      <button onClick={() => setYear(year - 1)} disabled={year <= earliestYear} style={{ padding: "6px 14px", background: "transparent", border: `1.5px solid ${paper.ink}`, borderRight: "none", fontFamily: fontMono, fontSize: 10, fontWeight: 700, color: year <= earliestYear ? paper.inkMute : paper.ink, cursor: year <= earliestYear ? "default" : "pointer", letterSpacing: 1 }}>
+        ← {year - 1}
+      </button>
+      <div style={{ padding: "6px 18px", background: paper.ink, color: paper.paper, fontFamily: fontMono, fontSize: 10, fontWeight: 700, letterSpacing: 2, border: `1.5px solid ${paper.ink}` }}>
+        {year}
+      </div>
+      <button onClick={() => setYear(year + 1)} disabled={year >= currentYear} style={{ padding: "6px 14px", background: "transparent", border: `1.5px solid ${paper.ink}`, borderLeft: "none", fontFamily: fontMono, fontSize: 10, fontWeight: 700, color: year >= currentYear ? paper.inkMute : paper.ink, cursor: year >= currentYear ? "default" : "pointer", letterSpacing: 1 }}>
+        {year + 1} →
+      </button>
+    </div>
+  );
+
+  const backBtnStyle: React.CSSProperties = {
+    marginBottom: 12,
+    padding: "7px 14px",
+    background: "transparent",
+    border: `1.5px solid ${paper.ink}`,
+    color: paper.ink,
+    fontFamily: fontMono,
+    fontSize: 9,
+    fontWeight: 700,
+    letterSpacing: 1.5,
+    textTransform: "uppercase",
+    cursor: "pointer",
+  };
+
   if (screen.view === "detail") {
     const pnlCar = allPnL.find((c) => c.car_id === screen.carId);
     if (!pnlCar) return null;
     return (
       <div style={{ padding: "16px" }}>
-        <button onClick={() => setScreen({ view: "fleet" })} style={{ marginBottom: 12, padding: "7px 14px", background: "transparent", border: `1.5px solid ${paper.ink}`, color: paper.ink, fontFamily: fontMono, fontSize: 9, fontWeight: 700, letterSpacing: 1.5, textTransform: "uppercase", cursor: "pointer" }}>
+        {yearSelector}
+        <button onClick={() => router.back()} style={backBtnStyle}>
           ← {t("owner.back_fleet")}
         </button>
         <BreakEvenCard
           car={pnlCar}
           fullCar={carMap.get(screen.carId)}
-          monthlyKm={monthlyKm.filter((m) => m.car_id === screen.carId)}
           contributions={contributions.filter((c) => c.car_id === screen.carId)}
           historicalKm={historicalKm.filter((h) => h.car_id === screen.carId)}
           priceHistory={priceHistory.filter((h) => h.car_id === screen.carId)}
           year={year}
-          onRateOpen={() => setScreen({ view: "rate", carId: screen.carId })}
+          onRateOpen={() => goToRate(screen.carId)}
         />
       </div>
     );
@@ -739,7 +871,7 @@ function OwnerFleet({ myName }: { myName: string | null }) {
     if (!pnlCar) return null;
     return (
       <div style={{ padding: "16px" }}>
-        <button onClick={() => setScreen({ view: "detail", carId: screen.carId })} style={{ marginBottom: 12, padding: "7px 14px", background: "transparent", border: `1.5px solid ${paper.ink}`, color: paper.ink, fontFamily: fontMono, fontSize: 9, fontWeight: 700, letterSpacing: 1.5, textTransform: "uppercase", cursor: "pointer" }}>
+        <button onClick={() => router.back()} style={backBtnStyle}>
           ← {t("fleet.see_breakeven")}
         </button>
         <RateAssistant
@@ -747,27 +879,43 @@ function OwnerFleet({ myName }: { myName: string | null }) {
           fullCar={carMap.get(screen.carId)}
           historicalKm={historicalKm.filter((h) => h.car_id === screen.carId)}
           year={year}
-          onCommit={() => setScreen({ view: "fleet" })}
+          onCommit={() => router.push(pathname, { scroll: false })}
         />
       </div>
     );
   }
 
   // Fleet list
+  const editId = searchParams.get("edit");
+  const openEdit = (id: number) => {
+    const p = new URLSearchParams(searchParams.toString());
+    p.set("edit", String(id));
+    router.push(`${pathname}?${p.toString()}`, { scroll: false });
+  };
+  const closeEdit = () => router.back();
+  const renderTile = (car: Car) => {
+    const pnlCar = allPnL.find((c) => c.car_id === car.id);
+    const m = pnlCar ? beMetrics(pnlCar) : null;
+    return (
+      <OwnerCarTile
+        key={car.id}
+        car={car}
+        pnlData={m}
+        editOpen={editId === String(car.id)}
+        onEditOpen={() => openEdit(car.id)}
+        onEditClose={closeEdit}
+        onDetail={() => goToDetail(car.id)}
+        onRate={() => goToRate(car.id)}
+      />
+    );
+  };
+
+  const activeCars = myCars.filter((c) => c.active !== 0);
+  const inactiveCars = myCars.filter((c) => c.active === 0);
+
   return (
     <div style={{ padding: "16px" }}>
-      {/* Year selector */}
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 16 }}>
-        <button onClick={() => setYear((y) => y - 1)} disabled={year <= earliestYear} style={{ padding: "6px 14px", background: "transparent", border: `1.5px solid ${paper.ink}`, borderRight: "none", fontFamily: fontMono, fontSize: 10, fontWeight: 700, color: year <= earliestYear ? paper.inkMute : paper.ink, cursor: year <= earliestYear ? "default" : "pointer", letterSpacing: 1 }}>
-          ← {year - 1}
-        </button>
-        <div style={{ padding: "6px 18px", background: paper.ink, color: paper.paper, fontFamily: fontMono, fontSize: 10, fontWeight: 700, letterSpacing: 2, border: `1.5px solid ${paper.ink}` }}>
-          {year}
-        </div>
-        <button onClick={() => setYear((y) => y + 1)} disabled={year >= currentYear} style={{ padding: "6px 14px", background: "transparent", border: `1.5px solid ${paper.ink}`, borderLeft: "none", fontFamily: fontMono, fontSize: 10, fontWeight: 700, color: year >= currentYear ? paper.inkMute : paper.ink, cursor: year >= currentYear ? "default" : "pointer", letterSpacing: 1 }}>
-          {year + 1} →
-        </button>
-      </div>
+      {yearSelector}
 
       <Fab onClick={openAdd} label={t("owner.add_car")} />
 
@@ -775,36 +923,19 @@ function OwnerFleet({ myName }: { myName: string | null }) {
         <div style={{ fontFamily: fontMono, fontSize: 11, color: paper.inkMute, textAlign: "center", padding: "32px 0" }}>
           {t("owner.no_cars")}
         </div>
-      ) : (() => {
-        const activeCars = myCars.filter((c) => c.active !== 0);
-        const inactiveCars = myCars.filter((c) => c.active === 0);
-        const renderTile = (car: Car) => {
-          const pnlCar = allPnL.find((c) => c.car_id === car.id);
-          const m = pnlCar ? beMetrics(pnlCar) : null;
-          return (
-            <OwnerCarTile
-              key={car.id}
-              car={car}
-              pnlData={m}
-              onDetail={() => setScreen({ view: "detail", carId: car.id })}
-              onRate={() => setScreen({ view: "rate", carId: car.id })}
-            />
-          );
-        };
-        return (
-          <>
-            {activeCars.map(renderTile)}
-            {inactiveCars.length > 0 && (
-              <>
-                <div style={{ fontFamily: fontMono, fontSize: 9, color: paper.inkDim, letterSpacing: 2, textTransform: "uppercase", padding: "14px 0 8px", borderTop: `1.5px dashed ${paper.inkMute}`, marginTop: 4 }}>
-                  {t("admin.car_deactivated_section")}
-                </div>
-                {inactiveCars.map(renderTile)}
-              </>
-            )}
-          </>
-        );
-      })()}
+      ) : (
+        <>
+          {activeCars.map(renderTile)}
+          {inactiveCars.length > 0 && (
+            <>
+              <div style={{ fontFamily: fontMono, fontSize: 9, color: paper.inkDim, letterSpacing: 2, textTransform: "uppercase", padding: "14px 0 8px", borderTop: `1.5px dashed ${paper.inkMute}`, marginTop: 4 }}>
+                {t("admin.car_deactivated_section")}
+              </div>
+              {inactiveCars.map(renderTile)}
+            </>
+          )}
+        </>
+      )}
 
       <Dialog.Root open={adding} onOpenChange={(open) => { if (!open) closeAdd(); }}>
         <Dialog.Portal>

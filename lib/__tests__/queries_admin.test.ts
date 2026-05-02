@@ -93,7 +93,6 @@ describe("getCarPnL", () => {
     expect(pnl[0].expense_count).toBe(1);
     expect(pnl[0].expense_amount).toBe(30);
     expect(pnl[0].variable_total).toBe(90);
-    expect(pnl[0].total_cost).toBe(90);
     expect(pnl[0].cost_per_km).toBeCloseTo(0.9);
   });
 
@@ -117,57 +116,6 @@ describe("getCarPnL", () => {
     });
     const pnl = getCarPnL(db, 2026);
     expect(pnl[0].trip_count).toBe(0);
-  });
-
-  it("parses fixed_costs_json (array format)", () => {
-    const db = makeDb();
-    const fixedCosts = JSON.stringify([
-      { id: "f1", category: "verzekeringen", description: "Insurance", amount: 500 },
-      { id: "f2", category: "belastingen", description: "Tax", amount: 200 },
-    ]);
-    insertCar(db, {
-      short: "CA",
-      name: "Car A",
-      price_per_km: 0.2,
-      brand: null,
-      color: null,
-      fixed_costs_json: fixedCosts,
-    });
-    const pnl = getCarPnL(db, 2026);
-    expect(pnl[0].fixed_costs).toHaveLength(2);
-    expect(pnl[0].fixed_total).toBe(700);
-  });
-
-  it("handles legacy fixed_costs_json format", () => {
-    const db = makeDb();
-    const legacyCosts = JSON.stringify({
-      verzekering: 300,
-      belasting: 150,
-      keuring: 100,
-      afschrijving: 0,
-    });
-    insertCar(db, {
-      short: "CA",
-      name: "Car A",
-      price_per_km: 0.2,
-      brand: null,
-      color: null,
-      fixed_costs_json: legacyCosts,
-    });
-    const pnl = getCarPnL(db, 2026);
-    // Entries with value > 0 only: verzekering(300) + belasting(150) + keuring(100) = 3 items
-    expect(pnl[0].fixed_costs.length).toBeGreaterThanOrEqual(3);
-    expect(pnl[0].fixed_total).toBe(550);
-  });
-
-  it("handles invalid fixed_costs_json gracefully", () => {
-    const db = makeDb();
-    db.exec(
-      `INSERT INTO cars (short,name,price_per_km,fixed_costs_json) VALUES ('CA','Car A',0.2,'not-json')`
-    );
-    const pnl = getCarPnL(db, 2026);
-    expect(pnl[0].fixed_costs).toEqual([]);
-    expect(pnl[0].fixed_total).toBe(0);
   });
 
   it("computes owner_trip_amount for owner's own car trips", () => {

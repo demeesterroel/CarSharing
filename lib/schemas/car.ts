@@ -20,11 +20,6 @@ export const carSchema = z.object({
     .optional()
     .transform((v) => v ?? null),
   long_threshold: z.number().int().positive().optional().default(500),
-  fixed_costs_json: z
-    .string()
-    .nullable()
-    .optional()
-    .transform((v) => v ?? null),
   active: z.number().int().min(0).max(1).optional().default(1),
   expected_km: z
     .number()

@@ -15,6 +15,9 @@ import {
   getPriceHistory,
   getZeroKmTrips,
   getKmGaps,
+  getRollingFuelPerKm,
+  getHistoricalOwnerSplit,
+  getHistoricalExpenses,
 } from "../queries/admin";
 
 function makeDb() {
@@ -447,5 +450,67 @@ describe("getKmGaps", () => {
       location: null,
     });
     expect(getKmGaps(db)).toHaveLength(0);
+  });
+});
+
+describe("getRollingFuelPerKm", () => {
+  it("returns 0 when no data in the last 365 days", () => {
+    const db = makeDb();
+    insertCar(db, { short: "CA", name: "Car A", price_per_km: 0.2, brand: null, color: null });
+    const result = getRollingFuelPerKm(db);
+    const cid = (db.prepare("SELECT id FROM cars WHERE short='CA'").get() as any).id;
+    const row = result.find((r) => r.car_id === cid);
+    expect(row?.fuel_per_km ?? 0).toBe(0);
+  });
+
+  it("computes fuel/km from rolling 12-month window", () => {
+    const db = makeDb();
+    const pid = insertPerson(db, { ...basePerson, name: "Alice" });
+    const cid = insertCar(db, { short: "CA", name: "Car A", price_per_km: 0.2, brand: null, color: null });
+    const today = new Date().toISOString().slice(0, 10);
+    insertTrip(db, { person_id: pid, car_id: cid, date: today, start_odometer: 0, end_odometer: 200, location: null });
+    insertFuelFillup(db, { person_id: pid, car_id: cid, date: today, amount: 30, liters: 20, odometer: null, receipt: null, location: null });
+    const result = getRollingFuelPerKm(db);
+    const row = result.find((r) => r.car_id === cid);
+    // 30 / 200 = 0.15
+    expect(row?.fuel_per_km).toBeCloseTo(0.15, 4);
+  });
+});
+
+describe("getHistoricalOwnerSplit", () => {
+  it("returns empty array when no trips in window", () => {
+    const db = makeDb();
+    expect(getHistoricalOwnerSplit(db, 2060)).toEqual([]);
+  });
+
+  it("splits km correctly between owner and non-owner", () => {
+    const db = makeDb();
+    const owner = insertPerson(db, { ...basePerson, name: "Alice" });
+    const other = insertPerson(db, { ...basePerson, name: "Bob" });
+    const cid = insertCar(db, { short: "CA", name: "Car A", price_per_km: 0.2, brand: null, color: null, owner_name: "Alice" });
+    insertTrip(db, { person_id: owner, car_id: cid, date: "2022-06-01", start_odometer: 0, end_odometer: 100, location: null });
+    insertTrip(db, { person_id: other, car_id: cid, date: "2022-06-02", start_odometer: 100, end_odometer: 250, location: null });
+    const result = getHistoricalOwnerSplit(db, 2026);
+    const row = result.find((r) => r.car_id === cid && r.year === 2022);
+    expect(row?.owner_km).toBe(100);
+    expect(row?.non_owner_km).toBe(150);
+  });
+});
+
+describe("getHistoricalExpenses", () => {
+  it("returns empty array when no expenses in window", () => {
+    const db = makeDb();
+    expect(getHistoricalExpenses(db, 2060)).toEqual([]);
+  });
+
+  it("sums expenses per car per year", () => {
+    const db = makeDb();
+    const pid = insertPerson(db, { ...basePerson, name: "Alice" });
+    const cid = insertCar(db, { short: "CA", name: "Car A", price_per_km: 0.2, brand: null, color: null });
+    insertExpense(db, { person_id: pid, car_id: cid, date: "2022-03-01", amount: 300, description: "Insurance" });
+    insertExpense(db, { person_id: pid, car_id: cid, date: "2022-09-01", amount: 150, description: "Tax" });
+    const result = getHistoricalExpenses(db, 2026);
+    const row = result.find((r) => r.car_id === cid && r.year === 2022);
+    expect(row?.amount).toBe(450);
   });
 });

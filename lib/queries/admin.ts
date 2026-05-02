@@ -198,6 +198,24 @@ export interface CarPriceHistory {
   effective_from: string; // "YYYY-MM-DD"
 }
 
+export interface CarRollingFuel {
+  car_id: number;
+  fuel_per_km: number; // 0 if no km in window
+}
+
+export interface CarOwnerSplit {
+  car_id: number;
+  year: number;
+  owner_km: number;
+  non_owner_km: number;
+}
+
+export interface CarYearExpenses {
+  car_id: number;
+  year: number;
+  amount: number;
+}
+
 export function getPriceHistory(db: Database.Database): CarPriceHistory[] {
   return db
     .prepare(
@@ -208,6 +226,79 @@ export function getPriceHistory(db: Database.Database): CarPriceHistory[] {
   `
     )
     .all() as CarPriceHistory[];
+}
+
+export function getRollingFuelPerKm(db: Database.Database): CarRollingFuel[] {
+  return db
+    .prepare(
+      `
+    WITH fuel AS (
+      SELECT car_id, COALESCE(SUM(amount), 0.0) AS fuel_amount
+      FROM fuel_fillups
+      WHERE date >= date('now', '-365 days')
+      GROUP BY car_id
+    ),
+    km AS (
+      SELECT car_id, COALESCE(SUM(km), 0) AS trip_km
+      FROM trips
+      WHERE date >= date('now', '-365 days')
+      GROUP BY car_id
+    )
+    SELECT
+      c.id AS car_id,
+      CASE WHEN COALESCE(k.trip_km, 0) > 0
+        THEN COALESCE(f.fuel_amount, 0.0) / k.trip_km
+        ELSE 0.0
+      END AS fuel_per_km
+    FROM cars c
+    LEFT JOIN fuel f ON f.car_id = c.id
+    LEFT JOIN km k ON k.car_id = c.id
+  `
+    )
+    .all() as CarRollingFuel[];
+}
+
+export function getHistoricalOwnerSplit(
+  db: Database.Database,
+  currentYear: number
+): CarOwnerSplit[] {
+  return db
+    .prepare(
+      `
+    SELECT
+      t.car_id,
+      CAST(strftime('%Y', t.date) AS INTEGER) AS year,
+      COALESCE(SUM(CASE WHEN p.name = c.owner_name THEN t.km ELSE 0 END), 0) AS owner_km,
+      COALESCE(SUM(CASE WHEN p.name != c.owner_name OR c.owner_name IS NULL THEN t.km ELSE 0 END), 0) AS non_owner_km
+    FROM trips t
+    JOIN people p ON p.id = t.person_id
+    JOIN cars c ON c.id = t.car_id
+    WHERE CAST(strftime('%Y', t.date) AS INTEGER) BETWEEN ? AND ?
+    GROUP BY t.car_id, year
+    ORDER BY t.car_id, year
+  `
+    )
+    .all(currentYear - 5, currentYear - 1) as CarOwnerSplit[];
+}
+
+export function getHistoricalExpenses(
+  db: Database.Database,
+  currentYear: number
+): CarYearExpenses[] {
+  return db
+    .prepare(
+      `
+    SELECT
+      car_id,
+      CAST(strftime('%Y', date) AS INTEGER) AS year,
+      COALESCE(SUM(amount), 0) AS amount
+    FROM expenses
+    WHERE CAST(strftime('%Y', date) AS INTEGER) BETWEEN ? AND ?
+    GROUP BY car_id, year
+    ORDER BY car_id, year
+  `
+    )
+    .all(currentYear - 5, currentYear - 1) as CarYearExpenses[];
 }
 
 export interface ZeroKmTrip {

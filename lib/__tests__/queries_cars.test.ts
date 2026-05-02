@@ -171,6 +171,36 @@ describe("carHasHistory", () => {
     );
     expect(carHasHistory(db, id)).toBe(true);
   });
+
+  it("returns true when the car has at least one fuel fillup", () => {
+    const db = makeDb();
+    db.exec(`INSERT INTO people (id, name, active) VALUES (1, 'Alice', 1)`);
+    const id = insertCar(db, { ...baseCar, owner_name: "Alice" });
+    db.prepare(
+      "INSERT INTO fuel_fillups (person_id, car_id, date, liters, amount, price_per_liter) VALUES (?,?,?,?,?,?)"
+    ).run(1, id, "2025-01-01", 50, 60, 1.2);
+    expect(carHasHistory(db, id)).toBe(true);
+  });
+
+  it("returns true when the car has at least one expense", () => {
+    const db = makeDb();
+    db.exec(`INSERT INTO people (id, name, active) VALUES (1, 'Alice', 1)`);
+    const id = insertCar(db, { ...baseCar, owner_name: "Alice" });
+    db.prepare(
+      "INSERT INTO expenses (person_id, car_id, date, amount, description, category) VALUES (?,?,?,?,?,?)"
+    ).run(1, id, "2025-01-01", 150, "Maintenance", "repair");
+    expect(carHasHistory(db, id)).toBe(true);
+  });
+
+  it("returns true when the car has at least one reservation", () => {
+    const db = makeDb();
+    db.exec(`INSERT INTO people (id, name, active) VALUES (1, 'Alice', 1)`);
+    const id = insertCar(db, { ...baseCar, owner_name: "Alice" });
+    db.prepare(
+      "INSERT INTO reservations (person_id, car_id, start_date, end_date, status, note) VALUES (?,?,?,?,?,?)"
+    ).run(1, id, "2025-01-01", "2025-01-03", "pending", "Weekend trip");
+    expect(carHasHistory(db, id)).toBe(true);
+  });
 });
 
 describe("deleteCar", () => {
@@ -185,5 +215,16 @@ describe("deleteCar", () => {
   it("does not throw for a non-existent id", () => {
     const db = makeDb();
     expect(() => deleteCar(db, 9999)).not.toThrow();
+  });
+
+  it("throws a FK constraint error when the car has trips (foreign keys enabled)", () => {
+    const db = makeDb();
+    db.exec(`INSERT INTO people (id, name, active) VALUES (1, 'Alice', 1)`);
+    const id = insertCar(db, { ...baseCar, owner_name: "Alice" });
+    db.exec(
+      `INSERT INTO trips (person_id, car_id, date, start_odometer, end_odometer, km, amount)
+       VALUES (1, ${id}, '2025-01-01', 0, 10, 10, 2.0)`
+    );
+    expect(() => deleteCar(db, id)).toThrow();
   });
 });

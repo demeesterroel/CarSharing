@@ -249,7 +249,7 @@ function TransferPaymentRow({
   const ps = transfer.payment_status;
   if (!ps) return null; // co-op is the payer, no tracking
 
-  const pct = transfer.amount > 0 ? Math.min(1, ps.paid / transfer.amount) : 1;
+  const pct = transfer.amount > 0 ? Math.max(0, Math.min(1, ps.paid / transfer.amount)) : 1;
   const barFilled = Math.round(pct * 10);
   const statusColor =
     ps.open < 0.005 ? paper.green : ps.paid > 0.005 ? paper.blue : paper.accent;
@@ -268,6 +268,7 @@ function TransferPaymentRow({
         background: paper.paperDeep,
       }}
     >
+      {/* Row 1: Te betalen | Openstaand */}
       <div
         style={{
           display: "flex",
@@ -280,12 +281,16 @@ function TransferPaymentRow({
         }}
       >
         <span>{t("settlement.payment_due")}: {fmtMoney(transfer.amount)}</span>
-        <span style={{ color: statusColor, fontWeight: 700 }}>{statusLabel}</span>
+        <span style={{ color: ps.open > 0.005 ? paper.accent : paper.inkMute }}>
+          {t("settlement.payment_open")}: {fmtMoney(ps.open)}
+        </span>
       </div>
+      {/* Row 2: Betaald | progress bar | status label */}
       <div
         style={{
           display: "flex",
           justifyContent: "space-between",
+          alignItems: "center",
           fontFamily: fontMono,
           fontSize: 9,
           color: paper.inkDim,
@@ -293,26 +298,35 @@ function TransferPaymentRow({
           marginBottom: 4,
         }}
       >
-        <span>
-          {t("settlement.payment_paid")}: {fmtMoney(ps.paid)}
+        <span>{t("settlement.payment_paid")}: {fmtMoney(ps.paid)}</span>
+        <span style={{ color: statusColor, letterSpacing: 2 }}>
+          {"●".repeat(barFilled)}{"○".repeat(10 - barFilled)}
+          {" "}{Math.round(pct * 100)}%
         </span>
-        <span style={{ color: ps.open > 0.005 ? paper.accent : paper.inkMute }}>
-          {t("settlement.payment_open")}: {fmtMoney(ps.open)}
-        </span>
+        <span style={{ color: statusColor, fontWeight: 700 }}>{statusLabel}</span>
       </div>
-      {/* Simple progress bar */}
-      <div
-        style={{
-          fontFamily: fontMono,
-          fontSize: 9,
-          color: statusColor,
-          letterSpacing: 2,
-        }}
-      >
-        {"●".repeat(barFilled)}{"○".repeat(10 - barFilled)}
-        {" "}
-        {Math.round(pct * 100)}%
-      </div>
+      {/* Individual payments with dates */}
+      {ps.payments.length > 0 && (
+        <div style={{ marginBottom: 4 }}>
+          {ps.payments.map((p) => (
+            <div
+              key={p.id}
+              style={{
+                display: "grid",
+                gridTemplateColumns: "16px 90px 1fr",
+                fontFamily: fontMono,
+                fontSize: 9,
+                color: paper.inkMute,
+                letterSpacing: 0.5,
+              }}
+            >
+              <span />
+              <span>{p.date}</span>
+              <span>{fmtMoney(p.amount)}</span>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
@@ -345,10 +359,7 @@ function PaymentSummaryBanner({ data }: { data: { all_paid: boolean; transfers: 
       <span style={{ fontFamily: fontMono, fontSize: 9, letterSpacing: 0.5 }}>
         {isAllPaid
           ? t("settlement.payment_all_paid")
-          : t("settlement.payment_outstanding", {
-              count,
-              plural: count === 1 ? "" : "en",
-            })}
+          : t(count === 1 ? "settlement.payment_outstanding_one" : "settlement.payment_outstanding", { count })}
       </span>
     </div>
   );
@@ -359,11 +370,13 @@ function NonOwnerMemberCard({
   year,
   bankAccount,
   settlementTransfer,
+  showAll,
 }: {
   m: MemberStatement;
   year: number;
   bankAccount: string;
   settlementTransfer: AnnotatedTransfer | undefined;
+  showAll: boolean;
 }) {
   const t = useT();
   const [open, setOpen] = useState(false);
@@ -447,7 +460,34 @@ function NonOwnerMemberCard({
     setTimeout(() => setMsgCopied(false), 2000);
   };
 
+  const ps = settlementTransfer?.payment_status ?? null;
+  const borderColor = ps == null ? paper.ink : ps.open < 0.005 ? paper.green : paper.accent;
+  const isSlim = !showAll && borderColor !== paper.accent;
+
   const toggle = () => setOpen((v) => !v);
+
+  if (isSlim) {
+    return (
+      <div
+        style={{
+          background: paper.paper,
+          marginBottom: 2,
+          borderLeft: `3px solid ${borderColor}`,
+          display: "flex",
+          alignItems: "center",
+          padding: "3px 14px",
+          gap: 8,
+        }}
+      >
+        <span style={{ fontFamily: fontSerif, fontSize: 11, color: paper.inkMute, flex: "1 1 auto" }}>
+          {m.person_name}
+        </span>
+        <span style={{ fontFamily: fontMono, fontSize: 10, color: netColor }}>
+          {s1 > 0 ? "+" : ""}{fmtMoney(s1)}
+        </span>
+      </div>
+    );
+  }
 
   return (
     <div
@@ -455,7 +495,7 @@ function NonOwnerMemberCard({
         background: paper.paper,
         marginBottom: 6,
         boxShadow: "0 1px 4px rgba(0,0,0,0.07)",
-        borderLeft: `3px solid ${paper.ink}`,
+        borderLeft: `3px solid ${borderColor}`,
       }}
     >
       {/* Header row: name | flex spacer | amount | [stuur bericht] */}
@@ -661,11 +701,13 @@ function OwnerMemberCard({
   year,
   bankAccount,
   settlementTransfer,
+  showAll,
 }: {
   m: MemberStatement;
   year: number;
   bankAccount: string;
   settlementTransfer: AnnotatedTransfer | undefined;
+  showAll: boolean;
 }) {
   const t = useT();
   const [open, setOpen] = useState(false);
@@ -723,7 +765,34 @@ function OwnerMemberCard({
     setTimeout(() => setMsgCopied(false), 2000);
   };
 
+  const ps = settlementTransfer?.payment_status ?? null;
+  const borderColor = ps == null ? paper.blue : ps.open < 0.005 ? paper.green : paper.accent;
+  const isSlim = !showAll && borderColor !== paper.accent;
+
   const toggle = () => setOpen((v) => !v);
+
+  if (isSlim) {
+    return (
+      <div
+        style={{
+          background: paper.paper,
+          marginBottom: 2,
+          borderLeft: `3px solid ${borderColor}`,
+          display: "flex",
+          alignItems: "center",
+          padding: "3px 14px",
+          gap: 8,
+        }}
+      >
+        <span style={{ fontFamily: fontSerif, fontSize: 11, color: paper.inkMute, flex: "1 1 auto" }}>
+          {m.person_name}
+        </span>
+        <span style={{ fontFamily: fontMono, fontSize: 10, color: s2Color }}>
+          {s2 > 0 ? "+" : ""}{fmtMoney(s2)}
+        </span>
+      </div>
+    );
+  }
 
   return (
     <div
@@ -731,7 +800,7 @@ function OwnerMemberCard({
         background: paper.paper,
         marginBottom: 6,
         boxShadow: "0 1px 4px rgba(0,0,0,0.07)",
-        borderLeft: `3px solid ${paper.blue}`,
+        borderLeft: `3px solid ${borderColor}`,
       }}
     >
       {/* Header: same layout as NonOwnerMemberCard */}
@@ -1076,6 +1145,7 @@ export default function AdminSettlementPage() {
   const { data: settings } = useAdminSettings();
   const currentYear = new Date().getFullYear();
   const [year, setYear] = useState(currentYear);
+  const [showAll, setShowAll] = useState(false);
   const { data: earliest = currentYear } = useEarliestDashboardYear();
   const { data, isLoading } = useSettlement(year);
   const qc = useQueryClient();
@@ -1087,7 +1157,32 @@ export default function AdminSettlementPage() {
 
   return (
     <div style={{ padding: 16 }}>
-      <YearPicker year={year} earliest={earliest} current={currentYear} onChange={setYear} />
+      <div style={{ position: "relative" }}>
+        <YearPicker year={year} earliest={earliest} current={currentYear} onChange={setYear} />
+        {data && data.members.length > 0 && (
+          <button
+            onClick={() => setShowAll((v) => !v)}
+            style={{
+              position: "absolute",
+              right: 0,
+              top: "50%",
+              transform: "translateY(-75%)",
+              fontFamily: fontMono,
+              fontSize: 8,
+              fontWeight: 700,
+              letterSpacing: 1,
+              textTransform: "uppercase",
+              background: "transparent",
+              color: paper.inkMute,
+              border: `1px solid ${paper.paperDark}`,
+              cursor: "pointer",
+              padding: "2px 10px",
+            }}
+          >
+            {showAll ? `≡  ${t("settlement.show_all")}` : `⚠  ${t("settlement.show_problems")}`}
+          </button>
+        )}
+      </div>
 
       {data?.frozen && (
         <div style={{ textAlign: "center", marginBottom: 12 }}>
@@ -1196,6 +1291,7 @@ export default function AdminSettlementPage() {
                       settlementTransfer={data.transfers.find(
                         (tr) => tr.step === 1 && tr.from === m.person_name
                       )}
+                      showAll={showAll}
                     />
                   ))}
 
@@ -1235,6 +1331,7 @@ export default function AdminSettlementPage() {
                       settlementTransfer={data.transfers.find(
                         (tr) => tr.step === 2 && tr.from === m.person_name
                       )}
+                      showAll={showAll}
                     />
                   ))}
 
@@ -1266,9 +1363,9 @@ export default function AdminSettlementPage() {
                       <span
                         style={{ fontFamily: fontMono, fontSize: 9, letterSpacing: 0.5, flex: 1 }}
                       >
-                        Leden → Coöp: {fmtMoney(Math.abs(step1Total))}
+                        {t("settlement.balance_members_to_coop", { amount: fmtMoney(Math.abs(step1Total)) })}
                         {"   ·   "}
-                        Coöp → Eigenaars: {fmtMoney(Math.abs(step2Total))}
+                        {t("settlement.balance_coop_to_owners", { amount: fmtMoney(Math.abs(step2Total)) })}
                       </span>
                       <span
                         style={{
@@ -1278,7 +1375,7 @@ export default function AdminSettlementPage() {
                           letterSpacing: 1,
                         }}
                       >
-                        Saldo: {fmtMoney(balance)}
+                        {t("settlement.balance_total", { amount: fmtMoney(balance) })}
                       </span>
                     </div>
                   );

@@ -261,6 +261,8 @@ export interface TransferPaymentStatus {
   paid: number;
   /** Amount still outstanding: Math.max(0, amount - paid). */
   open: number;
+  /** Individual payment records that make up the total. */
+  payments: { id: number; date: string; amount: number }[];
 }
 
 export interface AnnotatedTransfer extends Transfer {

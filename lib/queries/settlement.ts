@@ -542,9 +542,10 @@ export function getSettlement(db: Database.Database, year: number): SettlementRe
       return { ...tr, payment_status: null };
     }
 
-    const paid = round2(paymentsByPerson.get(payerId) ?? 0);
+    const personPayments = paymentsByPerson.get(payerId) ?? [];
+    const paid = round2(personPayments.reduce((s, p) => s + p.amount, 0));
     const open = round2(Math.max(0, tr.amount - paid));
-    return { ...tr, payment_status: { paid, open } };
+    return { ...tr, payment_status: { paid, open, payments: personPayments } };
   });
 
   // 15. Compute all_paid flag
@@ -566,7 +567,9 @@ export function getSettlement(db: Database.Database, year: number): SettlementRe
     members,
     transfers: annotatedTransfers,
     verify_ok,
-    payments_by_person: Object.fromEntries(paymentsByPerson),
+    payments_by_person: Object.fromEntries(
+      [...paymentsByPerson.entries()].map(([id, rows]) => [id, rows.reduce((s, p) => s + p.amount, 0)])
+    ),
     all_paid,
   };
 }

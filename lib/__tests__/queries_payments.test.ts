@@ -181,7 +181,7 @@ describe("getPaymentsByYear", () => {
     expect(map.size).toBe(0);
   });
 
-  it("sums payments per person for the correct year", () => {
+  it("returns individual payment rows per person for the correct year", () => {
     const db = makeDb();
     seed(db);
     // Alice pays 100 for year 2025 (date 2026-03-01 → year = 2025)
@@ -193,10 +193,16 @@ describe("getPaymentsByYear", () => {
     insertPayment(db, { person_id: 1, date: "2027-03-01", amount: 999, note: null });
 
     const map = getPaymentsByYear(db, 2025);
-    expect(map.get(1)).toBeCloseTo(150, 2);
-    expect(map.get(2)).toBeCloseTo(75, 2);
-    expect(map.has(1)).toBe(true);
     expect(map.size).toBe(2);
+    expect(map.has(1)).toBe(true);
+    const aliceRows = map.get(1)!;
+    expect(aliceRows).toHaveLength(2);
+    expect(aliceRows.reduce((s, p) => s + p.amount, 0)).toBeCloseTo(150, 2);
+    expect(aliceRows[0].date).toBe("2026-03-01");
+    expect(aliceRows[1].date).toBe("2026-04-01");
+    const bobRows = map.get(2)!;
+    expect(bobRows).toHaveLength(1);
+    expect(bobRows[0].amount).toBeCloseTo(75, 2);
   });
 
   it("returns 0 for year with no payments", () => {

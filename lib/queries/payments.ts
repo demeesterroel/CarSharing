@@ -53,18 +53,26 @@ export function deletePayment(db: Database.Database, id: number): void {
 }
 
 /**
- * Returns a Map<person_id, total_paid> for all payments in the given settlement year.
+ * Returns a Map<person_id, payment rows> for all payments in the given settlement year.
  * Payments are associated with a settlement year via the `year` column
  * (set to date.year − 1 at insert time, so a 2026 payment settles 2025).
  */
-export function getPaymentsByYear(db: Database.Database, year: number): Map<number, number> {
+export function getPaymentsByYear(
+  db: Database.Database,
+  year: number
+): Map<number, { id: number; date: string; amount: number }[]> {
   const rows = db
     .prepare(
-      `SELECT person_id, COALESCE(SUM(amount), 0) AS total
+      `SELECT id, person_id, date, amount
        FROM payments
        WHERE year = ?
-       GROUP BY person_id`
+       ORDER BY date`
     )
-    .all(year) as { person_id: number; total: number }[];
-  return new Map(rows.map((r) => [r.person_id, r.total]));
+    .all(year) as { id: number; person_id: number; date: string; amount: number }[];
+  const map = new Map<number, { id: number; date: string; amount: number }[]>();
+  for (const r of rows) {
+    if (!map.has(r.person_id)) map.set(r.person_id, []);
+    map.get(r.person_id)!.push({ id: r.id, date: r.date, amount: r.amount });
+  }
+  return map;
 }

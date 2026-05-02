@@ -2,7 +2,7 @@
 import { describe, it, expect } from "vitest";
 import Database from "better-sqlite3";
 import { runMigrations } from "../db/migrate";
-import { getCars, getCarById, insertCar, updateCar } from "../queries/cars";
+import { getCars, getCarById, insertCar, updateCar, carHasHistory, deleteCar } from "../queries/cars";
 
 function makeDb() {
   const db = new Database(":memory:");
@@ -151,5 +151,39 @@ describe("updateCar", () => {
   it("does nothing for non-existent id without throwing", () => {
     const db = makeDb();
     expect(() => updateCar(db, 9999, baseCar)).not.toThrow();
+  });
+});
+
+describe("carHasHistory", () => {
+  it("returns false for a fresh car with no trips, fuel, expenses, or reservations", () => {
+    const db = makeDb();
+    const id = insertCar(db, baseCar);
+    expect(carHasHistory(db, id)).toBe(false);
+  });
+
+  it("returns true when the car has at least one trip", () => {
+    const db = makeDb();
+    db.exec(`INSERT INTO people (id, name, active) VALUES (1, 'Alice', 1)`);
+    const id = insertCar(db, { ...baseCar, owner_name: "Alice" });
+    db.exec(
+      `INSERT INTO trips (person_id, car_id, date, start_odometer, end_odometer, km, amount)
+       VALUES (1, ${id}, '2025-01-01', 0, 10, 10, 2.0)`
+    );
+    expect(carHasHistory(db, id)).toBe(true);
+  });
+});
+
+describe("deleteCar", () => {
+  it("removes the car from the database", () => {
+    const db = makeDb();
+    const id = insertCar(db, baseCar);
+    expect(getCarById(db, id)).not.toBeNull();
+    deleteCar(db, id);
+    expect(getCarById(db, id)).toBeNull();
+  });
+
+  it("does not throw for a non-existent id", () => {
+    const db = makeDb();
+    expect(() => deleteCar(db, 9999)).not.toThrow();
   });
 });

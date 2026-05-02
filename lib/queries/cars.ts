@@ -61,3 +61,21 @@ export function updateCar(db: Database.Database, id: number, data: CarInput): vo
     );
   })({ id, data });
 }
+
+export function carHasHistory(db: Database.Database, id: number): boolean {
+  const tripRow = db.prepare("SELECT 1 FROM trips WHERE car_id = ? LIMIT 1").get(id);
+  if (tripRow !== undefined) return true;
+
+  const fuelRow = db.prepare("SELECT 1 FROM fuel_fillups WHERE car_id = ? LIMIT 1").get(id);
+  if (fuelRow !== undefined) return true;
+
+  const expenseRow = db.prepare("SELECT 1 FROM expenses WHERE car_id = ? LIMIT 1").get(id);
+  if (expenseRow !== undefined) return true;
+
+  const reservationRow = db.prepare("SELECT 1 FROM reservations WHERE car_id = ? LIMIT 1").get(id);
+  return reservationRow !== undefined;
+}
+
+export function deleteCar(db: Database.Database, id: number): void {
+  db.prepare("DELETE FROM cars WHERE id = ?").run(id);
+}

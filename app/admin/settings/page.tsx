@@ -3,8 +3,10 @@ import { useState, useEffect } from "react";
 import { paper, fontMono, fontSerif } from "@/lib/paper-theme";
 import { useAdminSettings, useSaveAdminSettings } from "@/hooks/use-admin-settings";
 import { Card, Perf } from "../_shared";
+import { useT } from "@/components/locale-provider";
 
 export default function AdminSettingsPage() {
+  const t = useT();
   const { data, isLoading } = useAdminSettings();
   const save = useSaveAdminSettings();
   const [bankAccount, setBankAccount] = useState("");
@@ -97,7 +99,7 @@ export default function AdminSettingsPage() {
                 cursor: dirty ? "pointer" : "default",
               }}
             >
-              {save.isPending ? "…" : save.isSuccess && !dirty ? "Opgeslagen" : "Opslaan"}
+              {save.isPending ? t("action.saving") : save.isSuccess && !dirty ? t("action.saved") : t("action.save")}
             </button>
           </>
         )}

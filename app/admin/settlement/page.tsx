@@ -46,6 +46,7 @@ function SettledNote({
   expCount: number;
   expAmt: number;
 }) {
+  const t = useT();
   const fuelHas = fuelLiters > 0.05;
   const expHas = expAmt > 0.005;
   if (!fuelHas && !expHas) return null;
@@ -66,7 +67,7 @@ function SettledNote({
     >
       {"(*) "}
       {parts.join(" en ")}
-      {" zijn reeds verrekend buiten de app en tellen niet mee in het saldo."}
+      {" "}{t("settlement.settled_outside_note")}
     </div>
   );
 }
@@ -249,6 +250,7 @@ function NonOwnerMemberCard({
   year: number;
   bankAccount: string;
 }) {
+  const t = useT();
   const [open, setOpen] = useState(false);
   const [msgCopied, setMsgCopied] = useState(false);
 
@@ -282,7 +284,7 @@ function NonOwnerMemberCard({
     const sections: string[] = [];
 
     if (totalTripAmt > 0) {
-      const sec = [row(`Ritten (${totalKm} km)`, "−", totalTripAmt, W)];
+      const sec = [row(`${t("page.trips")} (${totalKm} km)`, "−", totalTripAmt, W)];
       for (const era of m.car_eras.filter((ev) => ev.trip_km > 0)) {
         sec.push(row(`  ${era.car_short.padEnd(5)} (${era.trip_km} km)`, "−", era.trip_amount, WC));
       }
@@ -290,7 +292,7 @@ function NonOwnerMemberCard({
     }
 
     if (totalFuelAmt > 0) {
-      const sec = [row(`Brandstof (${fmtL(totalFuelL)} L)`, "+", totalFuelAmt, W)];
+      const sec = [row(`${t("settlement.breakdown_fuel")} (${fmtL(totalFuelL)} L)`, "+", totalFuelAmt, W)];
       for (const era of m.car_eras.filter((ev) => ev.fuel_liters > 0)) {
         sec.push(
           row(`  ${era.car_short.padEnd(5)} (${fmtL(era.fuel_liters)} L)`, "+", era.fuel_amount, WC)
@@ -300,7 +302,7 @@ function NonOwnerMemberCard({
     }
 
     if (totalExpAmt > 0) {
-      const sec = [row(`Kosten`, "+", totalExpAmt, W)];
+      const sec = [row(t("settlement.breakdown_costs"), "+", totalExpAmt, W)];
       for (const era of m.car_eras.filter((ev) => ev.expense_amount > 0)) {
         sec.push(row(`  ${era.car_short.padEnd(5)}`, "+", era.expense_amount, WC));
       }
@@ -401,7 +403,7 @@ function NonOwnerMemberCard({
             flex: "0 0 auto",
           }}
         >
-          {msgCopied ? "Gekopieerd!" : "Stuur bericht"}
+          {msgCopied ? t("settlement.copied") : t("settlement.send_transfer")}
         </button>
       </div>
 
@@ -410,7 +412,7 @@ function NonOwnerMemberCard({
         <div style={{ borderTop: `1px dashed ${paper.paperDark}`, padding: "10px 14px 14px" }}>
           {/* Ritten */}
           <BreakdownSection
-            label="Ritten"
+            label={t("page.trips")}
             totalRight={`${totalKm} km`}
             amount={totalTripAmt > 0 ? `− ${fmtMoney(totalTripAmt)}` : fmtMoney(0)}
             amountColor={totalTripAmt > 0 ? paper.accent : paper.inkMute}
@@ -430,7 +432,7 @@ function NonOwnerMemberCard({
 
           {/* Brandstof */}
           <BreakdownSection
-            label="Brandstof"
+            label={t("settlement.breakdown_fuel")}
             totalRight={`${fmtL(totalFuelL)} L`}
             amount={totalFuelAmt > 0 ? `+ ${fmtMoney(totalFuelAmt)}` : fmtMoney(0)}
             amountColor={totalFuelAmt > 0 ? paper.green : paper.inkMute}
@@ -459,7 +461,7 @@ function NonOwnerMemberCard({
 
           {/* Kosten */}
           <BreakdownSection
-            label="Kosten"
+            label={t("settlement.breakdown_costs")}
             totalRight={null}
             amount={totalExpAmt > 0 ? `+ ${fmtMoney(totalExpAmt)}` : fmtMoney(0)}
             amountColor={totalExpAmt > 0 ? paper.green : paper.inkMute}
@@ -529,6 +531,7 @@ function OwnerMemberCard({
   year: number;
   bankAccount: string;
 }) {
+  const t = useT();
   const [open, setOpen] = useState(false);
   const [msgCopied, setMsgCopied] = useState(false);
   const s2 = m.s2 ?? 0;
@@ -646,14 +649,14 @@ function OwnerMemberCard({
             flex: "0 0 auto",
           }}
         >
-          {msgCopied ? "Gekopieerd!" : "Stuur bericht"}
+          {msgCopied ? t("settlement.copied") : t("settlement.send_transfer")}
         </button>
       </div>
 
       {open && (
         <div style={{ borderTop: `1px dashed ${paper.paperDark}`, padding: "10px 14px 14px" }}>
           {/* ── Bijdrage van Leden ── */}
-          <SectionLabel>Bijdrage van Leden</SectionLabel>
+          <SectionLabel>{t("settlement.section_member_contributions")}</SectionLabel>
 
           {m.car_eras.map((era, i) => (
             <div key={i} style={{ marginBottom: 10 }}>
@@ -851,7 +854,7 @@ function CrossOwnerCard({ m }: { m: MemberStatement }) {
 
       {open && (
         <div style={{ borderTop: `1px dashed ${paper.paperDark}`, padding: "10px 14px 14px" }}>
-          <SectionLabel>Mijn gebruik van andere auto&apos;s</SectionLabel>
+          <SectionLabel>{t("settlement.section_cross_use")}</SectionLabel>
           {m.cross_owner_balances?.map((b, j) => {
             const detail = fmtDetail(
               b.my_trip_km,

@@ -803,6 +803,7 @@ function OwnerMemberCard({
 }
 
 function CrossOwnerCard({ m }: { m: MemberStatement }) {
+  const t = useT();
   const [open, setOpen] = useState(false);
   const totalMyBalance = m.cross_owner_balances?.reduce((s, b) => s + b.my_balance, 0) ?? 0;
   const balColor =

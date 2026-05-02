@@ -410,6 +410,7 @@ export const nl = {
   "coverage.save": "Prijs opslaan voor {year}",
   "coverage.ytd": "Huidig jaar · {months} maanden",
   "coverage.exact": "exact",
+  "coverage.default_avg_n": "gem. {n} jr",
 
   // Rate assistant
   "rate.open": "Prijsassistent",

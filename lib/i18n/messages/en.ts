@@ -411,6 +411,7 @@ export const en: Messages = {
   "coverage.save": "Save price for {year}",
   "coverage.ytd": "This year · {months} months",
   "coverage.exact": "exact",
+  "coverage.default_avg_n": "avg {n} yr",
 
   // Rate assistant
   "rate.open": "Rate assistant",

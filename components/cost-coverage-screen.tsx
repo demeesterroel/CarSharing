@@ -183,18 +183,23 @@ export function CostCoverageScreen({
       ? Math.round(historicalKm.reduce((s, h) => s + h.km, 0) / historicalKm.length)
       : 0;
 
+  const historicSplit = ownerSplit.filter((s) => s.year < currentYear);
   const avgOthersPct =
-    ownerSplit.length > 0
-      ? ownerSplit.reduce((s, h) => {
+    historicSplit.length > 0
+      ? historicSplit.reduce((s, h) => {
           const total = h.owner_km + h.non_owner_km;
           return s + (total > 0 ? h.non_owner_km / total : 0.65);
-        }, 0) / ownerSplit.length
+        }, 0) / historicSplit.length
       : 0.65;
 
   const avgExpenses =
     _historicalExpenses.length > 0
       ? Math.round(_historicalExpenses.reduce((s, e) => s + e.amount, 0) / _historicalExpenses.length)
       : 0;
+
+  const kmDataYears = historicalKm.length;
+  const othersDataYears = historicSplit.length;
+  const expensesDataYears = _historicalExpenses.length;
 
   const ytdFuelPerKm = car.trip_km > 0 ? car.fuel_amount / car.trip_km : 0;
   const defaultFuelPerKm = rollingFuelPerKm > 0 ? rollingFuelPerKm : ytdFuelPerKm;
@@ -269,10 +274,11 @@ export function CostCoverageScreen({
   // ── Hint labels ───────────────────────────────────────────────
 
   const exactHint = t("coverage.exact");
+  const nYrHint = (n: number) => n > 0 ? t("coverage.default_avg_n", { n }) : "—";
   const fuelHint = isHistoric ? exactHint : (rollingFuelPerKm > 0 ? t("coverage.default_12m") : "—");
-  const kmHint = isHistoric ? exactHint : (avgHistKm > 0 ? t("coverage.default_5y") : "—");
-  const othersHint = isHistoric ? exactHint : (ownerSplit.length > 0 ? t("coverage.default_5y") : "—");
-  const expensesHint = isHistoric ? exactHint : (avgExpenses > 0 ? t("coverage.default_5y") : "—");
+  const kmHint = isHistoric ? exactHint : nYrHint(kmDataYears);
+  const othersHint = isHistoric ? exactHint : nYrHint(othersDataYears);
+  const expensesHint = isHistoric ? exactHint : nYrHint(expensesDataYears);
   const priceHint = isHistoric ? exactHint : t("coverage.default_current");
 
   return (

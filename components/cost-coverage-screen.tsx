@@ -1,0 +1,360 @@
+"use client";
+import { useState } from "react";
+import { paper, fontMono, fontSerif, fmtMoney } from "@/lib/paper-theme";
+import { useT } from "@/components/locale-provider";
+import { useUpdateCar } from "@/hooks/use-cars";
+import { useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
+import { Card, Row } from "@/app/admin/_shared";
+import type { CarPnL, CarYearKm, CarOwnerSplit, CarYearExpenses } from "@/lib/queries/admin";
+import type { Car } from "@/types";
+
+export interface CostCoverageScreenProps {
+  car: CarPnL;
+  fullCar: Car | undefined;
+  historicalKm: CarYearKm[];
+  ownerSplit: CarOwnerSplit[];
+  historicalExpenses: CarYearExpenses[];
+  rollingFuelPerKm: number; // 0 = no data
+  year: number;
+}
+
+// ── Zone bar ──────────────────────────────────────────────────
+
+function ZoneBar({
+  fuelThreshold,
+  expenseThreshold,
+  fuelCoverThreshold,
+  currentPrice,
+}: {
+  fuelThreshold: number;
+  expenseThreshold: number;
+  fuelCoverThreshold: number;
+  currentPrice: number;
+}) {
+  const maxPrice = Math.max(fuelCoverThreshold * 1.4, currentPrice * 1.2, 0.01);
+
+  const pct = (v: number) => `${Math.min(100, Math.max(0, (v / maxPrice) * 100)).toFixed(1)}%`;
+  const markerLeft = pct(currentPrice);
+
+  const zone1W = pct(fuelThreshold);
+  const zone2W = pct(Math.max(0, expenseThreshold - fuelThreshold));
+  const zone3W = pct(Math.max(0, fuelCoverThreshold - expenseThreshold));
+  const zone4W = pct(Math.max(0, maxPrice - fuelCoverThreshold));
+
+  return (
+    <div style={{ marginBottom: 16 }}>
+      {/* Colour bar */}
+      <div style={{ position: "relative", height: 14, display: "flex", borderRadius: 2, overflow: "hidden", marginBottom: 20 }}>
+        <div style={{ width: zone1W, background: paper.accent }} />
+        <div style={{ width: zone2W, background: paper.amber }} />
+        <div style={{ width: zone3W, background: paper.green, opacity: 0.55 }} />
+        <div style={{ width: zone4W, background: paper.green }} />
+        {/* Marker */}
+        <div style={{ position: "absolute", top: -3, left: markerLeft, transform: "translateX(-50%)", display: "flex", flexDirection: "column", alignItems: "center" }}>
+          <div style={{ width: 2, height: 20, background: paper.ink }} />
+          <div style={{ fontFamily: fontMono, fontSize: 7, fontWeight: 700, color: paper.ink, whiteSpace: "nowrap", marginTop: 2 }}>
+            € {currentPrice.toFixed(2)}
+          </div>
+        </div>
+      </div>
+      {/* Threshold labels */}
+      <div style={{ display: "flex", justifyContent: "space-between", fontFamily: fontMono, fontSize: 7, color: paper.inkMute, letterSpacing: 0.5 }}>
+        <span>0</span>
+        <span>€{fuelThreshold.toFixed(2)} brandstof</span>
+        <span>€{expenseThreshold.toFixed(2)} kosten</span>
+        <span>€{fuelCoverThreshold.toFixed(2)} brandstof+</span>
+      </div>
+    </div>
+  );
+}
+
+// ── Slider row ────────────────────────────────────────────────
+
+function SliderRow({
+  label,
+  hint,
+  value,
+  min,
+  max,
+  step,
+  format,
+  onChange,
+}: {
+  label: string;
+  hint: string;
+  value: number;
+  min: number;
+  max: number;
+  step: number;
+  format: (v: number) => string;
+  onChange: (v: number) => void;
+}) {
+  return (
+    <div style={{ marginBottom: 14 }}>
+      <div style={{ display: "flex", justifyContent: "space-between", fontFamily: fontMono, fontSize: 8, color: paper.inkMute, letterSpacing: 0.8, marginBottom: 3 }}>
+        <span style={{ textTransform: "uppercase", letterSpacing: 1 }}>{label}</span>
+        <span style={{ color: paper.inkDim }}>{hint}</span>
+      </div>
+      <input
+        type="range"
+        min={min}
+        max={max}
+        step={step}
+        value={value}
+        onChange={(e) => onChange(parseFloat(e.target.value))}
+        style={{ width: "100%", accentColor: paper.ink, marginBottom: 2 }}
+      />
+      <div style={{ fontFamily: fontMono, fontSize: 11, fontWeight: 700, textAlign: "center", color: paper.ink }}>
+        {format(value)}
+      </div>
+    </div>
+  );
+}
+
+// ── Zone helpers ──────────────────────────────────────────────
+
+type Zone = "red" | "orange" | "light_green" | "dark_green";
+
+function zoneColor(zone: Zone): string {
+  if (zone === "red") return paper.accent;
+  if (zone === "orange") return paper.amber;
+  return paper.green;
+}
+
+type ZoneKey = "coverage.zone.red" | "coverage.zone.orange" | "coverage.zone.light_green" | "coverage.zone.dark_green";
+
+function zoneKey(zone: Zone): ZoneKey {
+  return `coverage.zone.${zone}` as ZoneKey;
+}
+
+// ── Main component ────────────────────────────────────────────
+
+export function CostCoverageScreen({
+  car,
+  fullCar,
+  historicalKm,
+  ownerSplit,
+  historicalExpenses,
+  rollingFuelPerKm,
+  year,
+}: CostCoverageScreenProps) {
+  const t = useT();
+  const qc = useQueryClient();
+  const updateCar = useUpdateCar();
+
+  // ── Compute historical defaults ───────────────────────────
+
+  const avgHistKm =
+    historicalKm.length > 0
+      ? Math.round(historicalKm.reduce((s, h) => s + h.km, 0) / historicalKm.length)
+      : 0;
+
+  const avgOthersPct =
+    ownerSplit.length > 0
+      ? ownerSplit.reduce((s, h) => {
+          const total = h.owner_km + h.non_owner_km;
+          return s + (total > 0 ? h.non_owner_km / total : 0.65);
+        }, 0) / ownerSplit.length
+      : 0.65;
+
+  const avgExpenses =
+    historicalExpenses.length > 0
+      ? Math.round(historicalExpenses.reduce((s, e) => s + e.amount, 0) / historicalExpenses.length)
+      : 0;
+
+  const ytdFuelPerKm = car.trip_km > 0 ? car.fuel_amount / car.trip_km : 0;
+  const defaultFuelPerKm = rollingFuelPerKm > 0 ? rollingFuelPerKm : ytdFuelPerKm;
+
+  // ── Slider state ──────────────────────────────────────────
+
+  const [fuelPerKm, setFuelPerKm] = useState(defaultFuelPerKm || 0.12);
+  const [totalKm, setTotalKm] = useState(
+    car.expected_km ?? (avgHistKm || car.prev_year_trip_km || 14000)
+  );
+  const [pctOthers, setPctOthers] = useState(Math.round(avgOthersPct * 100) / 100);
+  const [expectedExpenses, setExpectedExpenses] = useState(
+    avgExpenses || car.expense_amount || 0
+  );
+  const [pricePerKm, setPricePerKm] = useState(car.car_price_per_km);
+
+  // ── Derived projections ───────────────────────────────────
+
+  const nonOwnerKm = totalKm * pctOthers;
+  const ownerKm = totalKm * (1 - pctOthers);
+  const markupPerKm = pricePerKm - fuelPerKm;
+  const nonOwnerMarkup = markupPerKm * nonOwnerKm;
+  const ownerFuelCost = fuelPerKm * ownerKm;
+
+  const fuelThreshold = fuelPerKm;
+  const safeNonOwnerKm = Math.max(1, nonOwnerKm);
+  const expenseThreshold = fuelPerKm + expectedExpenses / safeNonOwnerKm;
+  const fuelCoverThreshold =
+    fuelPerKm + (expectedExpenses + ownerFuelCost) / safeNonOwnerKm;
+
+  const zone: Zone =
+    markupPerKm < 0
+      ? "red"
+      : nonOwnerMarkup < expectedExpenses
+        ? "orange"
+        : nonOwnerMarkup < expectedExpenses + ownerFuelCost
+          ? "light_green"
+          : "dark_green";
+
+  const ownerNet = nonOwnerMarkup - expectedExpenses - ownerFuelCost;
+  const color = zoneColor(zone);
+
+  // ── YTD snapshot values ───────────────────────────────────
+
+  const currentMonth = new Date().getMonth() + 1;
+  const ytdNet = car.net;
+
+  // ── Save ─────────────────────────────────────────────────
+
+  function handleSave() {
+    if (!fullCar) return;
+    updateCar.mutate(
+      { ...fullCar, price_per_km: pricePerKm, expected_km: Math.round(totalKm) } as Car & { id: number },
+      {
+        onSuccess: () => {
+          qc.invalidateQueries({ queryKey: ["admin-summary"] });
+          qc.invalidateQueries({ queryKey: ["cars"] });
+          toast.success(t("toast.saved"));
+        },
+      }
+    );
+  }
+
+  return (
+    <div>
+      {/* Header */}
+      <Card style={{ marginBottom: 12 }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+          <div style={{ fontFamily: fontSerif, fontSize: 20, fontWeight: 700 }}>{car.car_name}</div>
+          <div style={{ fontFamily: fontMono, fontSize: 8, fontWeight: 700, letterSpacing: 1.5, color, border: `2px solid ${color}`, padding: "3px 8px", textTransform: "uppercase", transform: "rotate(-2deg)" }}>
+            {t(zoneKey(zone))}
+          </div>
+        </div>
+        <div style={{ fontFamily: fontMono, fontSize: 9, color: paper.inkDim, letterSpacing: 1, textTransform: "uppercase" }}>
+          {t("coverage.ytd", { months: currentMonth })}
+        </div>
+
+        {/* YTD actuals */}
+        <div style={{ marginTop: 10, borderTop: `1px dashed ${paper.paperDark}`, paddingTop: 10 }}>
+          <Row label={t("breakeven.revenue")} value={fmtMoney(car.trip_revenue)} color={paper.green} />
+          <Row label={t("breakeven.expenses")} value={fmtMoney(car.variable_total)} />
+          <Row
+            label={t("breakeven.net")}
+            value={fmtMoney(Math.abs(ytdNet))}
+            color={ytdNet >= 0 ? paper.green : paper.accent}
+            big
+          />
+        </div>
+      </Card>
+
+      {/* Zone bar + sliders */}
+      <Card>
+        <div style={{ fontFamily: fontMono, fontSize: 9, letterSpacing: 2, textTransform: "uppercase", color: paper.inkDim, fontWeight: 700, marginBottom: 12 }}>
+          {t("coverage.title")}
+        </div>
+        <ZoneBar
+          fuelThreshold={fuelThreshold}
+          expenseThreshold={expenseThreshold}
+          fuelCoverThreshold={fuelCoverThreshold}
+          currentPrice={pricePerKm}
+        />
+
+        {/* 5 sliders */}
+        <SliderRow
+          label={t("coverage.slider.fuel_per_km")}
+          hint={rollingFuelPerKm > 0 ? t("coverage.default_12m") : "—"}
+          value={fuelPerKm}
+          min={0.01}
+          max={0.5}
+          step={0.005}
+          format={(v) => `€ ${v.toFixed(3)}/km`}
+          onChange={setFuelPerKm}
+        />
+        <SliderRow
+          label={t("coverage.slider.total_km")}
+          hint={avgHistKm > 0 ? t("coverage.default_5y") : "—"}
+          value={totalKm}
+          min={500}
+          max={Math.max(50000, totalKm * 1.5)}
+          step={100}
+          format={(v) => v.toLocaleString("nl-BE") + " km"}
+          onChange={setTotalKm}
+        />
+        <SliderRow
+          label={t("coverage.slider.pct_others")}
+          hint={ownerSplit.length > 0 ? t("coverage.default_5y") : "—"}
+          value={pctOthers}
+          min={0}
+          max={1}
+          step={0.01}
+          format={(v) => `${Math.round(v * 100)}%`}
+          onChange={setPctOthers}
+        />
+        <SliderRow
+          label={t("coverage.slider.expenses")}
+          hint={avgExpenses > 0 ? t("coverage.default_5y") : "—"}
+          value={expectedExpenses}
+          min={0}
+          max={Math.max(5000, expectedExpenses * 2)}
+          step={50}
+          format={(v) => fmtMoney(v)}
+          onChange={setExpectedExpenses}
+        />
+        <SliderRow
+          label={t("coverage.slider.price")}
+          hint={t("coverage.default_current")}
+          value={pricePerKm}
+          min={0.01}
+          max={Math.max(1.0, pricePerKm * 2)}
+          step={0.005}
+          format={(v) => `€ ${v.toFixed(3)}/km`}
+          onChange={setPricePerKm}
+        />
+
+        {/* Projection summary */}
+        <div style={{ background: paper.paperDeep, padding: "12px", marginTop: 8, marginBottom: 12 }}>
+          <div style={{ fontFamily: fontMono, fontSize: 8, letterSpacing: 1.5, textTransform: "uppercase", color: paper.inkDim, fontWeight: 700, marginBottom: 8 }}>
+            {t("coverage.projection.title")}
+          </div>
+          <Row label={t("coverage.projection.others_contribution")} value={fmtMoney(nonOwnerMarkup)} color={nonOwnerMarkup >= 0 ? paper.green : paper.accent} />
+          <Row label={t("coverage.projection.expenses")} value={fmtMoney(expectedExpenses)} />
+          <Row label={t("coverage.projection.owner_fuel")} value={fmtMoney(ownerFuelCost)} />
+          <div style={{ height: 0, borderTop: `1px dashed ${paper.inkMute}`, margin: "6px 0" }} />
+          <Row
+            label={t("coverage.projection.net")}
+            value={fmtMoney(Math.abs(ownerNet))}
+            color={ownerNet >= 0 ? paper.green : paper.accent}
+            big
+          />
+        </div>
+
+        {/* Save */}
+        <button
+          onClick={handleSave}
+          disabled={!fullCar || updateCar.isPending}
+          style={{
+            width: "100%",
+            padding: "11px",
+            background: paper.ink,
+            color: paper.paper,
+            border: "none",
+            cursor: !fullCar || updateCar.isPending ? "default" : "pointer",
+            opacity: !fullCar || updateCar.isPending ? 0.6 : 1,
+            fontFamily: fontMono,
+            fontSize: 10,
+            fontWeight: 700,
+            letterSpacing: 2,
+            textTransform: "uppercase",
+          }}
+        >
+          {updateCar.isPending ? "…" : t("coverage.save", { year })}
+        </button>
+      </Card>
+    </div>
+  );
+}

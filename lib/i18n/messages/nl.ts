@@ -409,6 +409,7 @@ export const nl = {
   "coverage.projection.net": "Netto eigenaar",
   "coverage.save": "Prijs opslaan voor {year}",
   "coverage.ytd": "Huidig jaar · {months} maanden",
+  "coverage.exact": "exact",
 
   // Rate assistant
   "rate.open": "Prijsassistent",

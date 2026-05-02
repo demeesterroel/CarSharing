@@ -410,6 +410,7 @@ export const en: Messages = {
   "coverage.projection.net": "Owner net",
   "coverage.save": "Save price for {year}",
   "coverage.ytd": "This year · {months} months",
+  "coverage.exact": "exact",
 
   // Rate assistant
   "rate.open": "Rate assistant",

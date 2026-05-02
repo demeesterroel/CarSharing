@@ -278,7 +278,7 @@ export function getHistoricalOwnerSplit(
     ORDER BY t.car_id, year
   `
     )
-    .all(currentYear - 5, currentYear - 1) as CarOwnerSplit[];
+    .all(currentYear - 5, currentYear) as CarOwnerSplit[];
 }
 
 export function getHistoricalExpenses(

@@ -635,6 +635,7 @@ function OwnerFleet({ myName }: { myName: string | null }) {
   const rollingFuel = summary?.rollingFuelPerKm ?? [];
   const ownerSplitAll = summary?.historicalOwnerSplit ?? [];
   const historicalExpensesAll = summary?.historicalExpenses ?? [];
+  const priceHistory = summary?.priceHistory ?? [];
 
   const goToDetail = (id: number) => {
     const p = new URLSearchParams();
@@ -695,6 +696,7 @@ function OwnerFleet({ myName }: { myName: string | null }) {
           historicalKm={historicalKm.filter((h) => h.car_id === screen.carId)}
           ownerSplit={ownerSplitAll.filter((s) => s.car_id === screen.carId)}
           historicalExpenses={historicalExpensesAll.filter((e) => e.car_id === screen.carId)}
+          priceHistory={priceHistory.filter((h) => h.car_id === screen.carId)}
           rollingFuelPerKm={carRollingFuel?.fuel_per_km ?? 0}
           year={year}
         />

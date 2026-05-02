@@ -6,7 +6,7 @@ import { useUpdateCar } from "@/hooks/use-cars";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Card, Row } from "@/app/admin/_shared";
-import type { CarPnL, CarYearKm, CarOwnerSplit, CarYearExpenses } from "@/lib/queries/admin";
+import type { CarPnL, CarYearKm, CarOwnerSplit, CarYearExpenses, CarPriceHistory } from "@/lib/queries/admin";
 import type { Car } from "@/types";
 
 export interface CostCoverageScreenProps {
@@ -15,6 +15,7 @@ export interface CostCoverageScreenProps {
   historicalKm: CarYearKm[];
   ownerSplit: CarOwnerSplit[];
   historicalExpenses: CarYearExpenses[];
+  priceHistory: CarPriceHistory[];
   rollingFuelPerKm: number; // 0 = no data
   year: number;
 }
@@ -44,13 +45,11 @@ function ZoneBar({
 
   return (
     <div style={{ marginBottom: 16 }}>
-      {/* Colour bar */}
       <div style={{ position: "relative", height: 14, display: "flex", borderRadius: 2, overflow: "hidden", marginBottom: 20 }}>
         <div style={{ width: zone1W, background: paper.accent }} />
         <div style={{ width: zone2W, background: paper.amber }} />
         <div style={{ width: zone3W, background: paper.green, opacity: 0.55 }} />
         <div style={{ width: zone4W, background: paper.green }} />
-        {/* Marker */}
         <div style={{ position: "absolute", top: -3, left: markerLeft, transform: "translateX(-50%)", display: "flex", flexDirection: "column", alignItems: "center" }}>
           <div style={{ width: 2, height: 20, background: paper.ink }} />
           <div style={{ fontFamily: fontMono, fontSize: 7, fontWeight: 700, color: paper.ink, whiteSpace: "nowrap", marginTop: 2 }}>
@@ -58,7 +57,6 @@ function ZoneBar({
           </div>
         </div>
       </div>
-      {/* Threshold labels */}
       <div style={{ display: "flex", justifyContent: "space-between", fontFamily: fontMono, fontSize: 7, color: paper.inkMute, letterSpacing: 0.5 }}>
         <span>0</span>
         <span>€{fuelThreshold.toFixed(2)} brandstof</span>
@@ -80,6 +78,7 @@ function SliderRow({
   step,
   format,
   onChange,
+  readOnly = false,
 }: {
   label: string;
   hint: string;
@@ -89,6 +88,7 @@ function SliderRow({
   step: number;
   format: (v: number) => string;
   onChange: (v: number) => void;
+  readOnly?: boolean;
 }) {
   return (
     <div style={{ marginBottom: 14 }}>
@@ -96,18 +96,26 @@ function SliderRow({
         <span style={{ textTransform: "uppercase", letterSpacing: 1 }}>{label}</span>
         <span style={{ color: paper.inkDim }}>{hint}</span>
       </div>
-      <input
-        type="range"
-        min={min}
-        max={max}
-        step={step}
-        value={value}
-        onChange={(e) => onChange(parseFloat(e.target.value))}
-        style={{ width: "100%", accentColor: paper.ink, marginBottom: 2 }}
-      />
-      <div style={{ fontFamily: fontMono, fontSize: 11, fontWeight: 700, textAlign: "center", color: paper.ink }}>
-        {format(value)}
-      </div>
+      {readOnly ? (
+        <div style={{ fontFamily: fontMono, fontSize: 11, fontWeight: 700, textAlign: "center", color: paper.ink, padding: "6px 0" }}>
+          {format(value)}
+        </div>
+      ) : (
+        <>
+          <input
+            type="range"
+            min={min}
+            max={max}
+            step={step}
+            value={value}
+            onChange={(e) => onChange(parseFloat(e.target.value))}
+            style={{ width: "100%", accentColor: paper.ink, marginBottom: 2 }}
+          />
+          <div style={{ fontFamily: fontMono, fontSize: 11, fontWeight: 700, textAlign: "center", color: paper.ink }}>
+            {format(value)}
+          </div>
+        </>
+      )}
     </div>
   );
 }
@@ -128,6 +136,16 @@ function zoneKey(zone: Zone): ZoneKey {
   return `coverage.zone.${zone}` as ZoneKey;
 }
 
+// Finds the price in effect for a given year from price history entries (already filtered to this car).
+// Returns the price_per_km of the most recent entry with effective_from ≤ YYYY-12-31, or the fallback.
+function priceForYear(history: CarPriceHistory[], year: number, fallback: number): number {
+  const endOfYear = `${year}-12-31`;
+  const candidates = history
+    .filter((h) => h.effective_from <= endOfYear)
+    .sort((a, b) => (b.effective_from > a.effective_from ? 1 : -1));
+  return candidates[0]?.price_per_km ?? fallback;
+}
+
 // ── Main component ────────────────────────────────────────────
 
 export function CostCoverageScreen({
@@ -135,7 +153,8 @@ export function CostCoverageScreen({
   fullCar,
   historicalKm,
   ownerSplit,
-  historicalExpenses,
+  historicalExpenses: _historicalExpenses,
+  priceHistory,
   rollingFuelPerKm,
   year,
 }: CostCoverageScreenProps) {
@@ -143,7 +162,21 @@ export function CostCoverageScreen({
   const qc = useQueryClient();
   const updateCar = useUpdateCar();
 
-  // ── Compute historical defaults ───────────────────────────
+  const currentYear = new Date().getFullYear();
+  const isHistoric = year < currentYear;
+
+  // ── Exact values for historic years (computed from actuals) ───
+
+  const yearSplit = ownerSplit.find((s) => s.year === year);
+  const exactPctOthers =
+    yearSplit && yearSplit.owner_km + yearSplit.non_owner_km > 0
+      ? yearSplit.non_owner_km / (yearSplit.owner_km + yearSplit.non_owner_km)
+      : 0;
+  const exactFuelPerKm = car.trip_km > 0 ? car.fuel_amount / car.trip_km : 0;
+  const exactExpenses = car.expense_amount ?? 0;
+  const exactPrice = priceForYear(priceHistory, year, car.car_price_per_km);
+
+  // ── Defaults for current-year forecast sliders ────────────────
 
   const avgHistKm =
     historicalKm.length > 0
@@ -159,26 +192,34 @@ export function CostCoverageScreen({
       : 0.65;
 
   const avgExpenses =
-    historicalExpenses.length > 0
-      ? Math.round(historicalExpenses.reduce((s, e) => s + e.amount, 0) / historicalExpenses.length)
+    _historicalExpenses.length > 0
+      ? Math.round(_historicalExpenses.reduce((s, e) => s + e.amount, 0) / _historicalExpenses.length)
       : 0;
 
   const ytdFuelPerKm = car.trip_km > 0 ? car.fuel_amount / car.trip_km : 0;
   const defaultFuelPerKm = rollingFuelPerKm > 0 ? rollingFuelPerKm : ytdFuelPerKm;
 
-  // ── Slider state ──────────────────────────────────────────
+  // ── Slider state ──────────────────────────────────────────────
+  // For historic years, initialize from exact actuals.
+  // For current year, initialize from rolling/historical averages.
 
-  const [fuelPerKm, setFuelPerKm] = useState(defaultFuelPerKm || 0.12);
+  const [fuelPerKm, setFuelPerKm] = useState(
+    isHistoric ? exactFuelPerKm : (defaultFuelPerKm || 0.12)
+  );
   const [totalKm, setTotalKm] = useState(
-    car.expected_km ?? (avgHistKm || car.prev_year_trip_km || 14000)
+    isHistoric ? car.trip_km : (car.expected_km ?? (avgHistKm || car.prev_year_trip_km || 14000))
   );
-  const [pctOthers, setPctOthers] = useState(Math.round(avgOthersPct * 100) / 100);
+  const [pctOthers, setPctOthers] = useState(
+    isHistoric ? Math.round(exactPctOthers * 100) / 100 : Math.round(avgOthersPct * 100) / 100
+  );
   const [expectedExpenses, setExpectedExpenses] = useState(
-    avgExpenses || car.expense_amount || 0
+    isHistoric ? exactExpenses : (avgExpenses || car.expense_amount || 0)
   );
-  const [pricePerKm, setPricePerKm] = useState(car.car_price_per_km);
+  const [pricePerKm, setPricePerKm] = useState(
+    isHistoric ? exactPrice : car.car_price_per_km
+  );
 
-  // ── Derived projections ───────────────────────────────────
+  // ── Derived projections ───────────────────────────────────────
 
   const nonOwnerKm = totalKm * pctOthers;
   const ownerKm = totalKm * (1 - pctOthers);
@@ -204,12 +245,12 @@ export function CostCoverageScreen({
   const ownerNet = nonOwnerMarkup - expectedExpenses - ownerFuelCost;
   const color = zoneColor(zone);
 
-  // ── YTD snapshot values ───────────────────────────────────
+  // ── YTD snapshot ──────────────────────────────────────────────
 
   const currentMonth = new Date().getMonth() + 1;
   const ytdNet = car.net;
 
-  // ── Save ─────────────────────────────────────────────────
+  // ── Save ──────────────────────────────────────────────────────
 
   function handleSave() {
     if (!fullCar) return;
@@ -225,6 +266,15 @@ export function CostCoverageScreen({
     );
   }
 
+  // ── Hint labels ───────────────────────────────────────────────
+
+  const exactHint = t("coverage.exact");
+  const fuelHint = isHistoric ? exactHint : (rollingFuelPerKm > 0 ? t("coverage.default_12m") : "—");
+  const kmHint = isHistoric ? exactHint : (avgHistKm > 0 ? t("coverage.default_5y") : "—");
+  const othersHint = isHistoric ? exactHint : (ownerSplit.length > 0 ? t("coverage.default_5y") : "—");
+  const expensesHint = isHistoric ? exactHint : (avgExpenses > 0 ? t("coverage.default_5y") : "—");
+  const priceHint = isHistoric ? exactHint : t("coverage.default_current");
+
   return (
     <div>
       {/* Header */}
@@ -236,10 +286,10 @@ export function CostCoverageScreen({
           </div>
         </div>
         <div style={{ fontFamily: fontMono, fontSize: 9, color: paper.inkDim, letterSpacing: 1, textTransform: "uppercase" }}>
-          {t("coverage.ytd", { months: currentMonth })}
+          {isHistoric ? String(year) : t("coverage.ytd", { months: currentMonth })}
         </div>
 
-        {/* YTD actuals */}
+        {/* YTD / year actuals */}
         <div style={{ marginTop: 10, borderTop: `1px dashed ${paper.paperDark}`, paddingTop: 10 }}>
           <Row label={t("breakeven.revenue")} value={fmtMoney(car.trip_revenue)} color={paper.green} />
           <Row label={t("breakeven.expenses")} value={fmtMoney(car.variable_total)} />
@@ -264,59 +314,64 @@ export function CostCoverageScreen({
           currentPrice={pricePerKm}
         />
 
-        {/* 5 sliders */}
+        {/* 5 rows (sliders for current year, read-only for historic) */}
         <SliderRow
           label={t("coverage.slider.fuel_per_km")}
-          hint={rollingFuelPerKm > 0 ? t("coverage.default_12m") : "—"}
+          hint={fuelHint}
           value={fuelPerKm}
           min={0.01}
           max={0.5}
           step={0.005}
           format={(v) => `€ ${v.toFixed(3)}/km`}
           onChange={setFuelPerKm}
+          readOnly={isHistoric}
         />
         <SliderRow
           label={t("coverage.slider.total_km")}
-          hint={avgHistKm > 0 ? t("coverage.default_5y") : "—"}
+          hint={kmHint}
           value={totalKm}
           min={500}
           max={Math.max(50000, totalKm * 1.5)}
           step={100}
           format={(v) => v.toLocaleString("nl-BE") + " km"}
           onChange={setTotalKm}
+          readOnly={isHistoric}
         />
         <SliderRow
           label={t("coverage.slider.pct_others")}
-          hint={ownerSplit.length > 0 ? t("coverage.default_5y") : "—"}
+          hint={othersHint}
           value={pctOthers}
           min={0}
           max={1}
           step={0.01}
           format={(v) => `${Math.round(v * 100)}%`}
           onChange={setPctOthers}
+          readOnly={isHistoric}
         />
         <SliderRow
           label={t("coverage.slider.expenses")}
-          hint={avgExpenses > 0 ? t("coverage.default_5y") : "—"}
+          hint={expensesHint}
           value={expectedExpenses}
           min={0}
           max={Math.max(5000, expectedExpenses * 2)}
           step={50}
           format={(v) => fmtMoney(v)}
           onChange={setExpectedExpenses}
+          readOnly={isHistoric}
         />
         <SliderRow
           label={t("coverage.slider.price")}
-          hint={t("coverage.default_current")}
+          hint={priceHint}
           value={pricePerKm}
           min={0.01}
           max={Math.max(1.0, pricePerKm * 2)}
           step={0.005}
           format={(v) => `€ ${v.toFixed(3)}/km`}
           onChange={setPricePerKm}
+          readOnly={isHistoric}
         />
 
-        {/* Projection summary */}
+        {/* Projection / actuals summary */}
         <div style={{ background: paper.paperDeep, padding: "12px", marginTop: 8, marginBottom: 12 }}>
           <div style={{ fontFamily: fontMono, fontSize: 8, letterSpacing: 1.5, textTransform: "uppercase", color: paper.inkDim, fontWeight: 700, marginBottom: 8 }}>
             {t("coverage.projection.title")}
@@ -333,27 +388,29 @@ export function CostCoverageScreen({
           />
         </div>
 
-        {/* Save */}
-        <button
-          onClick={handleSave}
-          disabled={!fullCar || updateCar.isPending}
-          style={{
-            width: "100%",
-            padding: "11px",
-            background: paper.ink,
-            color: paper.paper,
-            border: "none",
-            cursor: !fullCar || updateCar.isPending ? "default" : "pointer",
-            opacity: !fullCar || updateCar.isPending ? 0.6 : 1,
-            fontFamily: fontMono,
-            fontSize: 10,
-            fontWeight: 700,
-            letterSpacing: 2,
-            textTransform: "uppercase",
-          }}
-        >
-          {updateCar.isPending ? "…" : t("coverage.save", { year })}
-        </button>
+        {/* Save button — only for current year */}
+        {!isHistoric && (
+          <button
+            onClick={handleSave}
+            disabled={!fullCar || updateCar.isPending}
+            style={{
+              width: "100%",
+              padding: "11px",
+              background: paper.ink,
+              color: paper.paper,
+              border: "none",
+              cursor: !fullCar || updateCar.isPending ? "default" : "pointer",
+              opacity: !fullCar || updateCar.isPending ? 0.6 : 1,
+              fontFamily: fontMono,
+              fontSize: 10,
+              fontWeight: 700,
+              letterSpacing: 2,
+              textTransform: "uppercase",
+            }}
+          >
+            {updateCar.isPending ? "…" : t("coverage.save", { year })}
+          </button>
+        )}
       </Card>
     </div>
   );

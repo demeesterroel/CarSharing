@@ -34,3 +34,9 @@ export const carSchema = z.object({
     .optional()
     .transform((v) => v ?? null),
 });
+
+export const ownerCarPatchSchema = z.object({
+  name: z.string().min(1),
+  price_per_km: z.number().positive(),
+  active: z.number().int().min(0).max(1).optional(),
+});

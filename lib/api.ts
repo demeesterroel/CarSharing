@@ -28,6 +28,11 @@ export function forbidden(msg = "Forbidden"): never {
   throw new HttpError(403, msg);
 }
 
+/** Throws an HttpError with status 409. */
+export function conflict(msg = "Conflict"): never {
+  throw new HttpError(409, msg);
+}
+
 /** Reads the session from the request and throws 403 if the user is not an admin. */
 export async function requireAdmin(req: Request) {
   const { getIronSession } = await import("iron-session");

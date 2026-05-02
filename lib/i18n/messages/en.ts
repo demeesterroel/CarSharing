@@ -389,6 +389,28 @@ export const en: Messages = {
   "breakeven.contrib_km": "Contribution / km",
   "breakeven.projected_burden": "Year-end projection",
 
+  // Cost coverage screen
+  "coverage.title": "Cost coverage",
+  "coverage.zone.red": "Loss per trip",
+  "coverage.zone.orange": "Costs not covered",
+  "coverage.zone.light_green": "Costs covered",
+  "coverage.zone.dark_green": "Fuel also covered",
+  "coverage.slider.fuel_per_km": "Fuel / km",
+  "coverage.slider.total_km": "Total km / year",
+  "coverage.slider.pct_others": "% others",
+  "coverage.slider.expenses": "Expected costs",
+  "coverage.slider.price": "Price / km",
+  "coverage.default_12m": "12-month avg",
+  "coverage.default_5y": "5-year avg",
+  "coverage.default_current": "current",
+  "coverage.projection.title": "Projection",
+  "coverage.projection.others_contribution": "Others' contribution",
+  "coverage.projection.expenses": "Costs to cover",
+  "coverage.projection.owner_fuel": "Own fuel",
+  "coverage.projection.net": "Owner net",
+  "coverage.save": "Save price for {year}",
+  "coverage.ytd": "This year · {months} months",
+
   // Rate assistant
   "rate.open": "Rate assistant",
   "rate.title": "Set the year's price",

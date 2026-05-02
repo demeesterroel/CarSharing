@@ -388,6 +388,28 @@ export const nl = {
   "breakeven.contrib_km": "Bijdrage / km",
   "breakeven.projected_burden": "Verwacht jaareinde",
 
+  // Cost coverage screen
+  "coverage.title": "Kostendekking",
+  "coverage.zone.red": "Verlies per rit",
+  "coverage.zone.orange": "Kosten niet gedekt",
+  "coverage.zone.light_green": "Kosten gedekt",
+  "coverage.zone.dark_green": "Brandstof ook gedekt",
+  "coverage.slider.fuel_per_km": "Brandstof / km",
+  "coverage.slider.total_km": "Totale km / jaar",
+  "coverage.slider.pct_others": "% anderen",
+  "coverage.slider.expenses": "Verwachte kosten",
+  "coverage.slider.price": "Prijs / km",
+  "coverage.default_12m": "gem. 12 mnd",
+  "coverage.default_5y": "gem. 5 jaar",
+  "coverage.default_current": "huidig",
+  "coverage.projection.title": "Prognose",
+  "coverage.projection.others_contribution": "Bijdrage anderen",
+  "coverage.projection.expenses": "Te dekken kosten",
+  "coverage.projection.owner_fuel": "Eigen brandstof",
+  "coverage.projection.net": "Netto eigenaar",
+  "coverage.save": "Prijs opslaan voor {year}",
+  "coverage.ytd": "Huidig jaar · {months} maanden",
+
   // Rate assistant
   "rate.open": "Prijsassistent",
   "rate.title": "Stel de jaarprijs in",

@@ -10,7 +10,7 @@ import { useMe } from "@/hooks/use-me";
 import { useAdminSettings } from "@/hooks/use-admin-settings";
 import { apiFetch } from "@/lib/api/client";
 import { Card, Row, Perf } from "../_shared";
-import type { MemberStatement, Transfer } from "@/types";
+import type { MemberStatement, AnnotatedTransfer } from "@/types";
 
 function fmtL(liters: number): string {
   return liters.toLocaleString("nl-BE", { minimumFractionDigits: 1, maximumFractionDigits: 1 });
@@ -241,21 +241,150 @@ function BreakdownCarRow({
   );
 }
 
+function TransferPaymentRow({
+  transfer,
+}: {
+  transfer: AnnotatedTransfer;
+}) {
+  const t = useT();
+  const ps = transfer.payment_status;
+  if (!ps) return null; // co-op is the payer, no tracking
+
+  const pct = transfer.amount > 0 ? Math.max(0, Math.min(1, ps.paid / transfer.amount)) : 1;
+  const barFilled = Math.round(pct * 10);
+  const statusColor =
+    ps.open < 0.005 ? paper.green : ps.paid > 0.005 ? paper.blue : paper.accent;
+  const statusLabel =
+    ps.open < 0.005
+      ? t("settlement.fully_paid")
+      : ps.paid > 0.005
+        ? t("settlement.partially_paid")
+        : t("settlement.unpaid");
+
+  return (
+    <div
+      style={{
+        padding: "6px 14px 10px",
+        borderTop: `1px dashed ${paper.paperDark}`,
+        background: paper.paperDeep,
+      }}
+    >
+      {/* Row 1: Te betalen | Openstaand */}
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          fontFamily: fontMono,
+          fontSize: 9,
+          color: paper.inkDim,
+          letterSpacing: 1,
+          marginBottom: 4,
+        }}
+      >
+        <span>{t("settlement.payment_due")}: {fmtMoney(transfer.amount)}</span>
+        <span style={{ color: ps.open > 0.005 ? paper.accent : paper.inkMute }}>
+          {t("settlement.payment_open")}: {fmtMoney(ps.open)}
+        </span>
+      </div>
+      {/* Row 2: Betaald | progress bar | status label */}
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          fontFamily: fontMono,
+          fontSize: 9,
+          color: paper.inkDim,
+          letterSpacing: 0.5,
+          marginBottom: 4,
+        }}
+      >
+        <span>{t("settlement.payment_paid")}: {fmtMoney(ps.paid)}</span>
+        <span style={{ color: statusColor, letterSpacing: 2 }}>
+          {"●".repeat(barFilled)}{"○".repeat(10 - barFilled)}
+          {" "}{Math.round(pct * 100)}%
+        </span>
+        <span style={{ color: statusColor, fontWeight: 700 }}>{statusLabel}</span>
+      </div>
+      {/* Individual payments with dates */}
+      {ps.payments.length > 0 && (
+        <div style={{ marginBottom: 4 }}>
+          {ps.payments.map((p) => (
+            <div
+              key={p.id}
+              style={{
+                display: "grid",
+                gridTemplateColumns: "16px 90px 1fr",
+                fontFamily: fontMono,
+                fontSize: 9,
+                color: paper.inkMute,
+                letterSpacing: 0.5,
+              }}
+            >
+              <span />
+              <span>{p.date}</span>
+              <span>{fmtMoney(p.amount)}</span>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function PaymentSummaryBanner({ data }: { data: { all_paid: boolean; transfers: AnnotatedTransfer[] } }) {
+  const t = useT();
+  const outstanding = data.transfers.filter(
+    (tr) => tr.payment_status !== null && (tr.payment_status?.open ?? 0) > 0.005
+  );
+  const count = outstanding.length;
+  const isAllPaid = data.all_paid;
+
+  if (data.transfers.filter((tr) => tr.payment_status !== null).length === 0) return null;
+
+  return (
+    <div
+      style={{
+        padding: "10px 14px",
+        background: isAllPaid ? paper.green : paper.accent,
+        color: paper.paper,
+        marginBottom: 12,
+        display: "flex",
+        alignItems: "center",
+        gap: 8,
+      }}
+    >
+      <span style={{ fontFamily: fontMono, fontSize: 12, fontWeight: 700 }}>
+        {isAllPaid ? "✓" : "!"}
+      </span>
+      <span style={{ fontFamily: fontMono, fontSize: 9, letterSpacing: 0.5 }}>
+        {isAllPaid
+          ? t("settlement.payment_all_paid")
+          : t(count === 1 ? "settlement.payment_outstanding_one" : "settlement.payment_outstanding", { count })}
+      </span>
+    </div>
+  );
+}
+
 function NonOwnerMemberCard({
   m,
   year,
   bankAccount,
+  settlementTransfer,
+  showAll,
 }: {
   m: MemberStatement;
   year: number;
   bankAccount: string;
+  settlementTransfer: AnnotatedTransfer | undefined;
+  showAll: boolean;
 }) {
   const t = useT();
   const [open, setOpen] = useState(false);
   const [msgCopied, setMsgCopied] = useState(false);
 
   const s1 = m.s1 ?? 0;
-  const netColor = amtColor(s1);
+  const netColor = amtColor(-s1);
 
   const totalKm = m.car_eras.reduce((s, e) => s + e.trip_km, 0);
   const totalTripAmt = m.car_eras.reduce((s, e) => s + e.trip_amount, 0);
@@ -331,7 +460,34 @@ function NonOwnerMemberCard({
     setTimeout(() => setMsgCopied(false), 2000);
   };
 
+  const ps = settlementTransfer?.payment_status ?? null;
+  const borderColor = ps == null ? paper.ink : ps.open < 0.005 ? paper.green : paper.accent;
+  const isSlim = !showAll && borderColor !== paper.accent;
+
   const toggle = () => setOpen((v) => !v);
+
+  if (isSlim) {
+    return (
+      <div
+        style={{
+          background: paper.paper,
+          marginBottom: 2,
+          borderLeft: `3px solid ${borderColor}`,
+          display: "flex",
+          alignItems: "center",
+          padding: "3px 14px",
+          gap: 8,
+        }}
+      >
+        <span style={{ fontFamily: fontSerif, fontSize: 11, color: paper.inkMute, flex: "1 1 auto" }}>
+          {m.person_name}
+        </span>
+        <span style={{ fontFamily: fontMono, fontSize: 10, color: netColor }}>
+          {signPrefix(-s1)}{fmtMoney(s1)}
+        </span>
+      </div>
+    );
+  }
 
   return (
     <div
@@ -339,7 +495,7 @@ function NonOwnerMemberCard({
         background: paper.paper,
         marginBottom: 6,
         boxShadow: "0 1px 4px rgba(0,0,0,0.07)",
-        borderLeft: `3px solid ${paper.ink}`,
+        borderLeft: `3px solid ${borderColor}`,
       }}
     >
       {/* Header row: name | flex spacer | amount | [stuur bericht] */}
@@ -381,7 +537,7 @@ function NonOwnerMemberCard({
           }}
           onClick={toggle}
         >
-          {signPrefix(s1)}
+          {signPrefix(-s1)}
           {fmtMoney(s1)}
         </span>
 
@@ -460,9 +616,28 @@ function NonOwnerMemberCard({
               Saldo
             </span>
             <span style={{ fontFamily: fontMono, fontSize: 14, fontWeight: 700, color: netColor }}>
-              {signPrefix(s1)}{fmtMoney(s1)}
+              {signPrefix(-s1)}{fmtMoney(s1)}
             </span>
           </div>
+
+          {/* Payment status */}
+          {settlementTransfer && (
+            <div style={{ marginTop: 10 }}>
+              <div
+                style={{
+                  fontFamily: fontMono,
+                  fontSize: 9,
+                  color: paper.inkDim,
+                  letterSpacing: 1.5,
+                  textTransform: "uppercase",
+                  marginBottom: 4,
+                }}
+              >
+                {t("settlement.payment_status_title")}
+              </div>
+              <TransferPaymentRow transfer={settlementTransfer} />
+            </div>
+          )}
         </div>
       )}
     </div>
@@ -474,11 +649,15 @@ function OwnerMemberCard({
   year,
   bankAccount,
   crossRows,
+  settlementTransfer,
+  showAll,
 }: {
   m: MemberStatement;
   year: number;
   bankAccount: string;
   crossRows: { car_short: string; row: import("@/types").CarParticipantRow }[];
+  settlementTransfer: AnnotatedTransfer | undefined;
+  showAll: boolean;
 }) {
   const t = useT();
   const [open, setOpen] = useState(false);
@@ -486,7 +665,7 @@ function OwnerMemberCard({
   const s2 = m.s2 ?? 0;
   const s1c = m.s1_cross ?? 0;
   const net = m.net ?? s2;
-  const netColor = amtColor(net);
+  const netColor = amtColor(-net);
   const hasCrossUse = crossRows.length > 0;
 
   const copyMsg = () => {
@@ -552,7 +731,34 @@ function OwnerMemberCard({
     setTimeout(() => setMsgCopied(false), 2000);
   };
 
+  const ps = settlementTransfer?.payment_status ?? null;
+  const borderColor = ps == null ? paper.blue : ps.open < 0.005 ? paper.green : paper.accent;
+  const isSlim = !showAll && borderColor !== paper.accent;
+
   const toggle = () => setOpen((v) => !v);
+
+  if (isSlim) {
+    return (
+      <div
+        style={{
+          background: paper.paper,
+          marginBottom: 2,
+          borderLeft: `3px solid ${borderColor}`,
+          display: "flex",
+          alignItems: "center",
+          padding: "3px 14px",
+          gap: 8,
+        }}
+      >
+        <span style={{ fontFamily: fontSerif, fontSize: 11, color: paper.inkMute, flex: "1 1 auto" }}>
+          {m.person_name}
+        </span>
+        <span style={{ fontFamily: fontMono, fontSize: 10, color: netColor }}>
+          {signPrefix(-net)}{fmtMoney(net)}
+        </span>
+      </div>
+    );
+  }
 
   return (
     <div
@@ -560,7 +766,7 @@ function OwnerMemberCard({
         background: paper.paper,
         marginBottom: 6,
         boxShadow: "0 1px 4px rgba(0,0,0,0.07)",
-        borderLeft: `3px solid ${paper.blue}`,
+        borderLeft: `3px solid ${borderColor}`,
       }}
     >
       <div style={{ display: "flex", alignItems: "center", padding: "10px 14px", gap: 10 }}>
@@ -593,7 +799,7 @@ function OwnerMemberCard({
           }}
           onClick={toggle}
         >
-          {signPrefix(net)}
+          {signPrefix(-net)}
           {fmtMoney(net)}
         </span>
         <button
@@ -725,6 +931,25 @@ function OwnerMemberCard({
                 coöp ({bankAccount}) → {m.person_name}
               </div>
             )}
+
+            {/* Payment status */}
+            {settlementTransfer && (
+              <div style={{ marginTop: 10 }}>
+                <div
+                  style={{
+                    fontFamily: fontMono,
+                    fontSize: 9,
+                    color: paper.inkDim,
+                    letterSpacing: 1.5,
+                    textTransform: "uppercase",
+                    marginBottom: 4,
+                  }}
+                >
+                  {t("settlement.payment_status_title")}
+                </div>
+                <TransferPaymentRow transfer={settlementTransfer} />
+              </div>
+            )}
           </div>
         </div>
       )}
@@ -825,6 +1050,7 @@ export default function AdminSettlementPage() {
     if (newYear === currentYear) p.delete("year"); else p.set("year", String(newYear));
     router.replace(`${pathname}?${p.toString()}`, { scroll: false });
   };
+  const [showAll, setShowAll] = useState(false);
   const { data: earliest = currentYear } = useEarliestDashboardYear();
   const { data, isLoading } = useSettlement(year);
   const qc = useQueryClient();
@@ -851,13 +1077,34 @@ export default function AdminSettlementPage() {
       <div style={{ position: "relative", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 12 }}>
         <YearPicker year={year} earliest={earliest} current={currentYear} onChange={(y) => setYear(y)} />
         {data && data.members.length > 0 && (
-          <button
-            onClick={handleDownload}
-            title="Download als .md"
-            style={{ position: "absolute", right: 0, padding: "6px 10px", background: "transparent", border: `1.5px solid ${paper.ink}`, color: paper.ink, cursor: "pointer", fontFamily: fontMono, fontSize: 12, lineHeight: 1 }}
-          >
-            ↓
-          </button>
+          <>
+            <button
+              onClick={() => setShowAll((v) => !v)}
+              style={{
+                position: "absolute",
+                left: 0,
+                fontFamily: fontMono,
+                fontSize: 8,
+                fontWeight: 700,
+                letterSpacing: 1,
+                textTransform: "uppercase",
+                background: "transparent",
+                color: paper.inkMute,
+                border: `1px solid ${paper.paperDark}`,
+                cursor: "pointer",
+                padding: "4px 10px",
+              }}
+            >
+              {showAll ? `≡` : `⚠`}
+            </button>
+            <button
+              onClick={handleDownload}
+              title="Download als .md"
+              style={{ position: "absolute", right: 0, padding: "6px 10px", background: "transparent", border: `1.5px solid ${paper.ink}`, color: paper.ink, cursor: "pointer", fontFamily: fontMono, fontSize: 12, lineHeight: 1 }}
+            >
+              ↓
+            </button>
+          </>
         )}
       </div>
 
@@ -966,6 +1213,10 @@ export default function AdminSettlementPage() {
                       m={m}
                       year={year}
                       bankAccount={settings?.coop_bank_account ?? ""}
+                      settlementTransfer={data.transfers.find(
+                        (tr) => tr.step === 1 && tr.from === m.person_name
+                      )}
+                      showAll={showAll}
                     />
                   ))}
 
@@ -1007,6 +1258,10 @@ export default function AdminSettlementPage() {
                           .filter((r) => r.row_type === "cross_owner" && r.person_name === m.person_name)
                           .map((row) => ({ car_short: cs.car_short, row }))
                       )}
+                      settlementTransfer={data.transfers.find(
+                        (tr) => tr.step === 2 && tr.to === m.person_name
+                      )}
+                      showAll={showAll}
                     />
                   ))}
 
@@ -1025,32 +1280,19 @@ export default function AdminSettlementPage() {
                         gap: 8,
                       }}
                     >
-                      <span
-                        style={{
-                          fontFamily: fontMono,
-                          fontSize: 10,
-                          fontWeight: 700,
-                          marginRight: 4,
-                        }}
-                      >
+                      <span style={{ fontFamily: fontMono, fontSize: 10, fontWeight: 700, marginRight: 4 }}>
                         {data.verify_ok ? "✓" : "⚠"}
                       </span>
-                      <span
-                        style={{ fontFamily: fontMono, fontSize: 9, letterSpacing: 0.5, flex: 1 }}
-                      >
-                        Stap 1: {fmtMoney(Math.abs(step1Total))}
-                        {"   ·   "}
-                        Stap 2: {fmtMoney(Math.abs(step2Total))}
+                      <span style={{ fontFamily: fontMono, fontSize: 9, letterSpacing: 0.5, flex: 1, lineHeight: 1.7 }}>
+                        <span style={{ display: "block" }}>
+                          {t("settlement.balance_members_to_coop", { amount: `${step1Total <= 0 ? "+" : "−"}${fmtMoney(Math.abs(step1Total))}` })}
+                        </span>
+                        <span style={{ display: "block" }}>
+                          {t("settlement.balance_coop_to_owners", { amount: `${step2Total <= 0 ? "+" : "−"}${fmtMoney(Math.abs(step2Total))}` })}
+                        </span>
                       </span>
-                      <span
-                        style={{
-                          fontFamily: fontMono,
-                          fontSize: 10,
-                          fontWeight: 700,
-                          letterSpacing: 1,
-                        }}
-                      >
-                        Saldo: {fmtMoney(balance)}
+                      <span style={{ fontFamily: fontMono, fontSize: 10, fontWeight: 700, letterSpacing: 1 }}>
+                        {t("settlement.balance_total", { amount: fmtMoney(balance) })}
                       </span>
                     </div>
                   );
@@ -1059,6 +1301,8 @@ export default function AdminSettlementPage() {
               </>
             );
           })()}
+
+          {data && <PaymentSummaryBanner data={data} />}
 
           {me?.isAdmin && (
             <button

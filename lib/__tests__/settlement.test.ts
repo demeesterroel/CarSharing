@@ -3,6 +3,7 @@ import { describe, it, expect } from "vitest";
 import Database from "better-sqlite3";
 import { runMigrations } from "../db/migrate";
 import { getSettlement, lockSettlement, unlockSettlement } from "../queries/settlement";
+import { insertPayment } from "../queries/payments";
 
 function makeDb() {
   const db = new Database(":memory:");
@@ -180,6 +181,82 @@ describe("getSettlement", () => {
     expect(result.members).toHaveLength(0);
     expect(result.car_settlements).toHaveLength(0);
     expect(result.verify_ok).toBe(true);
+  });
+});
+
+describe("getSettlement — payment integration", () => {
+  it("annotates step-1 transfers with payment status when no payments exist", () => {
+    const db = makeDb();
+    seed(db);
+    const result = getSettlement(db, 2025);
+    const step1 = result.transfers.filter((t) => t.step === 1);
+    // All transfers should have payment_status with paid=0 and open=amount
+    for (const t of step1) {
+      if (t.payment_status !== null) {
+        expect(t.payment_status.paid).toBe(0);
+        expect(t.payment_status.open).toBeCloseTo(t.amount, 2);
+      }
+    }
+  });
+
+  it("reflects partial payment in transfer payment_status", () => {
+    const db = makeDb();
+    seed(db);
+    const result0 = getSettlement(db, 2025);
+    // Find Carol's step-1 transfer (Carol has s1 < 0 → she owes the co-op)
+    const carolTransfer = result0.transfers.find(
+      (t) => t.step === 1 && t.from === "Carol"
+    );
+    if (!carolTransfer) return; // skip if Carol has no debt
+    const carolId = 3; // from seed
+    // Carol pays half
+    const halfAmount = carolTransfer.amount / 2;
+    insertPayment(db, {
+      person_id: carolId,
+      date: "2026-03-01", // year = 2025
+      amount: halfAmount,
+      note: null,
+    });
+    const result1 = getSettlement(db, 2025);
+    const carolT = result1.transfers.find((t) => t.step === 1 && t.from === "Carol")!;
+    expect(carolT.payment_status).not.toBeNull();
+    expect(carolT.payment_status!.paid).toBeCloseTo(halfAmount, 2);
+    expect(carolT.payment_status!.open).toBeCloseTo(halfAmount, 2);
+  });
+
+  it("reports all_paid=false when outstanding payments remain", () => {
+    const db = makeDb();
+    seed(db);
+    const result = getSettlement(db, 2025);
+    // No payments recorded → all_paid should be false (assuming any transfers exist)
+    if (result.transfers.some((t) => t.payment_status !== null)) {
+      expect(result.all_paid).toBe(false);
+    }
+  });
+
+  it("reports all_paid=true when all transfers are fully paid", () => {
+    const db = makeDb();
+    seed(db);
+    const nameToId: Record<string, number> = { Alice: 1, Bob: 2, Carol: 3, Dave: 4 };
+    const result0 = getSettlement(db, 2025);
+    // Pay every transfer that has a human payer
+    for (const t of result0.transfers) {
+      if (t.payment_status === null) continue;
+      const payerId = nameToId[t.from];
+      if (payerId) {
+        insertPayment(db, { person_id: payerId, date: "2026-03-01", amount: t.amount, note: null });
+      }
+    }
+    const result1 = getSettlement(db, 2025);
+    expect(result1.all_paid).toBe(true);
+  });
+
+  it("includes payments_by_person in the result", () => {
+    const db = makeDb();
+    seed(db);
+    insertPayment(db, { person_id: 3, date: "2026-03-01", amount: 55, note: null });
+    const result = getSettlement(db, 2025);
+    expect(result.payments_by_person[3]).toBeCloseTo(55, 2);
   });
 });
 

@@ -503,8 +503,9 @@ function OwnerCarTile({
       return;
     }
     deleteCar.mutate(car.id, {
-      onError: () => {
-        toast.error(t("owner.car_has_history"));
+      onError: (err: unknown) => {
+        const apiErr = err as { status?: number; message?: string };
+        toast.error(apiErr.status === 409 ? t("owner.car_has_history") : (apiErr.message ?? "Error"));
         setDeleteConfirm(false);
       },
     });

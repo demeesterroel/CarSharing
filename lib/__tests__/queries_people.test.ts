@@ -199,13 +199,13 @@ describe("isOwner", () => {
     expect(isOwner(db, "Alice")).toBe(true);
   });
 
-  it("returns false when person only owns inactive cars", () => {
+  it("returns true when person only owns inactive cars (owner retains API access after deactivation)", () => {
     const db = makeDb();
     insertPerson(db, { ...basePerson, name: "Alice" });
     db.exec(
       `INSERT INTO cars (short,name,price_per_km,owner_name,owner_from,active) VALUES ('CA','Car A',0.2,'Alice','2020-01-01',0)`
     );
-    expect(isOwner(db, "Alice")).toBe(false);
+    expect(isOwner(db, "Alice")).toBe(true);
   });
 });
 

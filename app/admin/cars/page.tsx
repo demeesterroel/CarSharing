@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname, useSearchParams } from "next/navigation";
+import * as Dialog from "@radix-ui/react-dialog";
 import { useMe } from "@/hooks/use-me";
 import { paper, fontMono, fontSerif, fmtMoney } from "@/lib/paper-theme";
 import { useT } from "@/components/locale-provider";
@@ -13,13 +14,32 @@ import { toast } from "sonner";
 import { CarBadge } from "@/components/car-badge";
 import { BreakEvenCard } from "@/components/break-even-card";
 import { RateAssistant } from "@/components/rate-assistant";
+import { Fab } from "@/components/fab";
 
 // ── Owner screen state ────────────────────────────────────────
 type OwnerScreen =
   | { view: "fleet" }
   | { view: "detail"; carId: number }
-  | { view: "rate"; carId: number }
-  | { view: "create" };
+  | { view: "rate"; carId: number };
+
+const overlayStyle: React.CSSProperties = {
+  position: "fixed",
+  inset: 0,
+  background: "rgba(0,0,0,0.45)",
+  zIndex: 49,
+};
+const sheetStyle: React.CSSProperties = {
+  position: "fixed",
+  bottom: 0,
+  left: "50%",
+  transform: "translateX(-50%)",
+  width: "min(100%, 480px)",
+  maxHeight: "92dvh",
+  borderRadius: "14px 14px 0 0",
+  background: paper.paperDeep,
+  zIndex: 50,
+  overflowY: "auto",
+};
 
 // ── Car Row (accordion) ───────────────────────────────────────
 function CarRow({
@@ -480,7 +500,7 @@ function OwnerCarTile({
 
   function handleSave() {
     updateCar.mutate(
-      { id: car.id, name, price_per_km: price, active: car.active } as Car & { id: number },
+      { ...car, name, price_per_km: price },
       {
         onSuccess: () => {
           setEditOpen(false);
@@ -492,7 +512,7 @@ function OwnerCarTile({
 
   function handleToggleActive() {
     updateCar.mutate(
-      { id: car.id, name: car.name, price_per_km: car.price_per_km, active: isActive ? 0 : 1 } as Car & { id: number },
+      { ...car, active: isActive ? 0 : 1 },
       { onSuccess: () => toast.success(t("toast.saved")) }
     );
   }
@@ -664,23 +684,34 @@ function OwnerCreateForm({ onBack }: { onBack: () => void }) {
 }
 
 // ── Owner fleet view ──────────────────────────────────────────
-function OwnerFleet({ myName }: { myName: string }) {
+function OwnerFleet({ myName }: { myName: string | null }) {
   const t = useT();
   const currentYear = new Date().getFullYear();
   const [year, setYear] = useState(currentYear);
   const [screen, setScreen] = useState<OwnerScreen>({ view: "fleet" });
+  const searchParams = useSearchParams();
+  const pathname = usePathname();
+  const router = useRouter();
 
   const { data: earliestYear = currentYear } = useEarliestDashboardYear();
   const { data: cars = [] } = useCars();
   const { data: summary } = useAdminSummary(year);
 
   const carMap = new Map(cars.map((c) => [c.id, c]));
-  const myCars = cars.filter((c) => c.owner_name === myName);
+  const myCars = myName ? cars.filter((c) => c.owner_name === myName) : cars;
   const allPnL = summary?.carPnL ?? [];
   const monthlyKm = summary?.monthlyCarKm ?? [];
   const contributions = summary?.personContributions ?? [];
   const historicalKm = summary?.historicalCarKm ?? [];
   const priceHistory = summary?.priceHistory ?? [];
+
+  const adding = searchParams.get("action") === "add";
+  const openAdd = () => {
+    const p = new URLSearchParams(searchParams.toString());
+    p.set("action", "add");
+    router.push(`${pathname}?${p.toString()}`, { scroll: false });
+  };
+  const closeAdd = () => router.back();
 
   if (screen.view === "detail") {
     const pnlCar = allPnL.find((c) => c.car_id === screen.carId);
@@ -723,10 +754,6 @@ function OwnerFleet({ myName }: { myName: string }) {
     );
   }
 
-  if (screen.view === "create") {
-    return <OwnerCreateForm onBack={() => setScreen({ view: "fleet" })} />;
-  }
-
   // Fleet list
   return (
     <div style={{ padding: "16px" }}>
@@ -743,17 +770,16 @@ function OwnerFleet({ myName }: { myName: string }) {
         </button>
       </div>
 
-      {/* Add car */}
-      <button onClick={() => setScreen({ view: "create" })} style={{ display: "block", width: "100%", marginBottom: 12, padding: "10px 14px", background: "transparent", border: `1.5px dashed ${paper.ink}`, color: paper.ink, fontFamily: fontMono, fontSize: 9, fontWeight: 700, letterSpacing: 1.5, textTransform: "uppercase", cursor: "pointer", textAlign: "center" }}>
-        + {t("owner.add_car")}
-      </button>
+      <Fab onClick={openAdd} label={t("owner.add_car")} />
 
       {myCars.length === 0 ? (
         <div style={{ fontFamily: fontMono, fontSize: 11, color: paper.inkMute, textAlign: "center", padding: "32px 0" }}>
           {t("owner.no_cars")}
         </div>
-      ) : (
-        myCars.map((car) => {
+      ) : (() => {
+        const activeCars = myCars.filter((c) => c.active !== 0);
+        const inactiveCars = myCars.filter((c) => c.active === 0);
+        const renderTile = (car: Car) => {
           const pnlCar = allPnL.find((c) => c.car_id === car.id);
           const m = pnlCar ? beMetrics(pnlCar) : null;
           return (
@@ -765,8 +791,33 @@ function OwnerFleet({ myName }: { myName: string }) {
               onRate={() => setScreen({ view: "rate", carId: car.id })}
             />
           );
-        })
-      )}
+        };
+        return (
+          <>
+            {activeCars.map(renderTile)}
+            {inactiveCars.length > 0 && (
+              <>
+                <div style={{ fontFamily: fontMono, fontSize: 9, color: paper.inkDim, letterSpacing: 2, textTransform: "uppercase", padding: "14px 0 8px", borderTop: `1.5px dashed ${paper.inkMute}`, marginTop: 4 }}>
+                  {t("admin.car_deactivated_section")}
+                </div>
+                {inactiveCars.map(renderTile)}
+              </>
+            )}
+          </>
+        );
+      })()}
+
+      <Dialog.Root open={adding} onOpenChange={(open) => { if (!open) closeAdd(); }}>
+        <Dialog.Portal>
+          <Dialog.Overlay style={overlayStyle} />
+          <Dialog.Content style={sheetStyle} aria-describedby={undefined}>
+            <Dialog.Title style={{ position: "absolute", width: 1, height: 1, overflow: "hidden", clip: "rect(0,0,0,0)" }}>
+              {t("owner.add_car")}
+            </Dialog.Title>
+            <OwnerCreateForm onBack={closeAdd} />
+          </Dialog.Content>
+        </Dialog.Portal>
+      </Dialog.Root>
     </div>
   );
 }
@@ -785,6 +836,6 @@ export default function AdminWagensPage() {
   if (isLoading || !me) return null;
   if (!me.isAdmin && !me.isOwner) return null;
 
-  if (me.isAdmin) return <FleetTiles />;
+  if (me.isAdmin) return <OwnerFleet myName={null} />;
   return <OwnerFleet myName={me.personName!} />;
 }

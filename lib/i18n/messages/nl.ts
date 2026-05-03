@@ -376,6 +376,16 @@ export const nl = {
   "fleet.no_fixed": "Geen vaste kosten",
   "fleet.prev_year_km": "Vorig jaar: {km} km",
 
+  // Stats block
+  "stats.trips": "ritten",
+  "stats.trips_short": "rit.",
+  "stats.fillups": "tankbeurten",
+  "stats.fillups_short": "tk.",
+  "stats.others": "anderen",
+  "stats.own": "eigen",
+  "stats.expenses": "kosten",
+  "stats.expenses_short": "kst.",
+
   // Break-even detail (prijs tab)
   "breakeven.revenue": "Inkomsten ritten",
   "breakeven.expenses": "Variabele kosten",
@@ -390,6 +400,7 @@ export const nl = {
 
   // Cost coverage screen
   "coverage.title": "Kostendekking",
+  "coverage.open_hint": "Bekijk kostendekking & simuleer prijs/km",
   "coverage.zone.red": "Verlies per rit",
   "coverage.zone.orange": "Kosten niet gedekt",
   "coverage.zone.light_green": "Kosten gedekt",

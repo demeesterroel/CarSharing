@@ -253,7 +253,8 @@ export function CostCoverageScreen({
   // ── YTD snapshot ──────────────────────────────────────────────
 
   const currentMonth = new Date().getMonth() + 1;
-  const ytdNet = car.net;
+  const othersRevenue = car.trip_revenue - car.owner_trip_amount;
+  const ytdNet = othersRevenue - car.variable_total;
 
   // ── Save ──────────────────────────────────────────────────────
 
@@ -295,9 +296,41 @@ export function CostCoverageScreen({
           {isHistoric ? String(year) : t("coverage.ytd", { months: currentMonth })}
         </div>
 
+        {/* General stats */}
+        {(() => {
+          const othersTrips = car.trip_count - car.owner_trip_count;
+          const othersKm = car.trip_km - car.owner_trip_km;
+          const othersFuelCnt = car.fuel_count - car.owner_fuel_count;
+          const othersFuelL = car.fuel_liters - car.owner_fuel_liters;
+          const othersFuelAmt = car.fuel_amount - car.owner_fuel_amount;
+          const sub: React.CSSProperties = { paddingLeft: 12, display: "flex", justifyContent: "space-between", fontFamily: fontMono, fontSize: 9, color: paper.inkDim, marginBottom: 1 };
+          const head: React.CSSProperties = { display: "flex", justifyContent: "space-between", fontFamily: fontMono, fontSize: 11, fontWeight: 700, color: paper.ink, marginBottom: 2 };
+          return (
+            <div style={{ marginTop: 10, borderTop: `1px dashed ${paper.paperDark}`, paddingTop: 10 }}>
+              <div style={head}>
+                <span>{car.trip_count} {t("stats.trips")} · {car.trip_km.toLocaleString("nl-BE")} km</span>
+              </div>
+              <div style={sub}><span>{t("stats.others")}</span><span>{othersTrips} {t("stats.trips_short")} · {othersKm.toLocaleString("nl-BE")} km · {fmtMoney(othersRevenue)}</span></div>
+              <div style={sub}><span>{t("stats.own")}</span><span>{car.owner_trip_count} {t("stats.trips_short")} · {car.owner_trip_km.toLocaleString("nl-BE")} km · {fmtMoney(car.owner_trip_amount)}</span></div>
+
+              <div style={{ ...head, marginTop: 8 }}>
+                <span>{car.fuel_count} {t("stats.fillups")} · {car.fuel_liters.toFixed(0)} L · {fmtMoney(car.fuel_amount)}</span>
+              </div>
+              <div style={sub}><span>{t("stats.others")}</span><span>{othersFuelCnt} {t("stats.fillups_short")} · {othersFuelL.toFixed(0)} L · {fmtMoney(othersFuelAmt)}</span></div>
+              <div style={sub}><span>{t("stats.own")}</span><span>{car.owner_fuel_count} {t("stats.fillups_short")} · {car.owner_fuel_liters.toFixed(0)} L · {fmtMoney(car.owner_fuel_amount)}</span></div>
+
+              <div style={{ ...head, marginTop: 8 }}>
+                <span>{car.expense_count} {t("stats.expenses")} · {fmtMoney(car.expense_amount)}</span>
+              </div>
+              <div style={sub}><span>{t("stats.others")}</span><span>{car.expense_count - car.owner_expense_count} {t("stats.expenses_short")} · {fmtMoney(car.expense_amount - car.owner_expense_amount)}</span></div>
+              <div style={sub}><span>{t("stats.own")}</span><span>{car.owner_expense_count} {t("stats.expenses_short")} · {fmtMoney(car.owner_expense_amount)}</span></div>
+            </div>
+          );
+        })()}
+
         {/* YTD / year actuals */}
         <div style={{ marginTop: 10, borderTop: `1px dashed ${paper.paperDark}`, paddingTop: 10 }}>
-          <Row label={t("breakeven.revenue")} value={fmtMoney(car.trip_revenue)} color={paper.green} />
+          <Row label={t("breakeven.revenue")} value={fmtMoney(othersRevenue)} color={paper.green} />
           <Row label={t("breakeven.expenses")} value={fmtMoney(car.variable_total)} />
           <Row
             label={t("breakeven.net")}

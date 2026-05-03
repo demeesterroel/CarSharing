@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import { useQueryClient, useMutation } from "@tanstack/react-query";
+import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { paper, fontMono, fontSerif, fmtMoney } from "@/lib/paper-theme";
 import { useT } from "@/components/locale-provider";
 import { useEarliestDashboardYear } from "@/hooks/use-dashboard";
@@ -118,9 +119,7 @@ function YearPicker({
     cursor: "pointer",
   };
   return (
-    <div
-      style={{ display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 12 }}
-    >
+    <div style={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
       <button
         onClick={() => onChange(year - 1)}
         disabled={year <= earliest}
@@ -916,12 +915,104 @@ function CrossOwnerCard({ m }: { m: MemberStatement }) {
   );
 }
 
+function generateSettlementMd(data: import("@/types").SettlementResult, year: number): string {
+  const fmt = (n: number) =>
+    n.toLocaleString("nl-BE", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const sign = (n: number) => (n >= 0 ? `+€ ${fmt(n)}` : `−€ ${fmt(Math.abs(n))}`);
+
+  const lines: string[] = [];
+  lines.push(`# Afrekening ${year}`);
+  if (data.frozen) {
+    lines.push(`\n> ✓ Bevroren${data.settled_by ? ` door ${data.settled_by}` : ""}${data.settled_at ? ` op ${data.settled_at.slice(0, 10)}` : ""}`);
+  }
+
+  const nonOwners = data.members.filter((m) => !m.is_owner);
+  const owners = data.members.filter((m) => m.is_owner);
+  const step1Total = Math.round(nonOwners.reduce((s, m) => s + (m.s1 ?? 0), 0) * 100) / 100;
+  const step2Total = Math.round(owners.reduce((s, m) => s + (m.s2 ?? 0), 0) * 100) / 100;
+
+  // Step 1
+  lines.push(`\n## Stap 1 — Leden → Coöp  (${sign(step1Total)})\n`);
+  for (const m of [...nonOwners].sort((a, b) => a.person_name.localeCompare(b.person_name, "nl"))) {
+    lines.push(`### ${m.person_name}  ${sign(m.s1 ?? 0)}`);
+    for (const e of m.car_eras) {
+      lines.push(`- **${e.car_name}** (${e.owner_name})`);
+      lines.push(`  - Ritten: ${e.trip_km} km · € ${fmt(e.trip_amount)}`);
+      if (e.fuel_amount) lines.push(`  - Brandstof: ${fmtL(e.fuel_liters)} L · € ${fmt(e.fuel_amount)}`);
+      if (e.expense_amount) lines.push(`  - Kosten: € ${fmt(e.expense_amount)}`);
+      lines.push(`  - Saldo: ${sign(e.balance)}`);
+    }
+  }
+
+  // Step 2
+  lines.push(`\n## Stap 2 — Coöp → Eigenaars  (${sign(step2Total)})\n`);
+  for (const m of [...owners].sort((a, b) => a.person_name.localeCompare(b.person_name, "nl"))) {
+    lines.push(`### ${m.person_name}  ${sign(m.s2 ?? 0)}`);
+    for (const e of m.car_eras) {
+      const nLabel = e.n_c_star != null ? sign(e.n_c_star) : sign(e.balance);
+      lines.push(`- **${e.car_short} — ${e.car_name}**  ${nLabel}`);
+      if (e.member_contributions && e.member_contributions.length > 0) {
+        for (const c of e.member_contributions) {
+          const parts: string[] = [`+${c.trip_km} km`];
+          if (c.fuel_liters > 0) parts.push(`-${fmtL(c.fuel_liters)} L`);
+          if (c.expense_amount > 0) parts.push(`-€ ${fmt(c.expense_amount)}`);
+          const contribSign = c.contribution >= 0 ? `+€ ${fmt(c.contribution)}` : `−€ ${fmt(Math.abs(c.contribution))}`;
+          lines.push(`  - ${c.person_name} (${parts.join(", ")}): ${contribSign}`);
+        }
+      }
+    }
+    lines.push(`- **Saldo via coöp: ${sign(m.s2 ?? 0)}**`);
+  }
+
+  // Step 3
+  const step3 = data.transfers.filter((tr) => tr.step === 3);
+  const crossOwners = owners.filter((m) => m.cross_owner_balances && m.cross_owner_balances.length > 0);
+  if (step3.length > 0 || crossOwners.length > 0) {
+    lines.push(`\n## Stap 3 — Tussen eigenaars\n`);
+    for (const m of [...crossOwners].sort((a, b) => a.person_name.localeCompare(b.person_name, "nl"))) {
+      const xTotal = m.cross_owner_balances!.reduce((s, b) => s + b.my_balance, 0);
+      lines.push(`### ${m.person_name}  ${sign(xTotal)}`);
+      lines.push(`_Mijn gebruik van andere wagens_`);
+      for (const b of m.cross_owner_balances!) {
+        const parts: string[] = [`+${b.my_trip_km} km`];
+        if (b.my_fuel_liters > 0) parts.push(`-${fmtL(b.my_fuel_liters)} L`);
+        if (b.my_expense_amount > 0) parts.push(`-€ ${fmt(b.my_expense_amount)}`);
+        const balSign = b.my_balance >= 0 ? `+€ ${fmt(b.my_balance)}` : `−€ ${fmt(Math.abs(b.my_balance))}`;
+        lines.push(`- ${b.other_owner_name} (${parts.join(", ")}): ${balSign}`);
+      }
+    }
+    if (step3.length > 0) {
+      lines.push(`\n**Betaling:**`);
+      for (const tr of step3) {
+        lines.push(`- ${tr.from} → ${tr.to}: € ${fmt(tr.amount)}`);
+      }
+    }
+  }
+
+  // Transfers summary
+  lines.push(`\n## Betalingsoverzicht\n`);
+  for (const tr of data.transfers) {
+    lines.push(`- **Stap ${tr.step}** ${tr.from} → ${tr.to}: € ${fmt(tr.amount)}`);
+  }
+
+  return lines.join("\n");
+}
+
 export default function AdminSettlementPage() {
   const t = useT();
   const { data: me } = useMe();
   const { data: settings } = useAdminSettings();
   const currentYear = new Date().getFullYear();
-  const [year, setYear] = useState(currentYear);
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const yearParam = searchParams.get("year");
+  const year = yearParam ? parseInt(yearParam, 10) : currentYear;
+  const setYear = (newYear: number) => {
+    const p = new URLSearchParams(searchParams.toString());
+    if (newYear === currentYear) p.delete("year"); else p.set("year", String(newYear));
+    router.replace(`${pathname}?${p.toString()}`, { scroll: false });
+  };
   const { data: earliest = currentYear } = useEarliestDashboardYear();
   const { data, isLoading } = useSettlement(year);
   const qc = useQueryClient();
@@ -931,9 +1022,32 @@ export default function AdminSettlementPage() {
     onSuccess: () => qc.invalidateQueries({ queryKey: ["settlement", year] }),
   });
 
+  function handleDownload() {
+    if (!data) return;
+    const md = generateSettlementMd(data, year);
+    const blob = new Blob([md], { type: "text/markdown" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `afrekening-${year}.md`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
   return (
     <div style={{ padding: 16 }}>
-      <YearPicker year={year} earliest={earliest} current={currentYear} onChange={setYear} />
+      <div style={{ position: "relative", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 12 }}>
+        <YearPicker year={year} earliest={earliest} current={currentYear} onChange={(y) => setYear(y)} />
+        {data && data.members.length > 0 && (
+          <button
+            onClick={handleDownload}
+            title="Download als .md"
+            style={{ position: "absolute", right: 0, padding: "6px 10px", background: "transparent", border: `1.5px solid ${paper.ink}`, color: paper.ink, cursor: "pointer", fontFamily: fontMono, fontSize: 12, lineHeight: 1 }}
+          >
+            ↓
+          </button>
+        )}
+      </div>
 
       {data?.frozen && (
         <div style={{ textAlign: "center", marginBottom: 12 }}>

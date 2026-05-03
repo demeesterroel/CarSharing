@@ -408,19 +408,8 @@ function OwnerCarTile({
         <div style={{ flex: 1, fontFamily: fontSerif, fontSize: 14, fontWeight: 600, color: paper.ink, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
           {car.owner_name ?? <span style={{ color: paper.inkMute, fontStyle: "italic" }}>—</span>}
         </div>
-        <div style={{ display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}>
-          <div style={{ fontFamily: fontMono, fontSize: 11, fontWeight: 700, color: paper.ink }}>
-            €{car.price_per_km.toFixed(2)}/km
-          </div>
-          {pnlData && (
-            <button
-              onClick={(e) => { e.stopPropagation(); onDetail(); }}
-              title={t("coverage.title")}
-              style={{ fontFamily: fontMono, fontSize: 8, fontWeight: 700, letterSpacing: 1, padding: "3px 6px", background: paper.blue, color: paper.paper, border: "none", cursor: "pointer", textTransform: "uppercase" }}
-            >
-              ✦
-            </button>
-          )}
+        <div style={{ fontFamily: fontMono, fontSize: 11, fontWeight: 700, color: paper.ink, flexShrink: 0 }}>
+          €{car.price_per_km.toFixed(2)}/km
         </div>
       </div>
 
@@ -433,7 +422,18 @@ function OwnerCarTile({
           </div>
           <div style={{ marginBottom: 12 }}>
             <label style={labelStyle}>{t("form.price_per_km")}</label>
-            <input type="number" step="0.005" value={price} onChange={(e) => setPrice(parseFloat(e.target.value) || 0)} style={inputStyle} />
+            <div style={{ display: "flex", gap: 6 }}>
+              <input type="number" step="0.005" value={price} onChange={(e) => setPrice(parseFloat(e.target.value) || 0)} style={{ ...inputStyle, flex: 1 }} />
+              {pnlData && (
+                <button
+                  onClick={onDetail}
+                  title={t("coverage.open_hint")}
+                  style={{ fontFamily: fontMono, fontSize: 10, fontWeight: 700, padding: "0 10px", background: paper.blue, color: paper.paper, border: "none", cursor: "pointer", flexShrink: 0 }}
+                >
+                  ✦
+                </button>
+              )}
+            </div>
           </div>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
             <span style={labelStyle}>{activeLocal ? t("admin.car_active") : t("admin.car_inactive")}</span>
@@ -558,6 +558,63 @@ function OwnerCreateForm({ onBack }: { onBack: () => void }) {
   );
 }
 
+function generateCarDetailMd(car: import("@/lib/queries/admin").CarPnL, year: number): string {
+  const fmt = (n: number) =>
+    n.toLocaleString("nl-BE", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const fmtL = (n: number) =>
+    n.toLocaleString("nl-BE", { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+  const othersRevenue = car.trip_revenue - car.owner_trip_amount;
+  const ytdNet = othersRevenue - car.variable_total;
+
+  const lines: string[] = [];
+  lines.push(`# ${car.car_name} — ${year}`);
+  if (car.owner_name) lines.push(`Eigenaar: ${car.owner_name}`);
+
+  lines.push(`\n## Ritten`);
+  lines.push(`${car.trip_count} ritten · ${car.trip_km.toLocaleString("nl-BE")} km`);
+  lines.push(`- Anderen: ${car.trip_count - car.owner_trip_count} rit. · ${(car.trip_km - car.owner_trip_km).toLocaleString("nl-BE")} km · € ${fmt(othersRevenue)}`);
+  lines.push(`- Eigen:   ${car.owner_trip_count} rit. · ${car.owner_trip_km.toLocaleString("nl-BE")} km · € ${fmt(car.owner_trip_amount)}`);
+
+  lines.push(`\n## Tankbeurten`);
+  lines.push(`${car.fuel_count} tankbeurten · ${fmtL(car.fuel_liters)} L · € ${fmt(car.fuel_amount)}`);
+  lines.push(`- Anderen: ${car.fuel_count - car.owner_fuel_count} tk. · ${fmtL(car.fuel_liters - car.owner_fuel_liters)} L · € ${fmt(car.fuel_amount - car.owner_fuel_amount)}`);
+  lines.push(`- Eigen:   ${car.owner_fuel_count} tk. · ${fmtL(car.owner_fuel_liters)} L · € ${fmt(car.owner_fuel_amount)}`);
+
+  lines.push(`\n## Kosten`);
+  lines.push(`${car.expense_count} kosten · € ${fmt(car.expense_amount)}`);
+  lines.push(`- Anderen: ${car.expense_count - car.owner_expense_count} kst. · € ${fmt(car.expense_amount - car.owner_expense_amount)}`);
+  lines.push(`- Eigen:   ${car.owner_expense_count} kst. · € ${fmt(car.owner_expense_amount)}`);
+
+  lines.push(`\n## Resultaat`);
+  lines.push(`- Inkomsten ritten (anderen): € ${fmt(othersRevenue)}`);
+  lines.push(`- Variabele kosten:           € ${fmt(car.variable_total)}`);
+  lines.push(`- Netto:                      ${ytdNet >= 0 ? "+" : "−"}€ ${fmt(Math.abs(ytdNet))}`);
+
+  // Projection (same formula as CostCoverageScreen)
+  const fuelPerKm = car.trip_km > 0 ? car.fuel_amount / car.trip_km : 0;
+  const pctOthers = car.trip_km > 0 ? Math.round(((car.trip_km - car.owner_trip_km) / car.trip_km) * 100) / 100 : 0;
+  const nonOwnerKm = car.trip_km * pctOthers;
+  const ownerKm = car.trip_km * (1 - pctOthers);
+  const markupPerKm = car.car_price_per_km - fuelPerKm;
+  const nonOwnerMarkup = markupPerKm * nonOwnerKm;
+  const ownerFuelCost = fuelPerKm * ownerKm;
+  const ownerNet = nonOwnerMarkup - car.expense_amount - ownerFuelCost;
+
+  lines.push(`\n## Kostendekking`);
+  lines.push(`- Brandstof/km:    € ${fuelPerKm.toFixed(3)}/km`);
+  lines.push(`- Totale km/jaar:  ${car.trip_km.toLocaleString("nl-BE")} km`);
+  lines.push(`- % anderen:       ${Math.round(pctOthers * 100)}%`);
+  lines.push(`- Verwachte kosten: € ${fmt(car.expense_amount)}`);
+  lines.push(`- Prijs/km:        € ${car.car_price_per_km.toFixed(3)}/km`);
+  lines.push(`\n### Prognose`);
+  lines.push(`- Bijdrage anderen: € ${fmt(nonOwnerMarkup)}`);
+  lines.push(`- Te dekken kosten: € ${fmt(car.expense_amount)}`);
+  lines.push(`- Eigen brandstof:  € ${fmt(ownerFuelCost)}`);
+  lines.push(`- Eigenaar netto:   ${ownerNet >= 0 ? "+" : "−"}€ ${fmt(Math.abs(ownerNet))}`);
+
+  return lines.join("\n");
+}
+
 // ── Owner fleet view ──────────────────────────────────────────
 function OwnerFleet({ myName }: { myName: string | null }) {
   const t = useT();
@@ -612,6 +669,7 @@ function OwnerFleet({ myName }: { myName: string | null }) {
     router.push(`${pathname}?${p.toString()}`, { scroll: false });
   };
   const closeAdd = () => router.back();
+  const [expandedId, setExpandedId] = useState<number | null>(null);
 
   const yearSelector = (
     <div style={{ display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 16 }}>
@@ -627,31 +685,35 @@ function OwnerFleet({ myName }: { myName: string | null }) {
     </div>
   );
 
-  const backBtnStyle: React.CSSProperties = {
-    marginBottom: 12,
-    padding: "7px 14px",
-    background: "transparent",
-    border: `1.5px solid ${paper.ink}`,
-    color: paper.ink,
-    fontFamily: fontMono,
-    fontSize: 9,
-    fontWeight: 700,
-    letterSpacing: 1.5,
-    textTransform: "uppercase",
-    cursor: "pointer",
-  };
-
   if (screen.view === "detail") {
     const pnlCar = allPnL.find((c) => c.car_id === screen.carId);
     if (!pnlCar) return null;
     const carRollingFuel = rollingFuel.find((r) => r.car_id === screen.carId);
+    function handleDownload() {
+      const md = generateCarDetailMd(pnlCar!, year);
+      const blob = new Blob([md], { type: "text/markdown" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `${pnlCar!.car_name.toLowerCase()}-${year}.md`;
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
     return (
       <div style={{ padding: "16px" }}>
-        {yearSelector}
-        <button onClick={() => router.back()} style={backBtnStyle}>
-          ← {t("owner.back_fleet")}
-        </button>
+        <div style={{ position: "relative" }}>
+          {yearSelector}
+          <button
+            onClick={handleDownload}
+            title="Download als .md"
+            style={{ position: "absolute", right: 0, top: 0, padding: "6px 10px", background: "transparent", border: `1.5px solid ${paper.ink}`, color: paper.ink, cursor: "pointer", fontFamily: fontMono, fontSize: 12, lineHeight: 1 }}
+          >
+            ↓
+          </button>
+        </div>
         <CostCoverageScreen
+          key={`${screen.carId}-${year}`}
           car={pnlCar}
           fullCar={carMap.get(screen.carId)}
           historicalKm={historicalKm.filter((h) => h.car_id === screen.carId)}
@@ -666,7 +728,6 @@ function OwnerFleet({ myName }: { myName: string | null }) {
   }
 
   // Fleet list
-  const [expandedId, setExpandedId] = useState<number | null>(null);
   const renderTile = (car: Car) => {
     const pnlCar = allPnL.find((c) => c.car_id === car.id);
     const m = pnlCar ? beMetrics(pnlCar) : null;

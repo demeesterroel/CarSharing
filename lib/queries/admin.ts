@@ -12,11 +12,19 @@ export interface CarPnL {
   trip_count: number;
   trip_km: number;
   trip_revenue: number;
+  owner_trip_count: number;
+  owner_trip_km: number;
   owner_trip_amount: number; // trips by the car's owner on their own car
   fuel_count: number;
   fuel_amount: number;
+  fuel_liters: number;
+  owner_fuel_count: number;
+  owner_fuel_amount: number;
+  owner_fuel_liters: number;
   expense_count: number;
   expense_amount: number;
+  owner_expense_count: number;
+  owner_expense_amount: number;
   // derived
   variable_total: number; // fuel + expense
   net: number;            // trip_revenue - variable_total
@@ -86,11 +94,11 @@ export function getCarPnL(db: Database.Database, year: number): CarPnL[] {
     const fuel = db
       .prepare(
         `
-      SELECT COUNT(*) AS cnt, COALESCE(SUM(amount),0) AS amt
+      SELECT COUNT(*) AS cnt, COALESCE(SUM(amount),0) AS amt, COALESCE(SUM(liters),0) AS liters
       FROM fuel_fillups WHERE car_id=? AND strftime('%Y',date)=?
     `
       )
-      .get(car.id, yearStr) as { cnt: number; amt: number };
+      .get(car.id, yearStr) as { cnt: number; amt: number; liters: number };
 
     const exp = db
       .prepare(
@@ -112,13 +120,35 @@ export function getCarPnL(db: Database.Database, year: number): CarPnL[] {
     const ownerTrips = car.owner_name
       ? (db
           .prepare(
-            `SELECT COALESCE(SUM(t.amount), 0) AS amt
+            `SELECT COUNT(*) AS cnt, COALESCE(SUM(t.km), 0) AS km, COALESCE(SUM(t.amount), 0) AS amt
              FROM trips t
              JOIN people p ON p.id = t.person_id
              WHERE t.car_id = ? AND strftime('%Y', t.date) = ? AND p.name = ?`
           )
-          .get(car.id, yearStr, car.owner_name) as { amt: number })
-      : { amt: 0 };
+          .get(car.id, yearStr, car.owner_name) as { cnt: number; km: number; amt: number })
+      : { cnt: 0, km: 0, amt: 0 };
+
+    const ownerFuel = car.owner_name
+      ? (db
+          .prepare(
+            `SELECT COUNT(*) AS cnt, COALESCE(SUM(f.amount),0) AS amt, COALESCE(SUM(f.liters),0) AS liters
+             FROM fuel_fillups f
+             JOIN people p ON p.id = f.person_id
+             WHERE f.car_id = ? AND strftime('%Y', f.date) = ? AND p.name = ?`
+          )
+          .get(car.id, yearStr, car.owner_name) as { cnt: number; amt: number; liters: number })
+      : { cnt: 0, amt: 0, liters: 0 };
+
+    const ownerExp = car.owner_name
+      ? (db
+          .prepare(
+            `SELECT COUNT(*) AS cnt, COALESCE(SUM(e.amount),0) AS amt
+             FROM expenses e
+             JOIN people p ON p.id = e.person_id
+             WHERE e.car_id = ? AND strftime('%Y', e.date) = ? AND p.name = ?`
+          )
+          .get(car.id, yearStr, car.owner_name) as { cnt: number; amt: number })
+      : { cnt: 0, amt: 0 };
 
     const variable_total = fuel.amt + exp.amt;
     const net = trips.rev - variable_total;
@@ -135,11 +165,19 @@ export function getCarPnL(db: Database.Database, year: number): CarPnL[] {
       trip_count: trips.cnt,
       trip_km: trips.km,
       trip_revenue: trips.rev,
+      owner_trip_count: ownerTrips.cnt,
+      owner_trip_km: ownerTrips.km,
       owner_trip_amount: ownerTrips.amt,
       fuel_count: fuel.cnt,
       fuel_amount: fuel.amt,
+      fuel_liters: fuel.liters,
+      owner_fuel_count: ownerFuel.cnt,
+      owner_fuel_amount: ownerFuel.amt,
+      owner_fuel_liters: ownerFuel.liters,
       expense_count: exp.cnt,
       expense_amount: exp.amt,
+      owner_expense_count: ownerExp.cnt,
+      owner_expense_amount: ownerExp.amt,
       variable_total,
       net,
       cost_per_km,

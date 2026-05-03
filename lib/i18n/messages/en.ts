@@ -377,6 +377,16 @@ export const en: Messages = {
   "fleet.no_fixed": "No fixed costs set",
   "fleet.prev_year_km": "Last year: {km} km",
 
+  // Stats block
+  "stats.trips": "trips",
+  "stats.trips_short": "tr.",
+  "stats.fillups": "fill-ups",
+  "stats.fillups_short": "fu.",
+  "stats.others": "others",
+  "stats.own": "own",
+  "stats.expenses": "expenses",
+  "stats.expenses_short": "exp.",
+
   // Break-even detail (prijs tab)
   "breakeven.revenue": "Trip revenue",
   "breakeven.expenses": "Variable costs",
@@ -391,6 +401,7 @@ export const en: Messages = {
 
   // Cost coverage screen
   "coverage.title": "Cost coverage",
+  "coverage.open_hint": "View cost coverage & simulate price/km",
   "coverage.zone.red": "Loss per trip",
   "coverage.zone.orange": "Costs not covered",
   "coverage.zone.light_green": "Costs covered",

@@ -291,21 +291,19 @@ function CarRow({
   );
 }
 
-// ── Owner car tile (collapsed row + bottom-sheet edit) ──────────
+// ── Owner car tile (accordion) ────────────────────────────────
 function OwnerCarTile({
   car,
   pnlData,
   onDetail,
-  editOpen,
-  onEditOpen,
-  onEditClose,
+  expanded,
+  onToggle,
 }: {
   car: Car;
   pnlData: ReturnType<typeof beMetrics> | null;
   onDetail: () => void;
-  editOpen: boolean;
-  onEditOpen: () => void;
-  onEditClose: () => void;
+  expanded: boolean;
+  onToggle: () => void;
 }) {
   const t = useT();
   const updateCar = useUpdateCar();
@@ -360,7 +358,7 @@ function OwnerCarTile({
       { ...car, name, price_per_km: price, active: activeLocal ? 1 : 0 },
       {
         onSuccess: () => {
-          onEditClose();
+          onToggle();
           toast.success(t("toast.saved"));
         },
       }
@@ -382,137 +380,100 @@ function OwnerCarTile({
   }
 
   return (
-    <>
-      {/* Collapsed card — click to open edit sheet */}
+    <div
+      style={{
+        background: paper.paper,
+        marginBottom: 6,
+        boxShadow: "0 1px 2px rgba(0,0,0,0.05), 0 4px 16px rgba(0,0,0,0.06)",
+        borderLeft: expanded ? `3px solid ${paper.blue}` : `3px solid transparent`,
+        opacity: isActive ? 1 : 0.55,
+      }}
+    >
+      {/* Collapsed header — click to toggle */}
       <div
         role="button"
         tabIndex={0}
-        onClick={onEditOpen}
-        onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && onEditOpen()}
+        onClick={onToggle}
+        onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && onToggle()}
         style={{
           display: "flex",
           alignItems: "center",
           gap: 12,
           padding: "12px 14px",
-          background: paper.paper,
-          marginBottom: 6,
           cursor: "pointer",
           userSelect: "none",
-          opacity: isActive ? 1 : 0.55,
-          boxShadow: "0 1px 2px rgba(0,0,0,0.05), 0 4px 16px rgba(0,0,0,0.06)",
         }}
       >
         <CarBadge short={car.short} active={isActive} />
         <div style={{ flex: 1, fontFamily: fontSerif, fontSize: 14, fontWeight: 600, color: paper.ink, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
           {car.owner_name ?? <span style={{ color: paper.inkMute, fontStyle: "italic" }}>—</span>}
         </div>
-        <div style={{ fontFamily: fontMono, fontSize: 11, fontWeight: 700, color: paper.ink, flexShrink: 0 }}>
-          €{car.price_per_km.toFixed(2)}/km
+        <div style={{ display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}>
+          <div style={{ fontFamily: fontMono, fontSize: 11, fontWeight: 700, color: paper.ink }}>
+            €{car.price_per_km.toFixed(2)}/km
+          </div>
+          {pnlData && (
+            <button
+              onClick={(e) => { e.stopPropagation(); onDetail(); }}
+              title={t("coverage.title")}
+              style={{ fontFamily: fontMono, fontSize: 8, fontWeight: 700, letterSpacing: 1, padding: "3px 6px", background: paper.blue, color: paper.paper, border: "none", cursor: "pointer", textTransform: "uppercase" }}
+            >
+              ✦
+            </button>
+          )}
         </div>
       </div>
 
-      {/* Bottom-sheet edit dialog */}
-      <Dialog.Root open={editOpen} onOpenChange={(open) => { if (!open) { resetForm(); onEditClose(); } }}>
-        <Dialog.Portal>
-          <Dialog.Overlay style={overlayStyle} />
-          <Dialog.Content style={sheetStyle} aria-describedby={undefined}>
-            <Dialog.Title style={{ position: "absolute", width: 1, height: 1, overflow: "hidden", clip: "rect(0,0,0,0)" }}>
-              {t("owner.edit_car")}
-            </Dialog.Title>
-
-            {/* Sticky header: × / goal / Save */}
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 16px", height: 52, borderBottom: `1.5px solid ${paper.paperDark}`, background: paper.paper, position: "sticky", top: 0, zIndex: 10, borderRadius: "14px 14px 0 0" }}>
-              <button
-                type="button"
-                onClick={() => { resetForm(); onEditClose(); }}
-                aria-label={t("action.close")}
-                style={{ fontFamily: fontMono, fontSize: 18, fontWeight: 700, background: "transparent", border: "none", cursor: "pointer", color: paper.ink, padding: "0 4px", lineHeight: 1 }}
-              >
-                ×
-              </button>
-              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                <CarBadge short={car.short} active={isActive} />
-                <span style={{ fontFamily: fontMono, fontSize: 10, fontWeight: 700, letterSpacing: 2, color: paper.inkDim, textTransform: "uppercase" }}>
-                  {car.owner_name ?? "—"}
-                </span>
-              </div>
-              <button
-                type="button"
-                disabled={!dirty || updateCar.isPending}
-                onClick={handleSave}
-                style={{ fontFamily: fontMono, fontSize: 9, fontWeight: 700, letterSpacing: 2, textTransform: "uppercase", background: dirty && !updateCar.isPending ? paper.accent : paper.paperDark, color: dirty && !updateCar.isPending ? "#fff" : paper.inkMute, border: "none", padding: "8px 14px", cursor: dirty && !updateCar.isPending ? "pointer" : "default" }}
-              >
-                {updateCar.isPending ? "…" : t("action.save")}
-              </button>
+      {/* Expanded edit form */}
+      {expanded && (
+        <div style={{ padding: "0 14px 14px", borderTop: `1px dashed ${paper.paperDark}` }}>
+          <div style={{ paddingTop: 12, marginBottom: 8 }}>
+            <label style={labelStyle}>{t("form.name")}</label>
+            <input value={name} onChange={(e) => setName(e.target.value)} style={inputStyle} />
+          </div>
+          <div style={{ marginBottom: 12 }}>
+            <label style={labelStyle}>{t("form.price_per_km")}</label>
+            <input type="number" step="0.005" value={price} onChange={(e) => setPrice(parseFloat(e.target.value) || 0)} style={inputStyle} />
+          </div>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
+            <span style={labelStyle}>{activeLocal ? t("admin.car_active") : t("admin.car_inactive")}</span>
+            <div
+              role="switch"
+              aria-checked={activeLocal}
+              tabIndex={0}
+              onClick={() => setActiveLocal((v) => !v)}
+              onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && setActiveLocal((v) => !v)}
+              style={{ width: 44, height: 24, borderRadius: 12, background: activeLocal ? paper.green : paper.paperDark, position: "relative", cursor: "pointer", flexShrink: 0, transition: "background 0.2s" }}
+            >
+              <div style={{ position: "absolute", top: 2, left: activeLocal ? 22 : 2, width: 20, height: 20, borderRadius: "50%", background: paper.paper, boxShadow: "0 1px 3px rgba(0,0,0,0.25)", transition: "left 0.18s" }} />
             </div>
-
-            {/* Body */}
-            <div style={{ padding: 16 }}>
-              <div style={{ marginBottom: 8 }}>
-                <label style={labelStyle}>{t("form.name")}</label>
-                <input value={name} onChange={(e) => setName(e.target.value)} style={inputStyle} />
-              </div>
-              <div style={{ marginBottom: 12 }}>
-                <label style={labelStyle}>{t("form.price_per_km")}</label>
-                <input type="number" step="0.005" value={price} onChange={(e) => setPrice(parseFloat(e.target.value) || 0)} style={inputStyle} />
-              </div>
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
-                <span style={labelStyle}>{activeLocal ? t("admin.car_active") : t("admin.car_inactive")}</span>
-                <div
-                  role="switch"
-                  aria-checked={activeLocal}
-                  tabIndex={0}
-                  onClick={() => setActiveLocal((v) => !v)}
-                  onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && setActiveLocal((v) => !v)}
-                  style={{
-                    width: 44,
-                    height: 24,
-                    borderRadius: 12,
-                    background: activeLocal ? paper.green : paper.paperDark,
-                    position: "relative",
-                    cursor: "pointer",
-                    flexShrink: 0,
-                    transition: "background 0.2s",
-                  }}
-                >
-                  <div style={{
-                    position: "absolute",
-                    top: 2,
-                    left: activeLocal ? 22 : 2,
-                    width: 20,
-                    height: 20,
-                    borderRadius: "50%",
-                    background: paper.paper,
-                    boxShadow: "0 1px 3px rgba(0,0,0,0.25)",
-                    transition: "left 0.18s",
-                  }} />
-                </div>
-              </div>
-
-              {/* Cost Coverage */}
-              {pnlData && (
-                <button
-                  onClick={onDetail}
-                  style={{ width: "100%", marginBottom: 16, padding: "10px 8px", background: paper.ink, color: paper.paper, border: "none", cursor: "pointer", fontFamily: fontMono, fontSize: 9, fontWeight: 700, letterSpacing: 1.5, textTransform: "uppercase" }}
-                >
-                  {t("coverage.title")} →
-                </button>
-              )}
-
-              {/* Delete */}
-              <button onClick={handleDelete} disabled={deleteCar.isPending} style={{ width: "100%", padding: "9px", background: deleteConfirm ? paper.accent : "transparent", color: deleteConfirm ? paper.paper : paper.accent, border: `1px solid ${paper.accent}`, cursor: "pointer", fontFamily: fontMono, fontSize: 9, fontWeight: 700, letterSpacing: 1.5, textTransform: "uppercase" }}>
-                {deleteCar.isPending ? "…" : deleteConfirm ? t("owner.delete_confirm") : t("action.delete")}
-              </button>
-              {deleteConfirm && (
-                <button onClick={() => setDeleteConfirm(false)} style={{ width: "100%", marginTop: 4, padding: "6px", background: "transparent", color: paper.inkDim, border: `1px solid ${paper.paperDark}`, cursor: "pointer", fontFamily: fontMono, fontSize: 8, letterSpacing: 1 }}>
-                  {t("action.cancel")}
-                </button>
-              )}
-            </div>
-          </Dialog.Content>
-        </Dialog.Portal>
-      </Dialog.Root>
-    </>
+          </div>
+          <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
+            <button
+              onClick={() => { resetForm(); onToggle(); }}
+              style={{ flex: 1, padding: "9px", background: "transparent", color: paper.inkDim, border: `1px solid ${paper.paperDark}`, cursor: "pointer", fontFamily: fontMono, fontSize: 9, fontWeight: 700, letterSpacing: 1.5, textTransform: "uppercase" }}
+            >
+              {t("action.cancel")}
+            </button>
+            <button
+              disabled={!dirty || updateCar.isPending}
+              onClick={handleSave}
+              style={{ flex: 2, padding: "9px", background: dirty && !updateCar.isPending ? paper.ink : paper.paperDark, color: dirty && !updateCar.isPending ? paper.paper : paper.inkMute, border: "none", cursor: dirty && !updateCar.isPending ? "pointer" : "default", fontFamily: fontMono, fontSize: 9, fontWeight: 700, letterSpacing: 2, textTransform: "uppercase" }}
+            >
+              {updateCar.isPending ? "…" : t("action.save")}
+            </button>
+          </div>
+          <button onClick={handleDelete} disabled={deleteCar.isPending} style={{ width: "100%", padding: "9px", background: deleteConfirm ? paper.accent : "transparent", color: deleteConfirm ? paper.paper : paper.accent, border: `1px solid ${paper.accent}`, cursor: "pointer", fontFamily: fontMono, fontSize: 9, fontWeight: 700, letterSpacing: 1.5, textTransform: "uppercase" }}>
+            {deleteCar.isPending ? "…" : deleteConfirm ? t("owner.delete_confirm") : t("action.delete")}
+          </button>
+          {deleteConfirm && (
+            <button onClick={() => setDeleteConfirm(false)} style={{ width: "100%", marginTop: 4, padding: "6px", background: "transparent", color: paper.inkDim, border: `1px solid ${paper.paperDark}`, cursor: "pointer", fontFamily: fontMono, fontSize: 8, letterSpacing: 1 }}>
+              {t("action.cancel")}
+            </button>
+          )}
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -705,13 +666,7 @@ function OwnerFleet({ myName }: { myName: string | null }) {
   }
 
   // Fleet list
-  const editId = searchParams.get("edit");
-  const openEdit = (id: number) => {
-    const p = new URLSearchParams(searchParams.toString());
-    p.set("edit", String(id));
-    router.push(`${pathname}?${p.toString()}`, { scroll: false });
-  };
-  const closeEdit = () => router.back();
+  const [expandedId, setExpandedId] = useState<number | null>(null);
   const renderTile = (car: Car) => {
     const pnlCar = allPnL.find((c) => c.car_id === car.id);
     const m = pnlCar ? beMetrics(pnlCar) : null;
@@ -720,9 +675,8 @@ function OwnerFleet({ myName }: { myName: string | null }) {
         key={car.id}
         car={car}
         pnlData={m}
-        editOpen={editId === String(car.id)}
-        onEditOpen={() => openEdit(car.id)}
-        onEditClose={closeEdit}
+        expanded={expandedId === car.id}
+        onToggle={() => setExpandedId(expandedId === car.id ? null : car.id)}
         onDetail={() => goToDetail(car.id)}
       />
     );

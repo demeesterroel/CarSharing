@@ -246,7 +246,7 @@ function generateSettlementMd(data: import("@/types").SettlementResult, year: nu
       if (row.expense_amount > 0.005) lines.push(`  - Kosten: € ${fmt(row.expense_amount)}`);
       lines.push(`  - Saldo: ${sign(row.balance)}`);
       if ((row.fuel_settled_liters ?? 0) > 0.05) {
-        lines.push(`  - _(*)_ ${row.fuel_settled_count} tankbeurt(en) (${fmtLoc(row.fuel_settled_liters)}) L buiten de app verrekend`);
+        lines.push(`  - _(*)_ ${row.fuel_settled_count} tankbeurt(en) (${fmtLoc(row.fuel_settled_liters)} L) buiten de app verrekend`);
       }
       if ((row.expense_settled_amount ?? 0) > 0.005) {
         lines.push(`  - _(*)_ ${row.expense_settled_count} kost(en) (€ ${fmt(row.expense_settled_amount)}) buiten de app verrekend`);
@@ -266,7 +266,8 @@ function generateSettlementMd(data: import("@/types").SettlementResult, year: nu
       lines.push(`- **${c.car_short} — ${c.car_name}**  ${sign(c.total_balance)}`);
       for (const row of c.rows.filter((r) => r.row_type !== "own")) {
         const contrib = row.balance;
-        const detail: string[] = [`+${row.trip_km} km`];
+        const detail: string[] = [];
+        if (row.trip_km > 0) detail.push(`+${row.trip_km} km`);
         if (row.fuel_liters > 0.05) detail.push(`-${fmtLoc(row.fuel_liters)} L`);
         if (row.expense_amount > 0.005) detail.push(`-€ ${fmt(row.expense_amount)}`);
         lines.push(`  - ${row.person_name} (${detail.join(", ")}): ${sign(contrib)}`);

@@ -1,5 +1,6 @@
 import type Database from "better-sqlite3";
-import type { SettlementResult, Transfer, MemberStatement, CarEraBalance } from "@/types";
+import type { SettlementResult, MemberStatement, CarEraBalance, AnnotatedTransfer } from "@/types";
+import { getPaymentsByYear } from "./payments";
 
 interface CarEraRow {
   id: number;
@@ -59,6 +60,14 @@ function get(m: Map<number, Map<number, number>>, pid: number, cid: number): num
 
 function round2(n: number): number {
   return Math.round(n * 100) / 100;
+}
+
+/**
+ * Builds a Map<name, person_id> from the people list for resolving
+ * transfer payer/payee names back to IDs.
+ */
+function buildNameToId(people: PersonRow[]): Map<string, number> {
+  return new Map(people.map((p) => [p.name, p.id]));
 }
 
 function reduceDebts(
@@ -121,6 +130,8 @@ export function getSettlement(db: Database.Database, year: number): SettlementRe
       car_settlements: [],
       transfers: [],
       verify_ok: true,
+      payments_by_person: {},
+      all_paid: true,
     };
   }
 
@@ -421,7 +432,7 @@ export function getSettlement(db: Database.Database, year: number): SettlementRe
   });
 
   // 13. Build transfers — Step 1 (non-owners + cross-owners) and Step 2 (owners)
-  const transfers: Transfer[] = [];
+  const transfers: Omit<AnnotatedTransfer, "payment_status">[] = [];
 
   for (const p of nonOwners) {
     const s1 = S1.get(p.id) ?? 0;
@@ -449,7 +460,28 @@ export function getSettlement(db: Database.Database, year: number): SettlementRe
     transfers.push({ from: "co-op", to: o.name, amount: s2, step: 2, label: `co-op → ${o.name}` });
   }
 
-  // 14. Verify: Σ S1 + Σ S1Cross + Σ S2 ≈ 0
+  // 14. Load payments and annotate transfers
+  const paymentsByPerson = getPaymentsByYear(db, year);
+  const nameToId = buildNameToId(people);
+
+  const annotatedTransfers: AnnotatedTransfer[] = transfers.map((tr) => {
+    // Only track payment from the human payer side (not co-op)
+    const payerName = tr.from !== "co-op" ? tr.from : null;
+    if (payerName === null) return { ...tr, payment_status: null };
+    const payerId = nameToId.get(payerName) ?? null;
+    if (payerId === null) return { ...tr, payment_status: null };
+    const personPayments = paymentsByPerson.get(payerId) ?? [];
+    const paid = round2(personPayments.reduce((s, p) => s + p.amount, 0));
+    const open = round2(Math.max(0, tr.amount - paid));
+    return { ...tr, payment_status: { paid, open, payments: personPayments } };
+  });
+
+  const humanTransfers = annotatedTransfers.filter((t) => t.payment_status !== null);
+  const all_paid =
+    humanTransfers.length === 0 ||
+    humanTransfers.every((t) => (t.payment_status?.open ?? 1) < 0.005);
+
+  // 15. Verify: Σ S1 + Σ S1Cross + Σ S2 ≈ 0
   const sumS1     = [...S1.values()].reduce((s, v) => s + v, 0);
   const sumS1c    = [...S1Cross.values()].reduce((s, v) => s + v, 0);
   const sumS2     = [...S2.values()].reduce((s, v) => s + v, 0);
@@ -459,7 +491,11 @@ export function getSettlement(db: Database.Database, year: number): SettlementRe
     year, frozen: !!lock,
     settled_at: lock?.settled_at ?? null,
     settled_by: lock?.settled_by ?? null,
-    members, car_settlements, transfers, verify_ok,
+    members, car_settlements, transfers: annotatedTransfers, verify_ok,
+    payments_by_person: Object.fromEntries(
+      [...paymentsByPerson.entries()].map(([id, rows]) => [id, rows.reduce((s, p) => s + p.amount, 0)])
+    ),
+    all_paid,
   };
 }
 

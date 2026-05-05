@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import { paper, fontMono, fontSerif, fmtMoney } from "@/lib/paper-theme";
+import { paper, fontMono, fontSerif, fmtMoney, amtColor, signPrefix } from "@/lib/paper-theme";
 import { useT } from "@/components/locale-provider";
 import { useUpdateCar } from "@/hooks/use-cars";
 import { useQueryClient } from "@tanstack/react-query";
@@ -159,8 +159,8 @@ export function BreakEvenCard({
         <Row label={t("breakeven.expenses")} value={fmtMoney(car.variable_total)} />
         <Row
           label={t("breakeven.net")}
-          value={fmtMoney(Math.abs(m.net))}
-          color={m.net >= 0 ? paper.green : paper.accent}
+          value={`${signPrefix(m.net)}${fmtMoney(m.net)}`}
+          color={amtColor(m.net)}
           big
         />
       </div>
@@ -310,8 +310,8 @@ export function RateAssistant({
         <Row label={t("rate.expected_km")} value={expectedKm.toLocaleString("nl-BE") + " km"} />
         <Row
           label={t("breakeven.projected_net")}
-          value={fmtMoney(Math.abs(projectedNet))}
-          color={projectedNet >= 0 ? paper.green : paper.accent}
+          value={`${signPrefix(projectedNet)}${fmtMoney(projectedNet)}`}
+          color={amtColor(projectedNet)}
           big
         />
       </div>

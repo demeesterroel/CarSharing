@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { useQueryClient, useMutation } from "@tanstack/react-query";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
-import { paper, fontMono, fontSerif, fmtMoney } from "@/lib/paper-theme";
+import { paper, fontMono, fontSerif, fmtMoney, amtColor, signPrefix } from "@/lib/paper-theme";
 import { useT } from "@/components/locale-provider";
 import { useEarliestDashboardYear } from "@/hooks/use-dashboard";
 import { useSettlement } from "@/hooks/use-settlement";
@@ -16,9 +16,6 @@ function fmtL(liters: number): string {
   return liters.toLocaleString("nl-BE", { minimumFractionDigits: 1, maximumFractionDigits: 1 });
 }
 
-const amtColor = (n: number) =>
-  n > 0 ? paper.green : n < 0 ? paper.accent : paper.inkMute;
-const signPrefix = (n: number) => (n > 0 ? "+" : n < 0 ? "−" : "");
 
 function fmtDetail(
   km: number,

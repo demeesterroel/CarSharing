@@ -16,6 +16,10 @@ function fmtL(liters: number): string {
   return liters.toLocaleString("nl-BE", { minimumFractionDigits: 1, maximumFractionDigits: 1 });
 }
 
+const amtColor = (n: number) =>
+  n > 0 ? paper.green : n < 0 ? paper.accent : paper.inkMute;
+const signPrefix = (n: number) => (n > 0 ? "+" : n < 0 ? "−" : "");
+
 function fmtDetail(
   km: number,
   liters: number,
@@ -254,8 +258,7 @@ function NonOwnerMemberCard({
   const [msgCopied, setMsgCopied] = useState(false);
 
   const s1 = m.s1 ?? 0;
-  const isPositive = s1 > 0;
-  const netColor = isPositive ? paper.green : s1 < 0 ? paper.accent : paper.inkMute;
+  const netColor = amtColor(s1);
 
   const totalKm = m.car_eras.reduce((s, e) => s + e.trip_km, 0);
   const totalTripAmt = m.car_eras.reduce((s, e) => s + e.trip_amount, 0);
@@ -381,7 +384,7 @@ function NonOwnerMemberCard({
           }}
           onClick={toggle}
         >
-          {s1 > 0 ? "+" : s1 < 0 ? "−" : ""}
+          {signPrefix(s1)}
           {fmtMoney(s1)}
         </span>
 
@@ -441,8 +444,8 @@ function NonOwnerMemberCard({
               )}
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginTop: 4, paddingLeft: 16 }}>
                 <span style={{ fontFamily: fontMono, fontSize: 9, color: paper.inkDim }}>saldo</span>
-                <span style={{ fontFamily: fontMono, fontSize: 10, fontWeight: 600, color: era.balance > 0 ? paper.green : era.balance < 0 ? paper.accent : paper.inkMute }}>
-                  {era.balance > 0 ? "+" : era.balance < 0 ? "−" : ""}{fmtMoney(era.balance)}
+                <span style={{ fontFamily: fontMono, fontSize: 10, fontWeight: 600, color: amtColor(era.balance) }}>
+                  {signPrefix(era.balance)}{fmtMoney(era.balance)}
                 </span>
               </div>
               <SettledNote
@@ -460,7 +463,7 @@ function NonOwnerMemberCard({
               Saldo
             </span>
             <span style={{ fontFamily: fontMono, fontSize: 14, fontWeight: 700, color: netColor }}>
-              {s1 > 0 ? "+" : s1 < 0 ? "−" : ""}{fmtMoney(s1)}
+              {signPrefix(s1)}{fmtMoney(s1)}
             </span>
           </div>
         </div>
@@ -486,7 +489,7 @@ function OwnerMemberCard({
   const s2 = m.s2 ?? 0;
   const s1c = m.s1_cross ?? 0;
   const net = m.net ?? s2;
-  const netColor = net > 0 ? paper.green : net < 0 ? paper.accent : paper.inkMute;
+  const netColor = amtColor(net);
   const hasCrossUse = crossRows.length > 0;
 
   const copyMsg = () => {
@@ -593,7 +596,7 @@ function OwnerMemberCard({
           }}
           onClick={toggle}
         >
-          {net > 0 ? "+" : net < 0 ? "−" : ""}
+          {signPrefix(net)}
           {fmtMoney(net)}
         </span>
         <button
@@ -628,8 +631,8 @@ function OwnerMemberCard({
                 <span style={{ fontFamily: fontMono, fontSize: 10, color: paper.inkDim, letterSpacing: 1 }}>
                   {era.car_short} — {era.car_name}
                 </span>
-                <span style={{ fontFamily: fontMono, fontSize: 11, fontWeight: 600, color: (era.n_c_star ?? 0) >= 0 ? paper.green : paper.accent, paddingLeft: 12 }}>
-                  {fmtMoney(era.n_c_star ?? 0)}
+                <span style={{ fontFamily: fontMono, fontSize: 11, fontWeight: 600, color: amtColor(era.n_c_star ?? 0), paddingLeft: 12 }}>
+                  {signPrefix(era.n_c_star ?? 0)}{fmtMoney(era.n_c_star ?? 0)}
                 </span>
               </div>
               {era.member_contributions?.map((contrib, j) => {
@@ -645,8 +648,8 @@ function OwnerMemberCard({
                     <span style={{ fontFamily: fontMono, fontSize: 10, color: paper.inkMute }}>
                       {contrib.person_name}{detail ? ` ${detail}` : ""}
                     </span>
-                    <span style={{ fontFamily: fontMono, fontSize: 10, color: contrib.contribution > 0 ? paper.green : paper.accent, paddingLeft: 12 }}>
-                      {contrib.contribution > 0 ? "+" : "−"}{" "}{fmtMoney(Math.abs(contrib.contribution))}
+                    <span style={{ fontFamily: fontMono, fontSize: 10, color: amtColor(contrib.contribution), paddingLeft: 12 }}>
+                      {signPrefix(contrib.contribution)}{fmtMoney(contrib.contribution)}
                     </span>
                   </div>
                 );
@@ -680,8 +683,8 @@ function OwnerMemberCard({
                   )}
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginTop: 4, paddingLeft: 16 }}>
                     <span style={{ fontFamily: fontMono, fontSize: 9, color: paper.inkDim }}>saldo</span>
-                    <span style={{ fontFamily: fontMono, fontSize: 10, fontWeight: 600, color: item.row.balance < 0 ? paper.green : item.row.balance > 0 ? paper.accent : paper.inkMute }}>
-                      {item.row.balance < 0 ? "+" : ""}{fmtMoney(item.row.balance)}
+                    <span style={{ fontFamily: fontMono, fontSize: 10, fontWeight: 600, color: amtColor(-item.row.balance) }}>
+                      {signPrefix(-item.row.balance)}{fmtMoney(item.row.balance)}
                     </span>
                   </div>
                   <SettledNote fuelCount={item.row.fuel_settled_count} fuelLiters={item.row.fuel_settled_liters} expCount={item.row.expense_settled_count} expAmt={item.row.expense_settled_amount} />
@@ -697,8 +700,8 @@ function OwnerMemberCard({
                 <span style={{ fontFamily: fontMono, fontSize: 9, color: paper.inkDim }}>
                   via coöp
                 </span>
-                <span style={{ fontFamily: fontMono, fontSize: 10, color: s2 >= 0 ? paper.green : paper.accent }}>
-                  {s2 >= 0 ? "+" : ""}{fmtMoney(s2)}
+                <span style={{ fontFamily: fontMono, fontSize: 10, color: amtColor(s2) }}>
+                  {signPrefix(s2)}{fmtMoney(s2)}
                 </span>
               </div>
             )}
@@ -707,8 +710,8 @@ function OwnerMemberCard({
                 <span style={{ fontFamily: fontMono, fontSize: 9, color: paper.inkDim }}>
                   gebruik andere wagens
                 </span>
-                <span style={{ fontFamily: fontMono, fontSize: 10, color: s1c >= 0 ? paper.green : paper.accent }}>
-                  {s1c >= 0 ? "+" : ""}{fmtMoney(s1c)}
+                <span style={{ fontFamily: fontMono, fontSize: 10, color: amtColor(s1c) }}>
+                  {signPrefix(s1c)}{fmtMoney(s1c)}
                 </span>
               </div>
             )}
@@ -717,7 +720,7 @@ function OwnerMemberCard({
                 {hasCrossUse ? "Netto" : "Saldo via coöp"}
               </span>
               <span style={{ fontFamily: fontMono, fontSize: 14, fontWeight: 700, color: netColor, paddingLeft: 12 }}>
-                {net > 0 ? "+" : net < 0 ? "−" : ""}{fmtMoney(net)}
+                {signPrefix(net)}{fmtMoney(net)}
               </span>
             </div>
             {bankAccount && (
@@ -741,7 +744,7 @@ function CrossOwnerCard({
 }) {
   const [open, setOpen] = useState(false);
   const s1c = m.s1_cross ?? 0;
-  const balColor = s1c > 0 ? paper.green : s1c < 0 ? paper.accent : paper.inkMute;
+  const balColor = amtColor(s1c);
 
   return (
     <div
@@ -820,8 +823,8 @@ function CrossOwnerCard({
               )}
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginTop: 4, paddingLeft: 16 }}>
                 <span style={{ fontFamily: fontMono, fontSize: 9, color: paper.inkDim }}>saldo</span>
-                <span style={{ fontFamily: fontMono, fontSize: 10, fontWeight: 600, color: item.row.balance < 0 ? paper.green : item.row.balance > 0 ? paper.accent : paper.inkMute }}>
-                  {item.row.balance < 0 ? "+" : ""}{fmtMoney(item.row.balance)}
+                <span style={{ fontFamily: fontMono, fontSize: 10, fontWeight: 600, color: amtColor(-item.row.balance) }}>
+                  {signPrefix(-item.row.balance)}{fmtMoney(item.row.balance)}
                 </span>
               </div>
               <SettledNote
@@ -1031,11 +1034,9 @@ export default function AdminSettlementPage() {
               Math.round(nonOwnerMembers.reduce((s, m) => s + (m.s1 ?? 0), 0) * 100) / 100;
             const step2Total =
               Math.round(ownerMembers.reduce((s, m) => s + (m.net ?? m.s2 ?? 0), 0) * 100) / 100;
-            const step1Color =
-              step1Total < 0 ? paper.accent : step1Total > 0 ? paper.green : paper.inkMute;
-            // step2Total is negative when coop pays out to owners (expected flow → green)
-            const step2Color =
-              step2Total < 0 ? paper.green : step2Total > 0 ? paper.accent : paper.inkMute;
+            const step1Color = amtColor(step1Total);
+            // step2Total is negative when coop pays out (expected flow) → invert for display
+            const step2Color = amtColor(-step2Total);
             return (
               <>
                 {/* Stap 1 — non-owner member cards */}

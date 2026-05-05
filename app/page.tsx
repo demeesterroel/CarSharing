@@ -1,7 +1,6 @@
 "use client";
 import { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useDashboard, useEarliestDashboardYear } from "@/hooks/use-dashboard";
 import { useTrips } from "@/hooks/use-trips";
 import { useFuelFillups } from "@/hooks/use-fuel-fillups";
@@ -17,8 +16,7 @@ import { ExpenseForm } from "@/app/expenses/expense-form";
 import { ReservationForm } from "@/app/calendar/reservation-form";
 import { toast } from "sonner";
 import { useT } from "@/components/locale-provider";
-import { LangSwitcher } from "@/components/lang-switcher";
-import { OfflineBadge } from "@/components/offline-badge";
+import { PageHeader } from "@/components/page-header";
 import { TripCard } from "@/components/trip-card";
 import { FuelCard } from "@/components/fuel-card";
 import { ExpenseCard } from "@/components/expense-card";
@@ -625,7 +623,6 @@ function Sheets({ sheet, setSheet }: { sheet: SheetType; setSheet: (s: SheetType
 function DashboardContent() {
   const t = useT();
   const { data: me } = useMe();
-  const router = useRouter();
   const [sheet, setSheet] = useState<SheetType>(null);
 
   // Edit state
@@ -643,11 +640,6 @@ function DashboardContent() {
   const deleteExpense = useDeleteExpense();
   const updateRes = useUpdateReservation();
   const deleteRes = useDeleteReservation();
-
-  const handleLogout = async () => {
-    await fetch("/api/auth/logout", { method: "POST" });
-    router.replace("/login");
-  };
 
   const { data: trips = [] } = useTrips();
   const { data: fillups = [] } = useFuelFillups();
@@ -691,84 +683,11 @@ function DashboardContent() {
 
   return (
     <div style={{ background: paper.paperDeep, minHeight: "100dvh", paddingBottom: 80 }}>
-      {/* Header */}
-      <div
-        style={{
-          background: paper.paper,
-          padding: "22px 20px 20px",
-          borderBottom: `1.5px dashed ${paper.ink}`,
-        }}
-      >
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            marginBottom: 12,
-          }}
-        >
-          <div
-            style={{
-              fontFamily: fontMono,
-              fontSize: 9,
-              color: paper.inkDim,
-              letterSpacing: 2,
-              textTransform: "uppercase",
-            }}
-          >
-            {t("brand.tagline")}
-          </div>
-          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            <OfflineBadge />
-            <LangSwitcher />
-            <button
-              onClick={handleLogout}
-              title={t("nav.logout")}
-              aria-label={t("nav.logout")}
-              style={{
-                padding: "3px 8px",
-                fontFamily: fontMono,
-                fontSize: 9,
-                fontWeight: 700,
-                letterSpacing: 1.5,
-                textTransform: "uppercase",
-                background: "transparent",
-                color: paper.inkDim,
-                border: `1.5px solid ${paper.paperDark}`,
-                cursor: "pointer",
-                lineHeight: 1.6,
-              }}
-            >
-              ⏻
-            </button>
-          </div>
-        </div>
-        <div
-          style={{
-            fontFamily: fontSerif,
-            fontSize: 32,
-            fontWeight: 700,
-            color: paper.ink,
-            letterSpacing: -0.8,
-            lineHeight: 1.05,
-          }}
-        >
-          {t("dashboard.hello")}
-          {me?.personName ? ` ${me.personName.split(" ")[0]}` : ""}
-        </div>
-        <div
-          style={{
-            fontFamily: fontMono,
-            fontSize: 10,
-            color: paper.inkDim,
-            letterSpacing: 2,
-            textTransform: "uppercase",
-            marginTop: 4,
-          }}
-        >
-          {t("dashboard.today")} · {todayFmt}
-        </div>
-      </div>
+      <PageHeader
+        title={`${t("dashboard.hello")}${me?.personName ? ` ${me.personName.split(" ")[0]}` : ""}`}
+        subtitle={`${t("dashboard.today")} · ${todayFmt}`}
+        titleSize={32}
+      />
 
       {/* Balance */}
       <BalanceReceipt personName={me?.personName ?? ""} />

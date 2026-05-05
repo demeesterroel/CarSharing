@@ -2,7 +2,7 @@
 import { Suspense } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { PageHeader } from "@/components/page-header";
+import { PageHeader, TITLE_BAR_HEIGHT } from "@/components/page-header";
 import { paper, fontMono } from "@/lib/paper-theme";
 import { useT } from "@/components/locale-provider";
 import { useReservations, useOwnerCarShorts } from "./_shared";
@@ -46,6 +46,9 @@ function SubNav() {
           gap: 0,
           borderBottom: `1.5px dashed ${paper.ink}`,
           background: paper.paper,
+          position: "sticky",
+          top: TITLE_BAR_HEIGHT,
+          zIndex: 19,
         }}
       >
         {SUB_PAGES.map((item) => {

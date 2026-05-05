@@ -17,6 +17,13 @@ export const fontMono = "var(--font-courier-prime, 'Courier Prime', ui-monospace
 export const fontSerif = "var(--font-fraunces, 'Fraunces', Georgia, serif)";
 export const fontSans = "var(--font-inter, system-ui, sans-serif)";
 
+/** Signed color: positive → green, negative → accent, zero → inkMute */
+export const amtColor = (n: number) =>
+  n > 0 ? paper.green : n < 0 ? paper.accent : paper.inkMute;
+
+/** Sign prefix string: +, −, or empty */
+export const signPrefix = (n: number) => (n > 0 ? "+" : n < 0 ? "−" : "");
+
 /** Format euro amount: € 1.234,56 */
 export function fmtMoney(n: number): string {
   return (

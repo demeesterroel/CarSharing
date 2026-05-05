@@ -8,7 +8,7 @@ import { useFuelFillups } from "@/hooks/use-fuel-fillups";
 import { useReservations } from "@/hooks/use-reservations";
 import { useExpenses } from "@/hooks/use-expenses";
 import { MultiFab } from "@/components/fab";
-import { paper, fontMono, fontSerif, fmtMoney, fmtDate, fmtKm } from "@/lib/paper-theme";
+import { paper, fontMono, fontSerif, fmtMoney, fmtDate, fmtKm, amtColor, signPrefix } from "@/lib/paper-theme";
 import type { Trip, FuelFillup, Reservation, Expense } from "@/types";
 import * as Dialog from "@radix-ui/react-dialog";
 import { TripForm } from "@/app/trips/trip-form";
@@ -140,7 +140,6 @@ function BalanceReceipt({ personName }: { personName: string }) {
   const fuelLabel = `${yours} ${myRow.fuel_count} ${pl(myRow.fuel_count, t("dashboard.noun_fillup"), t("dashboard.noun_fillups"))}, ${myRow.fuel_liters.toFixed(0)} L`;
   const expenseLabel = `${yours} ${myRow.expense_count} ${pl(myRow.expense_count, t("dashboard.noun_expense"), t("dashboard.noun_expenses"))}`;
 
-  const totalPositive = myRow.total_amount >= 0;
   const settled = Math.abs(myRow.balance) <= 0.05;
   const balanceColor = settled ? paper.green : paper.accent;
 
@@ -256,8 +255,8 @@ function BalanceReceipt({ personName }: { personName: string }) {
         <Perf margin="10px 0" />
         <ReceiptRow
           label={t("dashboard.total_label")}
-          value={`${totalPositive ? "+" : "−"} ${fmtMoney(Math.abs(myRow.total_amount))}`}
-          color={totalPositive ? paper.green : paper.accent}
+          value={`${signPrefix(myRow.total_amount)}${fmtMoney(myRow.total_amount)}`}
+          color={amtColor(myRow.total_amount)}
           big
         />
 
@@ -266,7 +265,7 @@ function BalanceReceipt({ personName }: { personName: string }) {
         {myRow.paid_amount !== 0 ? (
           <ReceiptRow
             label={t("dashboard.paid_label")}
-            value={`${myRow.paid_amount >= 0 ? "−" : "+"} ${fmtMoney(Math.abs(myRow.paid_amount))}`}
+            value={`${signPrefix(-myRow.paid_amount)}${fmtMoney(myRow.paid_amount)}`}
           />
         ) : (
           <ReceiptRow label={t("dashboard.not_yet_paid")} value="—" color={paper.inkMute} />
@@ -309,8 +308,8 @@ function BalanceReceipt({ personName }: { personName: string }) {
                 }}
               >
                 {settled
-                  ? `€ 0.00 ✓`
-                  : `${myRow.balance >= 0 ? "+" : "−"} ${fmtMoney(Math.abs(myRow.balance))}`}
+                  ? `${fmtMoney(0)} ✓`
+                  : `${signPrefix(myRow.balance)}${fmtMoney(myRow.balance)}`}
               </span>
             </div>
           </>

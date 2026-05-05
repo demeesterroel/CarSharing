@@ -1,45 +1,4 @@
 import type Database from "better-sqlite3";
-import type { FixedCostItem, FixedCostCategory } from "@/types";
-
-const VALID_CATEGORIES: FixedCostCategory[] = [
-  "belastingen",
-  "verzekeringen",
-  "onderhoud",
-  "keuring",
-  "diversen",
-];
-
-function parseFixedCosts(json: string): FixedCostItem[] {
-  try {
-    const parsed = JSON.parse(json);
-    // New format: array of { id, category, description, amount }
-    if (Array.isArray(parsed)) {
-      return parsed.filter(
-        (fc): fc is FixedCostItem =>
-          typeof fc === "object" &&
-          typeof fc.amount === "number" &&
-          VALID_CATEGORIES.includes(fc.category)
-      );
-    }
-    // Legacy format: { verzekering, belasting, keuring, afschrijving }
-    const legacyMap: Record<string, FixedCostCategory> = {
-      verzekering: "verzekeringen",
-      belasting: "belastingen",
-      keuring: "keuring",
-      afschrijving: "diversen",
-    };
-    return Object.entries(parsed)
-      .filter(([, v]) => typeof v === "number" && (v as number) > 0)
-      .map(([k, v], i) => ({
-        id: `legacy-${i}`,
-        category: legacyMap[k] ?? "diversen",
-        description: k,
-        amount: v as number,
-      }));
-  } catch {
-    return [];
-  }
-}
 
 export interface CarPnL {
   car_id: number;
@@ -48,23 +7,28 @@ export interface CarPnL {
   car_price_per_km: number;
   owner_name: string | null;
   long_threshold: number;
-  fixed_costs: FixedCostItem[];
   expected_km: number | null;
   // aggregates (calendar year)
   trip_count: number;
   trip_km: number;
   trip_revenue: number;
+  owner_trip_count: number;
+  owner_trip_km: number;
   owner_trip_amount: number; // trips by the car's owner on their own car
   fuel_count: number;
   fuel_amount: number;
+  fuel_liters: number;
+  owner_fuel_count: number;
+  owner_fuel_amount: number;
+  owner_fuel_liters: number;
   expense_count: number;
   expense_amount: number;
-  fixed_total: number;
+  owner_expense_count: number;
+  owner_expense_amount: number;
   // derived
   variable_total: number; // fuel + expense
-  total_cost: number; // fuel + expense + fixed
-  net_to_owner: number; // trip_revenue - total_cost
-  cost_per_km: number; // total_cost / trip_km (or 0)
+  net: number;            // trip_revenue - variable_total
+  cost_per_km: number;    // variable_total / trip_km (or 0)
   prev_year_trip_km: number;
 }
 
@@ -93,6 +57,7 @@ export interface PersonContribution {
   person_id: number;
   person_name: string;
   km: number;
+  amount: number;
 }
 
 export interface CarYearKm {
@@ -112,15 +77,10 @@ export function getCarPnL(db: Database.Database, year: number): CarPnL[] {
     price_per_km: number;
     owner_name: string | null;
     long_threshold: number;
-    fixed_costs_json: string | null;
     expected_km: number | null;
   }[];
 
   return cars.map((car) => {
-    const fixed_costs: FixedCostItem[] = car.fixed_costs_json
-      ? parseFixedCosts(car.fixed_costs_json)
-      : [];
-    const fixed_total = fixed_costs.reduce((s, fc) => s + fc.amount, 0);
 
     const trips = db
       .prepare(
@@ -134,11 +94,11 @@ export function getCarPnL(db: Database.Database, year: number): CarPnL[] {
     const fuel = db
       .prepare(
         `
-      SELECT COUNT(*) AS cnt, COALESCE(SUM(amount),0) AS amt
+      SELECT COUNT(*) AS cnt, COALESCE(SUM(amount),0) AS amt, COALESCE(SUM(liters),0) AS liters
       FROM fuel_fillups WHERE car_id=? AND strftime('%Y',date)=?
     `
       )
-      .get(car.id, yearStr) as { cnt: number; amt: number };
+      .get(car.id, yearStr) as { cnt: number; amt: number; liters: number };
 
     const exp = db
       .prepare(
@@ -160,18 +120,39 @@ export function getCarPnL(db: Database.Database, year: number): CarPnL[] {
     const ownerTrips = car.owner_name
       ? (db
           .prepare(
-            `SELECT COALESCE(SUM(t.amount), 0) AS amt
+            `SELECT COUNT(*) AS cnt, COALESCE(SUM(t.km), 0) AS km, COALESCE(SUM(t.amount), 0) AS amt
              FROM trips t
              JOIN people p ON p.id = t.person_id
              WHERE t.car_id = ? AND strftime('%Y', t.date) = ? AND p.name = ?`
           )
-          .get(car.id, yearStr, car.owner_name) as { amt: number })
-      : { amt: 0 };
+          .get(car.id, yearStr, car.owner_name) as { cnt: number; km: number; amt: number })
+      : { cnt: 0, km: 0, amt: 0 };
+
+    const ownerFuel = car.owner_name
+      ? (db
+          .prepare(
+            `SELECT COUNT(*) AS cnt, COALESCE(SUM(f.amount),0) AS amt, COALESCE(SUM(f.liters),0) AS liters
+             FROM fuel_fillups f
+             JOIN people p ON p.id = f.person_id
+             WHERE f.car_id = ? AND strftime('%Y', f.date) = ? AND p.name = ?`
+          )
+          .get(car.id, yearStr, car.owner_name) as { cnt: number; amt: number; liters: number })
+      : { cnt: 0, amt: 0, liters: 0 };
+
+    const ownerExp = car.owner_name
+      ? (db
+          .prepare(
+            `SELECT COUNT(*) AS cnt, COALESCE(SUM(e.amount),0) AS amt
+             FROM expenses e
+             JOIN people p ON p.id = e.person_id
+             WHERE e.car_id = ? AND strftime('%Y', e.date) = ? AND p.name = ?`
+          )
+          .get(car.id, yearStr, car.owner_name) as { cnt: number; amt: number })
+      : { cnt: 0, amt: 0 };
 
     const variable_total = fuel.amt + exp.amt;
-    const total_cost = variable_total + fixed_total;
-    const net_to_owner = trips.rev - total_cost;
-    const cost_per_km = trips.km > 0 ? total_cost / trips.km : 0;
+    const net = trips.rev - variable_total;
+    const cost_per_km = trips.km > 0 ? variable_total / trips.km : 0;
 
     return {
       car_id: car.id,
@@ -180,20 +161,25 @@ export function getCarPnL(db: Database.Database, year: number): CarPnL[] {
       car_price_per_km: car.price_per_km,
       owner_name: car.owner_name,
       long_threshold: car.long_threshold,
-      fixed_costs,
       expected_km: car.expected_km,
       trip_count: trips.cnt,
       trip_km: trips.km,
       trip_revenue: trips.rev,
+      owner_trip_count: ownerTrips.cnt,
+      owner_trip_km: ownerTrips.km,
       owner_trip_amount: ownerTrips.amt,
       fuel_count: fuel.cnt,
       fuel_amount: fuel.amt,
+      fuel_liters: fuel.liters,
+      owner_fuel_count: ownerFuel.cnt,
+      owner_fuel_amount: ownerFuel.amt,
+      owner_fuel_liters: ownerFuel.liters,
       expense_count: exp.cnt,
       expense_amount: exp.amt,
-      fixed_total,
+      owner_expense_count: ownerExp.cnt,
+      owner_expense_amount: ownerExp.amt,
       variable_total,
-      total_cost,
-      net_to_owner,
+      net,
       cost_per_km,
       prev_year_trip_km: prevTrips.km,
     };
@@ -218,12 +204,12 @@ export function getPersonContributions(db: Database.Database, year: number): Per
   return db
     .prepare(
       `
-    SELECT t.car_id, t.person_id, p.name AS person_name, SUM(t.km) AS km
+    SELECT t.car_id, t.person_id, p.name AS person_name, SUM(t.km) AS km, SUM(t.amount) AS amount
     FROM trips t
     JOIN people p ON p.id = t.person_id
     WHERE strftime('%Y', t.date) = ?
     GROUP BY t.car_id, t.person_id
-    ORDER BY t.car_id, km DESC
+    ORDER BY t.car_id, amount DESC
   `
     )
     .all(String(year)) as PersonContribution[];
@@ -250,6 +236,24 @@ export interface CarPriceHistory {
   effective_from: string; // "YYYY-MM-DD"
 }
 
+export interface CarRollingFuel {
+  car_id: number;
+  fuel_per_km: number; // 0 if no km in window
+}
+
+export interface CarOwnerSplit {
+  car_id: number;
+  year: number;
+  owner_km: number;
+  non_owner_km: number;
+}
+
+export interface CarYearExpenses {
+  car_id: number;
+  year: number;
+  amount: number;
+}
+
 export function getPriceHistory(db: Database.Database): CarPriceHistory[] {
   return db
     .prepare(
@@ -260,6 +264,79 @@ export function getPriceHistory(db: Database.Database): CarPriceHistory[] {
   `
     )
     .all() as CarPriceHistory[];
+}
+
+export function getRollingFuelPerKm(db: Database.Database): CarRollingFuel[] {
+  return db
+    .prepare(
+      `
+    WITH fuel AS (
+      SELECT car_id, COALESCE(SUM(amount), 0.0) AS fuel_amount
+      FROM fuel_fillups
+      WHERE date >= date('now', '-365 days')
+      GROUP BY car_id
+    ),
+    km AS (
+      SELECT car_id, COALESCE(SUM(km), 0) AS trip_km
+      FROM trips
+      WHERE date >= date('now', '-365 days')
+      GROUP BY car_id
+    )
+    SELECT
+      c.id AS car_id,
+      CASE WHEN COALESCE(k.trip_km, 0) > 0
+        THEN COALESCE(f.fuel_amount, 0.0) / k.trip_km
+        ELSE 0.0
+      END AS fuel_per_km
+    FROM cars c
+    LEFT JOIN fuel f ON f.car_id = c.id
+    LEFT JOIN km k ON k.car_id = c.id
+  `
+    )
+    .all() as CarRollingFuel[];
+}
+
+export function getHistoricalOwnerSplit(
+  db: Database.Database,
+  currentYear: number
+): CarOwnerSplit[] {
+  return db
+    .prepare(
+      `
+    SELECT
+      t.car_id,
+      CAST(strftime('%Y', t.date) AS INTEGER) AS year,
+      COALESCE(SUM(CASE WHEN p.name = c.owner_name THEN t.km ELSE 0 END), 0) AS owner_km,
+      COALESCE(SUM(CASE WHEN p.name != c.owner_name OR c.owner_name IS NULL THEN t.km ELSE 0 END), 0) AS non_owner_km
+    FROM trips t
+    JOIN people p ON p.id = t.person_id
+    JOIN cars c ON c.id = t.car_id
+    WHERE CAST(strftime('%Y', t.date) AS INTEGER) BETWEEN ? AND ?
+    GROUP BY t.car_id, year
+    ORDER BY t.car_id, year
+  `
+    )
+    .all(currentYear - 5, currentYear) as CarOwnerSplit[];
+}
+
+export function getHistoricalExpenses(
+  db: Database.Database,
+  currentYear: number
+): CarYearExpenses[] {
+  return db
+    .prepare(
+      `
+    SELECT
+      car_id,
+      CAST(strftime('%Y', date) AS INTEGER) AS year,
+      COALESCE(SUM(amount), 0) AS amount
+    FROM expenses
+    WHERE CAST(strftime('%Y', date) AS INTEGER) BETWEEN ? AND ?
+    GROUP BY car_id, year
+    ORDER BY car_id, year
+  `
+    )
+    .all(currentYear - 5, currentYear - 1) as CarYearExpenses[];
 }
 
 export interface ZeroKmTrip {

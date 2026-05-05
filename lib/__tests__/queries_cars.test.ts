@@ -2,7 +2,7 @@
 import { describe, it, expect } from "vitest";
 import Database from "better-sqlite3";
 import { runMigrations } from "../db/migrate";
-import { getCars, getCarById, insertCar, updateCar } from "../queries/cars";
+import { getCars, getCarById, insertCar, updateCar, carHasHistory, deleteCar } from "../queries/cars";
 
 function makeDb() {
   const db = new Database(":memory:");
@@ -151,5 +151,80 @@ describe("updateCar", () => {
   it("does nothing for non-existent id without throwing", () => {
     const db = makeDb();
     expect(() => updateCar(db, 9999, baseCar)).not.toThrow();
+  });
+});
+
+describe("carHasHistory", () => {
+  it("returns false for a fresh car with no trips, fuel, expenses, or reservations", () => {
+    const db = makeDb();
+    const id = insertCar(db, baseCar);
+    expect(carHasHistory(db, id)).toBe(false);
+  });
+
+  it("returns true when the car has at least one trip", () => {
+    const db = makeDb();
+    db.exec(`INSERT INTO people (id, name, active) VALUES (1, 'Alice', 1)`);
+    const id = insertCar(db, { ...baseCar, owner_name: "Alice" });
+    db.exec(
+      `INSERT INTO trips (person_id, car_id, date, start_odometer, end_odometer, km, amount)
+       VALUES (1, ${id}, '2025-01-01', 0, 10, 10, 2.0)`
+    );
+    expect(carHasHistory(db, id)).toBe(true);
+  });
+
+  it("returns true when the car has at least one fuel fillup", () => {
+    const db = makeDb();
+    db.exec(`INSERT INTO people (id, name, active) VALUES (1, 'Alice', 1)`);
+    const id = insertCar(db, { ...baseCar, owner_name: "Alice" });
+    db.prepare(
+      "INSERT INTO fuel_fillups (person_id, car_id, date, liters, amount, price_per_liter) VALUES (?,?,?,?,?,?)"
+    ).run(1, id, "2025-01-01", 50, 60, 1.2);
+    expect(carHasHistory(db, id)).toBe(true);
+  });
+
+  it("returns true when the car has at least one expense", () => {
+    const db = makeDb();
+    db.exec(`INSERT INTO people (id, name, active) VALUES (1, 'Alice', 1)`);
+    const id = insertCar(db, { ...baseCar, owner_name: "Alice" });
+    db.prepare(
+      "INSERT INTO expenses (person_id, car_id, date, amount, description, category) VALUES (?,?,?,?,?,?)"
+    ).run(1, id, "2025-01-01", 150, "Maintenance", "repair");
+    expect(carHasHistory(db, id)).toBe(true);
+  });
+
+  it("returns true when the car has at least one reservation", () => {
+    const db = makeDb();
+    db.exec(`INSERT INTO people (id, name, active) VALUES (1, 'Alice', 1)`);
+    const id = insertCar(db, { ...baseCar, owner_name: "Alice" });
+    db.prepare(
+      "INSERT INTO reservations (person_id, car_id, start_date, end_date, status, note) VALUES (?,?,?,?,?,?)"
+    ).run(1, id, "2025-01-01", "2025-01-03", "pending", "Weekend trip");
+    expect(carHasHistory(db, id)).toBe(true);
+  });
+});
+
+describe("deleteCar", () => {
+  it("removes the car from the database", () => {
+    const db = makeDb();
+    const id = insertCar(db, baseCar);
+    expect(getCarById(db, id)).not.toBeNull();
+    deleteCar(db, id);
+    expect(getCarById(db, id)).toBeNull();
+  });
+
+  it("does not throw for a non-existent id", () => {
+    const db = makeDb();
+    expect(() => deleteCar(db, 9999)).not.toThrow();
+  });
+
+  it("throws a FK constraint error when the car has trips (foreign keys enabled)", () => {
+    const db = makeDb();
+    db.exec(`INSERT INTO people (id, name, active) VALUES (1, 'Alice', 1)`);
+    const id = insertCar(db, { ...baseCar, owner_name: "Alice" });
+    db.exec(
+      `INSERT INTO trips (person_id, car_id, date, start_odometer, end_odometer, km, amount)
+       VALUES (1, ${id}, '2025-01-01', 0, 10, 10, 2.0)`
+    );
+    expect(() => deleteCar(db, id)).toThrow();
   });
 });

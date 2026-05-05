@@ -7,3 +7,4 @@ const hooks = createResourceHooks<Car, Omit<Car, "id">>("cars", "/api/cars", {
 export const useCars = hooks.useList;
 export const useCreateCar = hooks.useCreate;
 export const useUpdateCar = hooks.useUpdate;
+export const useDeleteCar = hooks.useDelete;

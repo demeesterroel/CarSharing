@@ -20,7 +20,7 @@ export function insertCar(db: Database.Database, data: CarInput): number {
   return db.transaction((d: CarInput) => {
     const result = db
       .prepare(
-        "INSERT INTO cars (short,name,price_per_km,brand,color,owner_name,long_threshold,fixed_costs_json) VALUES (?,?,?,?,?,?,?,?)"
+        "INSERT INTO cars (short,name,price_per_km,brand,color,owner_name,long_threshold) VALUES (?,?,?,?,?,?,?)"
       )
       .run(
         d.short,
@@ -29,8 +29,7 @@ export function insertCar(db: Database.Database, data: CarInput): number {
         d.brand ?? null,
         d.color ?? null,
         d.owner_name ?? null,
-        d.long_threshold ?? 500,
-        d.fixed_costs_json ?? null
+        d.long_threshold ?? 500
       );
     const newId = result.lastInsertRowid as number;
     recordPriceHistory(db, newId, d.price_per_km);
@@ -45,7 +44,7 @@ export function updateCar(db: Database.Database, id: number, data: CarInput): vo
       recordPriceHistory(db, args.id, args.data.price_per_km);
     }
     db.prepare(
-      "UPDATE cars SET short=?,name=?,price_per_km=?,brand=?,color=?,owner_name=?,long_threshold=?,fixed_costs_json=?,active=?,expected_km=? WHERE id=?"
+      "UPDATE cars SET short=?,name=?,price_per_km=?,brand=?,color=?,owner_name=?,long_threshold=?,active=?,expected_km=? WHERE id=?"
     ).run(
       args.data.short,
       args.data.name,
@@ -54,10 +53,27 @@ export function updateCar(db: Database.Database, id: number, data: CarInput): vo
       args.data.color ?? null,
       args.data.owner_name ?? null,
       args.data.long_threshold ?? 500,
-      args.data.fixed_costs_json ?? null,
       args.data.active ?? 1,
       args.data.expected_km ?? null,
       args.id
     );
   })({ id, data });
+}
+
+export function carHasHistory(db: Database.Database, id: number): boolean {
+  const tripRow = db.prepare("SELECT 1 FROM trips WHERE car_id = ? LIMIT 1").get(id);
+  if (tripRow !== undefined) return true;
+
+  const fuelRow = db.prepare("SELECT 1 FROM fuel_fillups WHERE car_id = ? LIMIT 1").get(id);
+  if (fuelRow !== undefined) return true;
+
+  const expenseRow = db.prepare("SELECT 1 FROM expenses WHERE car_id = ? LIMIT 1").get(id);
+  if (expenseRow !== undefined) return true;
+
+  const reservationRow = db.prepare("SELECT 1 FROM reservations WHERE car_id = ? LIMIT 1").get(id);
+  return reservationRow !== undefined;
+}
+
+export function deleteCar(db: Database.Database, id: number): void {
+  db.prepare("DELETE FROM cars WHERE id = ?").run(id);
 }

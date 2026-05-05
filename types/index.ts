@@ -20,26 +20,11 @@ export interface Car {
   owner_from: string | null; // 'YYYY-MM-DD', inclusive
   owner_to: string | null; // 'YYYY-MM-DD', inclusive; NULL = ongoing
   long_threshold: number;
-  fixed_costs_json: string | null;
   active: 0 | 1;
   expected_km: number | null;
 }
 
-export type FixedCostCategory =
-  | "belastingen"
-  | "verzekeringen"
-  | "onderhoud"
-  | "keuring"
-  | "diversen";
-
 export type ExpenseCategory = "onderhoud" | "keuring" | "belasting" | "verzekering" | "diversen";
-
-export interface FixedCostItem {
-  id: string;
-  category: FixedCostCategory;
-  description: string;
-  amount: number;
-}
 
 export interface Trip {
   id: number;
@@ -203,17 +188,29 @@ export interface CarMemberContribution {
   expense_settled_amount?: number;
 }
 
-export interface CrossOwnerBalance {
-  other_owner_name: string;
-  net: number; // M[this][other] − M[other][this]; positive = I receive (used for sorting/filtering)
-  my_balance: number; // M[this][other] = b(me, other's cars); negative = I owe
-  my_trip_km: number; // km I drove in their cars
-  my_fuel_liters: number; // liters I paid for their cars
-  my_expense_amount: number; // expenses I paid for their cars
-  my_fuel_settled_count?: number;
-  my_fuel_settled_liters?: number;
-  my_expense_settled_count?: number;
-  my_expense_settled_amount?: number;
+export interface CarParticipantRow {
+  person_name: string;
+  row_type: "member" | "cross_owner" | "own"; // own = owner's own trips, shown €0
+  trip_km: number;
+  trip_amount: number; // 0 for row_type "own"
+  fuel_liters: number;
+  fuel_amount: number;
+  expense_amount: number;
+  balance: number; // trip_amount − fuel_amount − expense_amount; 0 for "own"
+  fuel_settled_count: number;
+  fuel_settled_liters: number;
+  expense_settled_count: number;
+  expense_settled_amount: number;
+}
+
+export interface CarSettlement {
+  car_name: string;
+  car_short: string;
+  owner_name: string;
+  owner_from: string;
+  owner_to: string | null;
+  rows: CarParticipantRow[]; // sorted: members (alpha) → cross_owners (alpha) → own
+  total_balance: number; // N_new(c) = what co-op pays owner in Step 2
 }
 
 export interface CarEraBalance {
@@ -240,19 +237,18 @@ export interface MemberStatement {
   person_id: number;
   person_name: string;
   is_owner: boolean;
-  s1?: number; // non-owner: net balance with co-op
-  s2?: number; // owner: co-op payout
-  x?: number; // owner: cross-owner net position
-  net?: number; // owner: s2 + x
+  s1?: number; // non-owner: net balance with co-op (negative = owes)
+  s2?: number; // owner: co-op payout (N_new for all owned cars)
+  s1_cross?: number; // owner: cross-owner balance in Step 1 (negative = owes co-op)
+  net?: number; // owner: s2 + s1_cross
   car_eras: CarEraBalance[];
-  cross_owner_balances?: CrossOwnerBalance[]; // only on owner rows
 }
 
 export interface Transfer {
   from: string; // person_name or "co-op"
   to: string;
   amount: number;
-  step: 1 | 2 | 3;
+  step: 1 | 2; // was: 1 | 2 | 3
   label: string;
 }
 
@@ -262,6 +258,7 @@ export interface SettlementResult {
   settled_at: string | null;
   settled_by: string | null;
   members: MemberStatement[];
+  car_settlements: CarSettlement[]; // NEW
   transfers: Transfer[];
   verify_ok: boolean;
 }

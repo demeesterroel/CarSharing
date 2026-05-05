@@ -1,7 +1,7 @@
-import { getCarById, updateCar } from "@/lib/queries/cars";
-import { carSchema } from "@/lib/schemas/car";
+import { getCarById, updateCar, deleteCar, carHasHistory } from "@/lib/queries/cars";
+import { carSchema, ownerCarPatchSchema } from "@/lib/schemas/car";
 import { getDb } from "@/lib/db";
-import { json, readBody, readId, notFound, requireAdmin } from "@/lib/api";
+import { json, readBody, readId, notFound, forbidden, conflict, requireAdminOrOwner } from "@/lib/api";
 
 export const GET = json(async (_req, ctx) => {
   const car = getCarById(getDb(), await readId(ctx));
@@ -10,9 +10,41 @@ export const GET = json(async (_req, ctx) => {
 });
 
 export const PUT = json(async (req, ctx) => {
-  await requireAdmin(req);
+  const session = await requireAdminOrOwner(req);
   const id = await readId(ctx);
+  const db = getDb();
+
+  if (!session.isAdmin) {
+    const current = getCarById(db, id);
+    if (!current || current.owner_name !== session.personName) forbidden();
+    const patch = await readBody(req, ownerCarPatchSchema);
+    updateCar(db, id, {
+      short: current.short,
+      name: patch.name,
+      price_per_km: patch.price_per_km,
+      brand: current.brand,
+      color: current.color,
+      owner_name: current.owner_name,
+      long_threshold: current.long_threshold,
+      active: patch.active ?? current.active,
+      expected_km: current.expected_km,
+    });
+    return { ok: true };
+  }
+
   const data = await readBody(req, carSchema);
-  updateCar(getDb(), id, data);
+  updateCar(db, id, data);
+  return { ok: true };
+});
+
+export const DELETE = json(async (req, ctx) => {
+  const session = await requireAdminOrOwner(req);
+  const id = await readId(ctx);
+  const db = getDb();
+  const car = getCarById(db, id);
+  if (!car) notFound();
+  if (!session.isAdmin && car.owner_name !== session.personName) forbidden();
+  if (carHasHistory(db, id)) conflict("Car has reservations or trips — deactivate instead");
+  deleteCar(db, id);
   return { ok: true };
 });

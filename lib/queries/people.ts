@@ -62,7 +62,7 @@ export function setPasswordHash(db: Database.Database, id: number, passwordHash:
 
 export function isOwner(db: Database.Database, personName: string): boolean {
   const row = db
-    .prepare("SELECT COUNT(*) as n FROM cars WHERE owner_name=? AND active=1")
+    .prepare("SELECT COUNT(*) as n FROM cars WHERE owner_name=?")
     .get(personName) as { n: number };
   return row.n > 0;
 }

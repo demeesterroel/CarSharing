@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, Suspense } from "react";
 import { useQueryClient, useMutation } from "@tanstack/react-query";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { paper, fontMono, fontSerif, fmtMoney, amtColor, signPrefix } from "@/lib/paper-theme";
@@ -1035,7 +1035,7 @@ function generateSettlementMd(data: import("@/types").SettlementResult, year: nu
   return lines.join("\n");
 }
 
-export default function AdminSettlementPage() {
+function AdminSettlementPageContent() {
   const t = useT();
   const { data: me } = useMe();
   const { data: settings } = useAdminSettings();
@@ -1333,5 +1333,13 @@ export default function AdminSettlementPage() {
         </>
       )}
     </div>
+  );
+}
+
+export default function AdminSettlementPage() {
+  return (
+    <Suspense>
+      <AdminSettlementPageContent />
+    </Suspense>
   );
 }

@@ -2,7 +2,7 @@ export const nl = {
   // Brand
   "brand.app": "Autodelen",
   "brand.description": "Autodelen voor een coöperatieve",
-  "brand.tagline": "Autodelen Coöperatieve · Antwerpen",
+  "brand.tagline": "Coöperatieve · Antwerpen",
 
   // Primary navigation
   "nav.menu": "Menu",

@@ -4,7 +4,7 @@ export const en: Messages = {
   // Brand
   "brand.app": "Car Sharing",
   "brand.description": "Car sharing for a cooperative",
-  "brand.tagline": "Cooperative · Antwerp",
+  "brand.tagline": "Autodelen Cooperative · Antwerp",
 
   // Primary navigation
   "nav.menu": "Menu",

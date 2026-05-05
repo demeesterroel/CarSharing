@@ -926,8 +926,11 @@ export default function AdminSettlementPage() {
               Math.round(nonOwnerMembers.reduce((s, m) => s + (m.s1 ?? 0), 0) * 100) / 100;
             const step2Total =
               Math.round(ownerMembers.reduce((s, m) => s + (m.net ?? m.s2 ?? 0), 0) * 100) / 100;
-            const step1Color = amtColor(step1Total);
-            // step2Total is negative when coop pays out (expected flow) → invert for display
+            // step1Total is sum of member s1 (member-perspective: negative = they owe)
+            // invert to show coop-perspective: coop receives = positive
+            const step1Color = amtColor(-step1Total);
+            // step2Total is sum of owner net (owner-perspective: positive = they receive)
+            // invert to show coop-perspective: coop pays out = negative
             const step2Color = amtColor(-step2Total);
             return (
               <>
@@ -951,7 +954,7 @@ export default function AdminSettlementPage() {
                       color: step1Color,
                     }}
                   >
-                    {step1Total >= 0 ? "+" : "−"}
+                    {step1Total <= 0 ? "+" : "−"}
                     {fmtMoney(Math.abs(step1Total))}
                   </span>
                 </div>

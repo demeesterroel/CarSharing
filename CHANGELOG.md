@@ -1,5 +1,20 @@
 # Changelog
 
+## [1.5.0](https://github.com/demeesterroel/CarSharing/compare/v1.4.0...v1.5.0) (2026-05-05)
+
+
+### ✨ New features
+
+* **owner:** rename /admin/payout → /owner, redesign as car owner economics dashboard ([#95](https://github.com/demeesterroel/CarSharing/issues/95)) ([cd925d9](https://github.com/demeesterroel/CarSharing/commit/cd925d9b5d061bd8bc10c238531c73a979bf5f2d))
+* **settlement:** integrate payments table — show settlement status and outstanding balances ([#94](https://github.com/demeesterroel/CarSharing/issues/94)) ([fb37daa](https://github.com/demeesterroel/CarSharing/commit/fb37daa0ed43a5a3bb0abfa721f45d7708379e4f))
+* **settlement:** payment status, coop-POV amounts, 2-line balance bar ([#105](https://github.com/demeesterroel/CarSharing/issues/105)) ([5977906](https://github.com/demeesterroel/CarSharing/commit/59779061e1716547ca49f333ea631702069a0d27))
+
+
+### 🐛 Bug fixes
+
+* **settlement:** show step 1 & 2 section totals from coop perspective ([#104](https://github.com/demeesterroel/CarSharing/issues/104)) ([802c7fd](https://github.com/demeesterroel/CarSharing/commit/802c7fd04f64e19d1d5d31bf25a06b2c5f32d2b2))
+* **settlement:** wrap page in Suspense to fix useSearchParams build error ([#106](https://github.com/demeesterroel/CarSharing/issues/106)) ([ec8a82b](https://github.com/demeesterroel/CarSharing/commit/ec8a82b9db530e6b09a226886fbfc4d1e5e692e6))
+
 ## [1.4.0](https://github.com/demeesterroel/CarSharing/compare/v1.3.1...v1.4.0) (2026-05-01)
 
 

@@ -256,30 +256,12 @@ export interface Transfer {
   label: string;
 }
 
-export interface TransferPaymentStatus {
-  /** Total amount paid toward this transfer (from the payments table). */
-  paid: number;
-  /** Amount still outstanding: Math.max(0, amount - paid). */
-  open: number;
-  /** Individual payment records that make up the total. */
-  payments: { id: number; date: string; amount: number }[];
-}
-
-export interface AnnotatedTransfer extends Transfer {
-  /** Payment status for this transfer, if the payer is a known person (not "co-op"). */
-  payment_status: TransferPaymentStatus | null;
-}
-
 export interface SettlementResult {
   year: number;
   frozen: boolean;
   settled_at: string | null;
   settled_by: string | null;
   members: MemberStatement[];
-  transfers: AnnotatedTransfer[];
+  transfers: Transfer[];
   verify_ok: boolean;
-  /** Keyed by person_id; total paid for this settlement year. */
-  payments_by_person: Record<number, number>;
-  /** True when every transfer with a human payer has open === 0. */
-  all_paid: boolean;
 }

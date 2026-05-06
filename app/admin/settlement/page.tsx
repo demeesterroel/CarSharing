@@ -475,7 +475,10 @@ function NonOwnerMemberCard({
       : ps.open < 0.005
         ? paper.green
         : paper.accent;
-  const isSlim = !showAll && borderColor !== paper.accent && borderColor !== paper.blue;
+  const exactMatch =
+    settlementTransfer == null ||
+    (ps != null && Math.abs(ps.paid - settlementTransfer.amount) < 0.05);
+  const isSlim = !showAll && exactMatch;
 
   const toggle = () => setOpen((v) => !v);
 
@@ -809,7 +812,10 @@ function OwnerMemberCard({
       : ps.open < 0.005
         ? paper.green
         : paper.accent;
-  const isSlim = !showAll && borderColor === paper.ink; // slim only when no payout transfer at all
+  const exactMatch =
+    settlementTransfer == null ||
+    (ps != null && Math.abs(ps.paid - settlementTransfer.amount) < 0.05);
+  const isSlim = !showAll && exactMatch;
 
   const toggle = () => setOpen((v) => !v);
 

@@ -357,6 +357,7 @@ export const en: Messages = {
   "settlement.fully_paid": "Fully paid",
   "settlement.partially_paid": "Partially paid",
   "settlement.unpaid": "Not yet paid",
+  "settlement.overpaid": "overpaid",
   "payout.s2_banner": "Expected payout: {net}",
   "payout.s2_banner_sub": "Step 2 ({s2}) + cross-use ({x}) → see settlement",
   "payout.own_trips_toggle": "Show own trips",

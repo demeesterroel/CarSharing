@@ -244,11 +244,19 @@ function TransferPaymentRow({ transfer }: { transfer: AnnotatedTransfer }) {
   const ps = transfer.payment_status;
   if (!ps) return null; // co-op is the payer, no tracking
 
+  const overpaid = transfer.amount > 0 && ps.paid > transfer.amount + 0.005;
   const pct = transfer.amount > 0 ? Math.max(0, Math.min(1, ps.paid / transfer.amount)) : 1;
   const barFilled = Math.round(pct * 10);
-  const statusColor = ps.open < 0.005 ? paper.green : ps.paid > 0.005 ? paper.blue : paper.accent;
-  const statusLabel =
-    ps.open < 0.005
+  const statusColor = overpaid
+    ? paper.accent
+    : ps.open < 0.005
+      ? paper.green
+      : ps.paid > 0.005
+        ? paper.blue
+        : paper.accent;
+  const statusLabel = overpaid
+    ? `+${fmtMoney(ps.paid - transfer.amount)} ${t("settlement.overpaid")}`
+    : ps.open < 0.005
       ? t("settlement.fully_paid")
       : ps.paid > 0.005
         ? t("settlement.partially_paid")
@@ -277,8 +285,10 @@ function TransferPaymentRow({ transfer }: { transfer: AnnotatedTransfer }) {
         <span>
           {t("settlement.payment_due")}: {fmtMoney(transfer.amount)}
         </span>
-        <span style={{ color: ps.open > 0.005 ? paper.accent : paper.inkMute }}>
-          {t("settlement.payment_open")}: {fmtMoney(ps.open)}
+        <span style={{ color: overpaid ? paper.accent : ps.open > 0.005 ? paper.accent : paper.inkMute }}>
+          {overpaid
+            ? `${t("settlement.payment_open")}: ${fmtMoney(0)}`
+            : `${t("settlement.payment_open")}: ${fmtMoney(ps.open)}`}
         </span>
       </div>
       {/* Row 2: Betaald | progress bar | status label */}

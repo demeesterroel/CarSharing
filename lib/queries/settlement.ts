@@ -486,7 +486,10 @@ export function getSettlement(db: Database.Database, year: number): SettlementRe
   const humanTransfers = annotatedTransfers.filter((t) => t.payment_status !== null);
   const all_paid =
     humanTransfers.length === 0 ||
-    humanTransfers.every((t) => (t.payment_status?.open ?? 1) < 0.005);
+    humanTransfers.every((t) => {
+      const ps = t.payment_status!;
+      return Math.abs(ps.paid - t.amount) < 0.05; // exact match: neither underpaid nor overpaid
+    });
 
   // 15. Verify: Σ S1 + Σ S1Cross + Σ S2 ≈ 0
   const sumS1     = [...S1.values()].reduce((s, v) => s + v, 0);

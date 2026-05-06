@@ -345,9 +345,11 @@ function PaymentSummaryBanner({
   data: { all_paid: boolean; transfers: AnnotatedTransfer[] };
 }) {
   const t = useT();
-  const outstanding = data.transfers.filter(
-    (tr) => tr.payment_status !== null && (tr.payment_status?.open ?? 0) > 0.005
-  );
+  const outstanding = data.transfers.filter((tr) => {
+    const ps = tr.payment_status;
+    if (!ps) return false;
+    return Math.abs(ps.paid - tr.amount) > 0.05; // underpaid OR overpaid
+  });
   const count = outstanding.length;
   const isAllPaid = data.all_paid;
 

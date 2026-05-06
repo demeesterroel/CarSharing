@@ -465,12 +465,19 @@ export function getSettlement(db: Database.Database, year: number): SettlementRe
   const nameToId = buildNameToId(people);
 
   const annotatedTransfers: AnnotatedTransfer[] = transfers.map((tr) => {
-    // Only track payment from the human payer side (not co-op)
-    const payerName = tr.from !== "co-op" ? tr.from : null;
-    if (payerName === null) return { ...tr, payment_status: null };
-    const payerId = nameToId.get(payerName) ?? null;
+    if (tr.from === "co-op") {
+      // co-op pays recipient: track negative payments (disbursements) for that person
+      const recipientId = nameToId.get(tr.to) ?? null;
+      if (recipientId === null) return { ...tr, payment_status: null };
+      const personPayments = (paymentsByPerson.get(recipientId) ?? []).filter((p) => p.amount < 0);
+      const paid = round2(personPayments.reduce((s, p) => s + Math.abs(p.amount), 0));
+      const open = round2(Math.max(0, tr.amount - paid));
+      return { ...tr, payment_status: { paid, open, payments: personPayments } };
+    }
+    // member pays co-op: track positive payments for the payer
+    const payerId = nameToId.get(tr.from) ?? null;
     if (payerId === null) return { ...tr, payment_status: null };
-    const personPayments = paymentsByPerson.get(payerId) ?? [];
+    const personPayments = (paymentsByPerson.get(payerId) ?? []).filter((p) => p.amount > 0);
     const paid = round2(personPayments.reduce((s, p) => s + p.amount, 0));
     const open = round2(Math.max(0, tr.amount - paid));
     return { ...tr, payment_status: { paid, open, payments: personPayments } };

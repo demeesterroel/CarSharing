@@ -16,7 +16,6 @@ function fmtL(liters: number): string {
   return liters.toLocaleString("nl-BE", { minimumFractionDigits: 1, maximumFractionDigits: 1 });
 }
 
-
 function fmtDetail(
   km: number,
   liters: number,
@@ -68,8 +67,7 @@ function SettledNote({
       }}
     >
       {"(*) "}
-      {parts.join(" en ")}
-      {" "}{t("settlement.settled_outside_note")}
+      {parts.join(" en ")} {t("settlement.settled_outside_note")}
     </div>
   );
 }
@@ -241,19 +239,14 @@ function BreakdownCarRow({
   );
 }
 
-function TransferPaymentRow({
-  transfer,
-}: {
-  transfer: AnnotatedTransfer;
-}) {
+function TransferPaymentRow({ transfer }: { transfer: AnnotatedTransfer }) {
   const t = useT();
   const ps = transfer.payment_status;
   if (!ps) return null; // co-op is the payer, no tracking
 
   const pct = transfer.amount > 0 ? Math.max(0, Math.min(1, ps.paid / transfer.amount)) : 1;
   const barFilled = Math.round(pct * 10);
-  const statusColor =
-    ps.open < 0.005 ? paper.green : ps.paid > 0.005 ? paper.blue : paper.accent;
+  const statusColor = ps.open < 0.005 ? paper.green : ps.paid > 0.005 ? paper.blue : paper.accent;
   const statusLabel =
     ps.open < 0.005
       ? t("settlement.fully_paid")
@@ -281,7 +274,9 @@ function TransferPaymentRow({
           marginBottom: 4,
         }}
       >
-        <span>{t("settlement.payment_due")}: {fmtMoney(transfer.amount)}</span>
+        <span>
+          {t("settlement.payment_due")}: {fmtMoney(transfer.amount)}
+        </span>
         <span style={{ color: ps.open > 0.005 ? paper.accent : paper.inkMute }}>
           {t("settlement.payment_open")}: {fmtMoney(ps.open)}
         </span>
@@ -299,10 +294,12 @@ function TransferPaymentRow({
           marginBottom: 4,
         }}
       >
-        <span>{t("settlement.payment_paid")}: {fmtMoney(ps.paid)}</span>
+        <span>
+          {t("settlement.payment_paid")}: {fmtMoney(ps.paid)}
+        </span>
         <span style={{ color: statusColor, letterSpacing: 2 }}>
-          {"●".repeat(barFilled)}{"○".repeat(10 - barFilled)}
-          {" "}{Math.round(pct * 100)}%
+          {"●".repeat(barFilled)}
+          {"○".repeat(10 - barFilled)} {Math.round(pct * 100)}%
         </span>
         <span style={{ color: statusColor, fontWeight: 700 }}>{statusLabel}</span>
       </div>
@@ -332,7 +329,11 @@ function TransferPaymentRow({
   );
 }
 
-function PaymentSummaryBanner({ data }: { data: { all_paid: boolean; transfers: AnnotatedTransfer[] } }) {
+function PaymentSummaryBanner({
+  data,
+}: {
+  data: { all_paid: boolean; transfers: AnnotatedTransfer[] };
+}) {
   const t = useT();
   const outstanding = data.transfers.filter(
     (tr) => tr.payment_status !== null && (tr.payment_status?.open ?? 0) > 0.005
@@ -360,7 +361,10 @@ function PaymentSummaryBanner({ data }: { data: { all_paid: boolean; transfers: 
       <span style={{ fontFamily: fontMono, fontSize: 9, letterSpacing: 0.5 }}>
         {isAllPaid
           ? t("settlement.payment_all_paid")
-          : t(count === 1 ? "settlement.payment_outstanding_one" : "settlement.payment_outstanding", { count })}
+          : t(
+              count === 1 ? "settlement.payment_outstanding_one" : "settlement.payment_outstanding",
+              { count }
+            )}
       </span>
     </div>
   );
@@ -420,7 +424,9 @@ function NonOwnerMemberCard({
     }
 
     if (totalFuelAmt > 0) {
-      const sec = [row(`${t("settlement.breakdown_fuel")} (${fmtL(totalFuelL)} L)`, "+", totalFuelAmt, W)];
+      const sec = [
+        row(`${t("settlement.breakdown_fuel")} (${fmtL(totalFuelL)} L)`, "+", totalFuelAmt, W),
+      ];
       for (const era of m.car_eras.filter((ev) => ev.fuel_liters > 0)) {
         sec.push(
           row(`  ${era.car_short.padEnd(5)} (${fmtL(era.fuel_liters)} L)`, "+", era.fuel_amount, WC)
@@ -487,11 +493,14 @@ function NonOwnerMemberCard({
           gap: 8,
         }}
       >
-        <span style={{ fontFamily: fontSerif, fontSize: 11, color: paper.inkMute, flex: "1 1 auto" }}>
+        <span
+          style={{ fontFamily: fontSerif, fontSize: 11, color: paper.inkMute, flex: "1 1 auto" }}
+        >
           {m.person_name}
         </span>
         <span style={{ fontFamily: fontMono, fontSize: 10, color: netColor }}>
-          {signPrefix(-s1)}{fmtMoney(s1)}
+          {signPrefix(-s1)}
+          {fmtMoney(s1)}
         </span>
       </div>
     );
@@ -576,7 +585,17 @@ function NonOwnerMemberCard({
           {m.car_eras.map((era, i) => (
             <div key={i} style={{ marginTop: i === 0 ? 0 : 14 }}>
               {/* Car label */}
-              <div style={{ fontFamily: fontMono, fontSize: 9, letterSpacing: 1.5, textTransform: "uppercase" as const, color: paper.inkMute, fontWeight: 700, marginBottom: 4 }}>
+              <div
+                style={{
+                  fontFamily: fontMono,
+                  fontSize: 9,
+                  letterSpacing: 1.5,
+                  textTransform: "uppercase" as const,
+                  color: paper.inkMute,
+                  fontWeight: 700,
+                  marginBottom: 4,
+                }}
+              >
                 {era.car_short}
               </div>
               {era.trip_km > 0 && (
@@ -603,10 +622,28 @@ function NonOwnerMemberCard({
                   amountColor={paper.green}
                 />
               )}
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginTop: 4, paddingLeft: 16 }}>
-                <span style={{ fontFamily: fontMono, fontSize: 9, color: paper.inkDim }}>saldo</span>
-                <span style={{ fontFamily: fontMono, fontSize: 10, fontWeight: 600, color: amtColor(era.balance) }}>
-                  {signPrefix(era.balance)}{fmtMoney(era.balance)}
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "baseline",
+                  marginTop: 4,
+                  paddingLeft: 16,
+                }}
+              >
+                <span style={{ fontFamily: fontMono, fontSize: 9, color: paper.inkDim }}>
+                  saldo
+                </span>
+                <span
+                  style={{
+                    fontFamily: fontMono,
+                    fontSize: 10,
+                    fontWeight: 600,
+                    color: amtColor(era.balance),
+                  }}
+                >
+                  {signPrefix(era.balance)}
+                  {fmtMoney(era.balance)}
                 </span>
               </div>
               <SettledNote
@@ -619,12 +656,31 @@ function NonOwnerMemberCard({
           ))}
 
           {/* Total saldo */}
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginTop: 10, paddingTop: 8, borderTop: `1px dashed ${paper.paperDark}` }}>
-            <span style={{ fontFamily: fontMono, fontSize: 9, letterSpacing: 1.5, textTransform: "uppercase" as const, color: paper.inkDim, fontWeight: 700 }}>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "baseline",
+              marginTop: 10,
+              paddingTop: 8,
+              borderTop: `1px dashed ${paper.paperDark}`,
+            }}
+          >
+            <span
+              style={{
+                fontFamily: fontMono,
+                fontSize: 9,
+                letterSpacing: 1.5,
+                textTransform: "uppercase" as const,
+                color: paper.inkDim,
+                fontWeight: 700,
+              }}
+            >
               Saldo
             </span>
             <span style={{ fontFamily: fontMono, fontSize: 14, fontWeight: 700, color: netColor }}>
-              {signPrefix(-s1)}{fmtMoney(s1)}
+              {signPrefix(-s1)}
+              {fmtMoney(s1)}
             </span>
           </div>
 
@@ -710,7 +766,13 @@ function OwnerMemberCard({
         const parts: string[] = [];
         if (r.trip_km > 0) parts.push(`${r.trip_km} km`);
         if (r.fuel_liters > 0.05) parts.push(`${fmtL(r.fuel_liters)} L`);
-        crossSection.push(row(`  ${car_short}${parts.length ? ` (${parts.join(", ")})` : ""}`, r.balance <= 0 ? "+" : "−", Math.abs(r.balance)));
+        crossSection.push(
+          row(
+            `  ${car_short}${parts.length ? ` (${parts.join(", ")})` : ""}`,
+            r.balance <= 0 ? "+" : "−",
+            Math.abs(r.balance)
+          )
+        );
       }
     }
 
@@ -740,8 +802,15 @@ function OwnerMemberCard({
   };
 
   const ps = settlementTransfer?.payment_status ?? null;
-  const borderColor = ps == null ? paper.blue : ps.open < 0.005 ? paper.green : paper.accent;
-  const isSlim = !showAll && borderColor !== paper.accent;
+  const borderColor =
+    ps == null
+      ? settlementTransfer != null
+        ? paper.blue
+        : paper.ink
+      : ps.open < 0.005
+        ? paper.green
+        : paper.accent;
+  const isSlim = !showAll && borderColor !== paper.accent && borderColor !== paper.blue;
 
   const toggle = () => setOpen((v) => !v);
 
@@ -758,11 +827,14 @@ function OwnerMemberCard({
           gap: 8,
         }}
       >
-        <span style={{ fontFamily: fontSerif, fontSize: 11, color: paper.inkMute, flex: "1 1 auto" }}>
+        <span
+          style={{ fontFamily: fontSerif, fontSize: 11, color: paper.inkMute, flex: "1 1 auto" }}
+        >
           {m.person_name}
         </span>
         <span style={{ fontFamily: fontMono, fontSize: 10, color: netColor }}>
-          {signPrefix(-net)}{fmtMoney(net)}
+          {signPrefix(-net)}
+          {fmtMoney(net)}
         </span>
       </div>
     );
@@ -838,12 +910,35 @@ function OwnerMemberCard({
 
           {m.car_eras.map((era, i) => (
             <div key={i} style={{ marginBottom: 10 }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 3 }}>
-                <span style={{ fontFamily: fontMono, fontSize: 10, color: paper.inkDim, letterSpacing: 1 }}>
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "baseline",
+                  marginBottom: 3,
+                }}
+              >
+                <span
+                  style={{
+                    fontFamily: fontMono,
+                    fontSize: 10,
+                    color: paper.inkDim,
+                    letterSpacing: 1,
+                  }}
+                >
                   {era.car_short} — {era.car_name}
                 </span>
-                <span style={{ fontFamily: fontMono, fontSize: 11, fontWeight: 600, color: amtColor(era.n_c_star ?? 0), paddingLeft: 12 }}>
-                  {signPrefix(era.n_c_star ?? 0)}{fmtMoney(era.n_c_star ?? 0)}
+                <span
+                  style={{
+                    fontFamily: fontMono,
+                    fontSize: 11,
+                    fontWeight: 600,
+                    color: amtColor(era.n_c_star ?? 0),
+                    paddingLeft: 12,
+                  }}
+                >
+                  {signPrefix(era.n_c_star ?? 0)}
+                  {fmtMoney(era.n_c_star ?? 0)}
                 </span>
               </div>
               {era.member_contributions?.map((contrib, j) => {
@@ -855,87 +950,221 @@ function OwnerMemberCard({
                   contrib.expense_settled_amount
                 );
                 return (
-                  <div key={j} style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", paddingLeft: 16, marginTop: 2 }}>
+                  <div
+                    key={j}
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "baseline",
+                      paddingLeft: 16,
+                      marginTop: 2,
+                    }}
+                  >
                     <span style={{ fontFamily: fontMono, fontSize: 10, color: paper.inkMute }}>
-                      {contrib.person_name}{detail ? ` ${detail}` : ""}
+                      {contrib.person_name}
+                      {detail ? ` ${detail}` : ""}
                     </span>
-                    <span style={{ fontFamily: fontMono, fontSize: 10, color: amtColor(contrib.contribution), paddingLeft: 12 }}>
-                      {signPrefix(contrib.contribution)}{fmtMoney(contrib.contribution)}
+                    <span
+                      style={{
+                        fontFamily: fontMono,
+                        fontSize: 10,
+                        color: amtColor(contrib.contribution),
+                        paddingLeft: 12,
+                      }}
+                    >
+                      {signPrefix(contrib.contribution)}
+                      {fmtMoney(contrib.contribution)}
                     </span>
                   </div>
                 );
               })}
               <SettledNote
-                fuelCount={era.member_contributions?.reduce((s, c) => s + (c.fuel_settled_count ?? 0), 0) ?? 0}
-                fuelLiters={era.member_contributions?.reduce((s, c) => s + (c.fuel_settled_liters ?? 0), 0) ?? 0}
-                expCount={era.member_contributions?.reduce((s, c) => s + (c.expense_settled_count ?? 0), 0) ?? 0}
-                expAmt={era.member_contributions?.reduce((s, c) => s + (c.expense_settled_amount ?? 0), 0) ?? 0}
+                fuelCount={
+                  era.member_contributions?.reduce((s, c) => s + (c.fuel_settled_count ?? 0), 0) ??
+                  0
+                }
+                fuelLiters={
+                  era.member_contributions?.reduce((s, c) => s + (c.fuel_settled_liters ?? 0), 0) ??
+                  0
+                }
+                expCount={
+                  era.member_contributions?.reduce(
+                    (s, c) => s + (c.expense_settled_count ?? 0),
+                    0
+                  ) ?? 0
+                }
+                expAmt={
+                  era.member_contributions?.reduce(
+                    (s, c) => s + (c.expense_settled_amount ?? 0),
+                    0
+                  ) ?? 0
+                }
               />
             </div>
           ))}
 
           {/* ── Gebruik andere wagens (cross-owner) ── */}
           {hasCrossUse && (
-            <div style={{ borderTop: `1px dashed ${paper.paperDark}`, paddingTop: 10, marginTop: 2 }}>
+            <div
+              style={{ borderTop: `1px dashed ${paper.paperDark}`, paddingTop: 10, marginTop: 2 }}
+            >
               <SectionLabel>{t("settlement.section_cross_use")}</SectionLabel>
               {crossRows.map((item, i) => (
                 <div key={i} style={{ marginTop: i === 0 ? 0 : 10 }}>
-                  <div style={{ fontFamily: fontMono, fontSize: 9, letterSpacing: 1.5, textTransform: "uppercase" as const, color: paper.inkMute, fontWeight: 700, marginBottom: 4 }}>
+                  <div
+                    style={{
+                      fontFamily: fontMono,
+                      fontSize: 9,
+                      letterSpacing: 1.5,
+                      textTransform: "uppercase" as const,
+                      color: paper.inkMute,
+                      fontWeight: 700,
+                      marginBottom: 4,
+                    }}
+                  >
                     {item.car_short}
                   </div>
                   {item.row.trip_km > 0 && (
-                    <BreakdownCarRow car={`ritten (${item.row.trip_km} km)`} detail={null} amount={`− ${fmtMoney(item.row.trip_amount)}`} amountColor={paper.accent} />
+                    <BreakdownCarRow
+                      car={`ritten (${item.row.trip_km} km)`}
+                      detail={null}
+                      amount={`− ${fmtMoney(item.row.trip_amount)}`}
+                      amountColor={paper.accent}
+                    />
                   )}
                   {item.row.fuel_liters > 0 && (
-                    <BreakdownCarRow car={`brandstof (${fmtL(item.row.fuel_liters)} L)`} detail={null} amount={`+ ${fmtMoney(item.row.fuel_amount)}`} amountColor={paper.green} />
+                    <BreakdownCarRow
+                      car={`brandstof (${fmtL(item.row.fuel_liters)} L)`}
+                      detail={null}
+                      amount={`+ ${fmtMoney(item.row.fuel_amount)}`}
+                      amountColor={paper.green}
+                    />
                   )}
                   {item.row.expense_amount > 0 && (
-                    <BreakdownCarRow car="kosten" detail={null} amount={`+ ${fmtMoney(item.row.expense_amount)}`} amountColor={paper.green} />
+                    <BreakdownCarRow
+                      car="kosten"
+                      detail={null}
+                      amount={`+ ${fmtMoney(item.row.expense_amount)}`}
+                      amountColor={paper.green}
+                    />
                   )}
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginTop: 4, paddingLeft: 16 }}>
-                    <span style={{ fontFamily: fontMono, fontSize: 9, color: paper.inkDim }}>saldo</span>
-                    <span style={{ fontFamily: fontMono, fontSize: 10, fontWeight: 600, color: amtColor(-item.row.balance) }}>
-                      {signPrefix(-item.row.balance)}{fmtMoney(item.row.balance)}
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "baseline",
+                      marginTop: 4,
+                      paddingLeft: 16,
+                    }}
+                  >
+                    <span style={{ fontFamily: fontMono, fontSize: 9, color: paper.inkDim }}>
+                      saldo
+                    </span>
+                    <span
+                      style={{
+                        fontFamily: fontMono,
+                        fontSize: 10,
+                        fontWeight: 600,
+                        color: amtColor(-item.row.balance),
+                      }}
+                    >
+                      {signPrefix(-item.row.balance)}
+                      {fmtMoney(item.row.balance)}
                     </span>
                   </div>
-                  <SettledNote fuelCount={item.row.fuel_settled_count} fuelLiters={item.row.fuel_settled_liters} expCount={item.row.expense_settled_count} expAmt={item.row.expense_settled_amount} />
+                  <SettledNote
+                    fuelCount={item.row.fuel_settled_count}
+                    fuelLiters={item.row.fuel_settled_liters}
+                    expCount={item.row.expense_settled_count}
+                    expAmt={item.row.expense_settled_amount}
+                  />
                 </div>
               ))}
             </div>
           )}
 
           {/* ── Netto saldo ── */}
-          <div style={{ borderTop: `1px dashed ${paper.paperDark}`, paddingTop: 10, marginTop: hasCrossUse ? 10 : 2 }}>
+          <div
+            style={{
+              borderTop: `1px dashed ${paper.paperDark}`,
+              paddingTop: 10,
+              marginTop: hasCrossUse ? 10 : 2,
+            }}
+          >
             {hasCrossUse && (
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 4 }}>
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "baseline",
+                  marginBottom: 4,
+                }}
+              >
                 <span style={{ fontFamily: fontMono, fontSize: 9, color: paper.inkDim }}>
                   via coöp
                 </span>
                 <span style={{ fontFamily: fontMono, fontSize: 10, color: amtColor(s2) }}>
-                  {signPrefix(s2)}{fmtMoney(s2)}
+                  {signPrefix(s2)}
+                  {fmtMoney(s2)}
                 </span>
               </div>
             )}
             {hasCrossUse && (
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 6 }}>
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "baseline",
+                  marginBottom: 6,
+                }}
+              >
                 <span style={{ fontFamily: fontMono, fontSize: 9, color: paper.inkDim }}>
                   gebruik andere wagens
                 </span>
                 <span style={{ fontFamily: fontMono, fontSize: 10, color: amtColor(s1c) }}>
-                  {signPrefix(s1c)}{fmtMoney(s1c)}
+                  {signPrefix(s1c)}
+                  {fmtMoney(s1c)}
                 </span>
               </div>
             )}
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
-              <span style={{ fontFamily: fontMono, fontSize: 9, letterSpacing: 1.5, textTransform: "uppercase" as const, fontWeight: 700, color: paper.inkMute }}>
+            <div
+              style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}
+            >
+              <span
+                style={{
+                  fontFamily: fontMono,
+                  fontSize: 9,
+                  letterSpacing: 1.5,
+                  textTransform: "uppercase" as const,
+                  fontWeight: 700,
+                  color: paper.inkMute,
+                }}
+              >
                 {hasCrossUse ? "Netto" : "Saldo via coöp"}
               </span>
-              <span style={{ fontFamily: fontMono, fontSize: 14, fontWeight: 700, color: netColor, paddingLeft: 12 }}>
-                {signPrefix(net)}{fmtMoney(net)}
+              <span
+                style={{
+                  fontFamily: fontMono,
+                  fontSize: 14,
+                  fontWeight: 700,
+                  color: netColor,
+                  paddingLeft: 12,
+                }}
+              >
+                {signPrefix(net)}
+                {fmtMoney(net)}
               </span>
             </div>
             {bankAccount && (
-              <div style={{ fontFamily: fontMono, fontSize: 9, color: paper.inkMute, marginTop: 4, paddingLeft: 16 }}>
+              <div
+                style={{
+                  fontFamily: fontMono,
+                  fontSize: 9,
+                  color: paper.inkMute,
+                  marginTop: 4,
+                  paddingLeft: 16,
+                }}
+              >
                 coöp ({bankAccount}) → {m.person_name}
               </div>
             )}
@@ -965,7 +1194,6 @@ function OwnerMemberCard({
   );
 }
 
-
 function generateSettlementMd(data: import("@/types").SettlementResult, year: number): string {
   const fmt = (n: number) =>
     n.toLocaleString("nl-BE", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -974,7 +1202,9 @@ function generateSettlementMd(data: import("@/types").SettlementResult, year: nu
   const lines: string[] = [];
   lines.push(`# Afrekening ${year}`);
   if (data.frozen) {
-    lines.push(`\n> ✓ Bevroren${data.settled_by ? ` door ${data.settled_by}` : ""}${data.settled_at ? ` op ${data.settled_at.slice(0, 10)}` : ""}`);
+    lines.push(
+      `\n> ✓ Bevroren${data.settled_by ? ` door ${data.settled_by}` : ""}${data.settled_at ? ` op ${data.settled_at.slice(0, 10)}` : ""}`
+    );
   }
 
   const nonOwners = data.members.filter((m) => !m.is_owner);
@@ -989,7 +1219,8 @@ function generateSettlementMd(data: import("@/types").SettlementResult, year: nu
     for (const e of m.car_eras) {
       lines.push(`- **${e.car_name}** (${e.owner_name})`);
       lines.push(`  - Ritten: ${e.trip_km} km · € ${fmt(e.trip_amount)}`);
-      if (e.fuel_amount) lines.push(`  - Brandstof: ${fmtL(e.fuel_liters)} L · € ${fmt(e.fuel_amount)}`);
+      if (e.fuel_amount)
+        lines.push(`  - Brandstof: ${fmtL(e.fuel_liters)} L · € ${fmt(e.fuel_amount)}`);
       if (e.expense_amount) lines.push(`  - Kosten: € ${fmt(e.expense_amount)}`);
       lines.push(`  - Saldo: ${sign(e.balance)}`);
     }
@@ -1012,8 +1243,13 @@ function generateSettlementMd(data: import("@/types").SettlementResult, year: nu
           if (c.trip_km > 0) parts.push(`+${c.trip_km} km`);
           if (c.fuel_liters > 0) parts.push(`-${fmtL(c.fuel_liters)} L`);
           if (c.expense_amount > 0) parts.push(`-€ ${fmt(c.expense_amount)}`);
-          const contribSign = c.contribution >= 0 ? `+€ ${fmt(c.contribution)}` : `−€ ${fmt(Math.abs(c.contribution))}`;
-          lines.push(`  - ${c.person_name}${parts.length > 0 ? ` (${parts.join(", ")})` : ""}: ${contribSign}`);
+          const contribSign =
+            c.contribution >= 0
+              ? `+€ ${fmt(c.contribution)}`
+              : `−€ ${fmt(Math.abs(c.contribution))}`;
+          lines.push(
+            `  - ${c.person_name}${parts.length > 0 ? ` (${parts.join(", ")})` : ""}: ${contribSign}`
+          );
         }
       }
     }
@@ -1021,11 +1257,15 @@ function generateSettlementMd(data: import("@/types").SettlementResult, year: nu
     if (hasCross) {
       lines.push(`\n#### Gebruik andere wagens\n`);
       for (const cs of data.car_settlements) {
-        const row = cs.rows.find((r) => r.row_type === "cross_owner" && r.person_name === m.person_name);
+        const row = cs.rows.find(
+          (r) => r.row_type === "cross_owner" && r.person_name === m.person_name
+        );
         if (!row) continue;
         lines.push(`- **${cs.car_name}** (${cs.owner_name})`);
-        if (row.trip_km > 0) lines.push(`  - Ritten: ${row.trip_km} km · € ${fmt(row.trip_amount)}`);
-        if (row.fuel_liters > 0.05) lines.push(`  - Brandstof: ${fmtL(row.fuel_liters)} L · € ${fmt(row.fuel_amount)}`);
+        if (row.trip_km > 0)
+          lines.push(`  - Ritten: ${row.trip_km} km · € ${fmt(row.trip_amount)}`);
+        if (row.fuel_liters > 0.05)
+          lines.push(`  - Brandstof: ${fmtL(row.fuel_liters)} L · € ${fmt(row.fuel_amount)}`);
         if (row.expense_amount > 0.005) lines.push(`  - Kosten: € ${fmt(row.expense_amount)}`);
         lines.push(`  - Saldo: ${sign(row.balance)}`);
       }
@@ -1055,7 +1295,8 @@ function AdminSettlementPageContent() {
   const year = yearParam ? parseInt(yearParam, 10) : currentYear;
   const setYear = (newYear: number) => {
     const p = new URLSearchParams(searchParams.toString());
-    if (newYear === currentYear) p.delete("year"); else p.set("year", String(newYear));
+    if (newYear === currentYear) p.delete("year");
+    else p.set("year", String(newYear));
     router.replace(`${pathname}?${p.toString()}`, { scroll: false });
   };
   const [showAll, setShowAll] = useState(false);
@@ -1082,8 +1323,21 @@ function AdminSettlementPageContent() {
 
   return (
     <div style={{ padding: 16 }}>
-      <div style={{ position: "relative", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 12 }}>
-        <YearPicker year={year} earliest={earliest} current={currentYear} onChange={(y) => setYear(y)} />
+      <div
+        style={{
+          position: "relative",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          marginBottom: 12,
+        }}
+      >
+        <YearPicker
+          year={year}
+          earliest={earliest}
+          current={currentYear}
+          onChange={(y) => setYear(y)}
+        />
         {data && data.members.length > 0 && (
           <>
             <button
@@ -1108,7 +1362,18 @@ function AdminSettlementPageContent() {
             <button
               onClick={handleDownload}
               title="Download als .md"
-              style={{ position: "absolute", right: 0, padding: "6px 10px", background: "transparent", border: `1.5px solid ${paper.ink}`, color: paper.ink, cursor: "pointer", fontFamily: fontMono, fontSize: 12, lineHeight: 1 }}
+              style={{
+                position: "absolute",
+                right: 0,
+                padding: "6px 10px",
+                background: "transparent",
+                border: `1.5px solid ${paper.ink}`,
+                color: paper.ink,
+                cursor: "pointer",
+                fontFamily: fontMono,
+                fontSize: 12,
+                lineHeight: 1,
+              }}
             >
               ↓
             </button>
@@ -1222,7 +1487,8 @@ function AdminSettlementPageContent() {
                       year={year}
                       bankAccount={settings?.coop_bank_account ?? ""}
                       settlementTransfer={data.transfers.find(
-                        (tr) => tr.step === 1 && (tr.from === m.person_name || tr.to === m.person_name)
+                        (tr) =>
+                          tr.step === 1 && (tr.from === m.person_name || tr.to === m.person_name)
                       )}
                       showAll={showAll}
                     />
@@ -1263,7 +1529,9 @@ function AdminSettlementPageContent() {
                       bankAccount={settings?.coop_bank_account ?? ""}
                       crossRows={data.car_settlements.flatMap((cs) =>
                         cs.rows
-                          .filter((r) => r.row_type === "cross_owner" && r.person_name === m.person_name)
+                          .filter(
+                            (r) => r.row_type === "cross_owner" && r.person_name === m.person_name
+                          )
                           .map((row) => ({ car_short: cs.car_short, row }))
                       )}
                       settlementTransfer={data.transfers.find(
@@ -1288,24 +1556,49 @@ function AdminSettlementPageContent() {
                         gap: 8,
                       }}
                     >
-                      <span style={{ fontFamily: fontMono, fontSize: 10, fontWeight: 700, marginRight: 4 }}>
+                      <span
+                        style={{
+                          fontFamily: fontMono,
+                          fontSize: 10,
+                          fontWeight: 700,
+                          marginRight: 4,
+                        }}
+                      >
                         {data.verify_ok ? "✓" : "⚠"}
                       </span>
-                      <span style={{ fontFamily: fontMono, fontSize: 9, letterSpacing: 0.5, flex: 1, lineHeight: 1.7 }}>
+                      <span
+                        style={{
+                          fontFamily: fontMono,
+                          fontSize: 9,
+                          letterSpacing: 0.5,
+                          flex: 1,
+                          lineHeight: 1.7,
+                        }}
+                      >
                         <span style={{ display: "block" }}>
-                          {t("settlement.balance_members_to_coop", { amount: `${step1Total <= 0 ? "+" : "−"}${fmtMoney(Math.abs(step1Total))}` })}
+                          {t("settlement.balance_members_to_coop", {
+                            amount: `${step1Total <= 0 ? "+" : "−"}${fmtMoney(Math.abs(step1Total))}`,
+                          })}
                         </span>
                         <span style={{ display: "block" }}>
-                          {t("settlement.balance_coop_to_owners", { amount: `${step2Total <= 0 ? "+" : "−"}${fmtMoney(Math.abs(step2Total))}` })}
+                          {t("settlement.balance_coop_to_owners", {
+                            amount: `${step2Total <= 0 ? "+" : "−"}${fmtMoney(Math.abs(step2Total))}`,
+                          })}
                         </span>
                       </span>
-                      <span style={{ fontFamily: fontMono, fontSize: 10, fontWeight: 700, letterSpacing: 1 }}>
+                      <span
+                        style={{
+                          fontFamily: fontMono,
+                          fontSize: 10,
+                          fontWeight: 700,
+                          letterSpacing: 1,
+                        }}
+                      >
                         {t("settlement.balance_total", { amount: fmtMoney(balance) })}
                       </span>
                     </div>
                   );
                 })()}
-
               </>
             );
           })()}

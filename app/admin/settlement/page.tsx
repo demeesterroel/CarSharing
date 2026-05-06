@@ -1222,7 +1222,7 @@ function AdminSettlementPageContent() {
                       year={year}
                       bankAccount={settings?.coop_bank_account ?? ""}
                       settlementTransfer={data.transfers.find(
-                        (tr) => tr.step === 1 && tr.from === m.person_name
+                        (tr) => tr.step === 1 && (tr.from === m.person_name || tr.to === m.person_name)
                       )}
                       showAll={showAll}
                     />

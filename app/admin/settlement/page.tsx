@@ -467,16 +467,15 @@ function NonOwnerMemberCard({
   };
 
   const ps = settlementTransfer?.payment_status ?? null;
-  // co-op owes this member (credit): transfer exists but payment_status is null because payer is co-op
   const hasCreditTransfer = settlementTransfer != null && settlementTransfer.from === "co-op";
   const borderColor = hasCreditTransfer
-    ? paper.blue
+    ? (ps != null && ps.open < 0.005 ? paper.green : paper.blue)
     : ps == null
       ? paper.ink
       : ps.open < 0.005
         ? paper.green
         : paper.accent;
-  const isSlim = !showAll && !hasCreditTransfer && borderColor !== paper.accent;
+  const isSlim = !showAll && borderColor !== paper.accent && borderColor !== paper.blue;
 
   const toggle = () => setOpen((v) => !v);
 

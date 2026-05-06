@@ -809,7 +809,7 @@ function OwnerMemberCard({
       : ps.open < 0.005
         ? paper.green
         : paper.accent;
-  const isSlim = !showAll && borderColor !== paper.accent && borderColor !== paper.blue;
+  const isSlim = !showAll && borderColor === paper.ink; // slim only when no payout transfer at all
 
   const toggle = () => setOpen((v) => !v);
 

@@ -308,8 +308,6 @@ export const nl = {
     "Lid betaalt = ritten − voorgeschoten brandstof − voorgeschoten onderhoud",
   "settlement.members_title": "Leden",
   "settlement.owners_title": "Eigenaars",
-  "settlement.step1_title": "Stap 1 — Leden ↔ coöp",
-  "settlement.step2_title": "Stap 2 — Coöp → eigenaars",
   "settlement.step3_title": "Stap 3 — Eigenaars onderling",
   "settlement.transfers_title": "Overschrijvingen",
   "settlement.verify_ok": "✓ Coöp sluit op €0,00",
@@ -329,11 +327,11 @@ export const nl = {
   "settlement.copied": "Gekopieerd!",
   "settlement.no_data": "Geen gegevens voor {year}",
   "settlement.send_transfer": "Stuur bericht",
-  "settlement.settled_outside_note": "zijn reeds verrekend buiten de app en tellen niet mee in het saldo.",
+  "settlement.settled_outside_note":
+    "zijn reeds verrekend buiten de app en tellen niet mee in het saldo.",
   "settlement.breakdown_fuel": "Brandstof",
   "settlement.breakdown_costs": "Kosten",
-  "settlement.section_member_contributions": "Bijdrage van Leden",
-  "settlement.section_cross_use": "Mijn gebruik van andere auto's",
+  "settlement.section_own_car": "Eigen wagen",
   "settlement.expand_breakdown": "Toon details",
   "settlement.collapse_breakdown": "Verberg details",
   "settlement.row_cross_owner": "mede-eigenaar",
@@ -546,7 +544,8 @@ export const nl = {
   "owner.add_car": "Nieuwe wagen",
   "owner.edit_car": "Bewerken",
   "owner.delete_confirm": "Zeker verwijderen?",
-  "owner.car_has_history": "Kan niet verwijderen: wagen heeft al ritten of reservaties. Deactiveer de wagen.",
+  "owner.car_has_history":
+    "Kan niet verwijderen: wagen heeft al ritten of reservaties. Deactiveer de wagen.",
 } as const;
 
 export type MessageKey = keyof typeof nl;

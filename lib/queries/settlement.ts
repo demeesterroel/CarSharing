@@ -464,9 +464,27 @@ export function getSettlement(db: Database.Database, year: number): SettlementRe
   const paymentsByPerson = getPaymentsByYear(db, year);
   const nameToId = buildNameToId(people);
 
+  const ownerNameSet = new Set(members.filter((m) => m.is_owner).map((m) => m.person_name));
+
   const annotatedTransfers: AnnotatedTransfer[] = transfers.map((tr) => {
+    // Step 2: owner payout. Track using NET of all payments for this person —
+    // "virtual vereffening" payments cover s2 + s1_cross as a single net entry.
+    if (tr.step === 2) {
+      const ownerId = nameToId.get(tr.to) ?? null;
+      if (ownerId === null) return { ...tr, payment_status: null };
+      const personPayments = paymentsByPerson.get(ownerId) ?? [];
+      const netPaid = round2(personPayments.reduce((s, p) => s + p.amount, 0));
+      const paid = round2(Math.abs(netPaid));
+      const open = round2(Math.max(0, tr.amount - paid));
+      return { ...tr, payment_status: { paid, open, payments: personPayments } };
+    }
+
+    // Step 1 s1_cross for owners: subsumed into step 2 net — don't track separately.
+    const personName = tr.from === "co-op" ? tr.to : tr.from;
+    if (ownerNameSet.has(personName)) return { ...tr, payment_status: null };
+
     if (tr.from === "co-op") {
-      // co-op pays recipient: track negative payments (disbursements) for that person
+      // Step 1 credit (co-op → regular member): track negative payments.
       const recipientId = nameToId.get(tr.to) ?? null;
       if (recipientId === null) return { ...tr, payment_status: null };
       const personPayments = (paymentsByPerson.get(recipientId) ?? []).filter((p) => p.amount < 0);
@@ -474,7 +492,8 @@ export function getSettlement(db: Database.Database, year: number): SettlementRe
       const open = round2(Math.max(0, tr.amount - paid));
       return { ...tr, payment_status: { paid, open, payments: personPayments } };
     }
-    // member pays co-op: track positive payments for the payer
+
+    // Step 1 debit (regular member → co-op): track positive payments.
     const payerId = nameToId.get(tr.from) ?? null;
     if (payerId === null) return { ...tr, payment_status: null };
     const personPayments = (paymentsByPerson.get(payerId) ?? []).filter((p) => p.amount > 0);

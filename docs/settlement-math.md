@@ -104,11 +104,15 @@ For each owner $o$ (cross-owner balance):
 - $S_1^{\text{cross}}(o) < 0 \;\Rightarrow\; o \to \text{co-op}$, amount $= \lvert S_1^{\text{cross}}(o) \rvert$
 - $S_1^{\text{cross}}(o) > 0 \;\Rightarrow\; \text{co-op} \to o$, amount $= S_1^{\text{cross}}(o)$
 
-### Step 2 (owners receive payout)
+### Step 2 (owners — net payout)
 
-For each owner $o$: $\text{co-op} \to o$, amount $= S_2(o)$.
+For each owner $o$, the step 2 transfer uses $\text{Net}(o) = S_2(o) + S_1^{\text{cross}}(o)$:
 
-No Step 3. Cross-owner is fully handled in Step 1.
+- $\text{Net}(o) > 0 \;\Rightarrow\; \text{co-op} \to o$, amount $= \text{Net}(o)$
+- $\text{Net}(o) < 0 \;\Rightarrow\; o \to \text{co-op}$, amount $= \lvert\text{Net}(o)\rvert$
+- $\text{Net}(o) \approx 0 \;\Rightarrow\;$ no transfer
+
+The step 1 $S_1^{\text{cross}}$ transfer also exists in the transfer list (for display), but carries `payment_status = null` — it is subsumed into the step 2 net. No Step 3.
 
 ---
 
@@ -135,12 +139,12 @@ After transfers are generated, each is annotated with payment status.
 
 ### Annotation rules
 
-**Step 2 transfer** ($\text{co-op} \to \text{owner}$):
+**Step 2 transfer** (amount $= \lvert\text{Net}(o)\rvert$, direction per sign):
 
 $$\text{paid} = \left\lvert \sum_{\text{payments for owner in year}} \text{amount} \right\rvert \quad [\text{net of positive + negative}]$$
-$$\text{open} = \max\!\bigl(0,\; S_2(o) - \text{paid}\bigr)$$
+$$\text{open} = \max\!\bigl(0,\; \lvert\text{Net}(o)\rvert - \text{paid}\bigr)$$
 
-_Note: "virtual vereffening" was recorded as $\text{Net}(o) = S_2 + S_1^{\text{cross}}$ in one entry._
+_Note: "virtual vereffening" was recorded as $\text{Net}(o) = S_2 + S_1^{\text{cross}}$ in one entry — hence tracking uses net of all payments._
 
 **Step 1 credit transfer** ($\text{co-op} \to p$, $S_1(p) > 0$):
 

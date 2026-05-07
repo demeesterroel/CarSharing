@@ -1552,7 +1552,7 @@ function AdminSettlementPageContent() {
                           .map((row) => ({ car_short: cs.car_short, row }))
                       )}
                       settlementTransfer={data.transfers.find(
-                        (tr) => tr.step === 2 && tr.to === m.person_name
+                        (tr) => tr.step === 2 && (tr.to === m.person_name || tr.from === m.person_name)
                       )}
                       showAll={showAll}
                     />

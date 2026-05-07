@@ -456,8 +456,14 @@ export function getSettlement(db: Database.Database, year: number): SettlementRe
 
   for (const o of owners) {
     const s2 = S2.get(o.name) ?? 0;
-    if (Math.abs(s2) < 0.005) continue;
-    transfers.push({ from: "co-op", to: o.name, amount: s2, step: 2, label: `co-op → ${o.name}` });
+    const s1c = S1Cross.get(o.name) ?? 0;
+    const net = round2(s2 + s1c);
+    if (Math.abs(net) < 0.005) continue;
+    if (net > 0) {
+      transfers.push({ from: "co-op", to: o.name, amount: net, step: 2, label: `co-op → ${o.name}` });
+    } else {
+      transfers.push({ from: o.name, to: "co-op", amount: round2(-net), step: 2, label: `${o.name} → co-op` });
+    }
   }
 
   // 14. Load payments and annotate transfers
@@ -470,7 +476,8 @@ export function getSettlement(db: Database.Database, year: number): SettlementRe
     // Step 2: owner payout. Track using NET of all payments for this person —
     // "virtual vereffening" payments cover s2 + s1_cross as a single net entry.
     if (tr.step === 2) {
-      const ownerId = nameToId.get(tr.to) ?? null;
+      const ownerName = tr.from === "co-op" ? tr.to : tr.from;
+      const ownerId = nameToId.get(ownerName) ?? null;
       if (ownerId === null) return { ...tr, payment_status: null };
       const personPayments = paymentsByPerson.get(ownerId) ?? [];
       const netPaid = round2(personPayments.reduce((s, p) => s + p.amount, 0));

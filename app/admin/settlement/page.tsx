@@ -285,7 +285,11 @@ function TransferPaymentRow({ transfer }: { transfer: AnnotatedTransfer }) {
         <span>
           {t("settlement.payment_due")}: {fmtMoney(transfer.amount)}
         </span>
-        <span style={{ color: overpaid ? paper.accent : ps.open > 0.005 ? paper.accent : paper.inkMute }}>
+        <span
+          style={{
+            color: overpaid ? paper.accent : ps.open > 0.005 ? paper.accent : paper.inkMute,
+          }}
+        >
           {overpaid
             ? `${t("settlement.payment_open")}: ${fmtMoney(0)}`
             : `${t("settlement.payment_open")}: ${fmtMoney(ps.open)}`}
@@ -382,347 +386,45 @@ function PaymentSummaryBanner({
   );
 }
 
-function NonOwnerMemberCard({
-  m,
-  year,
-  bankAccount,
-  settlementTransfer,
-  showAll,
-}: {
-  m: MemberStatement;
-  year: number;
-  bankAccount: string;
-  settlementTransfer: AnnotatedTransfer | undefined;
-  showAll: boolean;
-}) {
-  const t = useT();
-  const [open, setOpen] = useState(false);
-  const [msgCopied, setMsgCopied] = useState(false);
-
-  const s1 = m.s1 ?? 0;
-  const netColor = amtColor(-s1);
-
-  const totalKm = m.car_eras.reduce((s, e) => s + e.trip_km, 0);
-  const totalTripAmt = m.car_eras.reduce((s, e) => s + e.trip_amount, 0);
-  const totalFuelL = m.car_eras.reduce((s, e) => s + e.fuel_liters, 0);
-  const totalFuelAmt = m.car_eras.reduce((s, e) => s + e.fuel_amount, 0);
-  const totalExpAmt = m.car_eras.reduce((s, e) => s + e.expense_amount, 0);
-
-  const copyMsg = () => {
-    const iban =
-      bankAccount || "(rekeningnummer niet ingesteld — stel in via Admin → Instellingen)";
-
-    // Fixed-width formatting helpers
-    const W = 40; // section-total lines
-    const WC = 32; // per-car lines (visually indented)
-
-    // Simple euro formatter with padded number for monospace alignment
-    const e = (n: number) => `€ ${n.toFixed(2).replace(".", ",").padStart(6)}`;
-
-    // Right-align the amount column at position `w`
-    const row = (left: string, sign: "+" | "−", n: number, w: number) => {
-      const right = `${sign} ${e(n)}`;
-      return left + " ".repeat(Math.max(1, w - left.length - right.length)) + right;
-    };
-
-    const sections: string[] = [];
-
-    if (totalTripAmt > 0) {
-      const sec = [row(`${t("page.trips")} (${totalKm} km)`, "−", totalTripAmt, W)];
-      for (const era of m.car_eras.filter((ev) => ev.trip_km > 0)) {
-        sec.push(row(`  ${era.car_short.padEnd(5)} (${era.trip_km} km)`, "−", era.trip_amount, WC));
-      }
-      sections.push(sec.join("\n"));
-    }
-
-    if (totalFuelAmt > 0) {
-      const sec = [
-        row(`${t("settlement.breakdown_fuel")} (${fmtL(totalFuelL)} L)`, "+", totalFuelAmt, W),
-      ];
-      for (const era of m.car_eras.filter((ev) => ev.fuel_liters > 0)) {
-        sec.push(
-          row(`  ${era.car_short.padEnd(5)} (${fmtL(era.fuel_liters)} L)`, "+", era.fuel_amount, WC)
-        );
-      }
-      sections.push(sec.join("\n"));
-    }
-
-    if (totalExpAmt > 0) {
-      const sec = [row(t("settlement.breakdown_costs"), "+", totalExpAmt, W)];
-      for (const era of m.car_eras.filter((ev) => ev.expense_amount > 0)) {
-        sec.push(row(`  ${era.car_short.padEnd(5)}`, "+", era.expense_amount, WC));
-      }
-      sections.push(sec.join("\n"));
-    }
-
-    const separator = "─".repeat(W);
-    const lines = [
-      `Beste ${m.person_name},`,
-      ``,
-      `Jouw aandeel in de jaarafrekening ${year}:`,
-      ...(sections.length > 0 ? [``, sections.join("\n\n")] : []),
-      separator,
-      row(`Saldo`, s1 >= 0 ? "+" : "−", Math.abs(s1), W),
-      ``,
-      ...(s1 < 0
-        ? [`Gelieve dit bedrag over te schrijven naar ${iban}.`]
-        : s1 > 0
-          ? [`Dit bedrag wordt aan jou teruggestort.`]
-          : []),
-      ``,
-      `Je overzicht: ${typeof window !== "undefined" ? window.location.origin : ""}`,
-    ];
-
-    navigator.clipboard.writeText(lines.join("\n"));
-    setMsgCopied(true);
-    setTimeout(() => setMsgCopied(false), 2000);
-  };
-
-  const ps = settlementTransfer?.payment_status ?? null;
-  const hasCreditTransfer = settlementTransfer != null && settlementTransfer.from === "co-op";
-  const borderColor = hasCreditTransfer
-    ? (ps != null && ps.open < 0.005 ? paper.green : paper.blue)
-    : ps == null
-      ? paper.ink
-      : ps.open < 0.005
-        ? paper.green
-        : paper.accent;
-  const exactMatch =
-    settlementTransfer == null ||
-    (ps != null && Math.abs(ps.paid - settlementTransfer.amount) < 0.05);
-  const isSlim = !showAll && exactMatch;
-
-  const toggle = () => setOpen((v) => !v);
-
-  if (isSlim) {
-    return (
-      <div
-        style={{
-          background: paper.paper,
-          marginBottom: 2,
-          borderLeft: `3px solid ${borderColor}`,
-          display: "flex",
-          alignItems: "center",
-          padding: "3px 14px",
-          gap: 8,
-        }}
-      >
-        <span
-          style={{ fontFamily: fontSerif, fontSize: 11, color: paper.inkMute, flex: "1 1 auto" }}
-        >
-          {m.person_name}
-        </span>
-        <span style={{ fontFamily: fontMono, fontSize: 10, color: netColor }}>
-          {signPrefix(-s1)}
-          {fmtMoney(s1)}
-        </span>
-      </div>
-    );
-  }
-
+function CarSectionHeader({ label, saldo }: { label: string; saldo: number }) {
   return (
     <div
       style={{
-        background: paper.paper,
-        marginBottom: 6,
-        boxShadow: "0 1px 4px rgba(0,0,0,0.07)",
-        borderLeft: `3px solid ${borderColor}`,
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: "baseline",
+        marginBottom: 3,
       }}
     >
-      {/* Header row: name | flex spacer | amount | [stuur bericht] */}
-      <div
+      <span
         style={{
-          display: "flex",
-          alignItems: "center",
-          padding: "10px 14px",
-          gap: 10,
+          fontFamily: fontMono,
+          fontSize: 9,
+          letterSpacing: 1.5,
+          textTransform: "uppercase" as const,
+          color: paper.inkMute,
+          fontWeight: 700,
         }}
       >
-        <button
-          onClick={toggle}
-          style={{
-            fontFamily: fontSerif,
-            fontSize: 16,
-            fontWeight: 700,
-            color: paper.ink,
-            background: "transparent",
-            border: "none",
-            cursor: "pointer",
-            padding: 0,
-            textAlign: "left",
-            flex: "1 1 auto",
-          }}
-        >
-          {m.person_name}
-        </button>
-
-        <span
-          style={{
-            fontFamily: fontMono,
-            fontSize: 15,
-            fontWeight: 700,
-            color: netColor,
-            whiteSpace: "nowrap",
-            flex: "0 0 auto",
-            cursor: "pointer",
-          }}
-          onClick={toggle}
-        >
-          {signPrefix(-s1)}
-          {fmtMoney(s1)}
-        </span>
-
-        <button
-          onClick={copyMsg}
-          style={{
-            padding: "2px 10px",
-            fontFamily: fontMono,
-            fontSize: 8,
-            fontWeight: 700,
-            letterSpacing: 1,
-            textTransform: "uppercase",
-            background: msgCopied ? paper.green : "transparent",
-            color: msgCopied ? paper.paper : paper.inkMute,
-            border: `1px solid ${msgCopied ? paper.green : paper.paperDark}`,
-            cursor: "pointer",
-            whiteSpace: "nowrap",
-            flex: "0 0 auto",
-          }}
-        >
-          {msgCopied ? t("settlement.copied") : t("settlement.send_transfer")}
-        </button>
-      </div>
-
-      {/* Expanded breakdown — grouped by car */}
-      {open && (
-        <div style={{ borderTop: `1px dashed ${paper.paperDark}`, padding: "10px 14px 14px" }}>
-          {m.car_eras.map((era, i) => (
-            <div key={i} style={{ marginTop: i === 0 ? 0 : 14 }}>
-              {/* Car label */}
-              <div
-                style={{
-                  fontFamily: fontMono,
-                  fontSize: 9,
-                  letterSpacing: 1.5,
-                  textTransform: "uppercase" as const,
-                  color: paper.inkMute,
-                  fontWeight: 700,
-                  marginBottom: 4,
-                }}
-              >
-                {era.car_short}
-              </div>
-              {era.trip_km > 0 && (
-                <BreakdownCarRow
-                  car={`${t("page.trips")} (${era.trip_km} km)`}
-                  detail={null}
-                  amount={`− ${fmtMoney(era.trip_amount)}`}
-                  amountColor={paper.accent}
-                />
-              )}
-              {era.fuel_liters > 0 && (
-                <BreakdownCarRow
-                  car={`${t("settlement.breakdown_fuel")} (${fmtL(era.fuel_liters)} L${(era.fuel_settled_liters ?? 0) > 0.05 ? " (*)" : ""})`}
-                  detail={null}
-                  amount={`+ ${fmtMoney(era.fuel_amount)}`}
-                  amountColor={paper.green}
-                />
-              )}
-              {era.expense_amount > 0 && (
-                <BreakdownCarRow
-                  car={`${t("settlement.breakdown_costs")}${(era.expense_settled_amount ?? 0) > 0.005 ? " (*)" : ""}`}
-                  detail={null}
-                  amount={`+ ${fmtMoney(era.expense_amount)}`}
-                  amountColor={paper.green}
-                />
-              )}
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "baseline",
-                  marginTop: 4,
-                  paddingLeft: 16,
-                }}
-              >
-                <span style={{ fontFamily: fontMono, fontSize: 9, color: paper.inkDim }}>
-                  saldo
-                </span>
-                <span
-                  style={{
-                    fontFamily: fontMono,
-                    fontSize: 10,
-                    fontWeight: 600,
-                    color: amtColor(era.balance),
-                  }}
-                >
-                  {signPrefix(era.balance)}
-                  {fmtMoney(era.balance)}
-                </span>
-              </div>
-              <SettledNote
-                fuelCount={era.fuel_settled_count ?? 0}
-                fuelLiters={era.fuel_settled_liters ?? 0}
-                expCount={era.expense_settled_count ?? 0}
-                expAmt={era.expense_settled_amount ?? 0}
-              />
-            </div>
-          ))}
-
-          {/* Total saldo */}
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "baseline",
-              marginTop: 10,
-              paddingTop: 8,
-              borderTop: `1px dashed ${paper.paperDark}`,
-            }}
-          >
-            <span
-              style={{
-                fontFamily: fontMono,
-                fontSize: 9,
-                letterSpacing: 1.5,
-                textTransform: "uppercase" as const,
-                color: paper.inkDim,
-                fontWeight: 700,
-              }}
-            >
-              Saldo
-            </span>
-            <span style={{ fontFamily: fontMono, fontSize: 14, fontWeight: 700, color: netColor }}>
-              {signPrefix(-s1)}
-              {fmtMoney(s1)}
-            </span>
-          </div>
-
-          {/* Payment status */}
-          {settlementTransfer && (
-            <div style={{ marginTop: 10 }}>
-              <div
-                style={{
-                  fontFamily: fontMono,
-                  fontSize: 9,
-                  color: paper.inkDim,
-                  letterSpacing: 1.5,
-                  textTransform: "uppercase",
-                  marginBottom: 4,
-                }}
-              >
-                {t("settlement.payment_status_title")}
-              </div>
-              <TransferPaymentRow transfer={settlementTransfer} />
-            </div>
-          )}
-        </div>
-      )}
+        {label}
+      </span>
+      <span
+        style={{
+          fontFamily: fontMono,
+          fontSize: 10,
+          fontWeight: 700,
+          color: amtColor(saldo),
+          paddingLeft: 12,
+        }}
+      >
+        {signPrefix(saldo)}
+        {fmtMoney(saldo)}
+      </span>
     </div>
   );
 }
 
-function OwnerMemberCard({
+function MemberCard({
   m,
   year,
   bankAccount,
@@ -740,53 +442,125 @@ function OwnerMemberCard({
   const t = useT();
   const [open, setOpen] = useState(false);
   const [msgCopied, setMsgCopied] = useState(false);
-  const s2 = m.s2 ?? 0;
-  const s1c = m.s1_cross ?? 0;
-  const net = m.net ?? s2;
-  const netColor = amtColor(-net);
-  const hasCrossUse = crossRows.length > 0;
+
+  // Unified net: positive = co-op owes person, negative = person owes co-op
+  const net = m.is_owner ? (m.net ?? 0) : (m.s1 ?? 0);
+  const netColor = amtColor(net);
+
+  const ps = settlementTransfer?.payment_status ?? null;
+  const isCredit = net > 0;
+  const borderColor =
+    settlementTransfer == null
+      ? paper.ink
+      : ps == null
+        ? isCredit
+          ? paper.blue
+          : paper.accent
+        : ps.open < 0.005
+          ? paper.green
+          : paper.accent;
+  const exactMatch =
+    settlementTransfer == null ||
+    (ps != null && Math.abs(ps.paid - settlementTransfer.amount) < 0.05);
+  const isSlim = !showAll && exactMatch;
 
   const copyMsg = () => {
     const iban =
       bankAccount || "(rekeningnummer niet ingesteld — stel in via Admin → Instellingen)";
     const W = 40;
+    const WC = 32;
     const e = (n: number) => `€ ${n.toFixed(2).replace(".", ",").padStart(6)}`;
-    const row = (left: string, sign: "+" | "−", n: number) => {
+    const row = (left: string, sign: "+" | "−", n: number, w = W) => {
       const right = `${sign} ${e(n)}`;
-      return left + " ".repeat(Math.max(1, W - left.length - right.length)) + right;
+      return left + " ".repeat(Math.max(1, w - left.length - right.length)) + right;
     };
 
-    const carSections: string[] = [];
-    for (const era of m.car_eras) {
-      const nStar = era.n_c_star ?? 0;
-      const contribs = era.member_contributions ?? [];
-      if (Math.abs(nStar) < 0.005 && contribs.length === 0) continue;
-      const lines: string[] = [
-        row(`${era.car_short} — ${era.car_name}`, nStar >= 0 ? "+" : "−", Math.abs(nStar)),
-      ];
-      for (const c of contribs) {
-        const km = c.trip_km > 0 ? ` (${c.trip_km} km)` : "";
-        lines.push(
-          row(`  ${c.person_name}${km}`, c.contribution >= 0 ? "+" : "−", Math.abs(c.contribution))
-        );
-      }
-      carSections.push(lines.join("\n"));
-    }
+    const sections: string[] = [];
 
-    const crossSection: string[] = [];
-    if (hasCrossUse) {
-      crossSection.push(`\nGebruik andere wagens:`);
-      for (const { car_short, row: r } of crossRows) {
-        const parts: string[] = [];
-        if (r.trip_km > 0) parts.push(`${r.trip_km} km`);
-        if (r.fuel_liters > 0.05) parts.push(`${fmtL(r.fuel_liters)} L`);
-        crossSection.push(
+    if (m.is_owner) {
+      for (const era of m.car_eras) {
+        const nStar = era.n_c_star ?? 0;
+        const contribs = era.member_contributions ?? [];
+        if (Math.abs(nStar) < 0.005 && contribs.length === 0) continue;
+        const lines: string[] = [
           row(
-            `  ${car_short}${parts.length ? ` (${parts.join(", ")})` : ""}`,
-            r.balance <= 0 ? "+" : "−",
-            Math.abs(r.balance)
-          )
-        );
+            `${t("settlement.section_own_car")} — ${era.car_short}`,
+            nStar >= 0 ? "+" : "−",
+            Math.abs(nStar)
+          ),
+        ];
+        for (const c of contribs) {
+          const detail =
+            c.trip_km > 0
+              ? ` (${c.trip_km} km${c.fuel_liters > 0.05 ? `, ${fmtL(c.fuel_liters)} L` : ""}${c.expense_amount > 0 ? `, € ${c.expense_amount.toFixed(2).replace(".", ",")}` : ""})`
+              : "";
+          if (c.contribution === 0) {
+            const label = `  ${c.person_name}${detail}`;
+            lines.push(label + " ".repeat(Math.max(1, W - label.length - 7)) + `€  0,00`);
+          } else {
+            lines.push(
+              row(
+                `  ${c.person_name}${detail}`,
+                c.contribution >= 0 ? "+" : "−",
+                Math.abs(c.contribution),
+                WC
+              )
+            );
+          }
+        }
+        sections.push(lines.join("\n"));
+      }
+      if (crossRows.length > 0) {
+        const lines: string[] = [];
+        for (const { car_short, row: r } of crossRows) {
+          const parts: string[] = [];
+          if (r.trip_km > 0) parts.push(`${r.trip_km} km`);
+          if (r.fuel_liters > 0.05) parts.push(`${fmtL(r.fuel_liters)} L`);
+          const saldo = -r.balance;
+          lines.push(
+            row(
+              `${car_short}${parts.length ? ` (${parts.join(", ")})` : ""}`,
+              saldo >= 0 ? "+" : "−",
+              Math.abs(saldo)
+            )
+          );
+        }
+        sections.push(lines.join("\n"));
+      }
+    } else {
+      const totalKm = m.car_eras.reduce((s, e) => s + e.trip_km, 0);
+      const totalTripAmt = m.car_eras.reduce((s, e) => s + e.trip_amount, 0);
+      const totalFuelL = m.car_eras.reduce((s, e) => s + e.fuel_liters, 0);
+      const totalFuelAmt = m.car_eras.reduce((s, e) => s + e.fuel_amount, 0);
+      const totalExpAmt = m.car_eras.reduce((s, e) => s + e.expense_amount, 0);
+      if (totalTripAmt > 0) {
+        const sec = [row(`${t("page.trips")} (${totalKm} km)`, "−", totalTripAmt)];
+        for (const era of m.car_eras.filter((ev) => ev.trip_km > 0))
+          sec.push(
+            row(`  ${era.car_short.padEnd(5)} (${era.trip_km} km)`, "−", era.trip_amount, WC)
+          );
+        sections.push(sec.join("\n"));
+      }
+      if (totalFuelAmt > 0) {
+        const sec = [
+          row(`${t("settlement.breakdown_fuel")} (${fmtL(totalFuelL)} L)`, "+", totalFuelAmt),
+        ];
+        for (const era of m.car_eras.filter((ev) => ev.fuel_liters > 0))
+          sec.push(
+            row(
+              `  ${era.car_short.padEnd(5)} (${fmtL(era.fuel_liters)} L)`,
+              "+",
+              era.fuel_amount,
+              WC
+            )
+          );
+        sections.push(sec.join("\n"));
+      }
+      if (totalExpAmt > 0) {
+        const sec = [row(t("settlement.breakdown_costs"), "+", totalExpAmt)];
+        for (const era of m.car_eras.filter((ev) => ev.expense_amount > 0))
+          sec.push(row(`  ${era.car_short.padEnd(5)}`, "+", era.expense_amount, WC));
+        sections.push(sec.join("\n"));
       }
     }
 
@@ -794,12 +568,13 @@ function OwnerMemberCard({
     const lines = [
       `Beste ${m.person_name},`,
       ``,
-      `Jouw eigenaarspayout voor ${year}:`,
-      ...(carSections.length > 0 ? [``, carSections.join("\n\n")] : []),
-      ...crossSection,
+      m.is_owner
+        ? `Jouw eigenaarspayout voor ${year}:`
+        : `Jouw aandeel in de jaarafrekening ${year}:`,
+      ...(sections.length > 0 ? [``, sections.join("\n\n")] : []),
       ``,
       separator,
-      row(hasCrossUse ? `Netto saldo` : `Saldo via coöp`, net >= 0 ? "+" : "−", Math.abs(net)),
+      row(`Saldo`, net >= 0 ? "+" : "−", Math.abs(net)),
       ``,
       ...(net > 0
         ? [`Coöp (${iban}) schrijft dit bedrag over naar jou.`]
@@ -814,20 +589,6 @@ function OwnerMemberCard({
     setMsgCopied(true);
     setTimeout(() => setMsgCopied(false), 2000);
   };
-
-  const ps = settlementTransfer?.payment_status ?? null;
-  const borderColor =
-    ps == null
-      ? settlementTransfer != null
-        ? paper.blue
-        : paper.ink
-      : ps.open < 0.005
-        ? paper.green
-        : paper.accent;
-  const exactMatch =
-    settlementTransfer == null ||
-    (ps != null && Math.abs(ps.paid - settlementTransfer.amount) < 0.05);
-  const isSlim = !showAll && exactMatch;
 
   const toggle = () => setOpen((v) => !v);
 
@@ -850,7 +611,7 @@ function OwnerMemberCard({
           {m.person_name}
         </span>
         <span style={{ fontFamily: fontMono, fontSize: 10, color: netColor }}>
-          {signPrefix(-net)}
+          {signPrefix(net)}
           {fmtMoney(net)}
         </span>
       </div>
@@ -896,7 +657,7 @@ function OwnerMemberCard({
           }}
           onClick={toggle}
         >
-          {signPrefix(-net)}
+          {signPrefix(net)}
           {fmtMoney(net)}
         </span>
         <button
@@ -922,125 +683,13 @@ function OwnerMemberCard({
 
       {open && (
         <div style={{ borderTop: `1px dashed ${paper.paperDark}`, padding: "10px 14px 14px" }}>
-          {/* ── Bijdrage van Leden ── */}
-          <SectionLabel>{t("settlement.section_member_contributions")}</SectionLabel>
-
-          {m.car_eras.map((era, i) => (
-            <div key={i} style={{ marginBottom: 10 }}>
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "baseline",
-                  marginBottom: 3,
-                }}
-              >
-                <span
-                  style={{
-                    fontFamily: fontMono,
-                    fontSize: 10,
-                    color: paper.inkDim,
-                    letterSpacing: 1,
-                  }}
-                >
-                  {era.car_short} — {era.car_name}
-                </span>
-                <span
-                  style={{
-                    fontFamily: fontMono,
-                    fontSize: 11,
-                    fontWeight: 600,
-                    color: amtColor(era.n_c_star ?? 0),
-                    paddingLeft: 12,
-                  }}
-                >
-                  {signPrefix(era.n_c_star ?? 0)}
-                  {fmtMoney(era.n_c_star ?? 0)}
-                </span>
-              </div>
-              {era.member_contributions?.map((contrib, j) => {
-                const detail = fmtDetail(
-                  contrib.trip_km,
-                  contrib.fuel_liters,
-                  contrib.expense_amount,
-                  contrib.fuel_settled_liters,
-                  contrib.expense_settled_amount
-                );
-                return (
-                  <div
-                    key={j}
-                    style={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                      alignItems: "baseline",
-                      paddingLeft: 16,
-                      marginTop: 2,
-                    }}
-                  >
-                    <span style={{ fontFamily: fontMono, fontSize: 10, color: paper.inkMute }}>
-                      {contrib.person_name}
-                      {detail ? ` ${detail}` : ""}
-                    </span>
-                    <span
-                      style={{
-                        fontFamily: fontMono,
-                        fontSize: 10,
-                        color: amtColor(contrib.contribution),
-                        paddingLeft: 12,
-                      }}
-                    >
-                      {signPrefix(contrib.contribution)}
-                      {fmtMoney(contrib.contribution)}
-                    </span>
-                  </div>
-                );
-              })}
-              <SettledNote
-                fuelCount={
-                  era.member_contributions?.reduce((s, c) => s + (c.fuel_settled_count ?? 0), 0) ??
-                  0
-                }
-                fuelLiters={
-                  era.member_contributions?.reduce((s, c) => s + (c.fuel_settled_liters ?? 0), 0) ??
-                  0
-                }
-                expCount={
-                  era.member_contributions?.reduce(
-                    (s, c) => s + (c.expense_settled_count ?? 0),
-                    0
-                  ) ?? 0
-                }
-                expAmt={
-                  era.member_contributions?.reduce(
-                    (s, c) => s + (c.expense_settled_amount ?? 0),
-                    0
-                  ) ?? 0
-                }
-              />
-            </div>
-          ))}
-
-          {/* ── Gebruik andere wagens (cross-owner) ── */}
-          {hasCrossUse && (
-            <div
-              style={{ borderTop: `1px dashed ${paper.paperDark}`, paddingTop: 10, marginTop: 2 }}
-            >
-              <SectionLabel>{t("settlement.section_cross_use")}</SectionLabel>
-              {crossRows.map((item, i) => (
-                <div key={i} style={{ marginTop: i === 0 ? 0 : 10 }}>
-                  <div
-                    style={{
-                      fontFamily: fontMono,
-                      fontSize: 9,
-                      letterSpacing: 1.5,
-                      textTransform: "uppercase" as const,
-                      color: paper.inkMute,
-                      fontWeight: 700,
-                      marginBottom: 4,
-                    }}
-                  >
-                    {item.car_short}
-                  </div>
+          {/* Cross-car sections — owners who drove other cars */}
+          {m.is_owner &&
+            crossRows.map((item, i) => {
+              const crossSaldo = -item.row.balance;
+              return (
+                <div key={i} style={{ marginTop: i === 0 ? 0 : 14 }}>
+                  <CarSectionHeader label={item.car_short} saldo={crossSaldo} />
                   {item.row.trip_km > 0 && (
                     <BreakdownCarRow
                       car={`ritten (${item.row.trip_km} km)`}
@@ -1065,30 +714,6 @@ function OwnerMemberCard({
                       amountColor={paper.green}
                     />
                   )}
-                  <div
-                    style={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                      alignItems: "baseline",
-                      marginTop: 4,
-                      paddingLeft: 16,
-                    }}
-                  >
-                    <span style={{ fontFamily: fontMono, fontSize: 9, color: paper.inkDim }}>
-                      saldo
-                    </span>
-                    <span
-                      style={{
-                        fontFamily: fontMono,
-                        fontSize: 10,
-                        fontWeight: 600,
-                        color: amtColor(-item.row.balance),
-                      }}
-                    >
-                      {signPrefix(-item.row.balance)}
-                      {fmtMoney(item.row.balance)}
-                    </span>
-                  </div>
                   <SettledNote
                     fuelCount={item.row.fuel_settled_count}
                     fuelLiters={item.row.fuel_settled_liters}
@@ -1096,115 +721,180 @@ function OwnerMemberCard({
                     expAmt={item.row.expense_settled_amount}
                   />
                 </div>
-              ))}
+              );
+            })}
+
+          {/* Non-owner: per-car breakdown */}
+          {!m.is_owner &&
+            m.car_eras.map((era, i) => (
+              <div key={i} style={{ marginTop: i === 0 ? 0 : 14 }}>
+                <CarSectionHeader label={era.car_short} saldo={era.balance} />
+                {era.trip_km > 0 && (
+                  <BreakdownCarRow
+                    car={`${t("page.trips")} (${era.trip_km} km)`}
+                    detail={null}
+                    amount={`− ${fmtMoney(era.trip_amount)}`}
+                    amountColor={paper.accent}
+                  />
+                )}
+                {era.fuel_liters > 0 && (
+                  <BreakdownCarRow
+                    car={`${t("settlement.breakdown_fuel")} (${fmtL(era.fuel_liters)} L${(era.fuel_settled_liters ?? 0) > 0.05 ? " (*)" : ""})`}
+                    detail={null}
+                    amount={`+ ${fmtMoney(era.fuel_amount)}`}
+                    amountColor={paper.green}
+                  />
+                )}
+                {era.expense_amount > 0 && (
+                  <BreakdownCarRow
+                    car={`${t("settlement.breakdown_costs")}${(era.expense_settled_amount ?? 0) > 0.005 ? " (*)" : ""}`}
+                    detail={null}
+                    amount={`+ ${fmtMoney(era.expense_amount)}`}
+                    amountColor={paper.green}
+                  />
+                )}
+                <SettledNote
+                  fuelCount={era.fuel_settled_count ?? 0}
+                  fuelLiters={era.fuel_settled_liters ?? 0}
+                  expCount={era.expense_settled_count ?? 0}
+                  expAmt={era.expense_settled_amount ?? 0}
+                />
+              </div>
+            ))}
+
+          {/* EIGEN WAGEN section — owners only */}
+          {m.is_owner &&
+            m.car_eras.map((era, i) => {
+              const nStar = era.n_c_star ?? 0;
+              const contribs = era.member_contributions ?? [];
+              if (Math.abs(nStar) < 0.005 && contribs.length === 0) return null;
+              return (
+                <div
+                  key={i}
+                  style={{
+                    marginTop: crossRows.length > 0 || i > 0 ? 14 : 0,
+                    borderTop:
+                      crossRows.length > 0 || i > 0 ? `1px dashed ${paper.paperDark}` : undefined,
+                    paddingTop: crossRows.length > 0 || i > 0 ? 10 : 0,
+                  }}
+                >
+                  <CarSectionHeader
+                    label={`${t("settlement.section_own_car")} — ${era.car_short}`}
+                    saldo={nStar}
+                  />
+                  {contribs.map((contrib, j) => {
+                    const detail = fmtDetail(
+                      contrib.trip_km,
+                      contrib.fuel_liters,
+                      contrib.expense_amount,
+                      contrib.fuel_settled_liters,
+                      contrib.expense_settled_amount
+                    );
+                    const isOwnRow = contrib.person_name === m.person_name;
+                    return (
+                      <div
+                        key={j}
+                        style={{
+                          display: "flex",
+                          justifyContent: "space-between",
+                          alignItems: "baseline",
+                          paddingLeft: 16,
+                          marginTop: 2,
+                        }}
+                      >
+                        <span style={{ fontFamily: fontMono, fontSize: 10, color: paper.inkMute }}>
+                          {contrib.person_name}
+                          {detail ? ` ${detail}` : ""}
+                        </span>
+                        <span
+                          style={{
+                            fontFamily: fontMono,
+                            fontSize: 10,
+                            color: isOwnRow ? paper.inkDim : amtColor(contrib.contribution),
+                            paddingLeft: 12,
+                          }}
+                        >
+                          {isOwnRow
+                            ? fmtMoney(0)
+                            : `${signPrefix(contrib.contribution)}${fmtMoney(contrib.contribution)}`}
+                        </span>
+                      </div>
+                    );
+                  })}
+                  <SettledNote
+                    fuelCount={contribs.reduce((s, c) => s + (c.fuel_settled_count ?? 0), 0)}
+                    fuelLiters={contribs.reduce((s, c) => s + (c.fuel_settled_liters ?? 0), 0)}
+                    expCount={contribs.reduce((s, c) => s + (c.expense_settled_count ?? 0), 0)}
+                    expAmt={contribs.reduce((s, c) => s + (c.expense_settled_amount ?? 0), 0)}
+                  />
+                </div>
+              );
+            })}
+
+          {/* SALDO */}
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "baseline",
+              marginTop: 10,
+              paddingTop: 8,
+              borderTop: `1px dashed ${paper.paperDark}`,
+            }}
+          >
+            <span
+              style={{
+                fontFamily: fontMono,
+                fontSize: 9,
+                letterSpacing: 1.5,
+                textTransform: "uppercase" as const,
+                color: paper.inkDim,
+                fontWeight: 700,
+              }}
+            >
+              Saldo
+            </span>
+            <span style={{ fontFamily: fontMono, fontSize: 14, fontWeight: 700, color: netColor }}>
+              {signPrefix(net)}
+              {fmtMoney(net)}
+            </span>
+          </div>
+
+          {/* Transfer direction */}
+          {Math.abs(net) > 0.005 && bankAccount && (
+            <div
+              style={{
+                fontFamily: fontMono,
+                fontSize: 9,
+                color: paper.inkMute,
+                marginTop: 4,
+                paddingLeft: 16,
+              }}
+            >
+              {net > 0
+                ? `coöp (${bankAccount}) → ${m.person_name}`
+                : `${m.person_name} → coöp (${bankAccount})`}
             </div>
           )}
 
-          {/* ── Netto saldo ── */}
-          <div
-            style={{
-              borderTop: `1px dashed ${paper.paperDark}`,
-              paddingTop: 10,
-              marginTop: hasCrossUse ? 10 : 2,
-            }}
-          >
-            {hasCrossUse && (
+          {/* Payment status */}
+          {settlementTransfer && (
+            <div style={{ marginTop: 10 }}>
               <div
                 style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "baseline",
+                  fontFamily: fontMono,
+                  fontSize: 9,
+                  color: paper.inkDim,
+                  letterSpacing: 1.5,
+                  textTransform: "uppercase",
                   marginBottom: 4,
                 }}
               >
-                <span style={{ fontFamily: fontMono, fontSize: 9, color: paper.inkDim }}>
-                  via coöp
-                </span>
-                <span style={{ fontFamily: fontMono, fontSize: 10, color: amtColor(s2) }}>
-                  {signPrefix(s2)}
-                  {fmtMoney(s2)}
-                </span>
+                {t("settlement.payment_status_title")}
               </div>
-            )}
-            {hasCrossUse && (
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "baseline",
-                  marginBottom: 6,
-                }}
-              >
-                <span style={{ fontFamily: fontMono, fontSize: 9, color: paper.inkDim }}>
-                  gebruik andere wagens
-                </span>
-                <span style={{ fontFamily: fontMono, fontSize: 10, color: amtColor(s1c) }}>
-                  {signPrefix(s1c)}
-                  {fmtMoney(s1c)}
-                </span>
-              </div>
-            )}
-            <div
-              style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}
-            >
-              <span
-                style={{
-                  fontFamily: fontMono,
-                  fontSize: 9,
-                  letterSpacing: 1.5,
-                  textTransform: "uppercase" as const,
-                  fontWeight: 700,
-                  color: paper.inkMute,
-                }}
-              >
-                {hasCrossUse ? "Netto" : "Saldo via coöp"}
-              </span>
-              <span
-                style={{
-                  fontFamily: fontMono,
-                  fontSize: 14,
-                  fontWeight: 700,
-                  color: netColor,
-                  paddingLeft: 12,
-                }}
-              >
-                {signPrefix(net)}
-                {fmtMoney(net)}
-              </span>
+              <TransferPaymentRow transfer={settlementTransfer} />
             </div>
-            {bankAccount && (
-              <div
-                style={{
-                  fontFamily: fontMono,
-                  fontSize: 9,
-                  color: paper.inkMute,
-                  marginTop: 4,
-                  paddingLeft: 16,
-                }}
-              >
-                coöp ({bankAccount}) → {m.person_name}
-              </div>
-            )}
-
-            {/* Payment status */}
-            {settlementTransfer && (
-              <div style={{ marginTop: 10 }}>
-                <div
-                  style={{
-                    fontFamily: fontMono,
-                    fontSize: 9,
-                    color: paper.inkDim,
-                    letterSpacing: 1.5,
-                    textTransform: "uppercase",
-                    marginBottom: 4,
-                  }}
-                >
-                  {t("settlement.payment_status_title")}
-                </div>
-                <TransferPaymentRow transfer={settlementTransfer} />
-              </div>
-            )}
-          </div>
+          )}
         </div>
       )}
     </div>
@@ -1457,165 +1147,101 @@ function AdminSettlementPageContent() {
       {data && data.members.length > 0 && (
         <>
           {(() => {
-            const nonOwnerMembers = data.members.filter((m) => !m.is_owner);
-            const ownerMembers = data.members.filter((m) => m.is_owner);
             const step1Total =
-              Math.round(nonOwnerMembers.reduce((s, m) => s + (m.s1 ?? 0), 0) * 100) / 100;
+              Math.round(
+                data.members.filter((m) => !m.is_owner).reduce((s, m) => s + (m.s1 ?? 0), 0) * 100
+              ) / 100;
             const step2Total =
-              Math.round(ownerMembers.reduce((s, m) => s + (m.net ?? m.s2 ?? 0), 0) * 100) / 100;
-            // step1Total is sum of member s1 (member-perspective: negative = they owe)
-            // invert to show coop-perspective: coop receives = positive
-            const step1Color = amtColor(-step1Total);
-            // step2Total is sum of owner net (owner-perspective: positive = they receive)
-            // invert to show coop-perspective: coop pays out = negative
-            const step2Color = amtColor(-step2Total);
+              Math.round(
+                data.members
+                  .filter((m) => m.is_owner)
+                  .reduce((s, m) => s + (m.net ?? m.s2 ?? 0), 0) * 100
+              ) / 100;
+            const balance = Math.round((step1Total + step2Total) * 100) / 100;
+
+            const sortedMembers = [...data.members].sort((a, b) => {
+              const av = Math.abs(a.is_owner ? (a.net ?? 0) : (a.s1 ?? 0));
+              const bv = Math.abs(b.is_owner ? (b.net ?? 0) : (b.s1 ?? 0));
+              return bv - av;
+            });
+
             return (
               <>
-                {/* Stap 1 — non-owner member cards */}
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                    marginBottom: 8,
-                  }}
-                >
-                  <SectionLabel style={{ marginBottom: 0 }}>
-                    {t("settlement.step1_title")}
-                  </SectionLabel>
-                  <span
-                    style={{
-                      fontFamily: fontMono,
-                      fontSize: 11,
-                      fontWeight: 700,
-                      color: step1Color,
-                    }}
-                  >
-                    {step1Total <= 0 ? "+" : "−"}
-                    {fmtMoney(Math.abs(step1Total))}
-                  </span>
-                </div>
-                {[...nonOwnerMembers]
-                  .sort((a, b) => a.person_name.localeCompare(b.person_name, "nl"))
-                  .map((m) => (
-                    <NonOwnerMemberCard
-                      key={m.person_id}
-                      m={m}
-                      year={year}
-                      bankAccount={settings?.coop_bank_account ?? ""}
-                      settlementTransfer={data.transfers.find(
-                        (tr) =>
-                          tr.step === 1 && (tr.from === m.person_name || tr.to === m.person_name)
-                      )}
-                      showAll={showAll}
-                    />
-                  ))}
-
-                {/* Stap 2 — owner cards */}
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                    marginBottom: 8,
-                    marginTop: 20,
-                  }}
-                >
-                  <SectionLabel style={{ marginBottom: 0 }}>
-                    {t("settlement.step2_title")}
-                  </SectionLabel>
-                  <span
-                    style={{
-                      fontFamily: fontMono,
-                      fontSize: 11,
-                      fontWeight: 700,
-                      color: step2Color,
-                    }}
-                  >
-                    {step2Total <= 0 ? "+" : "−"}
-                    {fmtMoney(Math.abs(step2Total))}
-                  </span>
-                </div>
-                {[...ownerMembers]
-                  .sort((a, b) => a.person_name.localeCompare(b.person_name, "nl"))
-                  .map((m) => (
-                    <OwnerMemberCard
-                      key={m.person_id}
-                      m={m}
-                      year={year}
-                      bankAccount={settings?.coop_bank_account ?? ""}
-                      crossRows={data.car_settlements.flatMap((cs) =>
-                        cs.rows
-                          .filter(
-                            (r) => r.row_type === "cross_owner" && r.person_name === m.person_name
+                {sortedMembers.map((m) => (
+                  <MemberCard
+                    key={m.person_id}
+                    m={m}
+                    year={year}
+                    bankAccount={settings?.coop_bank_account ?? ""}
+                    crossRows={
+                      m.is_owner
+                        ? data.car_settlements.flatMap((cs) =>
+                            cs.rows
+                              .filter(
+                                (r) =>
+                                  r.row_type === "cross_owner" && r.person_name === m.person_name
+                              )
+                              .map((row) => ({ car_short: cs.car_short, row }))
                           )
-                          .map((row) => ({ car_short: cs.car_short, row }))
-                      )}
-                      settlementTransfer={data.transfers.find(
-                        (tr) => tr.step === 2 && (tr.to === m.person_name || tr.from === m.person_name)
-                      )}
-                      showAll={showAll}
-                    />
-                  ))}
+                        : []
+                    }
+                    settlementTransfer={data.transfers.find(
+                      (tr) =>
+                        (tr.from === m.person_name || tr.to === m.person_name) &&
+                        tr.payment_status !== null
+                    )}
+                    showAll={showAll}
+                  />
+                ))}
 
-                {/* Balance bar between Stap 2 and Stap 3 */}
-                {(() => {
-                  const balance = Math.round((step1Total + step2Total) * 100) / 100;
-                  return (
-                    <div
-                      style={{
-                        marginTop: 16,
-                        padding: "9px 14px",
-                        background: data.verify_ok ? paper.green : paper.accent,
-                        color: paper.paper,
-                        display: "flex",
-                        alignItems: "center",
-                        gap: 8,
-                      }}
-                    >
-                      <span
-                        style={{
-                          fontFamily: fontMono,
-                          fontSize: 10,
-                          fontWeight: 700,
-                          marginRight: 4,
-                        }}
-                      >
-                        {data.verify_ok ? "✓" : "⚠"}
-                      </span>
-                      <span
-                        style={{
-                          fontFamily: fontMono,
-                          fontSize: 9,
-                          letterSpacing: 0.5,
-                          flex: 1,
-                          lineHeight: 1.7,
-                        }}
-                      >
-                        <span style={{ display: "block" }}>
-                          {t("settlement.balance_members_to_coop", {
-                            amount: `${step1Total <= 0 ? "+" : "−"}${fmtMoney(Math.abs(step1Total))}`,
-                          })}
-                        </span>
-                        <span style={{ display: "block" }}>
-                          {t("settlement.balance_coop_to_owners", {
-                            amount: `${step2Total <= 0 ? "+" : "−"}${fmtMoney(Math.abs(step2Total))}`,
-                          })}
-                        </span>
-                      </span>
-                      <span
-                        style={{
-                          fontFamily: fontMono,
-                          fontSize: 10,
-                          fontWeight: 700,
-                          letterSpacing: 1,
-                        }}
-                      >
-                        {t("settlement.balance_total", { amount: fmtMoney(balance) })}
-                      </span>
-                    </div>
-                  );
-                })()}
+                {/* Verification bar */}
+                <div
+                  style={{
+                    marginTop: 16,
+                    padding: "9px 14px",
+                    background: data.verify_ok ? paper.green : paper.accent,
+                    color: paper.paper,
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 8,
+                  }}
+                >
+                  <span
+                    style={{ fontFamily: fontMono, fontSize: 10, fontWeight: 700, marginRight: 4 }}
+                  >
+                    {data.verify_ok ? "✓" : "⚠"}
+                  </span>
+                  <span
+                    style={{
+                      fontFamily: fontMono,
+                      fontSize: 9,
+                      letterSpacing: 0.5,
+                      flex: 1,
+                      lineHeight: 1.7,
+                    }}
+                  >
+                    <span style={{ display: "block" }}>
+                      {t("settlement.balance_members_to_coop", {
+                        amount: `${step1Total <= 0 ? "+" : "−"}${fmtMoney(Math.abs(step1Total))}`,
+                      })}
+                    </span>
+                    <span style={{ display: "block" }}>
+                      {t("settlement.balance_coop_to_owners", {
+                        amount: `${step2Total <= 0 ? "+" : "−"}${fmtMoney(Math.abs(step2Total))}`,
+                      })}
+                    </span>
+                  </span>
+                  <span
+                    style={{
+                      fontFamily: fontMono,
+                      fontSize: 10,
+                      fontWeight: 700,
+                      letterSpacing: 1,
+                    }}
+                  >
+                    {t("settlement.balance_total", { amount: fmtMoney(balance) })}
+                  </span>
+                </div>
               </>
             );
           })()}

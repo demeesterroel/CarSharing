@@ -29,9 +29,9 @@ const basePerson = {
 describe("people queries", () => {
   it("inserts and retrieves a person", () => {
     const db = makeDb();
-    const id = insertPerson(db, { name: "Roeland", ...basePerson });
+    const id = insertPerson(db, { name: "Alice", ...basePerson });
     const person = getPersonById(db, id);
-    expect(person?.name).toBe("Roeland");
+    expect(person?.name).toBe("Alice");
   });
 
   it("returns empty array when no people", () => {
@@ -45,7 +45,7 @@ describe("cars queries", () => {
     const db = makeDb();
     insertCar(db, {
       short: "JF",
-      name: "Jean-Francois",
+      name: "Car JF",
       price_per_km: 0.2,
       brand: "Toyota",
       color: "wit",
@@ -59,10 +59,10 @@ describe("cars queries", () => {
 describe("trips queries", () => {
   it("inserts a trip and computes km and amount", () => {
     const db = makeDb();
-    const pid = insertPerson(db, { name: "Roeland", ...basePerson });
+    const pid = insertPerson(db, { name: "Alice", ...basePerson });
     const cid = insertCar(db, {
       short: "LEW",
-      name: "Lewis",
+      name: "Car LEW",
       price_per_km: 0.25,
       brand: null,
       color: null,
@@ -240,10 +240,10 @@ describe("getDashboard", () => {
 
   it("computes negative balance when trip amount exceeds payments", () => {
     const db = makeDb();
-    const pid = insertPerson(db, { name: "Roeland", ...basePerson });
+    const pid = insertPerson(db, { name: "Alice", ...basePerson });
     const cid = insertCar(db, {
       short: "LEW",
-      name: "Lewis",
+      name: "Car LEW",
       price_per_km: 0.25,
       brand: null,
       color: null,

@@ -27,7 +27,7 @@ const carsToInsert = [
     color: c.kleur ?? null,
   })),
   // Bessy is an old car referenced in historical trips but not in the cars export
-  { short: "BSY", name: "Bessy", price_per_km: 0.2, brand: null, color: null },
+  { short: "BSY", name: "BSY", price_per_km: 0.2, brand: null, color: null },
 ];
 
 const insertCar = db.prepare(
@@ -61,7 +61,7 @@ const personNameMap: Record<string, number> = {}; // name → id
 
 // Collect all unique person names from all tables
 const allNames = new Set<string>();
-const nameAlias: Record<string, string> = { Roel: "Roeland" };
+const nameAlias: Record<string, string> = {};
 
 for (const table of [data.trips, data.fuel_fillups, data.expenses, data.payments]) {
   for (const row of table) {

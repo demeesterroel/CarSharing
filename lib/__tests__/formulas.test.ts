@@ -3,12 +3,12 @@ import { calcTripAmount, calcPricePerLiter, calcPaymentYear } from "../formulas"
 
 describe("calcTripAmount", () => {
   it("charges full price when person has no discount", () => {
-    // Roeland, LEW price_per_km=0.25, discount=0, discount_long=0, km=8029
+    // price_per_km=0.25, discount=0, discount_long=0, km=8029
     expect(calcTripAmount(8029, 0.25, 0, 0)).toBeCloseTo(2007.25);
   });
 
   it("applies short-trip discount for first 500km, long discount beyond", () => {
-    // Tinne, JF price_per_km=0.20, discount=0.25, discount_long=0.50, km=2299
+    // price_per_km=0.20, discount=0.25, discount_long=0.50, km=2299
     // 500 * 0.20 * (1-0.25) + 1799 * 0.20 * (1-0.50) = 75 + 179.90 = 254.90
     expect(calcTripAmount(2299, 0.2, 0.25, 0.5)).toBeCloseTo(254.9);
   });

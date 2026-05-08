@@ -6,9 +6,9 @@ function makeCar(overrides: Partial<CarPnL> = {}): CarPnL {
   return {
     car_id: 1,
     car_short: "ETH",
-    car_name: "Ethel",
+    car_name: "Car ETH",
     car_price_per_km: 0.23,
-    owner_name: "Malvina",
+    owner_name: "Owner A",
     long_threshold: 500,
     expected_km: null,
     trip_count: 100,

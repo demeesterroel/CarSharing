@@ -1,5 +1,27 @@
 # Changelog
 
+## [1.6.0](https://github.com/demeesterroel/CarSharing/compare/v1.5.0...v1.6.0) (2026-05-08)
+
+
+### ✨ New features
+
+* **dashboard:** owner card with per-car breakdown ([#121](https://github.com/demeesterroel/CarSharing/issues/121)) ([b185a79](https://github.com/demeesterroel/CarSharing/commit/b185a79fa2044413f118ae8946459e1cf317a6cd))
+* **settlement:** unified MemberCard — replace NonOwnerMemberCard + OwnerMemberCard ([#118](https://github.com/demeesterroel/CarSharing/issues/118)) ([e220076](https://github.com/demeesterroel/CarSharing/commit/e220076f0dbd45415868efd49c3a1c6c34a4e93f))
+
+
+### 🐛 Bug fixes
+
+* **settlement:** non-owner credit card no longer collapses to slim ([#109](https://github.com/demeesterroel/CarSharing/issues/109)) ([7861650](https://github.com/demeesterroel/CarSharing/commit/7861650c6b2f97dac47153d1a91b94e13d797e8a))
+* **settlement:** owner cards with payout transfer no longer collapse to slim ([#111](https://github.com/demeesterroel/CarSharing/issues/111)) ([cd2b899](https://github.com/demeesterroel/CarSharing/commit/cd2b899aae8f0ef50277872db90ed76444ee84b1))
+* **settlement:** track negative payments for co-op→member credit transfers ([#113](https://github.com/demeesterroel/CarSharing/issues/113)) ([6b24a4c](https://github.com/demeesterroel/CarSharing/commit/6b24a4c857966c0cf135628879ef0d2bc5f89d29))
+
+
+### 📖 Documentation
+
+* add settlement algorithm mathematical specification ([23d2a38](https://github.com/demeesterroel/CarSharing/commit/23d2a38c3ea12e602bd2e554260f3d9772030f27))
+* rewrite settlement-math.md with LaTeX math delimiters ([79a97f5](https://github.com/demeesterroel/CarSharing/commit/79a97f513c00e24d6eb703bd7055caebf852ae89))
+* update settlement-math.md — step 2 uses Net(o) not S2(o) ([126bf52](https://github.com/demeesterroel/CarSharing/commit/126bf5265d2fb0cb7b7ea652e29551004254e58b))
+
 ## [1.5.0](https://github.com/demeesterroel/CarSharing/compare/v1.4.0...v1.5.0) (2026-05-05)
 
 

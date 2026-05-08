@@ -120,8 +120,9 @@ describe("getSettlement", () => {
     const step2 = result.transfers.filter((t) => t.step === 2);
     const toAlice = step2.find((t) => t.to === "Alice");
     const toBob   = step2.find((t) => t.to === "Bob");
-    expect(toAlice?.amount).toBe(150);
-    expect(toBob?.amount).toBe(150); // was 120, now includes alice cross €30
+    // Alice net = S2(150) + S1Cross(-30) = 120; step-2 uses net not S2 alone
+    expect(toAlice?.amount).toBe(120);
+    expect(toBob?.amount).toBe(150);
   });
 
   it("no step 3 transfers", () => {
@@ -239,12 +240,32 @@ describe("getSettlement — payment integration", () => {
     seed(db);
     const nameToId: Record<string, number> = { Alice: 1, Bob: 2, Carol: 3, Dave: 4 };
     const result0 = getSettlement(db, 2025);
-    // Pay every transfer that has a human payer
+    // Pay every transfer that has a payment_status
     for (const t of result0.transfers) {
       if (t.payment_status === null) continue;
-      const payerId = nameToId[t.from];
-      if (payerId) {
-        insertPayment(db, { person_id: payerId, date: "2026-03-01", amount: t.amount, note: null });
+      if (t.step === 1) {
+        // Step 1: human payer (non-owner owes co-op)
+        const payerId = nameToId[t.from];
+        if (payerId) {
+          insertPayment(db, {
+            person_id: payerId,
+            date: "2026-03-01",
+            amount: t.amount,
+            note: null,
+          });
+        }
+      } else if (t.step === 2) {
+        // Step 2: net paid to owner; record as payment for owner
+        const ownerName = t.from === "co-op" ? t.to : t.from;
+        const ownerId = nameToId[ownerName];
+        if (ownerId) {
+          insertPayment(db, {
+            person_id: ownerId,
+            date: "2026-03-01",
+            amount: t.amount,
+            note: null,
+          });
+        }
       }
     }
     const result1 = getSettlement(db, 2025);

@@ -244,11 +244,19 @@ function TransferPaymentRow({ transfer }: { transfer: AnnotatedTransfer }) {
   const ps = transfer.payment_status;
   if (!ps) return null; // co-op is the payer, no tracking
 
+  const overpaid = transfer.amount > 0 && ps.paid > transfer.amount + 0.005;
   const pct = transfer.amount > 0 ? Math.max(0, Math.min(1, ps.paid / transfer.amount)) : 1;
   const barFilled = Math.round(pct * 10);
-  const statusColor = ps.open < 0.005 ? paper.green : ps.paid > 0.005 ? paper.blue : paper.accent;
-  const statusLabel =
-    ps.open < 0.005
+  const statusColor = overpaid
+    ? paper.accent
+    : ps.open < 0.005
+      ? paper.green
+      : ps.paid > 0.005
+        ? paper.blue
+        : paper.accent;
+  const statusLabel = overpaid
+    ? `+${fmtMoney(ps.paid - transfer.amount)} ${t("settlement.overpaid")}`
+    : ps.open < 0.005
       ? t("settlement.fully_paid")
       : ps.paid > 0.005
         ? t("settlement.partially_paid")
@@ -277,8 +285,10 @@ function TransferPaymentRow({ transfer }: { transfer: AnnotatedTransfer }) {
         <span>
           {t("settlement.payment_due")}: {fmtMoney(transfer.amount)}
         </span>
-        <span style={{ color: ps.open > 0.005 ? paper.accent : paper.inkMute }}>
-          {t("settlement.payment_open")}: {fmtMoney(ps.open)}
+        <span style={{ color: overpaid ? paper.accent : ps.open > 0.005 ? paper.accent : paper.inkMute }}>
+          {overpaid
+            ? `${t("settlement.payment_open")}: ${fmtMoney(0)}`
+            : `${t("settlement.payment_open")}: ${fmtMoney(ps.open)}`}
         </span>
       </div>
       {/* Row 2: Betaald | progress bar | status label */}
@@ -335,9 +345,11 @@ function PaymentSummaryBanner({
   data: { all_paid: boolean; transfers: AnnotatedTransfer[] };
 }) {
   const t = useT();
-  const outstanding = data.transfers.filter(
-    (tr) => tr.payment_status !== null && (tr.payment_status?.open ?? 0) > 0.005
-  );
+  const outstanding = data.transfers.filter((tr) => {
+    const ps = tr.payment_status;
+    if (!ps) return false;
+    return Math.abs(ps.paid - tr.amount) > 0.05; // underpaid OR overpaid
+  });
   const count = outstanding.length;
   const isAllPaid = data.all_paid;
 
@@ -467,16 +479,18 @@ function NonOwnerMemberCard({
   };
 
   const ps = settlementTransfer?.payment_status ?? null;
-  // co-op owes this member (credit): transfer exists but payment_status is null because payer is co-op
   const hasCreditTransfer = settlementTransfer != null && settlementTransfer.from === "co-op";
   const borderColor = hasCreditTransfer
-    ? paper.blue
+    ? (ps != null && ps.open < 0.005 ? paper.green : paper.blue)
     : ps == null
       ? paper.ink
       : ps.open < 0.005
         ? paper.green
         : paper.accent;
-  const isSlim = !showAll && !hasCreditTransfer && borderColor !== paper.accent;
+  const exactMatch =
+    settlementTransfer == null ||
+    (ps != null && Math.abs(ps.paid - settlementTransfer.amount) < 0.05);
+  const isSlim = !showAll && exactMatch;
 
   const toggle = () => setOpen((v) => !v);
 
@@ -810,7 +824,10 @@ function OwnerMemberCard({
       : ps.open < 0.005
         ? paper.green
         : paper.accent;
-  const isSlim = !showAll && borderColor !== paper.accent && borderColor !== paper.blue;
+  const exactMatch =
+    settlementTransfer == null ||
+    (ps != null && Math.abs(ps.paid - settlementTransfer.amount) < 0.05);
+  const isSlim = !showAll && exactMatch;
 
   const toggle = () => setOpen((v) => !v);
 
@@ -1535,7 +1552,7 @@ function AdminSettlementPageContent() {
                           .map((row) => ({ car_short: cs.car_short, row }))
                       )}
                       settlementTransfer={data.transfers.find(
-                        (tr) => tr.step === 2 && tr.to === m.person_name
+                        (tr) => tr.step === 2 && (tr.to === m.person_name || tr.from === m.person_name)
                       )}
                       showAll={showAll}
                     />

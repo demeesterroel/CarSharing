@@ -456,21 +456,54 @@ export function getSettlement(db: Database.Database, year: number): SettlementRe
 
   for (const o of owners) {
     const s2 = S2.get(o.name) ?? 0;
-    if (Math.abs(s2) < 0.005) continue;
-    transfers.push({ from: "co-op", to: o.name, amount: s2, step: 2, label: `co-op → ${o.name}` });
+    const s1c = S1Cross.get(o.name) ?? 0;
+    const net = round2(s2 + s1c);
+    if (Math.abs(net) < 0.005) continue;
+    if (net > 0) {
+      transfers.push({ from: "co-op", to: o.name, amount: net, step: 2, label: `co-op → ${o.name}` });
+    } else {
+      transfers.push({ from: o.name, to: "co-op", amount: round2(-net), step: 2, label: `${o.name} → co-op` });
+    }
   }
 
   // 14. Load payments and annotate transfers
   const paymentsByPerson = getPaymentsByYear(db, year);
   const nameToId = buildNameToId(people);
 
+  const ownerNameSet = new Set(members.filter((m) => m.is_owner).map((m) => m.person_name));
+
   const annotatedTransfers: AnnotatedTransfer[] = transfers.map((tr) => {
-    // Only track payment from the human payer side (not co-op)
-    const payerName = tr.from !== "co-op" ? tr.from : null;
-    if (payerName === null) return { ...tr, payment_status: null };
-    const payerId = nameToId.get(payerName) ?? null;
+    // Step 2: owner payout. Track using NET of all payments for this person —
+    // "virtual vereffening" payments cover s2 + s1_cross as a single net entry.
+    if (tr.step === 2) {
+      const ownerName = tr.from === "co-op" ? tr.to : tr.from;
+      const ownerId = nameToId.get(ownerName) ?? null;
+      if (ownerId === null) return { ...tr, payment_status: null };
+      const personPayments = paymentsByPerson.get(ownerId) ?? [];
+      const netPaid = round2(personPayments.reduce((s, p) => s + p.amount, 0));
+      const paid = round2(Math.abs(netPaid));
+      const open = round2(Math.max(0, tr.amount - paid));
+      return { ...tr, payment_status: { paid, open, payments: personPayments } };
+    }
+
+    // Step 1 s1_cross for owners: subsumed into step 2 net — don't track separately.
+    const personName = tr.from === "co-op" ? tr.to : tr.from;
+    if (ownerNameSet.has(personName)) return { ...tr, payment_status: null };
+
+    if (tr.from === "co-op") {
+      // Step 1 credit (co-op → regular member): track negative payments.
+      const recipientId = nameToId.get(tr.to) ?? null;
+      if (recipientId === null) return { ...tr, payment_status: null };
+      const personPayments = (paymentsByPerson.get(recipientId) ?? []).filter((p) => p.amount < 0);
+      const paid = round2(personPayments.reduce((s, p) => s + Math.abs(p.amount), 0));
+      const open = round2(Math.max(0, tr.amount - paid));
+      return { ...tr, payment_status: { paid, open, payments: personPayments } };
+    }
+
+    // Step 1 debit (regular member → co-op): track positive payments.
+    const payerId = nameToId.get(tr.from) ?? null;
     if (payerId === null) return { ...tr, payment_status: null };
-    const personPayments = paymentsByPerson.get(payerId) ?? [];
+    const personPayments = (paymentsByPerson.get(payerId) ?? []).filter((p) => p.amount > 0);
     const paid = round2(personPayments.reduce((s, p) => s + p.amount, 0));
     const open = round2(Math.max(0, tr.amount - paid));
     return { ...tr, payment_status: { paid, open, payments: personPayments } };
@@ -479,7 +512,10 @@ export function getSettlement(db: Database.Database, year: number): SettlementRe
   const humanTransfers = annotatedTransfers.filter((t) => t.payment_status !== null);
   const all_paid =
     humanTransfers.length === 0 ||
-    humanTransfers.every((t) => (t.payment_status?.open ?? 1) < 0.005);
+    humanTransfers.every((t) => {
+      const ps = t.payment_status!;
+      return Math.abs(ps.paid - t.amount) < 0.05; // exact match: neither underpaid nor overpaid
+    });
 
   // 15. Verify: Σ S1 + Σ S1Cross + Σ S2 ≈ 0
   const sumS1     = [...S1.values()].reduce((s, v) => s + v, 0);

@@ -356,6 +356,7 @@ export const nl = {
   "settlement.fully_paid": "Volledig betaald",
   "settlement.partially_paid": "Gedeeltelijk betaald",
   "settlement.unpaid": "Nog niet betaald",
+  "settlement.overpaid": "teveel betaald",
   "payout.s2_banner": "Verwachte uitbetaling: {net}",
   "payout.s2_banner_sub": "Stap 2 ({s2}) + kruisgebruik ({x}) → zie afrekening",
   "payout.own_trips_toggle": "Eigen ritten tonen",

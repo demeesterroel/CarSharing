@@ -66,6 +66,7 @@ function FuelContent() {
     !isLoading && editingId ? (fillups.find((f) => f.id === editingId) ?? null) : null;
 
   const isMine = mineParam === "true";
+  const isOthers = mineParam === "false";
   const canFilter = me?.personId != null;
   const cars = Array.from(
     new Set(fillups.map((f) => f.car_short).filter((s): s is string => !!s))
@@ -75,7 +76,11 @@ function FuelContent() {
     .reverse();
 
   const visible = fillups
-    .filter((f) => (isMine && canFilter ? f.person_id === me!.personId : true))
+    .filter((f) => {
+      if (isMine && canFilter) return f.person_id === me!.personId;
+      if (isOthers && canFilter) return f.person_id !== me!.personId;
+      return true;
+    })
     .filter((f) => (carFilter ? f.car_short === carFilter : true))
     .filter((f) => (yearFilter ? f.date.startsWith(yearFilter) : true));
 

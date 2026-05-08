@@ -66,6 +66,7 @@ function ExpensesContent() {
     !isLoading && editingId ? (expenses.find((e) => e.id === editingId) ?? null) : null;
 
   const isMine = mineParam === "true";
+  const isOthers = mineParam === "false";
   const canFilter = me?.personId != null;
   const cars = Array.from(
     new Set(expenses.map((e) => e.car_short).filter((s): s is string => !!s))
@@ -75,7 +76,11 @@ function ExpensesContent() {
     .reverse();
 
   const visible = expenses
-    .filter((e) => (isMine && canFilter ? e.person_id === me!.personId : true))
+    .filter((e) => {
+      if (isMine && canFilter) return e.person_id === me!.personId;
+      if (isOthers && canFilter) return e.person_id !== me!.personId;
+      return true;
+    })
     .filter((e) => (carFilter ? e.car_short === carFilter : true))
     .filter((e) => (yearFilter ? e.date.startsWith(yearFilter) : true));
 

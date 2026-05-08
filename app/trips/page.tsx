@@ -63,6 +63,7 @@ function TripsContent() {
     !isLoading && editingId ? (trips.find((tr) => tr.id === editingId) ?? null) : null;
 
   const isMine = mineParam === "true";
+  const isOthers = mineParam === "false";
   const canFilter = me?.personId != null;
   const cars = Array.from(
     new Set(trips.map((tr) => tr.car_short).filter((s): s is string => !!s))
@@ -72,7 +73,11 @@ function TripsContent() {
     .reverse();
 
   const visible = trips
-    .filter((tr) => (isMine && canFilter ? tr.person_id === me!.personId : true))
+    .filter((tr) => {
+      if (isMine && canFilter) return tr.person_id === me!.personId;
+      if (isOthers && canFilter) return tr.person_id !== me!.personId;
+      return true;
+    })
     .filter((tr) => (carFilter ? tr.car_short === carFilter : true))
     .filter((tr) => (yearFilter ? tr.date.startsWith(yearFilter) : true));
 

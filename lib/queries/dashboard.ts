@@ -23,6 +23,41 @@ interface PaymentAgg {
   paid_amount: number;
 }
 
+interface OwnCarRow {
+  owner_person_id: number;
+  car_id: number;
+  car_short: string;
+  car_name: string;
+  others_trip_count: number;
+  others_trip_km: number;
+  others_trip_amount: number;
+  others_fuel_count: number;
+  others_fuel_liters: number;
+  others_fuel_amount: number;
+  others_expense_count: number;
+  others_expense_amount: number;
+  own_trip_count: number;
+  own_trip_km: number;
+  own_fuel_count: number;
+  own_fuel_liters: number;
+  own_expense_count: number;
+}
+
+interface CrossCarRow {
+  person_id: number;
+  car_id: number;
+  car_short: string;
+  car_name: string;
+  trip_count: number;
+  trip_km: number;
+  trip_amount: number;
+  fuel_count: number;
+  fuel_liters: number;
+  fuel_amount: number;
+  expense_count: number;
+  expense_amount: number;
+}
+
 export function getEarliestYear(db: Database.Database): number {
   const row = db
     .prepare(
@@ -101,6 +136,116 @@ export function getDashboard(db: Database.Database, year: number): DashboardRow[
     )
     .all(year) as PaymentAgg[];
 
+  // Owners: per-car breakdown for cars they own
+  const ownCarRows = db
+    .prepare(
+      `
+      SELECT
+        p_owner.id                                                          AS owner_person_id,
+        c.id                                                                AS car_id,
+        c.short                                                             AS car_short,
+        c.name                                                              AS car_name,
+        COUNT(CASE WHEN t.person_id != p_owner.id THEN 1 END)              AS others_trip_count,
+        COALESCE(SUM(CASE WHEN t.person_id != p_owner.id THEN t.km END), 0)     AS others_trip_km,
+        COALESCE(SUM(CASE WHEN t.person_id != p_owner.id THEN t.amount END), 0) AS others_trip_amount,
+        COALESCE((SELECT COUNT(*) FROM fuel_fillups f
+          WHERE f.car_id = c.id AND f.person_id != p_owner.id
+            AND f.settled_outside = 0 AND strftime('%Y', f.date) = ?), 0)  AS others_fuel_count,
+        COALESCE((SELECT SUM(f.liters) FROM fuel_fillups f
+          WHERE f.car_id = c.id AND f.person_id != p_owner.id
+            AND f.settled_outside = 0 AND strftime('%Y', f.date) = ?), 0)  AS others_fuel_liters,
+        COALESCE((SELECT SUM(f.amount) FROM fuel_fillups f
+          WHERE f.car_id = c.id AND f.person_id != p_owner.id
+            AND f.settled_outside = 0 AND strftime('%Y', f.date) = ?), 0)  AS others_fuel_amount,
+        COALESCE((SELECT COUNT(*) FROM expenses e
+          WHERE e.car_id = c.id AND e.person_id != p_owner.id
+            AND e.settled_outside = 0 AND strftime('%Y', e.date) = ?), 0)  AS others_expense_count,
+        COALESCE((SELECT SUM(e.amount) FROM expenses e
+          WHERE e.car_id = c.id AND e.person_id != p_owner.id
+            AND e.settled_outside = 0 AND strftime('%Y', e.date) = ?), 0)  AS others_expense_amount,
+        COUNT(CASE WHEN t.person_id = p_owner.id THEN 1 END)               AS own_trip_count,
+        COALESCE(SUM(CASE WHEN t.person_id = p_owner.id THEN t.km END), 0) AS own_trip_km,
+        COALESCE((SELECT COUNT(*) FROM fuel_fillups f
+          WHERE f.car_id = c.id AND f.person_id = p_owner.id
+            AND strftime('%Y', f.date) = ?), 0)                            AS own_fuel_count,
+        COALESCE((SELECT SUM(f.liters) FROM fuel_fillups f
+          WHERE f.car_id = c.id AND f.person_id = p_owner.id
+            AND strftime('%Y', f.date) = ?), 0)                            AS own_fuel_liters,
+        COALESCE((SELECT COUNT(*) FROM expenses e
+          WHERE e.car_id = c.id AND e.person_id = p_owner.id
+            AND strftime('%Y', e.date) = ?), 0)                            AS own_expense_count
+      FROM cars c
+      JOIN people p_owner ON c.owner_name = p_owner.name
+      LEFT JOIN trips t ON t.car_id = c.id AND strftime('%Y', t.date) = ?
+      WHERE c.owner_name IS NOT NULL
+      GROUP BY c.id, p_owner.id
+      `
+    )
+    .all(
+      yearStr,
+      yearStr,
+      yearStr,
+      yearStr,
+      yearStr,
+      yearStr,
+      yearStr,
+      yearStr,
+      yearStr
+    ) as OwnCarRow[];
+  // bind count: 5 subquery params (fuel_count,liters,amount,expense_count,amount) + 2 own subqueries (fuel,expense) + 1 own expense count + 1 LEFT JOIN = 9
+
+  // Owners: trips/fuel/expenses on OTHER owners' cars
+  const crossCarRows = db
+    .prepare(
+      `
+      SELECT
+        t.person_id                                                         AS person_id,
+        c.id                                                                AS car_id,
+        c.short                                                             AS car_short,
+        c.name                                                              AS car_name,
+        COUNT(t.id)                                                         AS trip_count,
+        COALESCE(SUM(t.km), 0)                                             AS trip_km,
+        COALESCE(SUM(t.amount), 0)                                         AS trip_amount,
+        COALESCE((SELECT COUNT(*) FROM fuel_fillups f
+          WHERE f.car_id = c.id AND f.person_id = t.person_id
+            AND f.settled_outside = 0 AND strftime('%Y', f.date) = ?), 0)  AS fuel_count,
+        COALESCE((SELECT SUM(f.liters) FROM fuel_fillups f
+          WHERE f.car_id = c.id AND f.person_id = t.person_id
+            AND f.settled_outside = 0 AND strftime('%Y', f.date) = ?), 0)  AS fuel_liters,
+        COALESCE((SELECT SUM(f.amount) FROM fuel_fillups f
+          WHERE f.car_id = c.id AND f.person_id = t.person_id
+            AND f.settled_outside = 0 AND strftime('%Y', f.date) = ?), 0)  AS fuel_amount,
+        COALESCE((SELECT COUNT(*) FROM expenses e
+          WHERE e.car_id = c.id AND e.person_id = t.person_id
+            AND e.settled_outside = 0 AND strftime('%Y', e.date) = ?), 0)  AS expense_count,
+        COALESCE((SELECT SUM(e.amount) FROM expenses e
+          WHERE e.car_id = c.id AND e.person_id = t.person_id
+            AND e.settled_outside = 0 AND strftime('%Y', e.date) = ?), 0)  AS expense_amount
+      FROM trips t
+      JOIN cars c ON t.car_id = c.id
+      JOIN people p_owner ON c.owner_name = p_owner.name
+      WHERE t.person_id != p_owner.id
+        AND c.owner_name IS NOT NULL
+        AND strftime('%Y', t.date) = ?
+      GROUP BY t.person_id, c.id
+      `
+    )
+    .all(yearStr, yearStr, yearStr, yearStr, yearStr, yearStr) as CrossCarRow[];
+
+  const ownCarByPerson = new Map<number, OwnCarRow[]>();
+  for (const row of ownCarRows) {
+    const list = ownCarByPerson.get(row.owner_person_id) ?? [];
+    list.push(row);
+    ownCarByPerson.set(row.owner_person_id, list);
+  }
+
+  const crossCarByPerson = new Map<number, CrossCarRow[]>();
+  for (const row of crossCarRows) {
+    const list = crossCarByPerson.get(row.person_id) ?? [];
+    list.push(row);
+    crossCarByPerson.set(row.person_id, list);
+  }
+
   const byId = <T extends { person_id: number }>(rows: T[]) =>
     new Map<number, T>(rows.map((r) => [r.person_id, r]));
   const trips = byId(tripRows);
@@ -122,6 +267,54 @@ export function getDashboard(db: Database.Database, year: number): DashboardRow[
     const total_amount = trip_amount + fuel_amount + expense_amount;
     const balance = total_amount + paid_amount;
 
+    const ownCars = ownCarByPerson.get(person.id) ?? [];
+    const crossCars = crossCarByPerson.get(person.id) ?? [];
+    const is_owner = ownCars.length > 0;
+
+    const car_breakdowns: import("@/types").CarDashboardBreakdown[] = [
+      ...ownCars.map((c) => ({
+        car_short: c.car_short,
+        car_name: c.car_name,
+        is_own_car: true as const,
+        trip_count: c.others_trip_count,
+        trip_km: c.others_trip_km,
+        trip_amount: c.others_trip_amount,
+        fuel_count: c.others_fuel_count,
+        fuel_liters: c.others_fuel_liters,
+        fuel_amount: c.others_fuel_amount,
+        expense_count: c.others_expense_count,
+        expense_amount: c.others_expense_amount,
+        net_car:
+          Math.round(
+            (c.others_trip_amount - c.others_fuel_amount - c.others_expense_amount) * 100
+          ) / 100,
+        own_trip_count: c.own_trip_count,
+        own_trip_km: c.own_trip_km,
+        own_fuel_count: c.own_fuel_count,
+        own_fuel_liters: c.own_fuel_liters,
+        own_expense_count: c.own_expense_count,
+      })),
+      ...crossCars.map((c) => ({
+        car_short: c.car_short,
+        car_name: c.car_name,
+        is_own_car: false as const,
+        trip_count: c.trip_count,
+        trip_km: c.trip_km,
+        trip_amount: c.trip_amount,
+        fuel_count: c.fuel_count,
+        fuel_liters: c.fuel_liters,
+        fuel_amount: c.fuel_amount,
+        expense_count: c.expense_count,
+        expense_amount: c.expense_amount,
+        net_car: Math.round((-c.trip_amount + c.fuel_amount + c.expense_amount) * 100) / 100,
+        own_trip_count: 0,
+        own_trip_km: 0,
+        own_fuel_count: 0,
+        own_fuel_liters: 0,
+        own_expense_count: 0,
+      })),
+    ];
+
     return {
       person_id: person.id,
       person_name: person.name,
@@ -137,6 +330,8 @@ export function getDashboard(db: Database.Database, year: number): DashboardRow[
       total_amount,
       paid_amount,
       balance,
+      is_owner,
+      car_breakdowns,
     };
   });
 }

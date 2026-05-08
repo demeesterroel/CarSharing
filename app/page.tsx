@@ -7,7 +7,16 @@ import { useFuelFillups } from "@/hooks/use-fuel-fillups";
 import { useReservations } from "@/hooks/use-reservations";
 import { useExpenses } from "@/hooks/use-expenses";
 import { MultiFab } from "@/components/fab";
-import { paper, fontMono, fontSerif, fmtMoney, fmtDate, fmtKm, amtColor, signPrefix } from "@/lib/paper-theme";
+import {
+  paper,
+  fontMono,
+  fontSerif,
+  fmtMoney,
+  fmtDate,
+  fmtKm,
+  amtColor,
+  signPrefix,
+} from "@/lib/paper-theme";
 import type { Trip, FuelFillup, Reservation, Expense } from "@/types";
 import * as Dialog from "@radix-ui/react-dialog";
 import { TripForm } from "@/app/trips/trip-form";
@@ -22,6 +31,8 @@ import { FuelCard } from "@/components/fuel-card";
 import { ExpenseCard } from "@/components/expense-card";
 import { ReservationCard } from "@/components/reservation-card";
 import { useMe } from "@/hooks/use-me";
+import { useSettlement } from "@/hooks/use-settlement";
+import type { CarDashboardBreakdown } from "@/types";
 import {
   useCreateTrip,
   useUpdateTrip,
@@ -53,7 +64,7 @@ function ReceiptRow({
   href,
 }: {
   label: string;
-  value: string;
+  value?: string;
   big?: boolean;
   color?: string;
   href?: string;
@@ -102,7 +113,7 @@ function ReceiptRow({
           color: c,
         }}
       >
-        {value}
+        {value ?? ""}
       </span>
     </div>
   );
@@ -121,6 +132,169 @@ function ReceiptRow({
   return inner;
 }
 
+// ── Car Breakdown Section ─────────────────────────────────────────
+function CarBreakdownSection({ bd, year }: { bd: CarDashboardBreakdown; year: number }) {
+  const fmtL = (l: number) => l.toFixed(0);
+  const headerLabel = `${bd.car_short} — ${bd.car_name}`;
+  const headerNet = bd.net_car;
+
+  if (bd.is_own_car) {
+    const othersHasData = bd.trip_count > 0 || bd.fuel_count > 0 || bd.expense_count > 0;
+    const ownHasData = bd.own_trip_count > 0 || bd.own_fuel_count > 0 || bd.own_expense_count > 0;
+
+    return (
+      <div>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            fontFamily: fontMono,
+            fontSize: 11,
+            fontWeight: 700,
+            color: paper.ink,
+            padding: "4px 0 2px",
+          }}
+        >
+          <span>{headerLabel}</span>
+          <span style={{ color: amtColor(headerNet) }}>
+            {headerNet >= 0 ? `+ ${fmtMoney(headerNet)}` : `− ${fmtMoney(Math.abs(headerNet))}`}
+          </span>
+        </div>
+
+        {othersHasData && (
+          <div style={{ paddingLeft: 8, marginTop: 2 }}>
+            <div
+              style={{
+                fontFamily: fontMono,
+                fontSize: 9,
+                letterSpacing: 1,
+                color: paper.inkMute,
+                textTransform: "uppercase",
+                marginBottom: 2,
+              }}
+            >
+              Anderen
+            </div>
+            {bd.trip_count > 0 && (
+              <ReceiptRow
+                href={`/trips?mine=false&car=${bd.car_short}&year=${year}`}
+                label={`${bd.trip_count} ritten · ${bd.trip_km.toLocaleString("nl-BE")} km`}
+                value={`+ ${fmtMoney(bd.trip_amount)}`}
+                color={paper.green}
+              />
+            )}
+            {bd.fuel_count > 0 && (
+              <ReceiptRow
+                href={`/fuel?mine=false&car=${bd.car_short}&year=${year}`}
+                label={`${bd.fuel_count} tankbeurten, ${fmtL(bd.fuel_liters)} L`}
+                value={`− ${fmtMoney(bd.fuel_amount)}`}
+                color={paper.accent}
+              />
+            )}
+            {bd.expense_count > 0 && (
+              <ReceiptRow
+                href={`/expenses?mine=false&car=${bd.car_short}&year=${year}`}
+                label={`${bd.expense_count} kosten`}
+                value={`− ${fmtMoney(bd.expense_amount)}`}
+                color={paper.accent}
+              />
+            )}
+          </div>
+        )}
+
+        {ownHasData && (
+          <div style={{ paddingLeft: 8, marginTop: 4 }}>
+            <div
+              style={{
+                fontFamily: fontMono,
+                fontSize: 9,
+                letterSpacing: 1,
+                color: paper.inkMute,
+                textTransform: "uppercase",
+                marginBottom: 2,
+              }}
+            >
+              Eigen
+            </div>
+            {bd.own_trip_count > 0 && (
+              <ReceiptRow
+                href={`/trips?mine=true&car=${bd.car_short}&year=${year}`}
+                label={`${bd.own_trip_count} ritten · ${bd.own_trip_km.toLocaleString("nl-BE")} km`}
+                color={paper.inkMute}
+              />
+            )}
+            {bd.own_fuel_count > 0 && (
+              <ReceiptRow
+                href={`/fuel?mine=true&car=${bd.car_short}&year=${year}`}
+                label={`${bd.own_fuel_count} tankbeurten, ${fmtL(bd.own_fuel_liters)} L`}
+                color={paper.inkMute}
+              />
+            )}
+            {bd.own_expense_count > 0 && (
+              <ReceiptRow
+                href={`/expenses?mine=true&car=${bd.car_short}&year=${year}`}
+                label={`${bd.own_expense_count} kosten`}
+                color={paper.inkMute}
+              />
+            )}
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  // Cross-car section
+  const hasData = bd.trip_count > 0 || bd.fuel_count > 0 || bd.expense_count > 0;
+  if (!hasData) return null;
+
+  return (
+    <div>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          fontFamily: fontMono,
+          fontSize: 11,
+          fontWeight: 700,
+          color: paper.ink,
+          padding: "4px 0 2px",
+        }}
+      >
+        <span>{headerLabel}</span>
+        <span style={{ color: amtColor(headerNet) }}>
+          {headerNet >= 0 ? `+ ${fmtMoney(headerNet)}` : `− ${fmtMoney(Math.abs(headerNet))}`}
+        </span>
+      </div>
+      <div style={{ paddingLeft: 8 }}>
+        {bd.trip_count > 0 && (
+          <ReceiptRow
+            href={`/trips?mine=true&year=${year}`}
+            label={`${bd.trip_count} ritten · ${bd.trip_km.toLocaleString("nl-BE")} km`}
+            value={`− ${fmtMoney(bd.trip_amount)}`}
+            color={paper.accent}
+          />
+        )}
+        {bd.fuel_count > 0 && (
+          <ReceiptRow
+            href={`/fuel?mine=true&car=${bd.car_short}&year=${year}`}
+            label={`${bd.fuel_count} tankbeurten, ${fmtL(bd.fuel_liters)} L`}
+            value={`+ ${fmtMoney(bd.fuel_amount)}`}
+            color={paper.green}
+          />
+        )}
+        {bd.expense_count > 0 && (
+          <ReceiptRow
+            href={`/expenses?mine=true&car=${bd.car_short}&year=${year}`}
+            label={`${bd.expense_count} kosten`}
+            value={`+ ${fmtMoney(bd.expense_amount)}`}
+            color={paper.green}
+          />
+        )}
+      </div>
+    </div>
+  );
+}
+
 // ── Balance Receipt ───────────────────────────────────────────────
 function BalanceReceipt({ personName }: { personName: string }) {
   const t = useT();
@@ -129,6 +303,9 @@ function BalanceReceipt({ personName }: { personName: string }) {
   const { data: earliestYear = currentYear } = useEarliestDashboardYear();
   const { data: rows = [] } = useDashboard(year);
   const myRow = rows.find((r) => r.person_name === personName);
+  const { data: settlement } = useSettlement(year);
+  const myStatement = settlement?.members.find((m) => m.person_name === personName);
+  const owner_net: number | null = myRow?.is_owner ? (myStatement?.net ?? null) : null;
   if (!myRow) return null;
 
   const pl = (n: number, s: string, p: string) => (n === 1 ? s : p);
@@ -208,11 +385,33 @@ function BalanceReceipt({ personName }: { personName: string }) {
       {/* Receipt card */}
       <div
         style={{
+          position: "relative",
           background: paper.paper,
           padding: "20px 18px 22px",
           boxShadow: "0 1px 2px rgba(0,0,0,0.05), 0 8px 24px rgba(0,0,0,0.07)",
         }}
       >
+        {/* Owner badge */}
+        {myRow.is_owner && (
+          <span
+            style={{
+              position: "absolute",
+              top: 16,
+              right: 16,
+              fontFamily: fontMono,
+              fontSize: 8,
+              fontWeight: 700,
+              letterSpacing: 1.5,
+              textTransform: "uppercase",
+              color: paper.paper,
+              background: paper.green,
+              padding: "2px 7px",
+            }}
+          >
+            eigenaar
+          </span>
+        )}
+
         {/* Title */}
         <div
           style={{
@@ -229,87 +428,180 @@ function BalanceReceipt({ personName }: { personName: string }) {
         </div>
         <Perf margin="10px 0 12px" />
 
-        {/* Activity lines */}
-        <ReceiptRow
-          href={`/trips?mine=true&year=${year}`}
-          label={tripLabel}
-          value={`− ${fmtMoney(Math.abs(myRow.trip_amount))}`}
-          color={paper.accent}
-        />
-        <ReceiptRow
-          href={`/fuel?mine=true&year=${year}`}
-          label={fuelLabel}
-          value={`+ ${fmtMoney(myRow.fuel_amount)}`}
-          color={paper.green}
-        />
-        <ReceiptRow
-          href={`/expenses?mine=true&year=${year}`}
-          label={expenseLabel}
-          value={`+ ${fmtMoney(myRow.expense_amount)}`}
-          color={paper.green}
-        />
-
-        {/* Total */}
-        <Perf margin="10px 0" />
-        <ReceiptRow
-          label={t("dashboard.total_label")}
-          value={`${signPrefix(myRow.total_amount)}${fmtMoney(myRow.total_amount)}`}
-          color={amtColor(myRow.total_amount)}
-          big
-        />
-
-        {/* Payment row — always shown */}
-        <Perf margin="10px 0" />
-        {myRow.paid_amount !== 0 ? (
-          <ReceiptRow
-            label={t("dashboard.paid_label")}
-            value={`${signPrefix(-myRow.paid_amount)}${fmtMoney(myRow.paid_amount)}`}
-          />
-        ) : (
-          <ReceiptRow label={t("dashboard.not_yet_paid")} value="—" color={paper.inkMute} />
-        )}
-
-        {/* Balance row — only when a payment has been recorded */}
-        {myRow.paid_amount !== 0 && (
+        {myRow.is_owner ? (
           <>
+            {/* Per-car breakdowns */}
+            {myRow.car_breakdowns.map((bd, i) => (
+              <div key={bd.car_short}>
+                {i > 0 && <Perf margin="10px 0" />}
+                <CarBreakdownSection bd={bd} year={year} />
+              </div>
+            ))}
+
+            {/* Total */}
             <Perf margin="10px 0" />
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "baseline",
-                padding: "4px 0",
-              }}
-            >
-              <span
-                style={{
-                  fontFamily: fontMono,
-                  fontSize: 10,
-                  letterSpacing: 2,
-                  textTransform: "uppercase",
-                  color: paper.inkDim,
-                  whiteSpace: "nowrap",
-                  marginRight: 12,
-                }}
-              >
-                {t("dashboard.balance_label")}
-              </span>
-              <span
-                style={{
-                  fontFamily: fontSerif,
-                  fontSize: 28,
-                  fontWeight: 700,
-                  color: balanceColor,
-                  letterSpacing: -1,
-                  lineHeight: 1,
-                  whiteSpace: "nowrap",
-                }}
-              >
-                {settled
-                  ? `${fmtMoney(0)} ✓`
-                  : `${signPrefix(myRow.balance)}${fmtMoney(myRow.balance)}`}
-              </span>
-            </div>
+            <ReceiptRow
+              label={t("dashboard.total_label")}
+              value={
+                owner_net !== null
+                  ? owner_net >= 0
+                    ? `+ ${fmtMoney(owner_net)}`
+                    : `− ${fmtMoney(Math.abs(owner_net))}`
+                  : "—"
+              }
+              color={owner_net !== null ? amtColor(owner_net) : paper.inkMute}
+              big
+            />
+
+            {/* Payment */}
+            <Perf margin="10px 0" />
+            {myRow.paid_amount !== 0 ? (
+              <ReceiptRow
+                label={t("dashboard.paid_label")}
+                value={`${signPrefix(-myRow.paid_amount)}${fmtMoney(myRow.paid_amount)}`}
+              />
+            ) : (
+              <ReceiptRow label={t("dashboard.not_yet_paid")} value="—" color={paper.inkMute} />
+            )}
+
+            {/* Balance = owner_net + paid_amount */}
+            {myRow.paid_amount !== 0 &&
+              owner_net !== null &&
+              (() => {
+                const saldo = Math.round((owner_net + myRow.paid_amount) * 100) / 100;
+                const isSettled = Math.abs(saldo) <= 0.05;
+                return (
+                  <>
+                    <Perf margin="10px 0" />
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "baseline",
+                        padding: "4px 0",
+                      }}
+                    >
+                      <span
+                        style={{
+                          fontFamily: fontMono,
+                          fontSize: 10,
+                          letterSpacing: 2,
+                          textTransform: "uppercase",
+                          color: paper.inkDim,
+                          whiteSpace: "nowrap",
+                          marginRight: 12,
+                        }}
+                      >
+                        {t("dashboard.balance_label")}
+                      </span>
+                      <span
+                        style={{
+                          fontFamily: fontSerif,
+                          fontSize: 28,
+                          fontWeight: 700,
+                          color: isSettled ? paper.green : paper.accent,
+                          letterSpacing: -1,
+                          lineHeight: 1,
+                          whiteSpace: "nowrap",
+                        }}
+                      >
+                        {isSettled
+                          ? `${fmtMoney(0)} ✓`
+                          : saldo >= 0
+                            ? `+ ${fmtMoney(saldo)}`
+                            : `− ${fmtMoney(Math.abs(saldo))}`}
+                      </span>
+                    </div>
+                  </>
+                );
+              })()}
+          </>
+        ) : (
+          <>
+            {/* ── NON-OWNER: existing code ── */}
+            {/* Activity lines */}
+            <ReceiptRow
+              href={`/trips?mine=true&year=${year}`}
+              label={tripLabel}
+              value={`− ${fmtMoney(Math.abs(myRow.trip_amount))}`}
+              color={paper.accent}
+            />
+            <ReceiptRow
+              href={`/fuel?mine=true&year=${year}`}
+              label={fuelLabel}
+              value={`+ ${fmtMoney(myRow.fuel_amount)}`}
+              color={paper.green}
+            />
+            <ReceiptRow
+              href={`/expenses?mine=true&year=${year}`}
+              label={expenseLabel}
+              value={`+ ${fmtMoney(myRow.expense_amount)}`}
+              color={paper.green}
+            />
+
+            {/* Total */}
+            <Perf margin="10px 0" />
+            <ReceiptRow
+              label={t("dashboard.total_label")}
+              value={`${signPrefix(myRow.total_amount)}${fmtMoney(myRow.total_amount)}`}
+              color={amtColor(myRow.total_amount)}
+              big
+            />
+
+            {/* Payment row — always shown */}
+            <Perf margin="10px 0" />
+            {myRow.paid_amount !== 0 ? (
+              <ReceiptRow
+                label={t("dashboard.paid_label")}
+                value={`${signPrefix(-myRow.paid_amount)}${fmtMoney(myRow.paid_amount)}`}
+              />
+            ) : (
+              <ReceiptRow label={t("dashboard.not_yet_paid")} value="—" color={paper.inkMute} />
+            )}
+
+            {/* Balance row — only when a payment has been recorded */}
+            {myRow.paid_amount !== 0 && (
+              <>
+                <Perf margin="10px 0" />
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "baseline",
+                    padding: "4px 0",
+                  }}
+                >
+                  <span
+                    style={{
+                      fontFamily: fontMono,
+                      fontSize: 10,
+                      letterSpacing: 2,
+                      textTransform: "uppercase",
+                      color: paper.inkDim,
+                      whiteSpace: "nowrap",
+                      marginRight: 12,
+                    }}
+                  >
+                    {t("dashboard.balance_label")}
+                  </span>
+                  <span
+                    style={{
+                      fontFamily: fontSerif,
+                      fontSize: 28,
+                      fontWeight: 700,
+                      color: balanceColor,
+                      letterSpacing: -1,
+                      lineHeight: 1,
+                      whiteSpace: "nowrap",
+                    }}
+                  >
+                    {settled
+                      ? `${fmtMoney(0)} ✓`
+                      : `${signPrefix(myRow.balance)}${fmtMoney(myRow.balance)}`}
+                  </span>
+                </div>
+              </>
+            )}
           </>
         )}
       </div>

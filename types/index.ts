@@ -119,6 +119,31 @@ export interface Payment {
   person_name?: string;
 }
 
+export interface CarDashboardBreakdown {
+  car_short: string;
+  car_name: string;
+  is_own_car: boolean; // true = person owns this car; false = drove another owner's car
+
+  // Own car: others' activity. Cross-car: own activity.
+  trip_count: number;
+  trip_km: number;
+  trip_amount: number; // own car: +N (revenue). cross-car: + raw (negate for display)
+  fuel_count: number;
+  fuel_liters: number;
+  fuel_amount: number; // own car: + raw (negate for display). cross-car: + (advance)
+  expense_count: number;
+  expense_amount: number; // same sign as fuel_amount
+
+  net_car: number; // own car: N(c). cross-car: −trip + fuel + expense
+
+  // Own usage on own car (€0 in settlement — stats only, no amounts shown):
+  own_trip_count: number;
+  own_trip_km: number;
+  own_fuel_count: number;
+  own_fuel_liters: number;
+  own_expense_count: number;
+}
+
 export interface DashboardRow {
   person_id: number;
   person_name: string;
@@ -134,6 +159,8 @@ export interface DashboardRow {
   total_amount: number; // trip_amount + fuel_amount + expense_amount
   paid_amount: number; // settlement payments
   balance: number; // total_amount + paid_amount
+  is_owner: boolean;
+  car_breakdowns: CarDashboardBreakdown[];
 }
 
 // Form input types (no id, no computed fields)

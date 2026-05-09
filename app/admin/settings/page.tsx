@@ -8,7 +8,8 @@ import { useT } from "@/components/locale-provider";
 export default function AdminSettingsPage() {
   const t = useT();
   const { data, isLoading } = useAdminSettings();
-  const save = useSaveAdminSettings();
+  const saveBankAccount = useSaveAdminSettings();
+  const saveCalendar = useSaveAdminSettings();
   const [bankAccount, setBankAccount] = useState("");
   const [calendarId, setCalendarId] = useState("");
   const [refreshToken, setRefreshToken] = useState("");
@@ -103,8 +104,8 @@ export default function AdminSettingsPage() {
               }}
             />
             <button
-              onClick={() => save.mutate({ coop_bank_account: bankAccount })}
-              disabled={!dirty || save.isPending}
+              onClick={() => saveBankAccount.mutate({ coop_bank_account: bankAccount })}
+              disabled={!dirty || saveBankAccount.isPending}
               style={{
                 marginTop: 10,
                 width: "100%",
@@ -120,9 +121,9 @@ export default function AdminSettingsPage() {
                 cursor: dirty ? "pointer" : "default",
               }}
             >
-              {save.isPending
+              {saveBankAccount.isPending
                 ? t("action.saving")
-                : save.isSuccess && !dirty
+                : saveBankAccount.isSuccess && !dirty
                   ? t("action.saved")
                   : t("action.save")}
             </button>
@@ -187,12 +188,12 @@ export default function AdminSettingsPage() {
               </div>
               <button
                 onClick={() =>
-                  save.mutate({
+                  saveCalendar.mutate({
                     google_calendar_id: calendarId,
                     google_oauth_refresh_token: refreshToken,
                   })
                 }
-                disabled={!calendarDirty || save.isPending}
+                disabled={!calendarDirty || saveCalendar.isPending}
                 style={{
                   marginTop: 10,
                   width: "100%",
@@ -208,9 +209,9 @@ export default function AdminSettingsPage() {
                   cursor: calendarDirty ? "pointer" : "default",
                 }}
               >
-                {save.isPending
+                {saveCalendar.isPending
                   ? t("action.saving")
-                  : save.isSuccess && !calendarDirty
+                  : saveCalendar.isSuccess && !calendarDirty
                     ? t("action.saved")
                     : t("action.save")}
               </button>

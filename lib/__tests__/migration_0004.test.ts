@@ -31,6 +31,10 @@ describe("migration 0004 — car owner era", () => {
       INSERT INTO _migrations (filename) VALUES ('0008_drop_fixed_costs_json.sql');
       INSERT INTO _migrations (filename) VALUES ('0009_updated_at_admin_tables.sql');
       INSERT INTO _migrations (filename) VALUES ('0010_people_bank_account.sql');
+      INSERT INTO _migrations (filename) VALUES ('0011_people_email.sql');
+      INSERT INTO _migrations (filename) VALUES ('0012_cars_owner_person_id.sql');
+      INSERT INTO _migrations (filename) VALUES ('0013_reservation_calendar_columns.sql');
+      INSERT INTO _migrations (filename) VALUES ('0014_calendar_sync_state.sql');
     `);
     runMigrations(db2);
     const car = db2.prepare("SELECT owner_from FROM cars WHERE short = 'XX'").get() as {

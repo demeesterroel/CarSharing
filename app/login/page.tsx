@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
+import { Eye, EyeOff } from "lucide-react";
 import { useT } from "@/components/locale-provider";
 import { LangSwitcher } from "@/components/lang-switcher";
 import { paper, fontMono, fontSerif } from "@/lib/paper-theme";
@@ -13,6 +14,7 @@ export default function LoginPage() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -145,25 +147,35 @@ export default function LoginPage() {
             >
               {t("form.password")}
             </label>
-            <input
-              type="password"
-              autoComplete="current-password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              style={{
-                width: "100%",
-                padding: "10px 12px",
-                border: "1px solid " + paper.paperDark,
-                background: paper.paperDeep,
-                fontFamily: fontMono,
-                fontSize: 13,
-                color: paper.ink,
-                outline: "none",
-                appearance: "none",
-                boxSizing: "border-box",
-              }}
-            />
+            <div style={{ position: "relative" }}>
+              <input
+                type={showPassword ? "text" : "password"}
+                autoComplete="current-password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                style={{
+                  width: "100%",
+                  padding: "10px 12px",
+                  paddingRight: 36,
+                  border: "1px solid " + paper.paperDark,
+                  background: paper.paperDeep,
+                  fontFamily: fontMono,
+                  fontSize: 13,
+                  color: paper.ink,
+                  outline: "none",
+                  appearance: "none",
+                  boxSizing: "border-box",
+                }}
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword((v) => !v)}
+                style={{ position: "absolute", right: 10, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", padding: 0, color: paper.inkMute, display: "flex" }}
+              >
+                {showPassword ? <EyeOff size={15} /> : <Eye size={15} />}
+              </button>
+            </div>
           </div>
 
           {/* Error message */}

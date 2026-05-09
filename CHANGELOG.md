@@ -1,5 +1,19 @@
 # Changelog
 
+## [1.7.0](https://github.com/demeesterroel/CarSharing/compare/v1.6.0...v1.7.0) (2026-05-09)
+
+
+### ✨ New features
+
+* **admin:** payments CRUD page at admin/payments ([#120](https://github.com/demeesterroel/CarSharing/issues/120)) ([#129](https://github.com/demeesterroel/CarSharing/issues/129)) ([7a69625](https://github.com/demeesterroel/CarSharing/commit/7a6962524e4e3892be051c2d47f9cfda47244061))
+* **db:** add updated_at to payments, cars, people, settlements, settings ([#108](https://github.com/demeesterroel/CarSharing/issues/108)) ([#126](https://github.com/demeesterroel/CarSharing/issues/126)) ([64b1688](https://github.com/demeesterroel/CarSharing/commit/64b1688e25d8928ff6acc067c249f20ce7fb0f84))
+* **profile:** user self-service name + bank account edit ([#117](https://github.com/demeesterroel/CarSharing/issues/117)) ([#128](https://github.com/demeesterroel/CarSharing/issues/128)) ([704f2bf](https://github.com/demeesterroel/CarSharing/commit/704f2bfdca2dca12968b4971218c4a9a8bdbae0e))
+
+
+### 🐛 Bug fixes
+
+* **settlement:** message now groups by car then type, matching card structure ([#125](https://github.com/demeesterroel/CarSharing/issues/125)) ([f607777](https://github.com/demeesterroel/CarSharing/commit/f607777e804352dfe997107856f0229affb974bc))
+
 ## [1.6.0](https://github.com/demeesterroel/CarSharing/compare/v1.5.0...v1.6.0) (2026-05-08)
 
 

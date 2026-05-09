@@ -100,12 +100,9 @@ export async function processCalendarDelta(
       if (newResponseStatus === "accepted") newStatus = "confirmed";
       else if (newResponseStatus === "declined") newStatus = "rejected";
 
-      if (newStatus) {
-        db.prepare("UPDATE reservations SET status=? WHERE id=?").run(newStatus, row.id);
-      }
       db.prepare(
-        "UPDATE reservations SET last_known_response_status=?, last_synced_etag=? WHERE id=?"
-      ).run(newResponseStatus, event.etag ?? null, row.id);
+        "UPDATE reservations SET status=COALESCE(?, status), last_known_response_status=?, last_synced_etag=? WHERE id=?"
+      ).run(newStatus, newResponseStatus, event.etag ?? null, row.id);
     }
   }
 }

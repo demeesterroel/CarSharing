@@ -105,6 +105,13 @@ describe("processCalendarDelta", () => {
     ];
     await processCalendarDelta(db, fakeClient, calendarId, events);
     expect(calMock.updateEvent).toHaveBeenCalledOnce();
+    const row = db
+      .prepare(
+        "SELECT last_synced_etag, last_app_write_nonce FROM reservations WHERE google_event_id = 'evt-123'"
+      )
+      .get() as { last_synced_etag: string; last_app_write_nonce: string };
+    expect(row.last_synced_etag).toBe('"new-etag"');
+    expect(row.last_app_write_nonce).toBeTruthy();
   });
 
   it("updates reservation to confirmed when owner accepts", async () => {

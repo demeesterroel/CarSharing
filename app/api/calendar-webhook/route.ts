@@ -32,8 +32,12 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
   } catch (e: unknown) {
     const code = (e as { code?: number })?.code;
     if (code === 410) {
-      // syncToken invalidated — full re-sync
-      ({ items, nextSyncToken } = await listEventsDelta(client, calendarId));
+      try {
+        ({ items, nextSyncToken } = await listEventsDelta(client, calendarId));
+      } catch (e2) {
+        console.error("[calendar-webhook] full re-sync also failed", e2);
+        return NextResponse.json({ ok: true });
+      }
     } else {
       console.error("[calendar-webhook] listEventsDelta failed", e);
       return NextResponse.json({ ok: true });

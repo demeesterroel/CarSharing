@@ -31,6 +31,7 @@ const basePerson = {
   password_hash: null,
   is_admin: 0 as const,
   bank_account: "",
+  email: null,
 };
 
 describe("getPeople", () => {

@@ -1,5 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
+import { Eye, EyeOff } from "lucide-react";
+import { toast } from "sonner";
 import { paper, fontMono, fontSerif } from "@/lib/paper-theme";
 import { useAdminSettings, useSaveAdminSettings } from "@/hooks/use-admin-settings";
 import { Card, Perf } from "../_shared";
@@ -13,19 +15,19 @@ export default function AdminSettingsPage() {
   const [bankAccount, setBankAccount] = useState("");
   const [calendarId, setCalendarId] = useState("");
   const [refreshToken, setRefreshToken] = useState("");
+  const [showToken, setShowToken] = useState(false);
 
   useEffect(() => {
     if (data) {
       setBankAccount(data.coop_bank_account);
       setCalendarId(data.google_calendar_id ?? "");
-      setRefreshToken(data.google_oauth_refresh_token ?? "");
+      // Never pre-fill the token — user must re-enter to change it
     }
   }, [data]);
 
   const dirty = data ? bankAccount !== data.coop_bank_account : false;
   const calendarDirty = data
-    ? calendarId !== (data.google_calendar_id ?? "") ||
-      refreshToken !== (data.google_oauth_refresh_token ?? "")
+    ? calendarId !== (data.google_calendar_id ?? "") || refreshToken !== ""
     : false;
 
   const inputStyle = {
@@ -60,7 +62,7 @@ export default function AdminSettingsPage() {
           marginBottom: 12,
         }}
       >
-        Instellingen
+        {t("settings.title")}
       </div>
 
       <Card>
@@ -73,7 +75,7 @@ export default function AdminSettingsPage() {
             marginBottom: 12,
           }}
         >
-          Coöperatie bankrekening
+          {t("settings.bank_title")}
         </div>
         <div
           style={{
@@ -84,7 +86,7 @@ export default function AdminSettingsPage() {
             marginBottom: 8,
           }}
         >
-          Wordt vermeld in het betalingsbericht voor leden.
+          {t("settings.bank_hint")}
         </div>
 
         <Perf margin="0 0 12px" />
@@ -104,7 +106,12 @@ export default function AdminSettingsPage() {
               }}
             />
             <button
-              onClick={() => saveBankAccount.mutate({ coop_bank_account: bankAccount })}
+              onClick={() =>
+                saveBankAccount.mutate(
+                  { coop_bank_account: bankAccount },
+                  { onSuccess: () => toast.success(t("action.saved")) }
+                )
+              }
               disabled={!dirty || saveBankAccount.isPending}
               style={{
                 marginTop: 10,
@@ -142,7 +149,7 @@ export default function AdminSettingsPage() {
               marginBottom: 12,
             }}
           >
-            Google Calendar
+            {t("settings.calendar_title")}
           </div>
           <div
             style={{
@@ -153,7 +160,7 @@ export default function AdminSettingsPage() {
               marginBottom: 8,
             }}
           >
-            Laat leeg om de integratie uit te schakelen.
+            {t("settings.calendar_hint")}
           </div>
 
           {isLoading ? (
@@ -161,7 +168,7 @@ export default function AdminSettingsPage() {
           ) : (
             <>
               <div style={{ marginBottom: 12 }}>
-                <div style={labelStyle}>Google Calendar ID</div>
+                <div style={labelStyle}>{t("settings.calendar_id_label")}</div>
                 <input
                   type="text"
                   value={calendarId}
@@ -174,24 +181,57 @@ export default function AdminSettingsPage() {
                 />
               </div>
               <div style={{ marginBottom: 12 }}>
-                <div style={labelStyle}>OAuth Refresh Token</div>
-                <input
-                  type="password"
-                  value={refreshToken}
-                  onChange={(e) => setRefreshToken(e.target.value)}
-                  placeholder="••••••••"
-                  style={{
-                    ...inputStyle,
-                    border: `1.5px solid ${calendarDirty ? paper.ink : paper.paperDark}`,
-                  }}
-                />
+                <div style={labelStyle}>{t("settings.token_label")}</div>
+                <div style={{ position: "relative" }}>
+                  <input
+                    type={showToken ? "text" : "password"}
+                    value={refreshToken}
+                    onChange={(e) => setRefreshToken(e.target.value)}
+                    placeholder={
+                      data?.google_oauth_refresh_token
+                        ? t("settings.token_stored")
+                        : t("settings.token_empty")
+                    }
+                    style={{
+                      ...inputStyle,
+                      paddingRight: 32,
+                      border: `1.5px solid ${calendarDirty ? paper.ink : paper.paperDark}`,
+                    }}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowToken((v) => !v)}
+                    style={{
+                      position: "absolute",
+                      right: 8,
+                      top: "50%",
+                      transform: "translateY(-50%)",
+                      background: "none",
+                      border: "none",
+                      cursor: "pointer",
+                      padding: 0,
+                      color: paper.inkMute,
+                      display: "flex",
+                    }}
+                  >
+                    {showToken ? <EyeOff size={14} /> : <Eye size={14} />}
+                  </button>
+                </div>
               </div>
               <button
                 onClick={() =>
-                  saveCalendar.mutate({
-                    google_calendar_id: calendarId,
-                    google_oauth_refresh_token: refreshToken,
-                  })
+                  saveCalendar.mutate(
+                    {
+                      google_calendar_id: calendarId,
+                      ...(refreshToken !== "" && { google_oauth_refresh_token: refreshToken }),
+                    },
+                    {
+                      onSuccess: () => {
+                        setRefreshToken("");
+                        toast.success(t("action.saved"));
+                      },
+                    }
+                  )
                 }
                 disabled={!calendarDirty || saveCalendar.isPending}
                 style={{

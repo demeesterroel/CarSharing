@@ -7,5 +7,6 @@ export const personSchema = z.object({
   active: z.union([z.literal(0), z.literal(1)]).default(1),
   username: z.string().min(1).nullable().optional(),
   is_admin: z.union([z.literal(0), z.literal(1)]).default(0),
-  bank_account: z.string().default(''),
+  bank_account: z.string().default(""),
+  email: z.string().email().nullable().optional(),
 });

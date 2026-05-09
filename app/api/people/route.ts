@@ -14,6 +14,7 @@ export const POST = json(async (req) => {
     password_hash: null,
     username: data.username ?? null,
     is_admin: data.is_admin ?? 0,
+    email: data.email ?? null,
   });
   return NextResponse.json({ id }, { status: 201 });
 });

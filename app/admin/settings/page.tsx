@@ -16,6 +16,8 @@ export default function AdminSettingsPage() {
   const [calendarId, setCalendarId] = useState("");
   const [refreshToken, setRefreshToken] = useState("");
   const [showToken, setShowToken] = useState(false);
+  const [testStatus, setTestStatus] = useState<{ ok: boolean; message: string } | null>(null);
+  const [testing, setTesting] = useState(false);
 
   useEffect(() => {
     if (data) {
@@ -255,6 +257,70 @@ export default function AdminSettingsPage() {
                     ? t("action.saved")
                     : t("action.save")}
               </button>
+              <button
+                type="button"
+                disabled={testing}
+                onClick={async () => {
+                  setTesting(true);
+                  setTestStatus(null);
+                  try {
+                    const res = await fetch("/api/admin/calendar-test");
+                    const body = (await res.json()) as
+                      | { ok: true; summary: string }
+                      | { ok: false; error: string };
+                    if (body.ok) {
+                      setTestStatus({
+                        ok: true,
+                        message: t("settings.test_ok").replace("{name}", body.summary),
+                      });
+                    } else {
+                      const msg =
+                        body.error === "no_calendar_id"
+                          ? t("settings.test_no_id")
+                          : body.error === "no_token"
+                            ? t("settings.test_no_token")
+                            : t("settings.test_fail").replace("{error}", body.error);
+                      setTestStatus({ ok: false, message: msg });
+                    }
+                  } catch {
+                    setTestStatus({
+                      ok: false,
+                      message: t("settings.test_fail").replace("{error}", "network error"),
+                    });
+                  } finally {
+                    setTesting(false);
+                  }
+                }}
+                style={{
+                  marginTop: 8,
+                  width: "100%",
+                  padding: "8px",
+                  fontFamily: fontMono,
+                  fontSize: 9,
+                  fontWeight: 700,
+                  letterSpacing: 2,
+                  textTransform: "uppercase",
+                  background: "none",
+                  color: testing ? paper.inkMute : paper.inkDim,
+                  border: `1px solid ${paper.paperDark}`,
+                  cursor: testing ? "not-allowed" : "pointer",
+                }}
+              >
+                {testing ? "…" : t("settings.test")}
+              </button>
+              {testStatus && (
+                <div
+                  style={{
+                    marginTop: 8,
+                    fontFamily: fontMono,
+                    fontSize: 10,
+                    color: testStatus.ok ? "#2d7a2d" : paper.accent,
+                    letterSpacing: 0.5,
+                  }}
+                >
+                  {testStatus.message}
+                </div>
+              )}
             </>
           )}
         </Card>

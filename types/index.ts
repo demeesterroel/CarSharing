@@ -7,6 +7,7 @@ export interface Person {
   username: string | null;
   password_hash: string | null;
   is_admin: 0 | 1;
+  updated_at: string;
 }
 
 export interface Car {
@@ -22,6 +23,7 @@ export interface Car {
   long_threshold: number;
   active: 0 | 1;
   expected_km: number | null;
+  updated_at: string;
 }
 
 export type ExpenseCategory = "onderhoud" | "keuring" | "belasting" | "verzekering" | "diversen";
@@ -115,6 +117,7 @@ export interface Payment {
   amount: number;
   note: string | null;
   year: number; // date.year − 1 (payment settles previous year)
+  updated_at: string;
   // joined
   person_name?: string;
 }

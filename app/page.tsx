@@ -320,17 +320,155 @@ function CarBreakdownSection({ bd, year }: { bd: CarDashboardBreakdown; year: nu
   );
 }
 
+// ── Balance Card Skeleton ─────────────────────────────────────────
+const shimmerKeyframes = `
+@keyframes shimmer {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 0.8; }
+}
+`;
+
+function ShimmerBar({
+  width = "100%",
+  height = 14,
+  marginBottom = 0,
+}: {
+  width?: string | number;
+  height?: number;
+  marginBottom?: number;
+}) {
+  return (
+    <div
+      style={{
+        width,
+        height,
+        borderRadius: 2,
+        background: paper.paperDark,
+        animation: "shimmer 1.4s ease-in-out infinite",
+        marginBottom,
+      }}
+    />
+  );
+}
+
+function BalanceCardSkeleton() {
+  const currentYear = new Date().getFullYear();
+  return (
+    <>
+      <style>{shimmerKeyframes}</style>
+      <div style={{ padding: "12px 16px 0" }}>
+        <div
+          style={{
+            background: paper.paper,
+            padding: "16px 18px 22px",
+            boxShadow: "0 1px 2px rgba(0,0,0,0.05), 0 8px 24px rgba(0,0,0,0.07)",
+          }}
+        >
+          {/* Year browser placeholder */}
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 0,
+              marginBottom: 14,
+              pointerEvents: "none",
+            }}
+          >
+            <div
+              style={{
+                padding: "6px 14px",
+                border: `1.5px solid ${paper.paperDark}`,
+                borderRight: "none",
+                fontFamily: fontMono,
+                fontSize: 10,
+                fontWeight: 700,
+                color: paper.inkMute,
+                letterSpacing: 1,
+              }}
+            >
+              ← {currentYear - 1}
+            </div>
+            <div
+              style={{
+                padding: "6px 18px",
+                background: paper.paperDark,
+                color: paper.inkMute,
+                fontFamily: fontMono,
+                fontSize: 10,
+                fontWeight: 700,
+                letterSpacing: 2,
+                border: `1.5px solid ${paper.paperDark}`,
+              }}
+            >
+              {currentYear}
+            </div>
+            <div
+              style={{
+                padding: "6px 14px",
+                border: `1.5px solid ${paper.paperDark}`,
+                borderLeft: "none",
+                fontFamily: fontMono,
+                fontSize: 10,
+                fontWeight: 700,
+                color: paper.inkMute,
+                letterSpacing: 1,
+              }}
+            >
+              {currentYear + 1} →
+            </div>
+          </div>
+
+          {/* Title placeholder */}
+          <div style={{ display: "flex", justifyContent: "center", marginBottom: 10 }}>
+            <ShimmerBar width="60%" height={12} />
+          </div>
+
+          {/* Divider */}
+          <div style={{ height: 0, borderTop: `1.5px dashed ${paper.paperDark}`, margin: "0 0 12px" }} />
+
+          {/* Breakdown row placeholders */}
+          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <ShimmerBar width="45%" height={10} />
+              <ShimmerBar width="20%" height={10} />
+            </div>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <ShimmerBar width="50%" height={10} />
+              <ShimmerBar width="18%" height={10} />
+            </div>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <ShimmerBar width="38%" height={10} />
+              <ShimmerBar width="22%" height={10} />
+            </div>
+          </div>
+
+          {/* Divider */}
+          <div style={{ height: 0, borderTop: `1.5px dashed ${paper.paperDark}`, margin: "12px 0 10px" }} />
+
+          {/* Balance row placeholder */}
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
+            <ShimmerBar width="25%" height={10} />
+            <ShimmerBar width="30%" height={24} />
+          </div>
+        </div>
+      </div>
+    </>
+  );
+}
+
 // ── Balance Receipt ───────────────────────────────────────────────
 function BalanceReceipt({ personName }: { personName: string }) {
   const t = useT();
   const currentYear = new Date().getFullYear();
   const [year, setYear] = useState(currentYear);
   const { data: earliestYear = currentYear } = useEarliestDashboardYear();
-  const { data: rows = [] } = useDashboard(year);
+  const { data: rows = [], isLoading: isDashboardLoading } = useDashboard(year);
   const myRow = rows.find((r) => r.person_name === personName);
   const { data: settlement } = useSettlement(year);
   const myStatement = settlement?.members.find((m) => m.person_name === personName);
   const owner_net: number | null = myRow?.is_owner ? (myStatement?.net ?? null) : null;
+  if (isDashboardLoading) return <BalanceCardSkeleton />;
   if (!myRow) return null;
 
   const pl = (n: number, s: string, p: string) => (n === 1 ? s : p);

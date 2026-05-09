@@ -165,6 +165,23 @@ export default function AdminSettingsPage() {
             {t("settings.calendar_hint")}
           </div>
 
+          {!isLoading && data && !data.env_credentials_ok && (
+            <div
+              style={{
+                fontFamily: fontMono,
+                fontSize: 10,
+                color: "#b45309",
+                background: "#fffbeb",
+                border: "1px solid #fde68a",
+                padding: "8px 10px",
+                marginBottom: 12,
+                lineHeight: 1.5,
+              }}
+            >
+              {t("settings.env_warning")}
+            </div>
+          )}
+
           {isLoading ? (
             <div style={{ fontFamily: fontMono, fontSize: 10, color: paper.inkMute }}>…</div>
           ) : (

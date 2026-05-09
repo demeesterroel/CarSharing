@@ -1,13 +1,14 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { getDb } from "@/lib/db";
+import { env } from "@/lib/env";
 import { json, readBody, requireAdmin, requireAdminOrOwner } from "@/lib/api";
 import { getSetting, setSetting } from "@/lib/queries/settings";
 
 const settingsSchema = z.object({
   coop_bank_account: z.string().max(200).optional(),
   google_calendar_id: z.string().max(200).optional(),
-  google_oauth_refresh_token: z.string().max(500).optional(),
+  google_oauth_refresh_token: z.string().max(2000).optional(),
 });
 
 export const GET = json(async (req) => {
@@ -17,6 +18,7 @@ export const GET = json(async (req) => {
     coop_bank_account: getSetting(db, "coop_bank_account"),
     google_calendar_id: getSetting(db, "google_calendar_id"),
     google_oauth_refresh_token: getSetting(db, "google_oauth_refresh_token"),
+    env_credentials_ok: !!(env.GOOGLE_CLIENT_ID && env.GOOGLE_CLIENT_SECRET),
   });
 });
 

@@ -5,6 +5,7 @@ interface AdminSettings {
   coop_bank_account: string;
   google_calendar_id: string;
   google_oauth_refresh_token: string;
+  env_credentials_ok: boolean;
 }
 
 export function useAdminSettings() {

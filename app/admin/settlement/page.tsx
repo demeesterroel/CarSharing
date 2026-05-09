@@ -528,61 +528,45 @@ function MemberCard({
         sections.push(lines.join("\n"));
       }
     } else {
-      const totalKm = m.car_eras.reduce((s, e) => s + e.trip_km, 0);
-      const totalTripAmt = m.car_eras.reduce((s, e) => s + e.trip_amount, 0);
-      const totalFuelL = m.car_eras.reduce((s, e) => s + e.fuel_liters, 0);
-      const totalFuelAmt = m.car_eras.reduce((s, e) => s + e.fuel_amount, 0);
-      const totalExpAmt = m.car_eras.reduce((s, e) => s + e.expense_amount, 0);
-      if (totalTripAmt > 0) {
-        const sec = [row(`${t("page.trips")} (${totalKm} km)`, "−", totalTripAmt)];
-        for (const era of m.car_eras.filter((ev) => ev.trip_km > 0))
-          sec.push(
-            row(`  ${era.car_short.padEnd(5)} (${era.trip_km} km)`, "−", era.trip_amount, WC)
-          );
-        sections.push(sec.join("\n"));
-      }
-      if (totalFuelAmt > 0) {
-        const sec = [
-          row(`${t("settlement.breakdown_fuel")} (${fmtL(totalFuelL)} L)`, "+", totalFuelAmt),
-        ];
-        for (const era of m.car_eras.filter((ev) => ev.fuel_liters > 0))
+      // Group by car, then type — mirrors the card structure
+      for (const era of m.car_eras) {
+        if (era.trip_km === 0 && era.fuel_liters === 0 && era.expense_amount === 0) continue;
+        const sec = [row(era.car_short, era.balance >= 0 ? "+" : "−", Math.abs(era.balance))];
+        if (era.trip_km > 0)
+          sec.push(row(`  ${t("page.trips")} (${era.trip_km} km)`, "−", era.trip_amount, WC));
+        if (era.fuel_liters > 0)
           sec.push(
             row(
-              `  ${era.car_short.padEnd(5)} (${fmtL(era.fuel_liters)} L)`,
+              `  ${t("settlement.breakdown_fuel")} (${fmtL(era.fuel_liters)} L)`,
               "+",
               era.fuel_amount,
               WC
             )
           );
-        sections.push(sec.join("\n"));
-      }
-      if (totalExpAmt > 0) {
-        const sec = [row(t("settlement.breakdown_costs"), "+", totalExpAmt)];
-        for (const era of m.car_eras.filter((ev) => ev.expense_amount > 0))
-          sec.push(row(`  ${era.car_short.padEnd(5)}`, "+", era.expense_amount, WC));
+        if (era.expense_amount > 0)
+          sec.push(row(`  ${t("settlement.breakdown_costs")}`, "+", era.expense_amount, WC));
         sections.push(sec.join("\n"));
       }
     }
 
     const separator = "─".repeat(W);
     const lines = [
+      "```",
       `Beste ${m.person_name},`,
-      ``,
       m.is_owner
         ? `Jouw eigenaarspayout voor ${year}:`
         : `Jouw aandeel in de jaarafrekening ${year}:`,
-      ...(sections.length > 0 ? [``, sections.join("\n\n")] : []),
-      ``,
+      ...(sections.length > 0 ? [sections.join("\n")] : []),
       separator,
       row(`Saldo`, net >= 0 ? "+" : "−", Math.abs(net)),
       ``,
       ...(net > 0
-        ? [`Coöp (${iban}) schrijft dit bedrag over naar jou.`]
+        ? [`Coöp (${iban}) schrijft ${e(Math.abs(net))} over naar jou.`]
         : net < 0
-          ? [`Gelieve dit bedrag over te schrijven naar ${iban}.`]
+          ? [`Gelieve ${e(Math.abs(net))} over te schrijven naar ${iban}.`]
           : []),
-      ``,
       `Je overzicht: ${typeof window !== "undefined" ? window.location.origin : ""}`,
+      "```",
     ];
 
     navigator.clipboard.writeText(lines.join("\n"));

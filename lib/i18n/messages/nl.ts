@@ -51,6 +51,7 @@ export const nl = {
   "page.reservation_add": "Reservering toevoegen",
   "page.reservation_edit": "Reservering bewerken",
   "page.reservation_request": "Reservering aanvragen",
+  "page.profile_edit": "Profiel bewerken",
 
   // Actions
   "action.add": "Toevoegen",
@@ -74,6 +75,9 @@ export const nl = {
 
   // Form labels
   "form.name": "Naam *",
+  "form.full_name": "Voornaam Achternaam",
+  "form.bank_account": "Bankrekeningnummer (IBAN)",
+  "form.username": "Gebruikersnaam",
   "form.password": "Wachtwoord",
   "form.discount": "Korting (0–1)",
   "form.discount_long": "Korting lang (0–1)",
@@ -188,6 +192,8 @@ export const nl = {
   // Errors
   "error.gps_unavailable": "GPS niet beschikbaar",
   "error.invalid_credentials": "Ongeldige gebruikersnaam of wachtwoord",
+  "error.no_access": "Geen toegang.",
+  "error.not_found": "Niet gevonden.",
 
   // Dashboard balance (take {amount} placeholder)
   "balance.settled": "vereffend",

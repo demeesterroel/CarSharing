@@ -13,7 +13,7 @@ const version = pkg.version;
 export const TITLE_BAR_HEIGHT = 47;
 
 interface Props {
-  title: string;
+  title: React.ReactNode;
   subtitle?: string;
   right?: React.ReactNode;
   titleSize?: number;

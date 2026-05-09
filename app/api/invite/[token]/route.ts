@@ -48,7 +48,7 @@ export async function POST(req: Request, ctx: { params: Promise<{ token: string 
   const person = getPersonById(db, record.person_id);
   if (!person) return NextResponse.json({ error: "not_found" }, { status: 404 });
 
-  const res = NextResponse.json({ ok: true });
+  const res = NextResponse.json({ ok: true, person_id: person.id });
   const session = await getIronSession<SessionData>(req, res, sessionOptions);
   session.authenticated = true;
   session.personId = person.id;

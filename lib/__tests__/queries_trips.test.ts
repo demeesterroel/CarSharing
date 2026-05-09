@@ -27,6 +27,7 @@ const basePerson = {
   username: null,
   password_hash: null,
   is_admin: 0 as const,
+  bank_account: "",
 };
 
 describe("getTripById", () => {

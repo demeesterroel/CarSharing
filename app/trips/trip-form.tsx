@@ -14,7 +14,7 @@ import { useLastCarState } from "@/hooks/use-car-state";
 import { useMe } from "@/hooks/use-me";
 import { useOnlineState } from "@/lib/offline/online-state";
 import type { Trip } from "@/types";
-import { t } from "@/lib/i18n";
+import { t, buildMissingLabel } from "@/lib/i18n";
 import { paper, fontMono, fontSerif, fmtMoney } from "@/lib/paper-theme";
 
 const schema = z
@@ -107,11 +107,19 @@ export function TripForm({ defaultValues, onSubmit, onCancel, onDelete }: Props)
     },
   });
 
-  const [start, end, personId, carId] = useWatch({
+  const [start, end, personId, carId, date] = useWatch({
     control,
-    name: ["start_odometer", "end_odometer", "person_id", "car_id"],
+    name: ["start_odometer", "end_odometer", "person_id", "car_id", "date"],
   });
+  const endOk = Number(end) > 0 && Number(end) >= Number(start);
+  const canSubmit = !!(personId && carId && date && endOk);
   const km = Math.max(0, (Number(end) || 0) - (Number(start) || 0));
+  const missingLabel = buildMissingLabel([
+    !carId && t("field.car"),
+    isAdmin && !personId && t("field.driver"),
+    !date && t("field.date"),
+    !endOk && t("field.km"),
+  ]);
   const person = people.find((p) => p.id === personId);
   const car = cars.find((c) => c.id === carId);
 
@@ -211,26 +219,53 @@ export function TripForm({ defaultValues, onSubmit, onCancel, onDelete }: Props)
             textTransform: "uppercase",
           }}
         >
-          ① {t("form.log_trip")}
+          ↦ {t("form.log_trip")}
         </div>
-        <button
-          type="submit"
-          style={{
-            fontFamily: fontMono,
-            fontSize: 9,
-            fontWeight: 700,
-            letterSpacing: 2,
-            textTransform: "uppercase",
-            background: paper.accent,
-            color: "#fff",
-            border: "none",
-            padding: "8px 14px",
-            cursor: online ? "pointer" : "default",
-            opacity: online ? 1 : 0.45,
-          }}
-        >
-          {t("action.save_trip")}
-        </button>
+        <div style={{ position: "relative" }} className="submit-wrap">
+          <button
+            type="submit"
+            disabled={!canSubmit}
+            style={{
+              fontFamily: fontMono,
+              fontSize: 9,
+              fontWeight: 700,
+              letterSpacing: 2,
+              textTransform: "uppercase",
+              background: paper.accent,
+              color: "#fff",
+              border: "none",
+              padding: "8px 14px",
+              cursor: canSubmit && online ? "pointer" : "default",
+              opacity: canSubmit && online ? 1 : 0.35,
+            }}
+          >
+            {t("action.save_trip")}
+          </button>
+          {!canSubmit && (
+            <div
+              className="submit-tip"
+              style={{
+                position: "absolute",
+                right: 0,
+                top: "calc(100% + 6px)",
+                background: paper.ink,
+                color: paper.paper,
+                fontFamily: fontMono,
+                fontSize: 9,
+                letterSpacing: 1,
+                padding: "5px 8px",
+                whiteSpace: "pre-line",
+                pointerEvents: "none",
+                opacity: 0,
+                transition: "opacity 0.15s",
+                zIndex: 20,
+              }}
+            >
+              {missingLabel}
+            </div>
+          )}
+        </div>
+        <style>{`.submit-wrap:hover .submit-tip, .submit-wrap:focus-within .submit-tip { opacity: 1 !important; }`}</style>
       </div>
 
       {/* Car tabs */}

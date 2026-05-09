@@ -12,6 +12,7 @@ import { useOnlineState } from "@/lib/offline/online-state";
 import { useReservations } from "@/hooks/use-reservations";
 import type { Reservation, ReservationInput } from "@/types";
 import { useT, useLocale } from "@/components/locale-provider";
+import { buildMissingLabel } from "@/lib/i18n";
 import { paper, fontMono, fontSerif, fmtDate } from "@/lib/paper-theme";
 import { PickCalendar } from "@/components/pick-calendar";
 
@@ -100,7 +101,14 @@ export function ReservationForm({ defaultValues, onSubmit, onCancel }: Props) {
     name: ["start_date", "end_date", "car_id", "person_id"],
   });
   const person = people.find((p) => p.id === personId);
-  const dayCount = startDate && endDate && endDate >= startDate ? diffDays(startDate, endDate) : 1;
+  const datesSelected = !!(startDate && endDate && endDate >= startDate);
+  const canSubmit = datesSelected && !!(carId && personId);
+  const missingLabel = buildMissingLabel([
+    !carId && t("field.car"),
+    isAdmin && !personId && t("field.driver"),
+    !datesSelected && t("field.dates"),
+  ]);
+  const dayCount = datesSelected ? diffDays(startDate, endDate) : 1;
 
   // Conflict detection
   const conflicts = reservations.filter((r) => {
@@ -166,25 +174,63 @@ export function ReservationForm({ defaultValues, onSubmit, onCancel }: Props) {
         >
           ×
         </button>
-        <div />
-        <button
-          type="submit"
+        <div
           style={{
             fontFamily: fontMono,
-            fontSize: 9,
+            fontSize: 10,
             fontWeight: 700,
-            letterSpacing: 2,
+            letterSpacing: 3,
+            color: paper.inkDim,
             textTransform: "uppercase",
-            background: isAdmin ? paper.blue : paper.accent,
-            color: "#fff",
-            border: "none",
-            padding: "8px 14px",
-            cursor: online ? "pointer" : "default",
-            opacity: online ? 1 : 0.45,
           }}
         >
-          {isAdmin ? t("action.confirm_reservation") : t("action.request_reservation")}
-        </button>
+          ▦ {t("form.reservation")}
+        </div>
+        <div style={{ position: "relative" }} className="submit-wrap">
+          <button
+            type="submit"
+            disabled={!canSubmit}
+            style={{
+              fontFamily: fontMono,
+              fontSize: 9,
+              fontWeight: 700,
+              letterSpacing: 2,
+              textTransform: "uppercase",
+              background: isAdmin ? paper.blue : paper.accent,
+              color: "#fff",
+              border: "none",
+              padding: "8px 14px",
+              cursor: canSubmit && online ? "pointer" : "default",
+              opacity: canSubmit && online ? 1 : 0.35,
+            }}
+          >
+            {isAdmin ? t("action.confirm_reservation") : t("action.request_reservation")}
+          </button>
+          {!canSubmit && (
+            <div
+              className="submit-tip"
+              style={{
+                position: "absolute",
+                right: 0,
+                top: "calc(100% + 6px)",
+                background: paper.ink,
+                color: paper.paper,
+                fontFamily: fontMono,
+                fontSize: 9,
+                letterSpacing: 1,
+                padding: "5px 8px",
+                whiteSpace: "pre-line",
+                pointerEvents: "none",
+                opacity: 0,
+                transition: "opacity 0.15s",
+                zIndex: 20,
+              }}
+            >
+              {missingLabel}
+            </div>
+          )}
+        </div>
+        <style>{`.submit-wrap:hover .submit-tip, .submit-wrap:focus-within .submit-tip { opacity: 1 !important; }`}</style>
       </div>
 
       {/* Car tabs */}

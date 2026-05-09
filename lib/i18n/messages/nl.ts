@@ -79,6 +79,7 @@ export const nl = {
   "form.name": "Naam *",
   "form.full_name": "Voornaam Achternaam",
   "form.bank_account": "Bankrekeningnummer (IBAN)",
+  "form.email": "E-mailadres",
   "form.username": "Gebruikersnaam",
   "form.password": "Wachtwoord",
   "form.discount": "Korting (0–1)",
@@ -115,6 +116,17 @@ export const nl = {
   "form.select_person_placeholder": "Selecteer persoon",
   "form.driver": "BESTUURDER",
   "form.driver_locked_hint": "Jouw naam — enkel admins kunnen voor anderen loggen",
+  "form.pick_dates_first": "Kies eerst een periode",
+  "form.fill_required": "Vul verplichte velden in",
+  "field.car": "wagen",
+  "field.driver": "bestuurder",
+  "field.date": "datum",
+  "field.amount": "bedrag",
+  "field.liters": "liters",
+  "field.km": "km",
+  "field.dates": "periode",
+  "field.missing": "ontbreekt",
+  "field.fields_missing": "Ontbrekende velden",
   "form.reservation_reason": "REDEN (OPTIONEEL)",
   "form.reservation_reason_placeholder": "bv. weekendtrip",
   "form.days": "DAGEN",
@@ -126,6 +138,7 @@ export const nl = {
   "form.log_trip": "RIT LOGGEN",
   "form.fuel_receipt": "TANKBEURT",
   "form.extra_cost": "EXTRA KOST",
+  "form.reservation": "RESERVERING",
   "action.save_trip": "RIT OPSLAAN",
   "action.save_receipt": "BONNETJE OPSLAAN",
   "action.save_cost": "KOST OPSLAAN",
@@ -492,6 +505,33 @@ export const nl = {
   "invite.too_short": "Minimaal 8 tekens",
   "invite.invalid": "Ongeldige of verlopen uitnodiging",
   "invite.success": "Wachtwoord ingesteld — je bent ingelogd",
+
+  // Admin settings page
+  "settings.title": "Instellingen",
+  "settings.bank_title": "Coöperatie bankrekening",
+  "settings.bank_hint": "Wordt vermeld in het betalingsbericht voor leden.",
+  "settings.calendar_title": "Google Calendar",
+  "settings.calendar_hint": "Laat leeg om de integratie uit te schakelen.",
+  "settings.calendar_id_label": "Google Calendar ID",
+  "settings.token_label": "OAuth Refresh Token",
+  "settings.token_stored": "opgeslagen — plak om te wijzigen",
+  "settings.token_empty": "plak refresh token hier",
+  "settings.env_warning":
+    "⚠ GOOGLE_CLIENT_ID of GOOGLE_CLIENT_SECRET ontbreekt in .env.local — kalenderintegratie werkt niet.",
+  "settings.test": "Verbinding testen",
+  "settings.test_ok": '✓ Verbonden met "{name}"',
+  "settings.test_no_id": "✗ Geen kalender-ID opgeslagen. Voer een ID in en sla op.",
+  "settings.test_no_token": "✗ Geen token opgeslagen. Voer een OAuth Refresh Token in en sla op.",
+  "settings.test_no_env":
+    "✗ GOOGLE_CLIENT_ID of GOOGLE_CLIENT_SECRET ontbreekt in .env.local op de server.",
+  "settings.test_invalid_client":
+    "✗ Ongeldige Client ID of Secret — controleer GOOGLE_CLIENT_ID en GOOGLE_CLIENT_SECRET in .env.local. De OAuth-client is mogelijk verwijderd in Google Cloud Console.",
+  "settings.test_invalid_grant":
+    "✗ Token verlopen of ingetrokken. Haal een nieuw Refresh Token op via OAuth Playground en sla het opnieuw op.",
+  "settings.test_not_found":
+    "✗ Kalender niet gevonden. Controleer het kalender-ID en zorg dat het OAuth-account leesrechten heeft.",
+  "settings.test_fail": "✗ Onverwachte fout: {error}",
+  "settings.backfill": "Toekomstige reserveringen synchroniseren",
 
   // Admin members
   "admin.members_title": "Leden",

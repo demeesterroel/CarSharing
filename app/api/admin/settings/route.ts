@@ -5,7 +5,9 @@ import { json, readBody, requireAdmin, requireAdminOrOwner } from "@/lib/api";
 import { getSetting, setSetting } from "@/lib/queries/settings";
 
 const settingsSchema = z.object({
-  coop_bank_account: z.string().max(200),
+  coop_bank_account: z.string().max(200).optional(),
+  google_calendar_id: z.string().max(200).optional(),
+  google_oauth_refresh_token: z.string().max(500).optional(),
 });
 
 export const GET = json(async (req) => {
@@ -13,12 +15,20 @@ export const GET = json(async (req) => {
   const db = getDb();
   return NextResponse.json({
     coop_bank_account: getSetting(db, "coop_bank_account"),
+    google_calendar_id: getSetting(db, "google_calendar_id"),
+    google_oauth_refresh_token: getSetting(db, "google_oauth_refresh_token"),
   });
 });
 
 export const PUT = json(async (req) => {
   await requireAdmin(req);
-  const { coop_bank_account } = await readBody(req, settingsSchema);
-  setSetting(getDb(), "coop_bank_account", coop_bank_account);
+  const data = await readBody(req, settingsSchema);
+  const db = getDb();
+  if (data.coop_bank_account !== undefined)
+    setSetting(db, "coop_bank_account", data.coop_bank_account);
+  if (data.google_calendar_id !== undefined)
+    setSetting(db, "google_calendar_id", data.google_calendar_id);
+  if (data.google_oauth_refresh_token !== undefined)
+    setSetting(db, "google_oauth_refresh_token", data.google_oauth_refresh_token);
   return NextResponse.json({ ok: true });
 });

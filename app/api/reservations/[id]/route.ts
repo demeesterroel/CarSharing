@@ -8,6 +8,7 @@ import {
 } from "@/lib/queries/reservations";
 import { json, readBody, readId, notFound } from "@/lib/api";
 import { reservationSchema } from "@/lib/schemas/reservation";
+import { syncReservationUpdate, syncReservationDelete } from "@/lib/reservation-sync";
 
 export const GET = json(async (_req, ctx) => {
   const id = await readId(ctx);
@@ -20,8 +21,10 @@ export const PUT = json(async (req, ctx) => {
   const id = await readId(ctx);
   const body = await readBody(req, reservationSchema);
   const expectedUpdatedAt = req.headers.get("X-Expected-Updated-At") ?? undefined;
+  const db = getDb();
   try {
-    updateReservation(getDb(), id, body, { expectedUpdatedAt });
+    updateReservation(db, id, body, { expectedUpdatedAt });
+    syncReservationUpdate(db, id).catch(() => {});
     return NextResponse.json({ ok: true });
   } catch (e) {
     if (e instanceof ConflictError) {
@@ -33,6 +36,8 @@ export const PUT = json(async (req, ctx) => {
 
 export const DELETE = json(async (_req, ctx) => {
   const id = await readId(ctx);
-  const result = getDb().prepare("DELETE FROM reservations WHERE id = ?").run(id);
+  const db = getDb();
+  await syncReservationDelete(db, id).catch(() => {});
+  const result = db.prepare("DELETE FROM reservations WHERE id = ?").run(id);
   return NextResponse.json({ deleted: result.changes > 0 });
 });

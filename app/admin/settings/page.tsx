@@ -274,12 +274,17 @@ export default function AdminSettingsPage() {
                         message: t("settings.test_ok").replace("{name}", body.summary),
                       });
                     } else {
+                      const errorMap: Record<string, string> = {
+                        no_calendar_id: t("settings.test_no_id"),
+                        no_token: t("settings.test_no_token"),
+                        no_env_credentials: t("settings.test_no_env"),
+                        invalid_client: t("settings.test_invalid_client"),
+                        invalid_grant: t("settings.test_invalid_grant"),
+                        calendar_not_found: t("settings.test_not_found"),
+                      };
                       const msg =
-                        body.error === "no_calendar_id"
-                          ? t("settings.test_no_id")
-                          : body.error === "no_token"
-                            ? t("settings.test_no_token")
-                            : t("settings.test_fail").replace("{error}", body.error);
+                        errorMap[body.error] ??
+                        t("settings.test_fail").replace("{error}", body.error);
                       setTestStatus({ ok: false, message: msg });
                     }
                   } catch {
@@ -316,6 +321,7 @@ export default function AdminSettingsPage() {
                     fontSize: 10,
                     color: testStatus.ok ? "#2d7a2d" : paper.accent,
                     letterSpacing: 0.5,
+                    lineHeight: 1.5,
                   }}
                 >
                   {testStatus.message}

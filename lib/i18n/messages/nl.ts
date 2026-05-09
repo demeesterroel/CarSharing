@@ -71,6 +71,8 @@ export const nl = {
   // Filter toggle
   "filter.all": "Alle",
   "filter.mine": "Van mij",
+  "filter.all_persons": "Alle leden",
+  "filter.all_years": "Alle jaren",
 
   // Form labels
   "form.name": "Naam *",
@@ -78,6 +80,7 @@ export const nl = {
   "form.discount": "Korting (0–1)",
   "form.discount_long": "Korting lang (0–1)",
   "form.active_member": "Actief lid",
+  "form.person": "Lid",
   "form.car": "Wagen *",
   "form.car_short": "Code (ETH/JF/LEW) *",
   "form.price_per_km": "Prijs/km *",
@@ -103,6 +106,7 @@ export const nl = {
   "form.description": "Omschrijving",
   "form.description_placeholder": "bv. Verkeersbelasting",
   "form.note": "Opmerking",
+  "form.optional": "optioneel",
   "form.note_placeholder": "bv. Vereffening 2025",
   "form.select_person_placeholder": "Selecteer persoon",
   "form.driver": "BESTUURDER",
@@ -259,6 +263,7 @@ export const nl = {
   "admin.sub_data": "Data",
   "admin.sub_settlement": "Afrek.",
   "admin.sub_payout": "Uitbetaling",
+  "admin.sub_payments": "Betalingen",
   "admin.sub_settings": "Instellingen",
   "admin.inbox_empty": "Niets te bevestigen",
   "admin.confirm": "✓ Bevestigen",
@@ -306,6 +311,7 @@ export const nl = {
   "admin.balance_check": "Verschil (moet ≈ 0)",
   "admin.settlement_formula":
     "Lid betaalt = ritten − voorgeschoten brandstof − voorgeschoten onderhoud",
+  "settlement.year": "Jaar",
   "settlement.members_title": "Leden",
   "settlement.owners_title": "Eigenaars",
   "settlement.step3_title": "Stap 3 — Eigenaars onderling",

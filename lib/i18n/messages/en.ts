@@ -72,6 +72,8 @@ export const en: Messages = {
 
   // Filter toggle
   "filter.all": "All",
+  "filter.all_persons": "All members",
+  "filter.all_years": "All years",
   "filter.mine": "Mine",
 
   // Form labels
@@ -80,6 +82,7 @@ export const en: Messages = {
   "form.discount": "Discount (0–1)",
   "form.discount_long": "Long-trip discount (0–1)",
   "form.active_member": "Active member",
+  "form.person": "Member",
   "form.car": "Car *",
   "form.car_short": "Code (ETH/JF/LEW) *",
   "form.price_per_km": "Price/km *",
@@ -105,6 +108,7 @@ export const en: Messages = {
   "form.description": "Description",
   "form.description_placeholder": "e.g. Road tax",
   "form.note": "Note",
+  "form.optional": "optional",
   "form.note_placeholder": "e.g. Settlement 2025",
   "form.select_person_placeholder": "Select member",
   "form.driver": "DRIVER",
@@ -261,6 +265,7 @@ export const en: Messages = {
   "admin.sub_data": "Data",
   "admin.sub_settlement": "Settl.",
   "admin.sub_payout": "Payout",
+  "admin.sub_payments": "Payments",
   "admin.sub_settings": "Settings",
   "admin.inbox_empty": "Nothing to confirm",
   "admin.confirm": "✓ Confirm",
@@ -307,6 +312,7 @@ export const en: Messages = {
   "admin.total_debit": "Total owed",
   "admin.balance_check": "Difference (must ≈ 0)",
   "admin.settlement_formula": "Member pays = trips − pre-paid fuel − pre-paid maintenance",
+  "settlement.year": "Year",
   "settlement.members_title": "Members",
   "settlement.owners_title": "Owners",
   "settlement.step3_title": "Step 3 — Between owners",

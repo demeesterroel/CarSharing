@@ -20,7 +20,7 @@ export function insertCar(db: Database.Database, data: CarInput): number {
   return db.transaction((d: CarInput) => {
     const result = db
       .prepare(
-        "INSERT INTO cars (short,name,price_per_km,brand,color,owner_name,long_threshold) VALUES (?,?,?,?,?,?,?)"
+        "INSERT INTO cars (short,name,price_per_km,brand,color,owner_name,long_threshold,owner_person_id) VALUES (?,?,?,?,?,?,?,?)"
       )
       .run(
         d.short,
@@ -29,7 +29,8 @@ export function insertCar(db: Database.Database, data: CarInput): number {
         d.brand ?? null,
         d.color ?? null,
         d.owner_name ?? null,
-        d.long_threshold ?? 500
+        d.long_threshold ?? 500,
+        d.owner_person_id ?? null
       );
     const newId = result.lastInsertRowid as number;
     recordPriceHistory(db, newId, d.price_per_km);
@@ -44,7 +45,7 @@ export function updateCar(db: Database.Database, id: number, data: CarInput): vo
       recordPriceHistory(db, args.id, args.data.price_per_km);
     }
     db.prepare(
-      "UPDATE cars SET short=?,name=?,price_per_km=?,brand=?,color=?,owner_name=?,long_threshold=?,active=?,expected_km=? WHERE id=?"
+      "UPDATE cars SET short=?,name=?,price_per_km=?,brand=?,color=?,owner_name=?,long_threshold=?,active=?,expected_km=?,owner_person_id=? WHERE id=?"
     ).run(
       args.data.short,
       args.data.name,
@@ -55,6 +56,7 @@ export function updateCar(db: Database.Database, id: number, data: CarInput): vo
       args.data.long_threshold ?? 500,
       args.data.active ?? 1,
       args.data.expected_km ?? null,
+      args.data.owner_person_id ?? null,
       args.id
     );
   })({ id, data });

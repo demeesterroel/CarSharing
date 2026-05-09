@@ -13,7 +13,7 @@ export function getFuelFillups(db: Database.Database): FuelFillup[] {
   return db
     .prepare(
       `
-    SELECT f.*, p.name AS person_name, c.short AS car_short
+    SELECT f.*, p.first_name AS person_name, c.short AS car_short
     FROM fuel_fillups f
     JOIN people p ON p.id = f.person_id
     JOIN cars c ON c.id = f.car_id
@@ -28,7 +28,7 @@ export function getFuelFillupById(db: Database.Database, id: number): FuelFillup
     (db
       .prepare(
         `
-    SELECT f.*, p.name AS person_name, c.short AS car_short
+    SELECT f.*, p.first_name AS person_name, c.short AS car_short
     FROM fuel_fillups f
     JOIN people p ON p.id = f.person_id
     JOIN cars c ON c.id = f.car_id

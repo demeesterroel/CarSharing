@@ -28,14 +28,19 @@ export function getPersonByUsername(db: Database.Database, username: string): Pe
 
 export function insertPerson(
   db: Database.Database,
-  data: Omit<Person, "id" | "updated_at">
+  data: Omit<Person, "id" | "updated_at" | "first_name" | "last_name"> & { first_name?: string; last_name?: string }
 ): number {
+  const firstName = data.first_name ?? data.name.split(" ")[0] ?? data.name;
+  const lastName = data.last_name ?? (data.name.includes(" ") ? data.name.slice(data.name.indexOf(" ") + 1) : "");
+  const fullName = lastName ? `${firstName} ${lastName}` : firstName;
   const result = db
     .prepare(
-      "INSERT INTO people (name,discount,discount_long,active,username,is_admin,bank_account,email) VALUES (?,?,?,?,?,?,?,?)"
+      "INSERT INTO people (name,first_name,last_name,discount,discount_long,active,username,is_admin,bank_account,email) VALUES (?,?,?,?,?,?,?,?,?,?)"
     )
     .run(
-      data.name,
+      fullName,
+      firstName,
+      lastName,
       data.discount,
       data.discount_long,
       data.active,
@@ -50,12 +55,17 @@ export function insertPerson(
 export function updatePerson(
   db: Database.Database,
   id: number,
-  data: Omit<Person, "id" | "updated_at">
+  data: Omit<Person, "id" | "updated_at" | "first_name" | "last_name"> & { first_name?: string; last_name?: string }
 ): void {
+  const firstName = data.first_name ?? data.name.split(" ")[0] ?? data.name;
+  const lastName = data.last_name ?? (data.name.includes(" ") ? data.name.slice(data.name.indexOf(" ") + 1) : "");
+  const fullName = lastName ? `${firstName} ${lastName}` : firstName;
   db.prepare(
-    "UPDATE people SET name=?,discount=?,discount_long=?,active=?,username=?,is_admin=?,bank_account=?,email=? WHERE id=?"
+    "UPDATE people SET name=?,first_name=?,last_name=?,discount=?,discount_long=?,active=?,username=?,is_admin=?,bank_account=?,email=? WHERE id=?"
   ).run(
-    data.name,
+    fullName,
+    firstName,
+    lastName,
     data.discount,
     data.discount_long,
     data.active,
@@ -71,10 +81,10 @@ export function setPasswordHash(db: Database.Database, id: number, passwordHash:
   db.prepare("UPDATE people SET password_hash=? WHERE id=?").run(passwordHash, id);
 }
 
-export function isOwner(db: Database.Database, personName: string): boolean {
-  const row = db.prepare("SELECT COUNT(*) as n FROM cars WHERE owner_name=?").get(personName) as {
-    n: number;
-  };
+export function isOwner(db: Database.Database, personId: number): boolean {
+  const row = db
+    .prepare("SELECT COUNT(*) as n FROM cars WHERE owner_person_id=?")
+    .get(personId) as { n: number };
   return row.n > 0;
 }
 

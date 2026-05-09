@@ -12,7 +12,7 @@ export function getExpenses(db: Database.Database): Expense[] {
   return db
     .prepare(
       `
-    SELECT e.*, p.name AS person_name, c.short AS car_short
+    SELECT e.*, p.first_name AS person_name, c.short AS car_short
     FROM expenses e
     JOIN people p ON p.id = e.person_id
     JOIN cars c ON c.id = e.car_id
@@ -27,7 +27,7 @@ export function getExpenseById(db: Database.Database, id: number): Expense | nul
     (db
       .prepare(
         `
-    SELECT e.*, p.name AS person_name, c.short AS car_short
+    SELECT e.*, p.first_name AS person_name, c.short AS car_short
     FROM expenses e
     JOIN people p ON p.id = e.person_id
     JOIN cars c ON c.id = e.car_id

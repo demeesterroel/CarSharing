@@ -6,7 +6,7 @@ export function getPayments(db: Database.Database): Payment[] {
   return db
     .prepare(
       `
-    SELECT b.*, p.name AS person_name
+    SELECT b.*, p.first_name AS person_name
     FROM payments b
     JOIN people p ON p.id = b.person_id
     ORDER BY b.date DESC, b.id DESC
@@ -20,7 +20,7 @@ export function getPaymentById(db: Database.Database, id: number): Payment | nul
     (db
       .prepare(
         `
-    SELECT b.*, p.name AS person_name FROM payments b
+    SELECT b.*, p.first_name AS person_name FROM payments b
     JOIN people p ON p.id = b.person_id WHERE b.id=?
   `
       )

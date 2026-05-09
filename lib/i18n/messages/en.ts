@@ -53,6 +53,7 @@ export const en: Messages = {
   "page.reservation_add": "Add reservation",
   "page.reservation_edit": "Edit reservation",
   "page.reservation_request": "Request reservation",
+  "page.profile_edit": "Edit profile",
 
   // Actions
   "action.add": "Add",
@@ -78,6 +79,9 @@ export const en: Messages = {
 
   // Form labels
   "form.name": "Name *",
+  "form.full_name": "First Last Name",
+  "form.bank_account": "Bank account (IBAN)",
+  "form.username": "Username",
   "form.password": "Password",
   "form.discount": "Discount (0–1)",
   "form.discount_long": "Long-trip discount (0–1)",
@@ -194,6 +198,8 @@ export const en: Messages = {
   // Errors
   "error.gps_unavailable": "GPS not available",
   "error.invalid_credentials": "Invalid username or password",
+  "error.no_access": "Access denied.",
+  "error.not_found": "Not found.",
 
   // Dashboard balance
   "balance.settled": "settled",

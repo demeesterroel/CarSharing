@@ -44,7 +44,8 @@ export default function InvitePage() {
         body: JSON.stringify({ password }),
       });
       if (res.ok) {
-        router.replace("/");
+        const data = await res.json() as { ok: boolean; person_id: number };
+        router.replace(`/user/${data.person_id}/edit`);
       } else {
         setError(t("invite.invalid"));
       }

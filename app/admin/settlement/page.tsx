@@ -8,6 +8,7 @@ import { useEarliestDashboardYear } from "@/hooks/use-dashboard";
 import { useSettlement } from "@/hooks/use-settlement";
 import { useMe } from "@/hooks/use-me";
 import { useAdminSettings } from "@/hooks/use-admin-settings";
+import { usePeople } from "@/hooks/use-people";
 import { apiFetch } from "@/lib/api/client";
 import { Card, Row, Perf } from "../_shared";
 import type { MemberStatement, AnnotatedTransfer } from "@/types";
@@ -428,6 +429,7 @@ function MemberCard({
   m,
   year,
   bankAccount,
+  personBankAccount,
   crossRows,
   settlementTransfer,
   showAll,
@@ -435,6 +437,7 @@ function MemberCard({
   m: MemberStatement;
   year: number;
   bankAccount: string;
+  personBankAccount: string;
   crossRows: { car_short: string; row: import("@/types").CarParticipantRow }[];
   settlementTransfer: AnnotatedTransfer | undefined;
   showAll: boolean;
@@ -561,7 +564,11 @@ function MemberCard({
       row(`Saldo`, net >= 0 ? "+" : "−", Math.abs(net)),
       ``,
       ...(net > 0
-        ? [`Coöp (${iban}) schrijft ${e(Math.abs(net))} over naar jou.`]
+        ? [
+            personBankAccount
+              ? `Coöp schrijft ${e(Math.abs(net))} over naar ${personBankAccount}.`
+              : `Coöp schrijft ${e(Math.abs(net))} over naar jou.`,
+          ]
         : net < 0
           ? [`Gelieve ${e(Math.abs(net))} over te schrijven naar ${iban}.`]
           : []),
@@ -978,6 +985,7 @@ function AdminSettlementPageContent() {
   const t = useT();
   const { data: me } = useMe();
   const { data: settings } = useAdminSettings();
+  const { data: people } = usePeople();
   const currentYear = new Date().getFullYear();
   const router = useRouter();
   const pathname = usePathname();
@@ -1157,6 +1165,7 @@ function AdminSettlementPageContent() {
                     m={m}
                     year={year}
                     bankAccount={settings?.coop_bank_account ?? ""}
+                    personBankAccount={people?.find((p) => p.name === m.person_name)?.bank_account ?? ""}
                     crossRows={
                       m.is_owner
                         ? data.car_settlements.flatMap((cs) =>

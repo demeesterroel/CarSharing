@@ -52,6 +52,31 @@ import { CarBadge } from "@/components/car-badge";
 import { ErrorBoundary } from "@/components/error-boundary";
 
 // ── Primitives ────────────────────────────────────────────────────
+function NameEditLink({ name, personId }: { name: string; personId: number }) {
+  const [hover, setHover] = useState(false);
+  return (
+    <Link
+      href={`/user/${personId}/edit`}
+      onMouseEnter={() => setHover(true)}
+      onMouseLeave={() => setHover(false)}
+      style={{ color: "inherit", textDecoration: "none", display: "inline-flex", alignItems: "baseline", gap: 6 }}
+    >
+      {" "}{name}
+      <span
+        style={{
+          fontSize: 16,
+          opacity: hover ? 0.6 : 0,
+          transition: "opacity 0.15s",
+          lineHeight: 1,
+          alignSelf: "center",
+        }}
+      >
+        ✏️
+      </span>
+    </Link>
+  );
+}
+
 function Perf({ margin = "12px 0" }: { margin?: string }) {
   return <div style={{ height: 0, borderTop: `1.5px dashed ${paper.ink}`, margin }} />;
 }
@@ -975,7 +1000,14 @@ function DashboardContent() {
   return (
     <div style={{ background: paper.paperDeep, minHeight: "100dvh", paddingBottom: 80 }}>
       <PageHeader
-        title={`${t("dashboard.hello")}${me?.personName ? ` ${me.personName.split(" ")[0]}` : ""}`}
+        title={
+          <>
+            {t("dashboard.hello")}
+            {me?.personName && me?.personId ? (
+              <NameEditLink name={me.personName.split(" ")[0]} personId={me.personId} />
+            ) : null}
+          </>
+        }
         subtitle={`${t("dashboard.today")} · ${todayFmt}`}
         titleSize={32}
       />

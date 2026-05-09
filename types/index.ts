@@ -7,6 +7,7 @@ export interface Person {
   username: string | null;
   password_hash: string | null;
   is_admin: 0 | 1;
+  bank_account: string;
   updated_at: string;
 }
 

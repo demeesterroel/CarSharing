@@ -4,7 +4,13 @@ import { toast } from "sonner";
 import { apiFetch } from "@/lib/api/client";
 import { newUuid } from "@/lib/offline/uuid";
 import { enqueue } from "@/lib/offline/outbox";
-import { applyCreate, replaceCreate, rollbackCreate, applyUpdate, applyDelete } from "@/lib/offline/optimistic";
+import {
+  applyCreate,
+  replaceCreate,
+  rollbackCreate,
+  applyUpdate,
+  applyDelete,
+} from "@/lib/offline/optimistic";
 import type { Reservation, ReservationInput } from "@/types";
 
 const QUERY_KEY = "reservations";
@@ -40,6 +46,10 @@ export function useCreateReservation() {
         status: input.status ?? "pending",
         note: input.note ?? null,
         updated_at: new Date().toISOString(),
+        google_event_id: null,
+        last_synced_etag: null,
+        last_app_write_nonce: null,
+        last_known_response_status: null,
       };
       applyCreate<Reservation>(qc, [QUERY_KEY], optimistic);
 

@@ -71,10 +71,10 @@ export function setPasswordHash(db: Database.Database, id: number, passwordHash:
   db.prepare("UPDATE people SET password_hash=? WHERE id=?").run(passwordHash, id);
 }
 
-export function isOwner(db: Database.Database, personName: string): boolean {
-  const row = db.prepare("SELECT COUNT(*) as n FROM cars WHERE owner_name=?").get(personName) as {
-    n: number;
-  };
+export function isOwner(db: Database.Database, personId: number): boolean {
+  const row = db
+    .prepare("SELECT COUNT(*) as n FROM cars WHERE owner_person_id=?")
+    .get(personId) as { n: number };
   return row.n > 0;
 }
 

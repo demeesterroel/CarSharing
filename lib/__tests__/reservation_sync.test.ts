@@ -111,10 +111,11 @@ describe("syncReservationUpdate", () => {
     await syncReservationUpdate(db, id);
 
     expect(calMock.updateEvent).toHaveBeenCalledOnce();
-    const row = db.prepare("SELECT last_synced_etag FROM reservations WHERE id = ?").get(id) as {
-      last_synced_etag: string;
-    };
+    const row = db
+      .prepare("SELECT last_synced_etag, last_app_write_nonce FROM reservations WHERE id = ?")
+      .get(id) as { last_synced_etag: string; last_app_write_nonce: string };
     expect(row.last_synced_etag).toBe('"etag-xyz"');
+    expect(row.last_app_write_nonce).toBeTruthy();
   });
 });
 
@@ -125,16 +126,25 @@ describe("syncReservationDelete", () => {
     setSetting(db, "google_calendar_id", "cal-id");
     setSetting(db, "google_oauth_refresh_token", "refresh-token");
     db.prepare(
-      "UPDATE reservations SET google_event_id='evt-123', last_synced_etag='e', last_app_write_nonce='n' WHERE id=?"
+      "UPDATE reservations SET google_event_id='evt-123', last_synced_etag='e', last_app_write_nonce='n', last_known_response_status='needsAction' WHERE id=?"
     ).run(id);
 
     await syncReservationDelete(db, id);
 
     expect(calMock.deleteEvent).toHaveBeenCalledWith(expect.anything(), "cal-id", "evt-123");
     const row = db
-      .prepare("SELECT google_event_id, last_synced_etag FROM reservations WHERE id = ?")
-      .get(id) as { google_event_id: string | null; last_synced_etag: string | null };
+      .prepare(
+        "SELECT google_event_id, last_synced_etag, last_app_write_nonce, last_known_response_status FROM reservations WHERE id = ?"
+      )
+      .get(id) as {
+      google_event_id: string | null;
+      last_synced_etag: string | null;
+      last_app_write_nonce: string | null;
+      last_known_response_status: string | null;
+    };
     expect(row.google_event_id).toBeNull();
     expect(row.last_synced_etag).toBeNull();
+    expect(row.last_app_write_nonce).toBeNull();
+    expect(row.last_known_response_status).toBeNull();
   });
 });

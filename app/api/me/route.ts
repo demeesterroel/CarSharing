@@ -27,7 +27,7 @@ export async function GET(req: Request) {
   if (cloaked) {
     // While cloaked, return the cloaked person's identity.
     // isOwner is computed from their name; isAdmin reflects their actual role.
-    const cloakedOwner = isOwner(getDb(), cloaked.personName);
+    const cloakedOwner = isOwner(getDb(), cloaked.personId);
     return withCsrfCookie(
       NextResponse.json({
         personId: cloaked.personId,
@@ -40,8 +40,8 @@ export async function GET(req: Request) {
   }
 
   let owner = false;
-  if (session.personName) {
-    owner = isOwner(getDb(), session.personName);
+  if (session.personId) {
+    owner = isOwner(getDb(), session.personId);
   }
 
   return withCsrfCookie(

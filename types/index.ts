@@ -1,6 +1,8 @@
 export interface Person {
   id: number;
   name: string;
+  first_name: string;
+  last_name: string;
   discount: number;
   discount_long: number;
   active: 0 | 1;
@@ -19,7 +21,6 @@ export interface Car {
   price_per_km: number;
   brand: string | null;
   color: string | null;
-  owner_name: string | null;
   owner_from: string | null; // 'YYYY-MM-DD', inclusive
   owner_to: string | null; // 'YYYY-MM-DD', inclusive; NULL = ongoing
   owner_person_id: number | null;
@@ -174,12 +175,11 @@ export interface DashboardRow {
 }
 
 // Form input types (no id, no computed fields)
-export type PersonInput = Pick<Person, "name" | "discount" | "discount_long" | "active"> & {
+export type PersonInput = Pick<Person, "name" | "first_name" | "last_name" | "discount" | "discount_long" | "active"> & {
   username?: string | null;
   is_admin?: 0 | 1;
 };
 export type CarInput = Pick<Car, "short" | "name" | "price_per_km" | "brand" | "color"> & {
-  owner_name?: string | null;
   owner_person_id?: number | null;
   long_threshold?: number;
   fixed_costs_json?: string | null;

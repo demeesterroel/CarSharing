@@ -44,6 +44,14 @@ export function updateCar(db: Database.Database, id: number, data: CarInput): vo
     if (current && Math.abs(args.data.price_per_km - current.price_per_km) >= 0.0001) {
       recordPriceHistory(db, args.id, args.data.price_per_km);
     }
+    // Sync owner_name from person table when owner_person_id is set
+    let ownerName = args.data.owner_name ?? null;
+    if (args.data.owner_person_id) {
+      const person = db
+        .prepare("SELECT name FROM people WHERE id = ?")
+        .get(args.data.owner_person_id) as { name: string } | undefined;
+      if (person) ownerName = person.name;
+    }
     db.prepare(
       "UPDATE cars SET short=?,name=?,price_per_km=?,brand=?,color=?,owner_name=?,long_threshold=?,active=?,expected_km=?,owner_person_id=? WHERE id=?"
     ).run(
@@ -52,7 +60,7 @@ export function updateCar(db: Database.Database, id: number, data: CarInput): vo
       args.data.price_per_km,
       args.data.brand ?? null,
       args.data.color ?? null,
-      args.data.owner_name ?? null,
+      ownerName,
       args.data.long_threshold ?? 500,
       args.data.active ?? 1,
       args.data.expected_km ?? null,

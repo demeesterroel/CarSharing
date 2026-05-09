@@ -38,6 +38,6 @@ export const DELETE = json(async (_req, ctx) => {
   const id = await readId(ctx);
   const db = getDb();
   await syncReservationDelete(db, id).catch(() => {});
-  const result = db.prepare("DELETE FROM reservations WHERE id = ?").run(id);
-  return NextResponse.json({ deleted: result.changes > 0 });
+  deleteReservation(db, id);
+  return NextResponse.json({ deleted: true });
 });

@@ -153,7 +153,7 @@ export function useOwnerCarShorts(): Set<string> | null {
   const { data: cars = [] } = useCars();
   if (!me || me.isAdmin) return null;
   return new Set(
-    cars.filter((c) => c.owner_name === me.personName).map((c) => c.short)
+    cars.filter((c) => c.owner_person_id === me.personId).map((c) => c.short)
   );
 }
 

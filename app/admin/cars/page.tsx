@@ -56,7 +56,6 @@ function CarRow({
   const t = useT();
   const [name, setName] = useState(car.name);
   const [price, setPrice] = useState(car.price_per_km);
-  const [owner, setOwner] = useState(car.owner_name ?? "");
   const [ownerPersonId, setOwnerPersonId] = useState<number | null>(car.owner_person_id ?? null);
   const isActive = car.active !== 0;
 
@@ -65,20 +64,17 @@ function CarRow({
     setPrevId(car.id);
     setName(car.name);
     setPrice(car.price_per_km);
-    setOwner(car.owner_name ?? "");
     setOwnerPersonId(car.owner_person_id ?? null);
   }
 
   const dirty =
     name !== car.name ||
     price !== car.price_per_km ||
-    owner !== (car.owner_name ?? "") ||
     ownerPersonId !== (car.owner_person_id ?? null);
 
   const reset = () => {
     setName(car.name);
     setPrice(car.price_per_km);
-    setOwner(car.owner_name ?? "");
     setOwnerPersonId(car.owner_person_id ?? null);
   };
 
@@ -179,7 +175,9 @@ function CarRow({
             whiteSpace: "nowrap",
           }}
         >
-          {car.owner_name ?? <span style={{ color: paper.inkMute, fontStyle: "italic" }}>—</span>}
+          {car.owner_person_id
+            ? (displayName(people.find((p) => p.id === car.owner_person_id) ?? { name: "?", username: null }) )
+            : <span style={{ color: paper.inkMute, fontStyle: "italic" }}>—</span>}
         </div>
         <div
           style={{
@@ -211,19 +209,8 @@ function CarRow({
               style={inputStyle}
             />
           </div>
-          <div style={{ marginBottom: 8 }}>
-            <label style={labelStyle}>{t("form.owner")}</label>
-            <select value={owner} onChange={(e) => setOwner(e.target.value)} style={inputStyle}>
-              <option value="">—</option>
-              {people.map((p) => (
-                <option key={p.id} value={p.name}>
-                  {displayName(p)}
-                </option>
-              ))}
-            </select>
-          </div>
           <div style={{ marginBottom: 14 }}>
-            <label style={labelStyle}>Eigenaar (persoon)</label>
+            <label style={labelStyle}>{t("form.owner")}</label>
             <select
               value={ownerPersonId ?? ""}
               onChange={(e) => setOwnerPersonId(e.target.value ? Number(e.target.value) : null)}
@@ -247,7 +234,6 @@ function CarRow({
                 onSave({
                   name,
                   price_per_km: price,
-                  owner_name: owner || null,
                   owner_person_id: ownerPersonId,
                   active: 0,
                 })
@@ -298,7 +284,6 @@ function CarRow({
                 onSave({
                   name,
                   price_per_km: price,
-                  owner_name: owner || null,
                   owner_person_id: ownerPersonId,
                   active: car.active,
                 })
@@ -468,7 +453,9 @@ function OwnerCarTile({
             whiteSpace: "nowrap",
           }}
         >
-          {car.owner_name ?? <span style={{ color: paper.inkMute, fontStyle: "italic" }}>—</span>}
+          {car.owner_person_id
+            ? (displayName(people.find((p) => p.id === car.owner_person_id) ?? { name: "?", username: null }) )
+            : <span style={{ color: paper.inkMute, fontStyle: "italic" }}>—</span>}
         </div>
         <div
           style={{
@@ -817,7 +804,7 @@ function generateCarDetailMd(car: import("@/lib/queries/admin").CarPnL, year: nu
 
   const lines: string[] = [];
   lines.push(`# ${car.car_name} — ${year}`);
-  if (car.owner_name) lines.push(`Eigenaar: ${car.owner_name}`);
+  if (car.owner_name) lines.push(`Eigenaar: ${car.owner_name}`); // owner_name is derived from admin query
 
   lines.push(`\n## Ritten`);
   lines.push(`${car.trip_count} ritten · ${car.trip_km.toLocaleString("nl-BE")} km`);
@@ -878,7 +865,7 @@ function generateCarDetailMd(car: import("@/lib/queries/admin").CarPnL, year: nu
 }
 
 // ── Owner fleet view ──────────────────────────────────────────
-function OwnerFleet({ myName }: { myName: string | null }) {
+function OwnerFleet({ myPersonId }: { myPersonId: number | null }) {
   const t = useT();
   const currentYear = new Date().getFullYear();
   const searchParams = useSearchParams();
@@ -910,7 +897,7 @@ function OwnerFleet({ myName }: { myName: string | null }) {
   const { data: summary } = useAdminSummary(year);
 
   const carMap = new Map(cars.map((c) => [c.id, c]));
-  const myCars = myName ? cars.filter((c) => c.owner_name === myName) : cars;
+  const myCars = myPersonId ? cars.filter((c) => c.owner_person_id === myPersonId) : cars;
   const allPnL = summary?.carPnL ?? [];
   const monthlyKm = summary?.monthlyCarKm ?? [];
   const historicalKm = summary?.historicalCarKm ?? [];
@@ -1154,6 +1141,6 @@ export default function AdminWagensPage() {
   if (isLoading || !me) return null;
   if (!me.isAdmin && !me.isOwner) return null;
 
-  if (me.isAdmin) return <OwnerFleet myName={null} />;
-  return <OwnerFleet myName={me.personName!} />;
+  if (me.isAdmin) return <OwnerFleet myPersonId={null} />;
+  return <OwnerFleet myPersonId={me.personId!} />;
 }

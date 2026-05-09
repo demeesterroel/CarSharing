@@ -78,6 +78,8 @@ export const en: Messages = {
   "filter.mine": "Mine",
 
   // Form labels
+  "form.first_name": "First name",
+  "form.last_name": "Last name",
   "form.name": "Name *",
   "form.full_name": "First Last Name",
   "form.bank_account": "Bank account (IBAN)",

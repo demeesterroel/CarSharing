@@ -321,15 +321,17 @@ function CarBreakdownSection({ bd, year }: { bd: CarDashboardBreakdown; year: nu
 }
 
 // ── Balance Receipt ───────────────────────────────────────────────
-function BalanceReceipt({ personName }: { personName: string }) {
+function BalanceReceipt({ personName, personId }: { personName: string; personId: number | null }) {
   const t = useT();
   const currentYear = new Date().getFullYear();
   const [year, setYear] = useState(currentYear);
   const { data: earliestYear = currentYear } = useEarliestDashboardYear();
   const { data: rows = [] } = useDashboard(year);
-  const myRow = rows.find((r) => r.person_name === personName);
+  const myRow = personId ? rows.find((r) => r.person_id === personId) : rows.find((r) => r.person_name === personName);
   const { data: settlement } = useSettlement(year);
-  const myStatement = settlement?.members.find((m) => m.person_name === personName);
+  const myStatement = personId
+    ? settlement?.members.find((m) => m.person_id === personId)
+    : settlement?.members.find((m) => m.person_name === personName);
   const owner_net: number | null = myRow?.is_owner ? (myStatement?.net ?? null) : null;
   if (!myRow) return null;
 
@@ -963,7 +965,7 @@ function DashboardContent() {
       />
 
       {/* Balance */}
-      <BalanceReceipt personName={me?.personName ?? ""} />
+      <BalanceReceipt personName={me?.personName ?? ""} personId={me?.personId ?? null} />
 
       {/* Car locations */}
       <CarLocations trips={trips} onTripClick={setEditTrip} />

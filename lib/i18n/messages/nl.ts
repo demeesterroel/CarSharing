@@ -76,6 +76,8 @@ export const nl = {
   "filter.all_years": "Alle jaren",
 
   // Form labels
+  "form.first_name": "Voornaam",
+  "form.last_name": "Achternaam",
   "form.name": "Naam *",
   "form.full_name": "Voornaam Achternaam",
   "form.bank_account": "Bankrekeningnummer (IBAN)",

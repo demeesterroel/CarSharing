@@ -48,9 +48,9 @@ export function updateCar(db: Database.Database, id: number, data: CarInput): vo
     let ownerName = args.data.owner_name ?? null;
     if (args.data.owner_person_id) {
       const person = db
-        .prepare("SELECT name FROM people WHERE id = ?")
-        .get(args.data.owner_person_id) as { name: string } | undefined;
-      if (person) ownerName = person.name.split(" ")[0];
+        .prepare("SELECT name, username FROM people WHERE id = ?")
+        .get(args.data.owner_person_id) as { name: string; username: string | null } | undefined;
+      if (person) ownerName = person.name?.split(" ")[0] || person.username || null;
     }
     db.prepare(
       "UPDATE cars SET short=?,name=?,price_per_km=?,brand=?,color=?,owner_name=?,long_threshold=?,active=?,expected_km=?,owner_person_id=? WHERE id=?"

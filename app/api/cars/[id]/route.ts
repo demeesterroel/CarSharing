@@ -1,7 +1,15 @@
 import { getCarById, updateCar, deleteCar, carHasHistory } from "@/lib/queries/cars";
 import { carSchema, ownerCarPatchSchema } from "@/lib/schemas/car";
 import { getDb } from "@/lib/db";
-import { json, readBody, readId, notFound, forbidden, conflict, requireAdminOrOwner } from "@/lib/api";
+import {
+  json,
+  readBody,
+  readId,
+  notFound,
+  forbidden,
+  conflict,
+  requireAdminOrOwner,
+} from "@/lib/api";
 
 export const GET = json(async (_req, ctx) => {
   const car = getCarById(getDb(), await readId(ctx));
@@ -25,6 +33,7 @@ export const PUT = json(async (req, ctx) => {
       brand: current.brand,
       color: current.color,
       owner_name: current.owner_name,
+      owner_person_id: current.owner_person_id,
       long_threshold: current.long_threshold,
       active: patch.active ?? current.active,
       expected_km: current.expected_km,

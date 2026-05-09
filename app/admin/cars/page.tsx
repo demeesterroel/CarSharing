@@ -343,9 +343,11 @@ function OwnerCarTile({
   const t = useT();
   const updateCar = useUpdateCar();
   const deleteCar = useDeleteCar();
+  const { data: people = [] } = usePeople();
   const [name, setName] = useState(car.name);
   const [price, setPrice] = useState(car.price_per_km);
   const [activeLocal, setActiveLocal] = useState(car.active !== 0);
+  const [ownerPersonId, setOwnerPersonId] = useState<number | null>(car.owner_person_id ?? null);
   const [deleteConfirm, setDeleteConfirm] = useState(false);
 
   const [prevId, setPrevId] = useState(car.id);
@@ -354,11 +356,15 @@ function OwnerCarTile({
     setName(car.name);
     setPrice(car.price_per_km);
     setActiveLocal(car.active !== 0);
+    setOwnerPersonId(car.owner_person_id ?? null);
     setDeleteConfirm(false);
   }
 
   const dirty =
-    name !== car.name || price !== car.price_per_km || activeLocal !== (car.active !== 0);
+    name !== car.name ||
+    price !== car.price_per_km ||
+    activeLocal !== (car.active !== 0) ||
+    ownerPersonId !== (car.owner_person_id ?? null);
   const isActive = car.active !== 0;
 
   const inputStyle: React.CSSProperties = {
@@ -386,12 +392,19 @@ function OwnerCarTile({
     setName(car.name);
     setPrice(car.price_per_km);
     setActiveLocal(car.active !== 0);
+    setOwnerPersonId(car.owner_person_id ?? null);
     setDeleteConfirm(false);
   }
 
   function handleSave() {
     updateCar.mutate(
-      { ...car, name, price_per_km: price, active: activeLocal ? 1 : 0 },
+      {
+        ...car,
+        name,
+        price_per_km: price,
+        active: activeLocal ? 1 : 0,
+        owner_person_id: ownerPersonId,
+      },
       {
         onSuccess: () => {
           onToggle();
@@ -550,6 +563,21 @@ function OwnerCarTile({
                 }}
               />
             </div>
+          </div>
+          <div style={{ marginBottom: 12 }}>
+            <label style={labelStyle}>Eigenaar (persoon)</label>
+            <select
+              value={ownerPersonId ?? ""}
+              onChange={(e) => setOwnerPersonId(e.target.value ? Number(e.target.value) : null)}
+              style={{ ...inputStyle, background: paper.paperDeep }}
+            >
+              <option value="">— geen —</option>
+              {people.map((p) => (
+                <option key={p.id} value={p.id}>
+                  {p.name}
+                </option>
+              ))}
+            </select>
           </div>
           <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
             <button

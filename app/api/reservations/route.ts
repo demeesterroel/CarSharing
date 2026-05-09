@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getDb } from "@/lib/db";
-import { getReservations, insertReservation } from "@/lib/queries/reservations";
+import { getReservations, getReservationById, insertReservation } from "@/lib/queries/reservations";
 import { json, readBody } from "@/lib/api";
 import { reservationSchema } from "@/lib/schemas/reservation";
 import { syncReservationCreate } from "@/lib/reservation-sync";
@@ -14,5 +14,6 @@ export const POST = json(async (req) => {
   const db = getDb();
   const id = insertReservation(db, { ...body, client_id });
   syncReservationCreate(db, id).catch(() => {});
-  return NextResponse.json({ id }, { status: 201 });
+  const reservation = getReservationById(db, id);
+  return NextResponse.json(reservation, { status: 201 });
 });

@@ -18,6 +18,10 @@ export default function AdminSettingsPage() {
   const [showToken, setShowToken] = useState(false);
   const [testStatus, setTestStatus] = useState<{ ok: boolean; message: string } | null>(null);
   const [testing, setTesting] = useState(false);
+  const [backfillStatus, setBackfillStatus] = useState<{ ok: boolean; message: string } | null>(
+    null
+  );
+  const [backfilling, setBackfilling] = useState(false);
 
   useEffect(() => {
     if (data) {
@@ -342,6 +346,66 @@ export default function AdminSettingsPage() {
                   }}
                 >
                   {testStatus.message}
+                </div>
+              )}
+              <button
+                type="button"
+                disabled={backfilling}
+                onClick={async () => {
+                  setBackfilling(true);
+                  setBackfillStatus(null);
+                  try {
+                    const csrfToken = document.cookie.match(/csrf-token=([^;]+)/)?.[1] ?? "";
+                    const res = await fetch("/api/admin/calendar-backfill", {
+                      method: "POST",
+                      headers: { "x-csrf-token": csrfToken },
+                    });
+                    const body = (await res.json()) as
+                      | { ok: true; synced: number; failed: number; total: number }
+                      | { ok: false; error: string };
+                    if (body.ok) {
+                      setBackfillStatus({
+                        ok: true,
+                        message: `${body.synced}/${body.total} reserveringen gesynchroniseerd${body.failed > 0 ? ` (${body.failed} mislukt)` : ""}`,
+                      });
+                    } else {
+                      setBackfillStatus({ ok: false, message: `Fout: ${body.error}` });
+                    }
+                  } catch {
+                    setBackfillStatus({ ok: false, message: "Netwerkfout" });
+                  } finally {
+                    setBackfilling(false);
+                  }
+                }}
+                style={{
+                  marginTop: 8,
+                  width: "100%",
+                  padding: "8px",
+                  fontFamily: fontMono,
+                  fontSize: 9,
+                  fontWeight: 700,
+                  letterSpacing: 2,
+                  textTransform: "uppercase",
+                  background: "none",
+                  color: backfilling ? paper.inkMute : paper.inkDim,
+                  border: `1px solid ${paper.paperDark}`,
+                  cursor: backfilling ? "not-allowed" : "pointer",
+                }}
+              >
+                {backfilling ? "…" : t("settings.backfill")}
+              </button>
+              {backfillStatus && (
+                <div
+                  style={{
+                    marginTop: 8,
+                    fontFamily: fontMono,
+                    fontSize: 10,
+                    color: backfillStatus.ok ? "#2d7a2d" : paper.accent,
+                    letterSpacing: 0.5,
+                    lineHeight: 1.5,
+                  }}
+                >
+                  {backfillStatus.message}
                 </div>
               )}
             </>

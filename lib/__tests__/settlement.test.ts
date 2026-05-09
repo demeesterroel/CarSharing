@@ -14,17 +14,17 @@ function makeDb() {
 
 function seed(db: Database.Database) {
   db.exec(`
-    INSERT INTO people (id, name, active) VALUES
-      (1, 'Alice', 1),
-      (2, 'Bob',   1),
-      (3, 'Carol', 1),
-      (4, 'Dave',  1);
+    INSERT INTO people (id, name, first_name, last_name, active) VALUES
+      (1, 'Alice Owner', 'Alice', 'Owner', 1),
+      (2, 'Bob Owner',   'Bob',   'Owner', 1),
+      (3, 'Carol Member', 'Carol', 'Member', 1),
+      (4, 'Dave Member',  'Dave',  'Member', 1);
   `);
   db.exec(`
-    INSERT INTO cars (id, short, name, price_per_km, owner_name, owner_from, active)
+    INSERT INTO cars (id, short, name, price_per_km, owner_person_id, owner_from, active)
     VALUES
-      (1, 'CA', 'Car A', 0.2, 'Alice', '2020-01-01', 1),
-      (2, 'CB', 'Car B', 0.2, 'Bob',   '2020-01-01', 1);
+      (1, 'CA', 'Car A', 0.2, 1, '2020-01-01', 1),
+      (2, 'CB', 'Car B', 0.2, 2, '2020-01-01', 1);
   `);
   const addTrip = db.prepare(
     "INSERT INTO trips (person_id, car_id, date, start_odometer, end_odometer, km, amount) VALUES (?,?,?,?,?,?,?)"
@@ -42,8 +42,8 @@ describe("getSettlement", () => {
     const db = makeDb();
     seed(db);
     const result = getSettlement(db, 2025);
-    const alice = result.members.find((m) => m.person_name === "Alice")!;
-    const bob = result.members.find((m) => m.person_name === "Bob")!;
+    const alice = result.members.find((m) => m.person_id === 1)!;
+    const bob = result.members.find((m) => m.person_id === 2)!;
     // CarA: carol(100) + dave(50) = 150; alice own trip excluded
     expect(alice.car_eras[0].n_c_star).toBe(150);
     // CarB: carol(80) + dave(40) + alice-cross(30) = 150
@@ -54,18 +54,19 @@ describe("getSettlement", () => {
     const db = makeDb();
     seed(db);
     const result = getSettlement(db, 2025);
-    const carol = result.members.find((m) => m.person_name === "Carol")!;
-    const dave = result.members.find((m) => m.person_name === "Dave")!;
+    const carol = result.members.find((m) => m.person_id === 3)!;
+    const dave = result.members.find((m) => m.person_id === 4)!;
     expect(carol.s1).toBe(-180); // -(100+80)
     expect(dave.s1).toBe(-90); // -(50+40)
   });
+
 
   it("S₂ for owners uses N_new", () => {
     const db = makeDb();
     seed(db);
     const result = getSettlement(db, 2025);
-    const alice = result.members.find((m) => m.person_name === "Alice")!;
-    const bob = result.members.find((m) => m.person_name === "Bob")!;
+    const alice = result.members.find((m) => m.person_id === 1)!;
+    const bob = result.members.find((m) => m.person_id === 2)!;
     expect(alice.s2).toBe(150); // N_new(CarA) = 150
     expect(bob.s2).toBe(150); // N_new(CarB) = 150 (includes alice cross €30)
   });
@@ -74,8 +75,8 @@ describe("getSettlement", () => {
     const db = makeDb();
     seed(db);
     const result = getSettlement(db, 2025);
-    const alice = result.members.find((m) => m.person_name === "Alice")!;
-    const bob = result.members.find((m) => m.person_name === "Bob")!;
+    const alice = result.members.find((m) => m.person_id === 1)!;
+    const bob = result.members.find((m) => m.person_id === 2)!;
     expect(alice.s1_cross).toBe(-30); // alice drove CarB: owes €30 to co-op
     expect(bob.s1_cross).toBe(0); // bob drove no other cars
   });
@@ -84,8 +85,8 @@ describe("getSettlement", () => {
     const db = makeDb();
     seed(db);
     const result = getSettlement(db, 2025);
-    const alice = result.members.find((m) => m.person_name === "Alice")!;
-    const bob = result.members.find((m) => m.person_name === "Bob")!;
+    const alice = result.members.find((m) => m.person_id === 1)!;
+    const bob = result.members.find((m) => m.person_id === 2)!;
     expect(alice.net).toBe(120); // 150 + (-30)
     expect(bob.net).toBe(150); // 150 + 0
   });
@@ -102,9 +103,9 @@ describe("getSettlement", () => {
     seed(db);
     const result = getSettlement(db, 2025);
     const step1 = result.transfers.filter((t) => t.step === 1);
-    const carol = step1.find((t) => t.from === "Carol");
-    const dave = step1.find((t) => t.from === "Dave");
-    const alice = step1.find((t) => t.from === "Alice");
+    const carol = step1.find((t) => t.from === "Carol Member");
+    const dave = step1.find((t) => t.from === "Dave Member");
+    const alice = step1.find((t) => t.from === "Alice Owner");
     expect(carol?.amount).toBe(180);
     expect(carol?.to).toBe("co-op");
     expect(dave?.amount).toBe(90);
@@ -118,8 +119,8 @@ describe("getSettlement", () => {
     seed(db);
     const result = getSettlement(db, 2025);
     const step2 = result.transfers.filter((t) => t.step === 2);
-    const toAlice = step2.find((t) => t.to === "Alice");
-    const toBob = step2.find((t) => t.to === "Bob");
+    const toAlice = step2.find((t) => t.to === "Alice Owner");
+    const toBob = step2.find((t) => t.to === "Bob Owner");
     // Alice net = S2(150) + S1Cross(-30) = 120
     expect(toAlice?.amount).toBe(120);
     // Bob net = S2(150) + S1Cross(0) = 150
@@ -142,9 +143,9 @@ describe("getSettlement", () => {
     const members = carB.rows.filter((r) => r.row_type === "member");
     const crossOwner = carB.rows.filter((r) => r.row_type === "cross_owner");
     const own = carB.rows.filter((r) => r.row_type === "own");
-    expect(members.map((r) => r.person_name).sort()).toEqual(["Carol", "Dave"]);
+    expect(members.map((r) => r.person_name).sort()).toEqual(["Carol Member", "Dave Member"]);
     expect(crossOwner).toHaveLength(1);
-    expect(crossOwner[0].person_name).toBe("Alice");
+    expect(crossOwner[0].person_name).toBe("Alice Owner");
     expect(crossOwner[0].trip_amount).toBe(30);
     expect(crossOwner[0].balance).toBe(30);
     expect(own).toHaveLength(0); // Bob has no own trips recorded
@@ -158,7 +159,7 @@ describe("getSettlement", () => {
     expect(carA.total_balance).toBe(150);
     const own = carA.rows.filter((r) => r.row_type === "own");
     expect(own).toHaveLength(1);
-    expect(own[0].person_name).toBe("Alice");
+    expect(own[0].person_name).toBe("Alice Owner");
     expect(own[0].trip_km).toBe(150);
     expect(own[0].trip_amount).toBe(0); // own trips = €0 in settlement
     expect(own[0].balance).toBe(0);
@@ -171,9 +172,9 @@ describe("getSettlement", () => {
       "INSERT INTO fuel_fillups (person_id, car_id, date, liters, amount, price_per_liter) VALUES (?,?,?,?,?,?)"
     ).run(3, 1, "2025-07-01", 20, 20, 1.0);
     const result = getSettlement(db, 2025);
-    const carol = result.members.find((m) => m.person_name === "Carol")!;
+    const carol = result.members.find((m) => m.person_id === 3)!;
     expect(carol.s1).toBe(-160); // was -180, +20 fuel credit
-    const alice = result.members.find((m) => m.person_name === "Alice")!;
+    const alice = result.members.find((m) => m.person_id === 1)!;
     expect(alice.s2).toBe(130); // N_new(CarA): 150 - 20 = 130
   });
 
@@ -206,7 +207,7 @@ describe("getSettlement — payment integration", () => {
     seed(db);
     const result0 = getSettlement(db, 2025);
     // Find Carol's step-1 transfer (Carol has s1 < 0 → she owes the co-op)
-    const carolTransfer = result0.transfers.find((t) => t.step === 1 && t.from === "Carol");
+    const carolTransfer = result0.transfers.find((t) => t.step === 1 && t.from === "Carol Member");
     if (!carolTransfer) return; // skip if Carol has no debt
     const carolId = 3; // from seed
     // Carol pays half
@@ -218,7 +219,7 @@ describe("getSettlement — payment integration", () => {
       note: null,
     });
     const result1 = getSettlement(db, 2025);
-    const carolT = result1.transfers.find((t) => t.step === 1 && t.from === "Carol")!;
+    const carolT = result1.transfers.find((t) => t.step === 1 && t.from === "Carol Member")!;
     expect(carolT.payment_status).not.toBeNull();
     expect(carolT.payment_status!.paid).toBeCloseTo(halfAmount, 2);
     expect(carolT.payment_status!.open).toBeCloseTo(halfAmount, 2);
@@ -237,7 +238,7 @@ describe("getSettlement — payment integration", () => {
   it("reports all_paid=true when all transfers are fully paid", () => {
     const db = makeDb();
     seed(db);
-    const nameToId: Record<string, number> = { Alice: 1, Bob: 2, Carol: 3, Dave: 4 };
+    const nameToId: Record<string, number> = { "Alice Owner": 1, "Bob Owner": 2, "Carol Member": 3, "Dave Member": 4 };
     const result0 = getSettlement(db, 2025);
     // Pay every transfer that has a payment_status
     for (const t of result0.transfers) {

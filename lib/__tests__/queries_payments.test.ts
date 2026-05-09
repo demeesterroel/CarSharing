@@ -19,7 +19,7 @@ function makeDb() {
 }
 
 function seed(db: Database.Database) {
-  db.exec(`INSERT INTO people (id, name, active) VALUES (1, 'Alice', 1), (2, 'Bob', 1)`);
+  db.exec(`INSERT INTO people (id, name, first_name, last_name, active) VALUES (1, 'Alice', 'Alice', '', 1), (2, 'Bob', 'Bob', '', 1)`);
 }
 
 describe("getPayments", () => {

@@ -188,26 +188,26 @@ describe("setPasswordHash", () => {
 describe("isOwner", () => {
   it("returns false when person owns no active cars", () => {
     const db = makeDb();
-    insertPerson(db, { ...basePerson, name: "Alice" });
-    expect(isOwner(db, "Alice")).toBe(false);
+    const aliceId = insertPerson(db, { ...basePerson, name: "Alice" });
+    expect(isOwner(db, aliceId)).toBe(false);
   });
 
   it("returns true when person owns an active car", () => {
     const db = makeDb();
-    insertPerson(db, { ...basePerson, name: "Alice" });
+    const aliceId = insertPerson(db, { ...basePerson, name: "Alice" });
     db.exec(
-      `INSERT INTO cars (short,name,price_per_km,owner_name,owner_from,active) VALUES ('CA','Car A',0.2,'Alice','2020-01-01',1)`
+      `INSERT INTO cars (short,name,price_per_km,owner_person_id,owner_from,active) VALUES ('CA','Car A',0.2,${aliceId},'2020-01-01',1)`
     );
-    expect(isOwner(db, "Alice")).toBe(true);
+    expect(isOwner(db, aliceId)).toBe(true);
   });
 
   it("returns true when person only owns inactive cars (owner retains API access after deactivation)", () => {
     const db = makeDb();
-    insertPerson(db, { ...basePerson, name: "Alice" });
+    const aliceId = insertPerson(db, { ...basePerson, name: "Alice" });
     db.exec(
-      `INSERT INTO cars (short,name,price_per_km,owner_name,owner_from,active) VALUES ('CA','Car A',0.2,'Alice','2020-01-01',0)`
+      `INSERT INTO cars (short,name,price_per_km,owner_person_id,owner_from,active) VALUES ('CA','Car A',0.2,${aliceId},'2020-01-01',0)`
     );
-    expect(isOwner(db, "Alice")).toBe(true);
+    expect(isOwner(db, aliceId)).toBe(true);
   });
 });
 

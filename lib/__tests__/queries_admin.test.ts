@@ -35,6 +35,7 @@ const basePerson = {
   password_hash: null,
   is_admin: 0 as const,
   bank_account: "",
+  email: null,
 };
 
 describe("getCarPnL", () => {
@@ -124,16 +125,15 @@ describe("getCarPnL", () => {
 
   it("computes owner_trip_amount for owner's own car trips", () => {
     const db = makeDb();
-    const pid = insertPerson(db, { ...basePerson, name: "Alice" });
-    insertCar(db, {
+    const pid = insertPerson(db, { ...basePerson, name: "Alice Owner" });
+    const cid = insertCar(db, {
       short: "CA",
       name: "Car A",
       price_per_km: 0.2,
       brand: null,
       color: null,
-      owner_name: "Alice",
+      owner_person_id: pid,
     });
-    const cid = (db.prepare("SELECT id FROM cars WHERE short='CA'").get() as any).id;
     insertTrip(db, {
       person_id: pid,
       car_id: cid,
@@ -488,7 +488,7 @@ describe("getHistoricalOwnerSplit", () => {
     const db = makeDb();
     const owner = insertPerson(db, { ...basePerson, name: "Alice" });
     const other = insertPerson(db, { ...basePerson, name: "Bob" });
-    const cid = insertCar(db, { short: "CA", name: "Car A", price_per_km: 0.2, brand: null, color: null, owner_name: "Alice" });
+    const cid = insertCar(db, { short: "CA", name: "Car A", price_per_km: 0.2, brand: null, color: null, owner_person_id: owner });
     insertTrip(db, { person_id: owner, car_id: cid, date: "2022-06-01", start_odometer: 0, end_odometer: 100, location: null });
     insertTrip(db, { person_id: other, car_id: cid, date: "2022-06-02", start_odometer: 100, end_odometer: 250, location: null });
     const result = getHistoricalOwnerSplit(db, 2026);

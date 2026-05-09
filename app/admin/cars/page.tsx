@@ -217,7 +217,7 @@ function CarRow({
               <option value="">—</option>
               {people.map((p) => (
                 <option key={p.id} value={p.name}>
-                  {p.name}
+                  {displayName(p)}
                 </option>
               ))}
             </select>
@@ -235,7 +235,7 @@ function CarRow({
               <option value="">— geen —</option>
               {people.map((p) => (
                 <option key={p.id} value={p.id}>
-                  {p.name}
+                  {displayName(p)}
                 </option>
               ))}
             </select>
@@ -574,7 +574,7 @@ function OwnerCarTile({
               <option value="">— geen —</option>
               {people.map((p) => (
                 <option key={p.id} value={p.id}>
-                  {p.name}
+                  {displayName(p)}
                 </option>
               ))}
             </select>
@@ -1137,6 +1137,10 @@ function OwnerFleet({ myName }: { myName: string | null }) {
 }
 
 // ── Page ──────────────────────────────────────────────────────
+function displayName(p: { name: string; username?: string | null }): string {
+  return p.name?.split(" ")[0] || p.username || "?";
+}
+
 export default function AdminWagensPage() {
   const { data: me, isLoading } = useMe();
   const router = useRouter();

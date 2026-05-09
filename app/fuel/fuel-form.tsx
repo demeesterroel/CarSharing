@@ -14,7 +14,7 @@ import { useLastCarState } from "@/hooks/use-car-state";
 import { useMe } from "@/hooks/use-me";
 import { useOnlineState } from "@/lib/offline/online-state";
 import type { FuelFillup, FuelFillupInput } from "@/types";
-import { t } from "@/lib/i18n";
+import { t, buildMissingLabel } from "@/lib/i18n";
 import { paper, fontMono, fontSerif } from "@/lib/paper-theme";
 
 const schema = z.object({
@@ -105,6 +105,14 @@ export function FuelForm({ defaultValues, onSubmit, onCancel, onDelete }: Props)
     control,
     name: ["amount", "liters", "car_id", "person_id", "date", "full_tank", "settled_outside"],
   });
+  const canSubmit = !!(personId && carId && date && Number(amount) > 0 && Number(liters) > 0);
+  const missingLabel = buildMissingLabel([
+    !carId && t("field.car"),
+    isAdmin && !personId && t("field.driver"),
+    !date && t("field.date"),
+    !(Number(amount) > 0) && t("field.amount"),
+    !(Number(liters) > 0) && t("field.liters"),
+  ]);
   const pricePerLiter = calcPricePerLiter(Number(amount) || 0, Number(liters) || 0);
   const person = people.find((p) => p.id === personId);
 
@@ -199,24 +207,51 @@ export function FuelForm({ defaultValues, onSubmit, onCancel, onDelete }: Props)
         >
           ⛽ {t("form.fuel_receipt")}
         </div>
-        <button
-          type="submit"
-          style={{
-            fontFamily: fontMono,
-            fontSize: 9,
-            fontWeight: 700,
-            letterSpacing: 2,
-            textTransform: "uppercase",
-            background: paper.green,
-            color: "#fff",
-            border: "none",
-            padding: "8px 14px",
-            cursor: online ? "pointer" : "default",
-            opacity: online ? 1 : 0.45,
-          }}
-        >
-          {t("action.save_receipt")}
-        </button>
+        <div style={{ position: "relative" }} className="submit-wrap">
+          <button
+            type="submit"
+            disabled={!canSubmit}
+            style={{
+              fontFamily: fontMono,
+              fontSize: 9,
+              fontWeight: 700,
+              letterSpacing: 2,
+              textTransform: "uppercase",
+              background: paper.green,
+              color: "#fff",
+              border: "none",
+              padding: "8px 14px",
+              cursor: canSubmit && online ? "pointer" : "default",
+              opacity: canSubmit && online ? 1 : 0.35,
+            }}
+          >
+            {t("action.save_receipt")}
+          </button>
+          {!canSubmit && (
+            <div
+              className="submit-tip"
+              style={{
+                position: "absolute",
+                right: 0,
+                top: "calc(100% + 6px)",
+                background: paper.ink,
+                color: paper.paper,
+                fontFamily: fontMono,
+                fontSize: 9,
+                letterSpacing: 1,
+                padding: "5px 8px",
+                whiteSpace: "pre-line",
+                pointerEvents: "none",
+                opacity: 0,
+                transition: "opacity 0.15s",
+                zIndex: 20,
+              }}
+            >
+              {missingLabel}
+            </div>
+          )}
+        </div>
+        <style>{`.submit-wrap:hover .submit-tip, .submit-wrap:focus-within .submit-tip { opacity: 1 !important; }`}</style>
       </div>
 
       {/* Car tabs */}

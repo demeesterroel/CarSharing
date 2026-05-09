@@ -124,7 +124,7 @@ function CalendarContent() {
   const editIdParam = searchParams.get("edit");
 
   const sheet: "add" | "edit" | null =
-    actionParam === "reserve" ? "add" : editIdParam ? "edit" : null;
+    actionParam === "add" ? "add" : editIdParam ? "edit" : null;
   const editing =
     !isLoading && editIdParam
       ? (reservations.find((r) => r.id === Number(editIdParam)) ?? null)
@@ -161,7 +161,7 @@ function CalendarContent() {
     setPrefillFrom(from);
     setPrefillTo(to);
     const params = new URLSearchParams(searchParams.toString());
-    params.set("action", "reserve");
+    params.set("action", "add");
     router.push(`${pathname}?${params.toString()}`, { scroll: false });
   };
 
@@ -216,7 +216,7 @@ function CalendarContent() {
       </div>
 
       {/* Per-car 14-day timeline */}
-      <div style={{ padding: "12px 12px 4px" }}>
+      <div style={{ padding: "12px 0 4px" }}>
         {activeCars.map((car) => (
           <CarTimeline
             key={car.id}
@@ -255,7 +255,7 @@ function CalendarContent() {
               setPrefillFrom(undefined);
               setPrefillTo(undefined);
               const params = new URLSearchParams(searchParams.toString());
-              params.set("action", "reserve");
+              params.set("action", "add");
               router.push(`${pathname}?${params.toString()}`, { scroll: false });
             }}
             style={{

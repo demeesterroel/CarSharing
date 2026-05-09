@@ -81,6 +81,7 @@ export const en: Messages = {
   "form.name": "Name *",
   "form.full_name": "First Last Name",
   "form.bank_account": "Bank account (IBAN)",
+  "form.email": "Email address",
   "form.username": "Username",
   "form.password": "Password",
   "form.discount": "Discount (0–1)",
@@ -117,6 +118,17 @@ export const en: Messages = {
   "form.select_person_placeholder": "Select member",
   "form.driver": "DRIVER",
   "form.driver_locked_hint": "Your name — only admins can log on behalf of others",
+  "form.pick_dates_first": "Pick a period first",
+  "form.fill_required": "Fill in required fields",
+  "field.car": "car",
+  "field.driver": "driver",
+  "field.date": "date",
+  "field.amount": "amount",
+  "field.liters": "liters",
+  "field.km": "km",
+  "field.dates": "period",
+  "field.missing": "missing",
+  "field.fields_missing": "Fields missing",
   "form.reservation_reason": "REASON (OPTIONAL)",
   "form.reservation_reason_placeholder": "e.g. weekend trip",
   "form.days": "DAYS",
@@ -128,6 +140,7 @@ export const en: Messages = {
   "form.log_trip": "LOG A TRIP",
   "form.fuel_receipt": "FUEL RECEIPT",
   "form.extra_cost": "EXTRA COST",
+  "form.reservation": "RESERVATION",
   "action.save_trip": "SAVE TRIP",
   "action.save_receipt": "SAVE RECEIPT",
   "action.save_cost": "SAVE COST",
@@ -493,6 +506,33 @@ export const en: Messages = {
   "invite.too_short": "Minimum 8 characters",
   "invite.invalid": "Invalid or expired invitation",
   "invite.success": "Password set — you're logged in",
+
+  // Admin settings page
+  "settings.title": "Settings",
+  "settings.bank_title": "Cooperative bank account",
+  "settings.bank_hint": "Shown in payment messages to members.",
+  "settings.calendar_title": "Google Calendar",
+  "settings.calendar_hint": "Leave empty to disable the integration.",
+  "settings.calendar_id_label": "Google Calendar ID",
+  "settings.token_label": "OAuth Refresh Token",
+  "settings.token_stored": "stored — paste to change",
+  "settings.token_empty": "paste refresh token here",
+  "settings.env_warning":
+    "⚠ GOOGLE_CLIENT_ID or GOOGLE_CLIENT_SECRET missing in .env.local — calendar integration will not work.",
+  "settings.test": "Test connection",
+  "settings.test_ok": '✓ Connected to "{name}"',
+  "settings.test_no_id": "✗ No calendar ID saved. Enter an ID and save first.",
+  "settings.test_no_token": "✗ No token saved. Enter an OAuth Refresh Token and save first.",
+  "settings.test_no_env":
+    "✗ GOOGLE_CLIENT_ID or GOOGLE_CLIENT_SECRET missing in .env.local on the server.",
+  "settings.test_invalid_client":
+    "✗ Invalid Client ID or Secret — check GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET in .env.local. The OAuth client may have been deleted in Google Cloud Console.",
+  "settings.test_invalid_grant":
+    "✗ Token expired or revoked. Get a new Refresh Token from OAuth Playground and save it again.",
+  "settings.test_not_found":
+    "✗ Calendar not found. Check the calendar ID and make sure the OAuth account has read access.",
+  "settings.test_fail": "✗ Unexpected error: {error}",
+  "settings.backfill": "Sync upcoming reservations",
 
   // Admin members
   "admin.members_title": "Members",

@@ -344,78 +344,78 @@ function BalanceReceipt({ personName }: { personName: string }) {
   const balanceColor = settled ? paper.green : paper.accent;
 
   return (
-    <div style={{ padding: "18px 16px 0" }}>
-      {/* Year navigation */}
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          gap: 0,
-          marginBottom: 8,
-        }}
-      >
-        <button
-          onClick={() => setYear((y) => y - 1)}
-          disabled={year <= earliestYear}
-          style={{
-            padding: "6px 14px",
-            background: "transparent",
-            border: `1.5px solid ${paper.ink}`,
-            borderRight: "none",
-            fontFamily: fontMono,
-            fontSize: 10,
-            fontWeight: 700,
-            color: year <= earliestYear ? paper.inkMute : paper.ink,
-            cursor: year <= earliestYear ? "default" : "pointer",
-            letterSpacing: 1,
-          }}
-        >
-          ← {year - 1}
-        </button>
-        <div
-          style={{
-            padding: "6px 18px",
-            background: paper.ink,
-            color: paper.paper,
-            fontFamily: fontMono,
-            fontSize: 10,
-            fontWeight: 700,
-            letterSpacing: 2,
-            border: `1.5px solid ${paper.ink}`,
-          }}
-        >
-          {year}
-        </div>
-        <button
-          onClick={() => setYear((y) => y + 1)}
-          disabled={year >= currentYear}
-          style={{
-            padding: "6px 14px",
-            background: "transparent",
-            border: `1.5px solid ${paper.ink}`,
-            borderLeft: "none",
-            fontFamily: fontMono,
-            fontSize: 10,
-            fontWeight: 700,
-            color: year >= currentYear ? paper.inkMute : paper.ink,
-            cursor: year >= currentYear ? "default" : "pointer",
-            letterSpacing: 1,
-          }}
-        >
-          {year + 1} →
-        </button>
-      </div>
-
+    <div style={{ padding: "12px 16px 0" }}>
       {/* Receipt card */}
       <div
         style={{
           position: "relative",
           background: paper.paper,
-          padding: "20px 18px 22px",
+          padding: "16px 18px 22px",
           boxShadow: "0 1px 2px rgba(0,0,0,0.05), 0 8px 24px rgba(0,0,0,0.07)",
         }}
       >
+        {/* Year navigation */}
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: 0,
+            marginBottom: 14,
+          }}
+        >
+          <button
+            onClick={() => setYear((y) => y - 1)}
+            disabled={year <= earliestYear}
+            style={{
+              padding: "6px 14px",
+              background: "transparent",
+              border: `1.5px solid ${paper.ink}`,
+              borderRight: "none",
+              fontFamily: fontMono,
+              fontSize: 10,
+              fontWeight: 700,
+              color: year <= earliestYear ? paper.inkMute : paper.ink,
+              cursor: year <= earliestYear ? "default" : "pointer",
+              letterSpacing: 1,
+            }}
+          >
+            ← {year - 1}
+          </button>
+          <div
+            style={{
+              padding: "6px 18px",
+              background: paper.ink,
+              color: paper.paper,
+              fontFamily: fontMono,
+              fontSize: 10,
+              fontWeight: 700,
+              letterSpacing: 2,
+              border: `1.5px solid ${paper.ink}`,
+            }}
+          >
+            {year}
+          </div>
+          <button
+            onClick={() => setYear((y) => y + 1)}
+            disabled={year >= currentYear}
+            style={{
+              padding: "6px 14px",
+              background: "transparent",
+              border: `1.5px solid ${paper.ink}`,
+              borderLeft: "none",
+              fontFamily: fontMono,
+              fontSize: 10,
+              fontWeight: 700,
+              color: year >= currentYear ? paper.inkMute : paper.ink,
+              cursor: year >= currentYear ? "default" : "pointer",
+              letterSpacing: 1,
+            }}
+          >
+            {year + 1} →
+          </button>
+        </div>
+
         {/* Owner badge */}
         {myRow.is_owner && (
           <span
@@ -787,6 +787,42 @@ function CarLocations({
 // ── Sheet dialogs ────────────────────────────────────────────
 type SheetType = "trip" | "fuel" | "expense" | "reserve" | null;
 
+const SHEET_STYLE: React.CSSProperties = {
+  position: "fixed",
+  left: 0,
+  right: 0,
+  bottom: 0,
+  background: paper.paper,
+  borderRadius: "16px 16px 0 0",
+  zIndex: 50,
+  maxHeight: "95vh",
+  overflowY: "auto",
+  maxWidth: 480,
+  margin: "0 auto",
+};
+
+function FormDialog({
+  open,
+  onClose,
+  children,
+}: {
+  open: boolean;
+  onClose: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <Dialog.Root open={open} onOpenChange={(o) => !o && onClose()}>
+      <Dialog.Portal>
+        <Dialog.Overlay className="fixed inset-0 bg-black/40 z-40" />
+        <Dialog.Content style={SHEET_STYLE} aria-describedby={undefined}>
+          <Dialog.Title className="sr-only" />
+          {children}
+        </Dialog.Content>
+      </Dialog.Portal>
+    </Dialog.Root>
+  );
+}
+
 function Sheets({ sheet, setSheet }: { sheet: SheetType; setSheet: (s: SheetType) => void }) {
   const t = useT();
   const createTrip = useCreateTrip();
@@ -796,141 +832,55 @@ function Sheets({ sheet, setSheet }: { sheet: SheetType; setSheet: (s: SheetType
 
   const close = () => setSheet(null);
 
-  const sheetStyle: React.CSSProperties = {
-    position: "fixed",
-    left: 0,
-    right: 0,
-    bottom: 0,
-    background: paper.paper,
-    borderRadius: "16px 16px 0 0",
-    zIndex: 50,
-    maxHeight: "95vh",
-    overflowY: "auto",
-    maxWidth: 480,
-    margin: "0 auto",
-  };
-
   return (
     <>
-      <Dialog.Root open={sheet === "trip"} onOpenChange={(o) => !o && close()}>
-        <Dialog.Portal>
-          <Dialog.Overlay className="fixed inset-0 bg-black/40 z-40" />
-          <Dialog.Content style={sheetStyle}>
-            <Dialog.Title
-              style={{
-                padding: "16px 20px 0",
-                fontFamily: fontSerif,
-                fontSize: 20,
-                fontWeight: 700,
-              }}
-            >
-              {t("page.trip_add")}
-            </Dialog.Title>
-            <TripForm
-              onSubmit={(d) =>
-                createTrip.mutate(d as any, {
-                  onSuccess: () => {
-                    close();
-                    toast.success(t("toast.trip_saved"));
-                  },
-                  onError: (e) => toast.error(e.message),
-                })
-              }
-              onCancel={close}
-            />
-          </Dialog.Content>
-        </Dialog.Portal>
-      </Dialog.Root>
+      <FormDialog open={sheet === "trip"} onClose={close}>
+        <TripForm
+          onSubmit={(d) =>
+            createTrip.mutate(d as any, {
+              onSuccess: () => { close(); toast.success(t("toast.trip_saved")); },
+              onError: (e) => toast.error(e.message),
+            })
+          }
+          onCancel={close}
+        />
+      </FormDialog>
 
-      <Dialog.Root open={sheet === "fuel"} onOpenChange={(o) => !o && close()}>
-        <Dialog.Portal>
-          <Dialog.Overlay className="fixed inset-0 bg-black/40 z-40" />
-          <Dialog.Content style={sheetStyle}>
-            <Dialog.Title
-              style={{
-                padding: "16px 20px 0",
-                fontFamily: fontSerif,
-                fontSize: 20,
-                fontWeight: 700,
-              }}
-            >
-              {t("page.fuel_add")}
-            </Dialog.Title>
-            <FuelForm
-              onSubmit={(d) =>
-                createFuel.mutate(d as any, {
-                  onSuccess: () => {
-                    close();
-                    toast.success(t("toast.fuel_saved"));
-                  },
-                  onError: (e) => toast.error(e.message),
-                })
-              }
-              onCancel={close}
-            />
-          </Dialog.Content>
-        </Dialog.Portal>
-      </Dialog.Root>
+      <FormDialog open={sheet === "fuel"} onClose={close}>
+        <FuelForm
+          onSubmit={(d) =>
+            createFuel.mutate(d as any, {
+              onSuccess: () => { close(); toast.success(t("toast.fuel_saved")); },
+              onError: (e) => toast.error(e.message),
+            })
+          }
+          onCancel={close}
+        />
+      </FormDialog>
 
-      <Dialog.Root open={sheet === "expense"} onOpenChange={(o) => !o && close()}>
-        <Dialog.Portal>
-          <Dialog.Overlay className="fixed inset-0 bg-black/40 z-40" />
-          <Dialog.Content style={sheetStyle}>
-            <Dialog.Title
-              style={{
-                padding: "16px 20px 0",
-                fontFamily: fontSerif,
-                fontSize: 20,
-                fontWeight: 700,
-              }}
-            >
-              {t("page.expense_add")}
-            </Dialog.Title>
-            <ExpenseForm
-              onSubmit={(d) =>
-                createExpense.mutate(d as any, {
-                  onSuccess: () => {
-                    close();
-                    toast.success(t("toast.expense_saved"));
-                  },
-                  onError: (e) => toast.error(e.message),
-                })
-              }
-              onCancel={close}
-            />
-          </Dialog.Content>
-        </Dialog.Portal>
-      </Dialog.Root>
+      <FormDialog open={sheet === "expense"} onClose={close}>
+        <ExpenseForm
+          onSubmit={(d) =>
+            createExpense.mutate(d as any, {
+              onSuccess: () => { close(); toast.success(t("toast.expense_saved")); },
+              onError: (e) => toast.error(e.message),
+            })
+          }
+          onCancel={close}
+        />
+      </FormDialog>
 
-      <Dialog.Root open={sheet === "reserve"} onOpenChange={(o) => !o && close()}>
-        <Dialog.Portal>
-          <Dialog.Overlay className="fixed inset-0 bg-black/40 z-40" />
-          <Dialog.Content style={sheetStyle}>
-            <Dialog.Title
-              style={{
-                padding: "16px 20px 0",
-                fontFamily: fontSerif,
-                fontSize: 20,
-                fontWeight: 700,
-              }}
-            >
-              {t("page.reservation_request")}
-            </Dialog.Title>
-            <ReservationForm
-              onSubmit={(d) =>
-                createReservation.mutate(d as any, {
-                  onSuccess: () => {
-                    close();
-                    toast.success(t("toast.reservation_requested"));
-                  },
-                  onError: (e) => toast.error(e.message),
-                })
-              }
-              onCancel={close}
-            />
-          </Dialog.Content>
-        </Dialog.Portal>
-      </Dialog.Root>
+      <FormDialog open={sheet === "reserve"} onClose={close}>
+        <ReservationForm
+          onSubmit={(d) =>
+            createReservation.mutate(d as any, {
+              onSuccess: () => { close(); toast.success(t("toast.reservation_requested")); },
+              onError: (e) => toast.error(e.message),
+            })
+          }
+          onCancel={close}
+        />
+      </FormDialog>
     </>
   );
 }

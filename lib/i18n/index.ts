@@ -32,4 +32,10 @@ export function t(key: MessageKey, params?: Params): string {
   });
 }
 
+export function buildMissingLabel(fields: (string | false | null | undefined)[]): string {
+  const missing = fields.filter(Boolean) as string[];
+  if (missing.length === 0) return "";
+  return `${t("field.fields_missing")}:\n${missing.map((f) => `  ${f}`).join("\n")}`;
+}
+
 export type { MessageKey } from "./messages/nl";

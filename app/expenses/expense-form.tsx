@@ -11,6 +11,7 @@ import { useMe } from "@/hooks/use-me";
 import { useOnlineState } from "@/lib/offline/online-state";
 import type { Expense, ExpenseCategory, ExpenseInput } from "@/types";
 import { useT } from "@/components/locale-provider";
+import { buildMissingLabel } from "@/lib/i18n";
 import { paper, fontMono, fontSerif } from "@/lib/paper-theme";
 
 const EXPENSE_CATEGORIES: { key: ExpenseCategory; icon: string; labelKey: string }[] = [
@@ -78,10 +79,17 @@ export function ExpenseForm({ defaultValues, onSubmit, onCancel, onDelete }: Pro
     },
   });
 
-  const [personId, category, settledOutside] = useWatch({
+  const [personId, category, settledOutside, carIdW, dateW, amountW] = useWatch({
     control,
-    name: ["person_id", "category", "settled_outside"],
+    name: ["person_id", "category", "settled_outside", "car_id", "date", "amount"],
   });
+  const canSubmit = !!(personId && carIdW && dateW && Number(amountW) > 0);
+  const missingLabel = buildMissingLabel([
+    !carIdW && t("field.car"),
+    isAdmin && !personId && t("field.driver"),
+    !dateW && t("field.date"),
+    !(Number(amountW) > 0) && t("field.amount"),
+  ]);
   const person = people.find((p) => p.id === personId);
 
   useEffect(() => {
@@ -160,24 +168,51 @@ export function ExpenseForm({ defaultValues, onSubmit, onCancel, onDelete }: Pro
         >
           📋 {t("form.extra_cost")}
         </div>
-        <button
-          type="submit"
-          style={{
-            fontFamily: fontMono,
-            fontSize: 9,
-            fontWeight: 700,
-            letterSpacing: 2,
-            textTransform: "uppercase",
-            background: paper.inkDim,
-            color: "#fff",
-            border: "none",
-            padding: "8px 14px",
-            cursor: online ? "pointer" : "default",
-            opacity: online ? 1 : 0.45,
-          }}
-        >
-          {t("action.save_cost")}
-        </button>
+        <div style={{ position: "relative" }} className="submit-wrap">
+          <button
+            type="submit"
+            disabled={!canSubmit}
+            style={{
+              fontFamily: fontMono,
+              fontSize: 9,
+              fontWeight: 700,
+              letterSpacing: 2,
+              textTransform: "uppercase",
+              background: paper.inkDim,
+              color: "#fff",
+              border: "none",
+              padding: "8px 14px",
+              cursor: canSubmit && online ? "pointer" : "default",
+              opacity: canSubmit && online ? 1 : 0.35,
+            }}
+          >
+            {t("action.save_cost")}
+          </button>
+          {!canSubmit && (
+            <div
+              className="submit-tip"
+              style={{
+                position: "absolute",
+                right: 0,
+                top: "calc(100% + 6px)",
+                background: paper.ink,
+                color: paper.paper,
+                fontFamily: fontMono,
+                fontSize: 9,
+                letterSpacing: 1,
+                padding: "5px 8px",
+                whiteSpace: "pre-line",
+                pointerEvents: "none",
+                opacity: 0,
+                transition: "opacity 0.15s",
+                zIndex: 20,
+              }}
+            >
+              {missingLabel}
+            </div>
+          )}
+        </div>
+        <style>{`.submit-wrap:hover .submit-tip, .submit-wrap:focus-within .submit-tip { opacity: 1 !important; }`}</style>
       </div>
 
       {/* Car tabs */}
@@ -408,13 +443,13 @@ export function ExpenseForm({ defaultValues, onSubmit, onCancel, onDelete }: Pro
             marginBottom: 6,
           }}
         >
-          {t("form.description")} *
+          {t("form.note")}
         </span>
         <div style={{ ...dashedBox, padding: "10px 14px" }}>
           <input
             {...register("description")}
             type="text"
-            placeholder={t("form.description_placeholder")}
+            placeholder={t("form.note")}
             style={{
               fontFamily: fontSerif,
               fontSize: 17,

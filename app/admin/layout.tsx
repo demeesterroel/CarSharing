@@ -5,10 +5,10 @@ import { usePathname } from "next/navigation";
 import { PageHeader, TITLE_BAR_HEIGHT } from "@/components/page-header";
 import { paper, fontMono } from "@/lib/paper-theme";
 import { useT } from "@/components/locale-provider";
-import { useReservations, useOwnerCarShorts } from "./_shared";
+import { useReservations, useOwnerCarShorts, useAdminSummary } from "./_shared";
 import { useMe } from "@/hooks/use-me";
 
-const OWNER_PAGES = ["/admin", "/admin/hygiene", "/admin/settlement", "/admin/cars"];
+const OWNER_PAGES = ["/admin", "/admin/settlement", "/admin/cars"];
 
 function SubNav() {
   const t = useT();
@@ -21,15 +21,19 @@ function SubNav() {
   ).length;
 
   const year = new Date().getFullYear();
+  const { data: adminData } = useAdminSummary(year);
+  const gapsCount = (adminData?.kmGaps ?? []).filter(
+    (g) => !ownerCarShorts || ownerCarShorts.has(g.car_short)
+  ).length;
+  const inboxCount = pendingCount + gapsCount;
 
   const ALL_PAGES = [
     {
       href: "/admin",
-      label: t("admin.sub_inbox") + (pendingCount > 0 ? ` (${pendingCount})` : ""),
+      label: t("admin.sub_inbox") + (inboxCount > 0 ? ` (${inboxCount})` : ""),
     },
     { href: "/admin/cars", label: t("admin.sub_cars") },
     { href: "/admin/members", label: t("admin.sub_members") },
-    { href: "/admin/hygiene", label: t("admin.sub_data") },
     { href: "/admin/settlement", label: t("admin.sub_settlement") },
     { href: "/admin/payments", label: t("admin.sub_payments") },
     { href: "/admin/settings", label: t("admin.sub_settings") },

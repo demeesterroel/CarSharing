@@ -28,34 +28,47 @@ export function Fab({ onClick, label }: Props) {
     onClick();
   };
   return (
-    <button
-      onClick={handleClick}
-      aria-label={label ?? t("action.add")}
+    <div
       style={{
         position: "fixed",
-        right: 20,
+        left: 0,
+        right: 0,
         bottom: 86,
-        width: 56,
-        height: 56,
-        background: online ? paper.ink : paper.inkMute,
-        color: paper.paper,
-        border: "none",
-        borderRadius: 0,
-        cursor: online ? "pointer" : "default",
-        fontFamily: fontMono,
-        fontSize: 28,
-        fontWeight: 700,
-        lineHeight: 1,
-        boxShadow: "0 6px 20px rgba(0,0,0,0.25)",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
+        maxWidth: 480,
+        margin: "0 auto",
+        pointerEvents: "none",
         zIndex: 20,
-        opacity: online ? 1 : 0.45,
       }}
     >
-      +
-    </button>
+      <button
+        onClick={handleClick}
+        aria-label={label ?? t("action.add")}
+        style={{
+          position: "absolute",
+          right: 20,
+          bottom: 0,
+          width: 56,
+          height: 56,
+          background: online ? paper.ink : paper.inkMute,
+          color: paper.paper,
+          border: "none",
+          borderRadius: 0,
+          cursor: online ? "pointer" : "default",
+          fontFamily: fontMono,
+          fontSize: 28,
+          fontWeight: 700,
+          lineHeight: 1,
+          boxShadow: "0 6px 20px rgba(0,0,0,0.25)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          pointerEvents: "auto",
+          opacity: online ? 1 : 0.45,
+        }}
+      >
+        +
+      </button>
+    </div>
   );
 }
 
@@ -67,13 +80,25 @@ export function MultiFab({ onPick }: { onPick: (action: string) => void }) {
     <div
       style={{
         position: "fixed",
-        right: 16,
+        left: 0,
+        right: 0,
         bottom: 86,
+        maxWidth: 480,
+        margin: "0 auto",
+        pointerEvents: "none",
         zIndex: 40,
+      }}
+    >
+    <div
+      style={{
+        position: "absolute",
+        right: 20,
+        bottom: 0,
         display: "flex",
         flexDirection: "column",
         alignItems: "flex-end",
         gap: 10,
+        pointerEvents: "auto",
       }}
     >
       {open && (
@@ -132,14 +157,14 @@ export function MultiFab({ onPick }: { onPick: (action: string) => void }) {
         aria-label={t("fab.open_menu")}
         aria-expanded={open}
         style={{
-          width: 60,
-          height: 60,
+          width: 56,
+          height: 56,
           background: online ? paper.ink : paper.inkMute,
           color: paper.paper,
           border: "none",
           cursor: online ? "pointer" : "default",
           fontFamily: fontMono,
-          fontSize: 34,
+          fontSize: 28,
           fontWeight: 700,
           lineHeight: 1,
           boxShadow: "0 6px 20px rgba(0,0,0,0.25)",
@@ -153,6 +178,7 @@ export function MultiFab({ onPick }: { onPick: (action: string) => void }) {
       >
         +
       </button>
+    </div>
     </div>
   );
 }

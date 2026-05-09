@@ -878,7 +878,7 @@ function generateCarDetailMd(car: import("@/lib/queries/admin").CarPnL, year: nu
 }
 
 // ── Owner fleet view ──────────────────────────────────────────
-function OwnerFleet({ myName }: { myName: string | null }) {
+function OwnerFleet({ myPersonId }: { myPersonId: number | null }) {
   const t = useT();
   const currentYear = new Date().getFullYear();
   const searchParams = useSearchParams();
@@ -910,7 +910,7 @@ function OwnerFleet({ myName }: { myName: string | null }) {
   const { data: summary } = useAdminSummary(year);
 
   const carMap = new Map(cars.map((c) => [c.id, c]));
-  const myCars = myName ? cars.filter((c) => c.owner_name === myName) : cars;
+  const myCars = myPersonId ? cars.filter((c) => c.owner_person_id === myPersonId) : cars;
   const allPnL = summary?.carPnL ?? [];
   const monthlyKm = summary?.monthlyCarKm ?? [];
   const historicalKm = summary?.historicalCarKm ?? [];
@@ -1154,6 +1154,6 @@ export default function AdminWagensPage() {
   if (isLoading || !me) return null;
   if (!me.isAdmin && !me.isOwner) return null;
 
-  if (me.isAdmin) return <OwnerFleet myName={null} />;
-  return <OwnerFleet myName={me.personName!} />;
+  if (me.isAdmin) return <OwnerFleet myPersonId={null} />;
+  return <OwnerFleet myPersonId={me.personId} />;
 }

@@ -50,7 +50,7 @@ export function updateCar(db: Database.Database, id: number, data: CarInput): vo
       const person = db
         .prepare("SELECT name FROM people WHERE id = ?")
         .get(args.data.owner_person_id) as { name: string } | undefined;
-      if (person) ownerName = person.name;
+      if (person) ownerName = person.name.split(" ")[0];
     }
     db.prepare(
       "UPDATE cars SET short=?,name=?,price_per_km=?,brand=?,color=?,owner_name=?,long_threshold=?,active=?,expected_km=?,owner_person_id=? WHERE id=?"

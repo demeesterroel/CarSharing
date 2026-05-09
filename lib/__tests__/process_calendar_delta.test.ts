@@ -1,0 +1,179 @@
+// lib/__tests__/process_calendar_delta.test.ts
+import { describe, it, expect, vi, beforeEach } from "vitest";
+import Database from "better-sqlite3";
+import { runMigrations } from "../db/migrate";
+import { setSetting } from "../queries/settings";
+import { processCalendarDelta } from "../process-calendar-delta";
+import type { CalendarEvent } from "../google-calendar";
+
+vi.mock("../google-calendar", () => ({
+  getOAuthClient: vi.fn(() => ({})),
+  updateEvent: vi.fn().mockResolvedValue({ etag: '"new-etag"' }),
+  addDays: (d: string, n: number) => {
+    const dt = new Date(d + "T00:00:00Z");
+    dt.setUTCDate(dt.getUTCDate() + n);
+    return dt.toISOString().slice(0, 10);
+  },
+}));
+
+import * as calMock from "../google-calendar";
+
+function makeDb() {
+  const db = new Database(":memory:");
+  db.pragma("foreign_keys = ON");
+  runMigrations(db);
+  return db;
+}
+
+function seedWithEvent(db: Database.Database, overrides: Record<string, unknown> = {}) {
+  db.prepare(
+    "INSERT INTO people (id, name, active, email) VALUES (1, 'Alice', 1, null), (2, 'Owner Bob', 1, 'bob@example.com') ON CONFLICT DO NOTHING"
+  ).run();
+  db.prepare(
+    "INSERT INTO cars (id, short, name, price_per_km, owner_person_id, active) VALUES (1, 'CA', 'Car A', 0.2, 2, 1) ON CONFLICT DO NOTHING"
+  ).run();
+  const defaults = {
+    google_event_id: "evt-123",
+    last_synced_etag: '"old-etag"',
+    last_app_write_nonce: "nonce-abc",
+    last_known_response_status: "needsAction",
+    status: "pending",
+  };
+  const merged = { ...defaults, ...overrides };
+  db.prepare(
+    `INSERT INTO reservations (person_id, car_id, start_date, end_date, status, updated_at,
+      google_event_id, last_synced_etag, last_app_write_nonce, last_known_response_status)
+     VALUES (1, 1, '2026-06-01', '2026-06-03', ?, datetime('now'), ?, ?, ?, ?)`
+  ).run(
+    merged.status,
+    merged.google_event_id,
+    merged.last_synced_etag,
+    merged.last_app_write_nonce,
+    merged.last_known_response_status
+  );
+}
+
+const fakeClient = {} as any;
+const calendarId = "cal-id";
+
+beforeEach(() => {
+  vi.clearAllMocks();
+});
+
+describe("processCalendarDelta", () => {
+  it("skips events not found in reservations", async () => {
+    const db = makeDb();
+    seedWithEvent(db);
+    const events: CalendarEvent[] = [{ id: "unknown-evt", etag: '"new"' }];
+    await processCalendarDelta(db, fakeClient, calendarId, events);
+    expect(calMock.updateEvent).not.toHaveBeenCalled();
+  });
+
+  it("skips event if etag matches last_synced_etag (echo)", async () => {
+    const db = makeDb();
+    seedWithEvent(db, { last_synced_etag: '"same-etag"' });
+    const events: CalendarEvent[] = [{ id: "evt-123", etag: '"same-etag"' }];
+    await processCalendarDelta(db, fakeClient, calendarId, events);
+    expect(calMock.updateEvent).not.toHaveBeenCalled();
+  });
+
+  it("skips event if appWriteNonce matches last_app_write_nonce when etag absent (echo fallback)", async () => {
+    const db = makeDb();
+    seedWithEvent(db);
+    const events: CalendarEvent[] = [
+      {
+        id: "evt-123",
+        etag: null, // no etag — nonce is the only echo guard
+        extendedProperties: { private: { appWriteNonce: "nonce-abc" } },
+      },
+    ];
+    await processCalendarDelta(db, fakeClient, calendarId, events);
+    expect(calMock.updateEvent).not.toHaveBeenCalled();
+  });
+
+  it("overwrites calendar when time is edited (app is authoritative)", async () => {
+    const db = makeDb();
+    seedWithEvent(db);
+    const events: CalendarEvent[] = [
+      {
+        id: "evt-123",
+        etag: '"different-etag"',
+        start: { date: "2026-07-01" }, // wrong date
+        end: { date: "2026-07-04" },
+        extendedProperties: { private: { appWriteNonce: "other-nonce" } },
+      },
+    ];
+    await processCalendarDelta(db, fakeClient, calendarId, events);
+    expect(calMock.updateEvent).toHaveBeenCalledOnce();
+    const row = db
+      .prepare(
+        "SELECT last_synced_etag, last_app_write_nonce FROM reservations WHERE google_event_id = 'evt-123'"
+      )
+      .get() as { last_synced_etag: string; last_app_write_nonce: string };
+    expect(row.last_synced_etag).toBe('"new-etag"');
+    expect(row.last_app_write_nonce).toBeTruthy();
+  });
+
+  it("updates reservation to confirmed when owner accepts", async () => {
+    const db = makeDb();
+    seedWithEvent(db);
+    const events: CalendarEvent[] = [
+      {
+        id: "evt-123",
+        etag: '"different-etag"',
+        start: { date: "2026-06-01" },
+        end: { date: "2026-06-04" }, // end_date + 1 (exclusive)
+        attendees: [{ email: "bob@example.com", responseStatus: "accepted" }],
+        extendedProperties: { private: { appWriteNonce: "other-nonce" } },
+      },
+    ];
+    await processCalendarDelta(db, fakeClient, calendarId, events);
+    const row = db
+      .prepare(
+        "SELECT status, last_known_response_status FROM reservations WHERE google_event_id = 'evt-123'"
+      )
+      .get() as { status: string; last_known_response_status: string };
+    expect(row.status).toBe("confirmed");
+    expect(row.last_known_response_status).toBe("accepted");
+  });
+
+  it("updates reservation to rejected when owner declines", async () => {
+    const db = makeDb();
+    seedWithEvent(db);
+    const events: CalendarEvent[] = [
+      {
+        id: "evt-123",
+        etag: '"different-etag"',
+        start: { date: "2026-06-01" },
+        end: { date: "2026-06-04" },
+        attendees: [{ email: "bob@example.com", responseStatus: "declined" }],
+        extendedProperties: { private: { appWriteNonce: "other-nonce" } },
+      },
+    ];
+    await processCalendarDelta(db, fakeClient, calendarId, events);
+    const row = db
+      .prepare("SELECT status FROM reservations WHERE google_event_id = 'evt-123'")
+      .get() as { status: string };
+    expect(row.status).toBe("rejected");
+  });
+
+  it("treats cancelled event (owner deleted invite) as declined", async () => {
+    const db = makeDb();
+    seedWithEvent(db);
+    const events: CalendarEvent[] = [
+      {
+        id: "evt-123",
+        etag: '"different-etag"',
+        status: "cancelled",
+        start: { date: "2026-06-01" },
+        end: { date: "2026-06-04" },
+        extendedProperties: { private: { appWriteNonce: "other-nonce" } },
+      },
+    ];
+    await processCalendarDelta(db, fakeClient, calendarId, events);
+    const row = db
+      .prepare("SELECT status FROM reservations WHERE google_event_id = 'evt-123'")
+      .get() as { status: string };
+    expect(row.status).toBe("rejected");
+  });
+});

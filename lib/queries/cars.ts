@@ -20,7 +20,7 @@ export function insertCar(db: Database.Database, data: CarInput): number {
   return db.transaction((d: CarInput) => {
     const result = db
       .prepare(
-        "INSERT INTO cars (short,name,price_per_km,brand,color,owner_name,long_threshold) VALUES (?,?,?,?,?,?,?)"
+        "INSERT INTO cars (short,name,price_per_km,brand,color,owner_name,long_threshold,owner_person_id) VALUES (?,?,?,?,?,?,?,?)"
       )
       .run(
         d.short,
@@ -29,7 +29,8 @@ export function insertCar(db: Database.Database, data: CarInput): number {
         d.brand ?? null,
         d.color ?? null,
         d.owner_name ?? null,
-        d.long_threshold ?? 500
+        d.long_threshold ?? 500,
+        d.owner_person_id ?? null
       );
     const newId = result.lastInsertRowid as number;
     recordPriceHistory(db, newId, d.price_per_km);
@@ -43,18 +44,27 @@ export function updateCar(db: Database.Database, id: number, data: CarInput): vo
     if (current && Math.abs(args.data.price_per_km - current.price_per_km) >= 0.0001) {
       recordPriceHistory(db, args.id, args.data.price_per_km);
     }
+    // Sync owner_name from person table when owner_person_id is set
+    let ownerName = args.data.owner_name ?? null;
+    if (args.data.owner_person_id) {
+      const person = db
+        .prepare("SELECT name, username FROM people WHERE id = ?")
+        .get(args.data.owner_person_id) as { name: string; username: string | null } | undefined;
+      if (person) ownerName = person.name?.split(" ")[0] || person.username || null;
+    }
     db.prepare(
-      "UPDATE cars SET short=?,name=?,price_per_km=?,brand=?,color=?,owner_name=?,long_threshold=?,active=?,expected_km=? WHERE id=?"
+      "UPDATE cars SET short=?,name=?,price_per_km=?,brand=?,color=?,owner_name=?,long_threshold=?,active=?,expected_km=?,owner_person_id=? WHERE id=?"
     ).run(
       args.data.short,
       args.data.name,
       args.data.price_per_km,
       args.data.brand ?? null,
       args.data.color ?? null,
-      args.data.owner_name ?? null,
+      ownerName,
       args.data.long_threshold ?? 500,
       args.data.active ?? 1,
       args.data.expected_km ?? null,
+      args.data.owner_person_id ?? null,
       args.id
     );
   })({ id, data });

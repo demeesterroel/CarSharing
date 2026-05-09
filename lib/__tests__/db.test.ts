@@ -3,7 +3,7 @@ import Database from "better-sqlite3";
 import { runMigrations } from "../db/migrate";
 
 describe("runMigrations", () => {
-  it("creates all 11 tables", () => {
+  it("creates all 13 tables", () => {
     const db = new Database(":memory:");
     runMigrations(db);
     const tables = db
@@ -14,6 +14,7 @@ describe("runMigrations", () => {
       .map((r: any) => r.name);
     expect(tables).toEqual([
       "_migrations",
+      "calendar_sync_state",
       "car_price_history",
       "cars",
       "expenses",

@@ -14,6 +14,9 @@ const envSchema = z.object({
   NEXT_PUBLIC_BASE_URL: z.string().url().optional(),
   AUTH_USERNAME: z.string().optional(),
   AUTH_PASSWORD_HASH: z.string().optional(),
+  CRON_SECRET: z.string().optional(),
+  GOOGLE_CLIENT_ID: z.string().optional(),
+  GOOGLE_CLIENT_SECRET: z.string().optional(),
 });
 
 type Env = z.infer<typeof envSchema>;

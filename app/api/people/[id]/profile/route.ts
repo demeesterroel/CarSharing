@@ -9,6 +9,12 @@ import { z } from "zod";
 const profileSchema = z.object({
   name: z.string().min(1),
   bank_account: z.string().default(""),
+  email: z
+    .string()
+    .email()
+    .nullable()
+    .optional()
+    .transform((v) => v ?? null),
 });
 
 export const PATCH = json(async (req, ctx) => {
@@ -20,6 +26,6 @@ export const PATCH = json(async (req, ctx) => {
   const data = await readBody(req, profileSchema);
   const existing = getPersonById(getDb(), id);
   if (!existing) notFound();
-  updatePerson(getDb(), id, { ...existing, ...data });
+  updatePerson(getDb(), id, { ...existing, ...data, email: data.email ?? null });
   return { ok: true };
 });

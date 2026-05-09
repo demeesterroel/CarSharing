@@ -8,6 +8,7 @@ export interface Person {
   password_hash: string | null;
   is_admin: 0 | 1;
   bank_account: string;
+  email: string | null;
   updated_at: string;
 }
 
@@ -21,6 +22,7 @@ export interface Car {
   owner_name: string | null;
   owner_from: string | null; // 'YYYY-MM-DD', inclusive
   owner_to: string | null; // 'YYYY-MM-DD', inclusive; NULL = ongoing
+  owner_person_id: number | null;
   long_threshold: number;
   active: 0 | 1;
   expected_km: number | null;
@@ -106,6 +108,10 @@ export interface Reservation {
   note: string | null;
   client_id: string | null;
   updated_at: string;
+  google_event_id: string | null;
+  last_synced_etag: string | null;
+  last_app_write_nonce: string | null;
+  last_known_response_status: string | null;
   // joined
   person_name?: string;
   car_short?: string;
@@ -174,6 +180,7 @@ export type PersonInput = Pick<Person, "name" | "discount" | "discount_long" | "
 };
 export type CarInput = Pick<Car, "short" | "name" | "price_per_km" | "brand" | "color"> & {
   owner_name?: string | null;
+  owner_person_id?: number | null;
   long_threshold?: number;
   fixed_costs_json?: string | null;
   active?: number;
@@ -310,4 +317,12 @@ export interface SettlementResult {
   payments_by_person: Record<number, number>;
   /** True when every transfer with a human payer has open === 0. */
   all_paid: boolean;
+}
+
+export interface CalendarSyncState {
+  id: 1;
+  channel_id: string;
+  resource_id: string;
+  expiration_at: string;
+  sync_token: string;
 }

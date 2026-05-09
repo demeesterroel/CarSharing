@@ -2,6 +2,8 @@
 import { useState, useEffect } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { Pencil } from "lucide-react";
 import { useMe } from "@/hooks/use-me";
 import { paper, fontMono, fontSerif } from "@/lib/paper-theme";
 import { useT } from "@/components/locale-provider";
@@ -33,6 +35,7 @@ function PersonRow({
   const [isAdmin, setIsAdmin] = useState(person.is_admin === 1);
   const [inviteBanner, setInviteBanner] = useState<string | null>(null);
 
+  const [hovered, setHovered] = useState(false);
   const [prevId, setPrevId] = useState(person.id);
   if (person.id !== prevId) {
     setPrevId(person.id);
@@ -145,15 +148,34 @@ function PersonRow({
         {/* Name + ← view as + username */}
         <div style={{ flex: 1, display: "flex", alignItems: "baseline", gap: 8, minWidth: 0 }}>
           <span
-            style={{
-              fontFamily: fontSerif,
-              fontSize: 15,
-              fontWeight: 700,
-              color: paper.ink,
-              whiteSpace: "nowrap",
-            }}
+            style={{ display: "inline-flex", alignItems: "center", gap: 4 }}
+            onMouseEnter={() => setHovered(true)}
+            onMouseLeave={() => setHovered(false)}
           >
-            {person.name}
+            <span
+              style={{
+                fontFamily: fontSerif,
+                fontSize: 15,
+                fontWeight: 700,
+                color: paper.ink,
+                whiteSpace: "nowrap",
+              }}
+            >
+              {person.name}
+            </span>
+            <Link
+              href={`/user/${person.id}/edit`}
+              onClick={(e) => e.stopPropagation()}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                color: paper.inkDim,
+                opacity: hovered ? 1 : 0,
+                transition: "opacity 0.15s",
+              }}
+            >
+              <Pencil size={11} />
+            </Link>
           </span>
           {onCloak && (
             <button

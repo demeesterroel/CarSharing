@@ -19,6 +19,13 @@ export const carSchema = z.object({
     .nullable()
     .optional()
     .transform((v) => v ?? null),
+  owner_person_id: z
+    .number()
+    .int()
+    .positive()
+    .nullable()
+    .optional()
+    .transform((v) => v ?? null),
   long_threshold: z.number().int().positive().optional().default(500),
   active: z.number().int().min(0).max(1).optional().default(1),
   expected_km: z

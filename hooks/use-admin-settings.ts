@@ -3,6 +3,9 @@ import { apiFetch } from "@/lib/api/client";
 
 interface AdminSettings {
   coop_bank_account: string;
+  google_calendar_id: string;
+  google_oauth_refresh_token: string;
+  env_credentials_ok: boolean;
 }
 
 export function useAdminSettings() {
@@ -15,7 +18,7 @@ export function useAdminSettings() {
 export function useSaveAdminSettings() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (data: AdminSettings) =>
+    mutationFn: (data: Partial<AdminSettings>) =>
       apiFetch("/api/admin/settings", { method: "PUT", body: JSON.stringify(data) }),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["admin-settings"] }),
   });

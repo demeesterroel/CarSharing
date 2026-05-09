@@ -59,9 +59,16 @@ function NameEditLink({ name, personId }: { name: string; personId: number }) {
       href={`/user/${personId}/edit`}
       onMouseEnter={() => setHover(true)}
       onMouseLeave={() => setHover(false)}
-      style={{ color: "inherit", textDecoration: "none", display: "inline-flex", alignItems: "baseline", gap: 6 }}
+      style={{
+        color: "inherit",
+        textDecoration: "none",
+        display: "inline-flex",
+        alignItems: "baseline",
+        gap: 6,
+      }}
     >
-      {" "}{name}
+      {" "}
+      {name}
       <span
         style={{
           fontSize: 16,
@@ -320,17 +327,210 @@ function CarBreakdownSection({ bd, year }: { bd: CarDashboardBreakdown; year: nu
   );
 }
 
+// ── Balance Card Skeleton ─────────────────────────────────────────
+const shimmerKeyframes = `
+@keyframes shimmer {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 0.8; }
+}
+`;
+
+function ShimmerBar({
+  width = "100%",
+  height = 14,
+  marginBottom = 0,
+}: {
+  width?: string | number;
+  height?: number;
+  marginBottom?: number;
+}) {
+  return (
+    <div
+      style={{
+        width,
+        height,
+        borderRadius: 2,
+        background: paper.paperDark,
+        animation: "shimmer 1.4s ease-in-out infinite",
+        marginBottom,
+      }}
+    />
+  );
+}
+
+function SkeletonRow({
+  leftWidth = "45%",
+  rightWidth = "20%",
+}: {
+  leftWidth?: string;
+  rightWidth?: string;
+}) {
+  return (
+    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+      <ShimmerBar width={leftWidth} height={10} />
+      <ShimmerBar width={rightWidth} height={10} />
+    </div>
+  );
+}
+
+function Dashed() {
+  return <div style={{ height: 0, borderTop: `1.5px dashed ${paper.paperDark}` }} />;
+}
+
+function BalanceCardSkeleton() {
+  const currentYear = new Date().getFullYear();
+  return (
+    <>
+      <style>{shimmerKeyframes}</style>
+      <div style={{ padding: "12px 16px 0" }}>
+        <div
+          style={{
+            background: paper.paper,
+            padding: "16px 18px 24px",
+            boxShadow: "0 1px 2px rgba(0,0,0,0.05), 0 8px 24px rgba(0,0,0,0.07)",
+          }}
+        >
+          {/* Year browser */}
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 0,
+              marginBottom: 14,
+              pointerEvents: "none",
+            }}
+          >
+            <div
+              style={{
+                padding: "6px 14px",
+                border: `1.5px solid ${paper.paperDark}`,
+                borderRight: "none",
+                fontFamily: fontMono,
+                fontSize: 10,
+                fontWeight: 700,
+                color: paper.inkMute,
+                letterSpacing: 1,
+              }}
+            >
+              ← {currentYear - 1}
+            </div>
+            <div
+              style={{
+                padding: "6px 18px",
+                background: paper.paperDark,
+                color: paper.inkMute,
+                fontFamily: fontMono,
+                fontSize: 10,
+                fontWeight: 700,
+                letterSpacing: 2,
+                border: `1.5px solid ${paper.paperDark}`,
+              }}
+            >
+              {currentYear}
+            </div>
+            <div
+              style={{
+                padding: "6px 14px",
+                border: `1.5px solid ${paper.paperDark}`,
+                borderLeft: "none",
+                fontFamily: fontMono,
+                fontSize: 10,
+                fontWeight: 700,
+                color: paper.inkMute,
+                letterSpacing: 1,
+              }}
+            >
+              {currentYear + 1} →
+            </div>
+          </div>
+
+          {/* Title */}
+          <div style={{ display: "flex", justifyContent: "center", marginBottom: 12 }}>
+            <ShimmerBar width="55%" height={11} />
+          </div>
+
+          <Dashed />
+
+          {/* Breakdown rows: trips, fuel, expenses */}
+          <div style={{ display: "flex", flexDirection: "column", gap: 11, margin: "14px 0 14px" }}>
+            <SkeletonRow leftWidth="48%" rightWidth="22%" />
+            <SkeletonRow leftWidth="52%" rightWidth="20%" />
+            <SkeletonRow leftWidth="38%" rightWidth="24%" />
+          </div>
+
+          <Dashed />
+
+          {/* TOTAL row */}
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "baseline",
+              margin: "12px 0 12px",
+            }}
+          >
+            <ShimmerBar width="20%" height={10} />
+            <ShimmerBar width="28%" height={26} />
+          </div>
+
+          <Dashed />
+
+          {/* NOT YET PAID row */}
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              marginTop: 12,
+            }}
+          >
+            <ShimmerBar width="30%" height={10} />
+            <ShimmerBar width="6%" height={10} />
+          </div>
+        </div>
+      </div>
+    </>
+  );
+}
+
+function SectionSkeleton({ rows = 3 }: { rows?: number }) {
+  return (
+    <div style={{ padding: "0 16px" }}>
+      {Array.from({ length: rows }).map((_, i) => (
+        <div
+          key={i}
+          style={{
+            padding: "12px 0",
+            borderBottom: i < rows - 1 ? `1px dashed ${paper.paperDark}` : "none",
+            display: "flex",
+            flexDirection: "column",
+            gap: 7,
+          }}
+        >
+          <div style={{ display: "flex", justifyContent: "space-between" }}>
+            <ShimmerBar width="55%" height={13} />
+            <ShimmerBar width="18%" height={13} />
+          </div>
+          <ShimmerBar width="38%" height={9} />
+        </div>
+      ))}
+    </div>
+  );
+}
+
 // ── Balance Receipt ───────────────────────────────────────────────
 function BalanceReceipt({ personName }: { personName: string }) {
   const t = useT();
   const currentYear = new Date().getFullYear();
   const [year, setYear] = useState(currentYear);
   const { data: earliestYear = currentYear } = useEarliestDashboardYear();
-  const { data: rows = [] } = useDashboard(year);
+  const { data: rows = [], isLoading: isDashboardLoading } = useDashboard(year);
   const myRow = rows.find((r) => r.person_name === personName);
   const { data: settlement } = useSettlement(year);
   const myStatement = settlement?.members.find((m) => m.person_name === personName);
   const owner_net: number | null = myRow?.is_owner ? (myStatement?.net ?? null) : null;
+  if (isDashboardLoading) return <BalanceCardSkeleton />;
   if (!myRow) return null;
 
   const pl = (n: number, s: string, p: string) => (n === 1 ? s : p);
@@ -838,7 +1038,10 @@ function Sheets({ sheet, setSheet }: { sheet: SheetType; setSheet: (s: SheetType
         <TripForm
           onSubmit={(d) =>
             createTrip.mutate(d as any, {
-              onSuccess: () => { close(); toast.success(t("toast.trip_saved")); },
+              onSuccess: () => {
+                close();
+                toast.success(t("toast.trip_saved"));
+              },
               onError: (e) => toast.error(e.message),
             })
           }
@@ -850,7 +1053,10 @@ function Sheets({ sheet, setSheet }: { sheet: SheetType; setSheet: (s: SheetType
         <FuelForm
           onSubmit={(d) =>
             createFuel.mutate(d as any, {
-              onSuccess: () => { close(); toast.success(t("toast.fuel_saved")); },
+              onSuccess: () => {
+                close();
+                toast.success(t("toast.fuel_saved"));
+              },
               onError: (e) => toast.error(e.message),
             })
           }
@@ -862,7 +1068,10 @@ function Sheets({ sheet, setSheet }: { sheet: SheetType; setSheet: (s: SheetType
         <ExpenseForm
           onSubmit={(d) =>
             createExpense.mutate(d as any, {
-              onSuccess: () => { close(); toast.success(t("toast.expense_saved")); },
+              onSuccess: () => {
+                close();
+                toast.success(t("toast.expense_saved"));
+              },
               onError: (e) => toast.error(e.message),
             })
           }
@@ -874,7 +1083,10 @@ function Sheets({ sheet, setSheet }: { sheet: SheetType; setSheet: (s: SheetType
         <ReservationForm
           onSubmit={(d) =>
             createReservation.mutate(d as any, {
-              onSuccess: () => { close(); toast.success(t("toast.reservation_requested")); },
+              onSuccess: () => {
+                close();
+                toast.success(t("toast.reservation_requested"));
+              },
               onError: (e) => toast.error(e.message),
             })
           }
@@ -907,10 +1119,10 @@ function DashboardContent() {
   const updateRes = useUpdateReservation();
   const deleteRes = useDeleteReservation();
 
-  const { data: trips = [] } = useTrips();
-  const { data: fillups = [] } = useFuelFillups();
-  const { data: reservations = [] } = useReservations();
-  const { data: expenses = [] } = useExpenses();
+  const { data: trips = [], isLoading: isTripsLoading } = useTrips();
+  const { data: fillups = [], isLoading: isFuelLoading } = useFuelFillups();
+  const { data: reservations = [], isLoading: isResLoading } = useReservations();
+  const { data: expenses = [], isLoading: isExpensesLoading } = useExpenses();
 
   const today = new Date().toISOString().slice(0, 10);
   const upcoming = reservations
@@ -970,79 +1182,91 @@ function DashboardContent() {
 
       {/* Recent trips */}
       <SectionHeader title={t("dashboard.recent_trips")} href="/trips" />
-      <div style={{ padding: "0 16px" }}>
-        {recentTrips.length === 0 ? (
-          <div
-            style={{
-              fontFamily: fontMono,
-              fontSize: 11,
-              color: paper.inkMute,
-              padding: "8px 0",
-              letterSpacing: 1,
-            }}
-          >
-            {t("state.empty_trips")}
-          </div>
-        ) : (
-          recentTrips.map((trip) => (
-            <TripCard key={trip.id} trip={trip} onClick={() => setEditTrip(trip)} />
-          ))
-        )}
-      </div>
+      {isTripsLoading ? (
+        <SectionSkeleton rows={3} />
+      ) : (
+        <div style={{ padding: "0 16px" }}>
+          {recentTrips.length === 0 ? (
+            <div
+              style={{
+                fontFamily: fontMono,
+                fontSize: 11,
+                color: paper.inkMute,
+                padding: "8px 0",
+                letterSpacing: 1,
+              }}
+            >
+              {t("state.empty_trips")}
+            </div>
+          ) : (
+            recentTrips.map((trip) => (
+              <TripCard key={trip.id} trip={trip} onClick={() => setEditTrip(trip)} />
+            ))
+          )}
+        </div>
+      )}
 
       {/* Recent fuel */}
       <SectionHeader title={t("dashboard.recent_fuel")} href="/fuel" />
-      <div style={{ padding: "0 16px" }}>
-        {recentFuel.length === 0 ? (
-          <div
-            style={{
-              fontFamily: fontMono,
-              fontSize: 11,
-              color: paper.inkMute,
-              padding: "8px 0",
-              letterSpacing: 1,
-            }}
-          >
-            {t("state.empty_fuel")}
-          </div>
-        ) : (
-          recentFuel.map((f) => <FuelCard key={f.id} fuel={f} onClick={() => setEditFuel(f)} />)
-        )}
-      </div>
+      {isFuelLoading ? (
+        <SectionSkeleton rows={2} />
+      ) : (
+        <div style={{ padding: "0 16px" }}>
+          {recentFuel.length === 0 ? (
+            <div
+              style={{
+                fontFamily: fontMono,
+                fontSize: 11,
+                color: paper.inkMute,
+                padding: "8px 0",
+                letterSpacing: 1,
+              }}
+            >
+              {t("state.empty_fuel")}
+            </div>
+          ) : (
+            recentFuel.map((f) => <FuelCard key={f.id} fuel={f} onClick={() => setEditFuel(f)} />)
+          )}
+        </div>
+      )}
 
       {/* Recent expenses */}
       <SectionHeader title={t("dashboard.recent_maintenance")} href="/expenses" />
-      <div style={{ padding: "0 16px" }}>
-        {recentExpenses.length === 0 ? (
-          <div
-            style={{
-              fontFamily: fontMono,
-              fontSize: 11,
-              color: paper.inkMute,
-              padding: "8px 0",
-              letterSpacing: 1,
-            }}
-          >
-            {t("state.empty_expenses")}
-          </div>
-        ) : (
-          recentExpenses.map((e) => (
-            <ExpenseCard key={e.id} expense={e} onClick={() => setEditExpense(e)} />
-          ))
-        )}
-      </div>
+      {isExpensesLoading ? (
+        <SectionSkeleton rows={2} />
+      ) : (
+        <div style={{ padding: "0 16px" }}>
+          {recentExpenses.length === 0 ? (
+            <div
+              style={{
+                fontFamily: fontMono,
+                fontSize: 11,
+                color: paper.inkMute,
+                padding: "8px 0",
+                letterSpacing: 1,
+              }}
+            >
+              {t("state.empty_expenses")}
+            </div>
+          ) : (
+            recentExpenses.map((e) => (
+              <ExpenseCard key={e.id} expense={e} onClick={() => setEditExpense(e)} />
+            ))
+          )}
+        </div>
+      )}
 
       {/* Upcoming reservations */}
-      {upcoming.length > 0 && (
-        <>
-          <SectionHeader title={t("dashboard.upcoming")} href="/calendar" />
-          <div style={{ padding: "0 16px" }}>
-            {upcoming.map((r) => (
-              <ReservationCard key={r.id} reservation={r} onClick={() => setEditReservation(r)} />
-            ))}
-          </div>
-        </>
-      )}
+      <SectionHeader title={t("dashboard.upcoming")} href="/calendar" />
+      {isResLoading ? (
+        <SectionSkeleton rows={2} />
+      ) : upcoming.length > 0 ? (
+        <div style={{ padding: "0 16px" }}>
+          {upcoming.map((r) => (
+            <ReservationCard key={r.id} reservation={r} onClick={() => setEditReservation(r)} />
+          ))}
+        </div>
+      ) : null}
 
       {/* Footer */}
       <div

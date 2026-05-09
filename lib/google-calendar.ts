@@ -107,7 +107,7 @@ export async function watchEvents(
   return {
     channelId: res.data.id!,
     resourceId: res.data.resourceId!,
-    expiration: new Date(Number(res.data.expiration)).toISOString(),
+    expiration: res.data.expiration ? new Date(Number(res.data.expiration)).toISOString() : "",
   };
 }
 
@@ -127,8 +127,12 @@ export async function listEventsDelta(
 ): Promise<{ items: CalendarEvent[]; nextSyncToken: string }> {
   const cal = google.calendar({ version: "v3", auth: client });
   const res = await cal.events.list({ calendarId, syncToken, showDeleted: true });
+  const nextSyncToken = res.data.nextSyncToken;
+  if (!nextSyncToken) {
+    throw new Error("listEventsDelta: result is paginated; full sync required");
+  }
   return {
     items: (res.data.items ?? []) as CalendarEvent[],
-    nextSyncToken: res.data.nextSyncToken!,
+    nextSyncToken,
   };
 }

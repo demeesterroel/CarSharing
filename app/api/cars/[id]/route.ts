@@ -24,7 +24,7 @@ export const PUT = json(async (req, ctx) => {
 
   if (!session.isAdmin) {
     const current = getCarById(db, id);
-    if (!current || current.owner_name !== session.personName) forbidden();
+    if (!current || current.owner_person_id !== session.personId) forbidden();
     const patch = await readBody(req, ownerCarPatchSchema);
     updateCar(db, id, {
       short: current.short,
@@ -32,7 +32,6 @@ export const PUT = json(async (req, ctx) => {
       price_per_km: patch.price_per_km,
       brand: current.brand,
       color: current.color,
-      owner_name: current.owner_name,
       owner_person_id: current.owner_person_id,
       long_threshold: current.long_threshold,
       active: patch.active ?? current.active,
@@ -52,7 +51,7 @@ export const DELETE = json(async (req, ctx) => {
   const db = getDb();
   const car = getCarById(db, id);
   if (!car) notFound();
-  if (!session.isAdmin && car.owner_name !== session.personName) forbidden();
+  if (!session.isAdmin && car.owner_person_id !== session.personId) forbidden();
   if (carHasHistory(db, id)) conflict("Car has reservations or trips — deactivate instead");
   deleteCar(db, id);
   return { ok: true };

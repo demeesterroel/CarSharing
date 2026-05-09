@@ -35,7 +35,7 @@ export async function POST(req: Request) {
     );
     if (authenticated) {
       sessionPersonId = person.id;
-      sessionPersonName = person.name;
+      sessionPersonName = person.first_name || person.name;
       sessionIsAdmin = person.is_admin === 1;
     }
   } else {
@@ -53,7 +53,7 @@ export async function POST(req: Request) {
           .prepare("SELECT id, name FROM people WHERE username=? OR name=? LIMIT 1")
           .get(AUTH_USERNAME, AUTH_USERNAME) as { id: number; name: string } | undefined;
         sessionPersonId = adminPerson?.id;
-        sessionPersonName = adminPerson?.name ?? AUTH_USERNAME;
+        sessionPersonName = (adminPerson as { first_name?: string } | undefined)?.first_name ?? adminPerson?.name ?? AUTH_USERNAME;
       }
     }
   }

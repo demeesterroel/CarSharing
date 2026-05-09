@@ -31,7 +31,7 @@ export async function POST(req: Request) {
 
   session.cloakedAs = {
     personId: person.id,
-    personName: person.name,
+    personName: person.first_name || person.name,
     isAdmin: person.is_admin === 1,
   };
   await session.save();

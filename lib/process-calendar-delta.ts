@@ -42,9 +42,13 @@ export async function processCalendarDelta(
 
     if (!row) continue;
 
-    // Echo check — skip writes originating from the app itself
+    // Echo check — skip writes originating from the app itself.
+    // Etag is the primary guard. Nonce is a fallback for the rare case where Google
+    // returns a delta without an etag — using nonce as primary would suppress external
+    // RSVP changes because Google preserves extendedProperties through user edits.
     if (event.etag != null && event.etag === row.last_synced_etag) continue;
     if (
+      event.etag == null &&
       event.extendedProperties?.private?.appWriteNonce != null &&
       event.extendedProperties.private.appWriteNonce === row.last_app_write_nonce
     )

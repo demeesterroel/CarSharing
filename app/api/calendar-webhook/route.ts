@@ -16,9 +16,15 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
   if (!calendarId || !refreshToken) return NextResponse.json({ ok: true });
 
   const client = getOAuthClient(refreshToken);
-  const stateRow = db.prepare("SELECT sync_token FROM calendar_sync_state WHERE id = 1").get() as
-    | { sync_token: string }
-    | undefined;
+  const stateRow = db
+    .prepare("SELECT sync_token, channel_id FROM calendar_sync_state WHERE id = 1")
+    .get() as { sync_token: string; channel_id: string } | undefined;
+
+  // Validate channel ID to reject spoofed webhook calls
+  const incomingChannelId = req.headers.get("x-goog-channel-id");
+  if (stateRow && incomingChannelId !== stateRow.channel_id) {
+    return NextResponse.json({ ok: true });
+  }
 
   let items: Awaited<ReturnType<typeof listEventsDelta>>["items"];
   let nextSyncToken: string;
@@ -44,13 +50,13 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     }
   }
 
-  // Upsert sync_token (INSERT sets defaults for other columns if row doesn't exist yet)
+  await processCalendarDelta(db, client, calendarId, items);
+
+  // Upsert sync_token after processing so a crash mid-processing triggers a retry
   db.prepare(
     `INSERT INTO calendar_sync_state (id, sync_token) VALUES (1, ?)
      ON CONFLICT(id) DO UPDATE SET sync_token = excluded.sync_token`
   ).run(nextSyncToken);
-
-  await processCalendarDelta(db, client, calendarId, items);
 
   return NextResponse.json({ ok: true });
 }

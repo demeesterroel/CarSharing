@@ -1,6 +1,7 @@
 // lib/google-calendar.ts
 import { google } from "googleapis";
 import type { OAuth2Client } from "google-auth-library";
+import { env } from "@/lib/env";
 
 export type { OAuth2Client };
 
@@ -21,10 +22,7 @@ export function addDays(dateStr: string, days: number): string {
 }
 
 export function getOAuthClient(refreshToken: string): OAuth2Client {
-  const client = new google.auth.OAuth2(
-    process.env.GOOGLE_CLIENT_ID,
-    process.env.GOOGLE_CLIENT_SECRET
-  );
+  const client = new google.auth.OAuth2(env.GOOGLE_CLIENT_ID, env.GOOGLE_CLIENT_SECRET);
   client.setCredentials({ refresh_token: refreshToken });
   return client;
 }

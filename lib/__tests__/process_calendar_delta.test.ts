@@ -77,13 +77,13 @@ describe("processCalendarDelta", () => {
     expect(calMock.updateEvent).not.toHaveBeenCalled();
   });
 
-  it("skips event if appWriteNonce matches last_app_write_nonce (echo)", async () => {
+  it("skips event if appWriteNonce matches last_app_write_nonce when etag absent (echo fallback)", async () => {
     const db = makeDb();
     seedWithEvent(db);
     const events: CalendarEvent[] = [
       {
         id: "evt-123",
-        etag: '"different-etag"',
+        etag: null, // no etag — nonce is the only echo guard
         extendedProperties: { private: { appWriteNonce: "nonce-abc" } },
       },
     ];

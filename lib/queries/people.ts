@@ -32,7 +32,7 @@ export function insertPerson(
 ): number {
   const result = db
     .prepare(
-      "INSERT INTO people (name,discount,discount_long,active,username,is_admin,bank_account) VALUES (?,?,?,?,?,?,?)"
+      "INSERT INTO people (name,discount,discount_long,active,username,is_admin,bank_account,email) VALUES (?,?,?,?,?,?,?,?)"
     )
     .run(
       data.name,
@@ -41,7 +41,8 @@ export function insertPerson(
       data.active,
       data.username ?? null,
       data.is_admin ?? 0,
-      data.bank_account ?? ''
+      data.bank_account ?? "",
+      data.email ?? null
     );
   return result.lastInsertRowid as number;
 }
@@ -52,7 +53,7 @@ export function updatePerson(
   data: Omit<Person, "id" | "updated_at">
 ): void {
   db.prepare(
-    "UPDATE people SET name=?,discount=?,discount_long=?,active=?,username=?,is_admin=?,bank_account=? WHERE id=?"
+    "UPDATE people SET name=?,discount=?,discount_long=?,active=?,username=?,is_admin=?,bank_account=?,email=? WHERE id=?"
   ).run(
     data.name,
     data.discount,
@@ -60,7 +61,8 @@ export function updatePerson(
     data.active,
     data.username ?? null,
     data.is_admin ?? 0,
-    data.bank_account ?? '',
+    data.bank_account ?? "",
+    data.email ?? null,
     id
   );
 }

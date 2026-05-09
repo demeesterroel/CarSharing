@@ -31,6 +31,7 @@ function SubNav() {
     { href: "/admin/members", label: t("admin.sub_members") },
     { href: "/admin/hygiene", label: t("admin.sub_data") },
     { href: "/admin/settlement", label: t("admin.sub_settlement") },
+    { href: "/admin/payments", label: t("admin.sub_payments") },
     { href: "/admin/settings", label: t("admin.sub_settings") },
   ];
 

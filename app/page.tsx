@@ -59,9 +59,16 @@ function NameEditLink({ name, personId }: { name: string; personId: number }) {
       href={`/user/${personId}/edit`}
       onMouseEnter={() => setHover(true)}
       onMouseLeave={() => setHover(false)}
-      style={{ color: "inherit", textDecoration: "none", display: "inline-flex", alignItems: "baseline", gap: 6 }}
+      style={{
+        color: "inherit",
+        textDecoration: "none",
+        display: "inline-flex",
+        alignItems: "baseline",
+        gap: 6,
+      }}
     >
-      {" "}{name}
+      {" "}
+      {name}
       <span
         style={{
           fontSize: 16,
@@ -351,6 +358,25 @@ function ShimmerBar({
   );
 }
 
+function SkeletonRow({
+  leftWidth = "45%",
+  rightWidth = "20%",
+}: {
+  leftWidth?: string;
+  rightWidth?: string;
+}) {
+  return (
+    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+      <ShimmerBar width={leftWidth} height={10} />
+      <ShimmerBar width={rightWidth} height={10} />
+    </div>
+  );
+}
+
+function Dashed() {
+  return <div style={{ height: 0, borderTop: `1.5px dashed ${paper.paperDark}` }} />;
+}
+
 function BalanceCardSkeleton() {
   const currentYear = new Date().getFullYear();
   return (
@@ -360,11 +386,11 @@ function BalanceCardSkeleton() {
         <div
           style={{
             background: paper.paper,
-            padding: "16px 18px 22px",
+            padding: "16px 18px 24px",
             boxShadow: "0 1px 2px rgba(0,0,0,0.05), 0 8px 24px rgba(0,0,0,0.07)",
           }}
         >
-          {/* Year browser placeholder */}
+          {/* Year browser */}
           <div
             style={{
               display: "flex",
@@ -419,41 +445,77 @@ function BalanceCardSkeleton() {
             </div>
           </div>
 
-          {/* Title placeholder */}
-          <div style={{ display: "flex", justifyContent: "center", marginBottom: 10 }}>
-            <ShimmerBar width="60%" height={12} />
+          {/* Title */}
+          <div style={{ display: "flex", justifyContent: "center", marginBottom: 12 }}>
+            <ShimmerBar width="55%" height={11} />
           </div>
 
-          {/* Divider */}
-          <div style={{ height: 0, borderTop: `1.5px dashed ${paper.paperDark}`, margin: "0 0 12px" }} />
+          <Dashed />
 
-          {/* Breakdown row placeholders */}
-          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-              <ShimmerBar width="45%" height={10} />
-              <ShimmerBar width="20%" height={10} />
-            </div>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-              <ShimmerBar width="50%" height={10} />
-              <ShimmerBar width="18%" height={10} />
-            </div>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-              <ShimmerBar width="38%" height={10} />
-              <ShimmerBar width="22%" height={10} />
-            </div>
+          {/* Breakdown rows: trips, fuel, expenses */}
+          <div style={{ display: "flex", flexDirection: "column", gap: 11, margin: "14px 0 14px" }}>
+            <SkeletonRow leftWidth="48%" rightWidth="22%" />
+            <SkeletonRow leftWidth="52%" rightWidth="20%" />
+            <SkeletonRow leftWidth="38%" rightWidth="24%" />
           </div>
 
-          {/* Divider */}
-          <div style={{ height: 0, borderTop: `1.5px dashed ${paper.paperDark}`, margin: "12px 0 10px" }} />
+          <Dashed />
 
-          {/* Balance row placeholder */}
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
-            <ShimmerBar width="25%" height={10} />
-            <ShimmerBar width="30%" height={24} />
+          {/* TOTAL row */}
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "baseline",
+              margin: "12px 0 12px",
+            }}
+          >
+            <ShimmerBar width="20%" height={10} />
+            <ShimmerBar width="28%" height={26} />
+          </div>
+
+          <Dashed />
+
+          {/* NOT YET PAID row */}
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              marginTop: 12,
+            }}
+          >
+            <ShimmerBar width="30%" height={10} />
+            <ShimmerBar width="6%" height={10} />
           </div>
         </div>
       </div>
     </>
+  );
+}
+
+function SectionSkeleton({ rows = 3 }: { rows?: number }) {
+  return (
+    <div style={{ padding: "0 16px" }}>
+      {Array.from({ length: rows }).map((_, i) => (
+        <div
+          key={i}
+          style={{
+            padding: "12px 0",
+            borderBottom: i < rows - 1 ? `1px dashed ${paper.paperDark}` : "none",
+            display: "flex",
+            flexDirection: "column",
+            gap: 7,
+          }}
+        >
+          <div style={{ display: "flex", justifyContent: "space-between" }}>
+            <ShimmerBar width="55%" height={13} />
+            <ShimmerBar width="18%" height={13} />
+          </div>
+          <ShimmerBar width="38%" height={9} />
+        </div>
+      ))}
+    </div>
   );
 }
 
@@ -976,7 +1038,10 @@ function Sheets({ sheet, setSheet }: { sheet: SheetType; setSheet: (s: SheetType
         <TripForm
           onSubmit={(d) =>
             createTrip.mutate(d as any, {
-              onSuccess: () => { close(); toast.success(t("toast.trip_saved")); },
+              onSuccess: () => {
+                close();
+                toast.success(t("toast.trip_saved"));
+              },
               onError: (e) => toast.error(e.message),
             })
           }
@@ -988,7 +1053,10 @@ function Sheets({ sheet, setSheet }: { sheet: SheetType; setSheet: (s: SheetType
         <FuelForm
           onSubmit={(d) =>
             createFuel.mutate(d as any, {
-              onSuccess: () => { close(); toast.success(t("toast.fuel_saved")); },
+              onSuccess: () => {
+                close();
+                toast.success(t("toast.fuel_saved"));
+              },
               onError: (e) => toast.error(e.message),
             })
           }
@@ -1000,7 +1068,10 @@ function Sheets({ sheet, setSheet }: { sheet: SheetType; setSheet: (s: SheetType
         <ExpenseForm
           onSubmit={(d) =>
             createExpense.mutate(d as any, {
-              onSuccess: () => { close(); toast.success(t("toast.expense_saved")); },
+              onSuccess: () => {
+                close();
+                toast.success(t("toast.expense_saved"));
+              },
               onError: (e) => toast.error(e.message),
             })
           }
@@ -1012,7 +1083,10 @@ function Sheets({ sheet, setSheet }: { sheet: SheetType; setSheet: (s: SheetType
         <ReservationForm
           onSubmit={(d) =>
             createReservation.mutate(d as any, {
-              onSuccess: () => { close(); toast.success(t("toast.reservation_requested")); },
+              onSuccess: () => {
+                close();
+                toast.success(t("toast.reservation_requested"));
+              },
               onError: (e) => toast.error(e.message),
             })
           }
@@ -1045,10 +1119,10 @@ function DashboardContent() {
   const updateRes = useUpdateReservation();
   const deleteRes = useDeleteReservation();
 
-  const { data: trips = [] } = useTrips();
-  const { data: fillups = [] } = useFuelFillups();
-  const { data: reservations = [] } = useReservations();
-  const { data: expenses = [] } = useExpenses();
+  const { data: trips = [], isLoading: isTripsLoading } = useTrips();
+  const { data: fillups = [], isLoading: isFuelLoading } = useFuelFillups();
+  const { data: reservations = [], isLoading: isResLoading } = useReservations();
+  const { data: expenses = [], isLoading: isExpensesLoading } = useExpenses();
 
   const today = new Date().toISOString().slice(0, 10);
   const upcoming = reservations
@@ -1108,79 +1182,91 @@ function DashboardContent() {
 
       {/* Recent trips */}
       <SectionHeader title={t("dashboard.recent_trips")} href="/trips" />
-      <div style={{ padding: "0 16px" }}>
-        {recentTrips.length === 0 ? (
-          <div
-            style={{
-              fontFamily: fontMono,
-              fontSize: 11,
-              color: paper.inkMute,
-              padding: "8px 0",
-              letterSpacing: 1,
-            }}
-          >
-            {t("state.empty_trips")}
-          </div>
-        ) : (
-          recentTrips.map((trip) => (
-            <TripCard key={trip.id} trip={trip} onClick={() => setEditTrip(trip)} />
-          ))
-        )}
-      </div>
+      {isTripsLoading ? (
+        <SectionSkeleton rows={3} />
+      ) : (
+        <div style={{ padding: "0 16px" }}>
+          {recentTrips.length === 0 ? (
+            <div
+              style={{
+                fontFamily: fontMono,
+                fontSize: 11,
+                color: paper.inkMute,
+                padding: "8px 0",
+                letterSpacing: 1,
+              }}
+            >
+              {t("state.empty_trips")}
+            </div>
+          ) : (
+            recentTrips.map((trip) => (
+              <TripCard key={trip.id} trip={trip} onClick={() => setEditTrip(trip)} />
+            ))
+          )}
+        </div>
+      )}
 
       {/* Recent fuel */}
       <SectionHeader title={t("dashboard.recent_fuel")} href="/fuel" />
-      <div style={{ padding: "0 16px" }}>
-        {recentFuel.length === 0 ? (
-          <div
-            style={{
-              fontFamily: fontMono,
-              fontSize: 11,
-              color: paper.inkMute,
-              padding: "8px 0",
-              letterSpacing: 1,
-            }}
-          >
-            {t("state.empty_fuel")}
-          </div>
-        ) : (
-          recentFuel.map((f) => <FuelCard key={f.id} fuel={f} onClick={() => setEditFuel(f)} />)
-        )}
-      </div>
+      {isFuelLoading ? (
+        <SectionSkeleton rows={2} />
+      ) : (
+        <div style={{ padding: "0 16px" }}>
+          {recentFuel.length === 0 ? (
+            <div
+              style={{
+                fontFamily: fontMono,
+                fontSize: 11,
+                color: paper.inkMute,
+                padding: "8px 0",
+                letterSpacing: 1,
+              }}
+            >
+              {t("state.empty_fuel")}
+            </div>
+          ) : (
+            recentFuel.map((f) => <FuelCard key={f.id} fuel={f} onClick={() => setEditFuel(f)} />)
+          )}
+        </div>
+      )}
 
       {/* Recent expenses */}
       <SectionHeader title={t("dashboard.recent_maintenance")} href="/expenses" />
-      <div style={{ padding: "0 16px" }}>
-        {recentExpenses.length === 0 ? (
-          <div
-            style={{
-              fontFamily: fontMono,
-              fontSize: 11,
-              color: paper.inkMute,
-              padding: "8px 0",
-              letterSpacing: 1,
-            }}
-          >
-            {t("state.empty_expenses")}
-          </div>
-        ) : (
-          recentExpenses.map((e) => (
-            <ExpenseCard key={e.id} expense={e} onClick={() => setEditExpense(e)} />
-          ))
-        )}
-      </div>
+      {isExpensesLoading ? (
+        <SectionSkeleton rows={2} />
+      ) : (
+        <div style={{ padding: "0 16px" }}>
+          {recentExpenses.length === 0 ? (
+            <div
+              style={{
+                fontFamily: fontMono,
+                fontSize: 11,
+                color: paper.inkMute,
+                padding: "8px 0",
+                letterSpacing: 1,
+              }}
+            >
+              {t("state.empty_expenses")}
+            </div>
+          ) : (
+            recentExpenses.map((e) => (
+              <ExpenseCard key={e.id} expense={e} onClick={() => setEditExpense(e)} />
+            ))
+          )}
+        </div>
+      )}
 
       {/* Upcoming reservations */}
-      {upcoming.length > 0 && (
-        <>
-          <SectionHeader title={t("dashboard.upcoming")} href="/calendar" />
-          <div style={{ padding: "0 16px" }}>
-            {upcoming.map((r) => (
-              <ReservationCard key={r.id} reservation={r} onClick={() => setEditReservation(r)} />
-            ))}
-          </div>
-        </>
-      )}
+      <SectionHeader title={t("dashboard.upcoming")} href="/calendar" />
+      {isResLoading ? (
+        <SectionSkeleton rows={2} />
+      ) : upcoming.length > 0 ? (
+        <div style={{ padding: "0 16px" }}>
+          {upcoming.map((r) => (
+            <ReservationCard key={r.id} reservation={r} onClick={() => setEditReservation(r)} />
+          ))}
+        </div>
+      ) : null}
 
       {/* Footer */}
       <div

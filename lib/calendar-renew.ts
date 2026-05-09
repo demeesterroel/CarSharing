@@ -34,7 +34,7 @@ export async function handleCalendarRenew(
   if (stateRow) {
     const expiresMs = new Date(stateRow.expiration_at).getTime();
     const fiveDaysMs = 5 * 24 * 60 * 60 * 1000;
-    if (expiresMs - Date.now() > fiveDaysMs) {
+    if (!isNaN(expiresMs) && expiresMs - Date.now() > fiveDaysMs) {
       return { ok: true, skipped: "not_due" };
     }
     try {
@@ -62,6 +62,7 @@ export async function handleCalendarRenew(
       await processCalendarDelta(db, client, calendarId, delta.items);
     } else {
       console.error("[calendar-renew] listEventsDelta failed", e);
+      throw e;
     }
   }
 

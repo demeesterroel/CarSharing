@@ -83,5 +83,24 @@ describe("handleCalendarRenew", () => {
     expect(calMock.stopChannel).not.toHaveBeenCalled();
     expect(calMock.watchEvents).toHaveBeenCalledOnce();
     expect(result).toMatchObject({ ok: true, renewed: true });
+    const row = db
+      .prepare("SELECT channel_id, sync_token FROM calendar_sync_state WHERE id = 1")
+      .get() as { channel_id: string; sync_token: string };
+    expect(row.channel_id).toBe("new-ch");
+    expect(row.sync_token).toBe("new-tok");
+  });
+
+  it("throws when listEventsDelta fails with non-410 error", async () => {
+    const db = makeDb();
+    setSetting(db, "google_calendar_id", "cal-id");
+    setSetting(db, "google_oauth_refresh_token", "rt");
+    vi.mocked(calMock.listEventsDelta).mockRejectedValueOnce(
+      Object.assign(new Error("network error"), { code: 500 })
+    );
+
+    await expect(handleCalendarRenew(db, "https://example.com")).rejects.toThrow("network error");
+
+    const row = db.prepare("SELECT channel_id FROM calendar_sync_state WHERE id = 1").get();
+    expect(row).toBeUndefined();
   });
 });

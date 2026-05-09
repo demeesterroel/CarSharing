@@ -11,6 +11,11 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
   }
 
   const baseUrl = env.NEXT_PUBLIC_BASE_URL ?? new URL(req.url).origin;
-  const result = await handleCalendarRenew(getDb(), baseUrl);
-  return NextResponse.json(result);
+  try {
+    const result = await handleCalendarRenew(getDb(), baseUrl);
+    return NextResponse.json(result);
+  } catch (e) {
+    console.error("[calendar-renew] unhandled error", e);
+    return NextResponse.json({ ok: false, error: String(e) }, { status: 500 });
+  }
 }

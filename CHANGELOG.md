@@ -1,5 +1,19 @@
 # Changelog
 
+## [1.8.0](https://github.com/demeesterroel/CarSharing/compare/v1.7.0...v1.8.0) (2026-05-09)
+
+
+### ✨ New features
+
+* **calendar:** two-way Google Calendar sync with RSVP-based confirmation ([#115](https://github.com/demeesterroel/CarSharing/issues/115)) ([#135](https://github.com/demeesterroel/CarSharing/issues/135)) ([867f113](https://github.com/demeesterroel/CarSharing/commit/867f113ed6000b5f25f4344fe401f638f0c4e5bf))
+
+
+### 🐛 Bug fixes
+
+* add calendar sync fields to optimistic reservation object ([#115](https://github.com/demeesterroel/CarSharing/issues/115)) ([9f9f169](https://github.com/demeesterroel/CarSharing/commit/9f9f169c144133e70a3083a8e68ab3220c9b577d))
+* add email field to personSchema and insertPerson call ([#115](https://github.com/demeesterroel/CarSharing/issues/115)) ([d572967](https://github.com/demeesterroel/CarSharing/commit/d57296707cbe5c519033142021f1f9762393457d))
+* **ui:** FAB alignment, calendar width, admin inbox, form validation, password toggle ([#133](https://github.com/demeesterroel/CarSharing/issues/133)) ([#134](https://github.com/demeesterroel/CarSharing/issues/134)) ([60e2b94](https://github.com/demeesterroel/CarSharing/commit/60e2b946de1f1704e9ae62d127af29da53c886b5))
+
 ## [1.7.0](https://github.com/demeesterroel/CarSharing/compare/v1.6.0...v1.7.0) (2026-05-09)
 
 

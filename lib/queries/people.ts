@@ -26,7 +26,10 @@ export function getPersonByUsername(db: Database.Database, username: string): Pe
   return (db.prepare("SELECT * FROM people WHERE username=?").get(username) as Person) ?? null;
 }
 
-export function insertPerson(db: Database.Database, data: Omit<Person, "id">): number {
+export function insertPerson(
+  db: Database.Database,
+  data: Omit<Person, "id" | "updated_at">
+): number {
   const result = db
     .prepare(
       "INSERT INTO people (name,discount,discount_long,active,username,is_admin) VALUES (?,?,?,?,?,?)"
@@ -42,7 +45,11 @@ export function insertPerson(db: Database.Database, data: Omit<Person, "id">): n
   return result.lastInsertRowid as number;
 }
 
-export function updatePerson(db: Database.Database, id: number, data: Omit<Person, "id">): void {
+export function updatePerson(
+  db: Database.Database,
+  id: number,
+  data: Omit<Person, "id" | "updated_at">
+): void {
   db.prepare(
     "UPDATE people SET name=?,discount=?,discount_long=?,active=?,username=?,is_admin=? WHERE id=?"
   ).run(
@@ -61,9 +68,9 @@ export function setPasswordHash(db: Database.Database, id: number, passwordHash:
 }
 
 export function isOwner(db: Database.Database, personName: string): boolean {
-  const row = db
-    .prepare("SELECT COUNT(*) as n FROM cars WHERE owner_name=?")
-    .get(personName) as { n: number };
+  const row = db.prepare("SELECT COUNT(*) as n FROM cars WHERE owner_name=?").get(personName) as {
+    n: number;
+  };
   return row.n > 0;
 }
 

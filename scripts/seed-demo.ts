@@ -1,10 +1,12 @@
 import Database from "better-sqlite3";
 import bcrypt from "bcryptjs";
+import { mkdirSync } from "fs";
 import path from "path";
 import { runMigrations } from "../lib/db/migrate.js";
 import { calcTripAmount, calcPricePerLiter } from "../lib/formulas.js";
 
 const DB_PATH = process.env.DB_PATH ?? path.join(process.cwd(), "data", "carsharing.db");
+mkdirSync(path.dirname(DB_PATH), { recursive: true });
 const db = new Database(DB_PATH);
 db.pragma("journal_mode = WAL");
 db.pragma("foreign_keys = ON");

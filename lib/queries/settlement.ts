@@ -73,7 +73,17 @@ function round2(n: number): number {
  * transfer payer/payee names back to IDs.
  */
 function buildNameToId(people: PersonRow[]): Map<string, number> {
-  return new Map(people.map((p) => [shortNameOf(p), p.id]));
+  const map = new Map<string, number>();
+  for (const p of people) {
+    const key = shortNameOf(p);
+    if (map.has(key)) {
+      console.warn(
+        `[settlement] duplicate shortName "${key}" — payment annotation may be wrong`
+      );
+    }
+    map.set(key, p.id);
+  }
+  return map;
 }
 
 function reduceDebts(
@@ -391,10 +401,10 @@ export function getSettlement(db: Database.Database, year: number): SettlementRe
           car_name: era.name,
           car_short: era.short,
           owner_name: shortNameOf({
-        first_name: era.owner_first_name,
-        last_name: era.owner_last_name,
-        username: era.owner_username,
-      }),
+            first_name: era.owner_first_name,
+            last_name: era.owner_last_name,
+            username: era.owner_username,
+          }),
           owner_from: era.owner_from,
           owner_to: era.owner_to === "9999-12-31" ? null : era.owner_to,
           trip_amount: tripAmt,

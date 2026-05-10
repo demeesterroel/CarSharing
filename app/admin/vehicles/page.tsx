@@ -80,12 +80,14 @@ function CarAccordion({
   onToggle,
   displayPrice,
   year,
+  hasPnl,
 }: {
   car: Car;
   expanded: boolean;
   onToggle: () => void;
   displayPrice: number;
   year: number;
+  hasPnl: boolean;
 }) {
   const router = useRouter();
   const t = useT();
@@ -99,6 +101,16 @@ function CarAccordion({
   const [activeLocal, setActiveLocal] = useState(car.active !== 0);
   const [ownerPersonId, setOwnerPersonId] = useState<number | null>(car.owner_person_id ?? null);
   const [deleteConfirm, setDeleteConfirm] = useState(false);
+
+  const [prevId, setPrevId] = useState(car.id);
+  if (car.id !== prevId) {
+    setPrevId(car.id);
+    setName(car.name);
+    setPrice(car.price_per_km);
+    setActiveLocal(car.active !== 0);
+    setOwnerPersonId(car.owner_person_id ?? null);
+    setDeleteConfirm(false);
+  }
 
   const dirty =
     name !== car.name ||
@@ -238,28 +250,30 @@ function CarAccordion({
                 onChange={(e) => setPrice(parseFloat(e.target.value) || 0)}
                 style={{ ...inputStyle, flex: 1 }}
               />
-              <button
-                onClick={() => {
-                  const p = new URLSearchParams();
-                  p.set("view", "detail");
-                  p.set("car", String(car.id));
-                  if (year !== currentYear) p.set("year", String(year));
-                  router.push(`/admin/vehicles?${p.toString()}`);
-                }}
-                style={{
-                  fontFamily: fontMono,
-                  fontSize: 10,
-                  fontWeight: 700,
-                  padding: "0 10px",
-                  background: paper.blue,
-                  color: paper.paper,
-                  border: "none",
-                  cursor: "pointer",
-                  flexShrink: 0,
-                }}
-              >
-                ✦
-              </button>
+              {hasPnl && (
+                <button
+                  onClick={() => {
+                    const p = new URLSearchParams();
+                    p.set("view", "detail");
+                    p.set("car", String(car.id));
+                    if (year !== currentYear) p.set("year", String(year));
+                    router.push(`/admin/vehicles?${p.toString()}`);
+                  }}
+                  style={{
+                    fontFamily: fontMono,
+                    fontSize: 10,
+                    fontWeight: 700,
+                    padding: "0 10px",
+                    background: paper.blue,
+                    color: paper.paper,
+                    border: "none",
+                    cursor: "pointer",
+                    flexShrink: 0,
+                  }}
+                >
+                  ✦
+                </button>
+              )}
             </div>
           </div>
           <div
@@ -838,6 +852,7 @@ function OwnerFleet() {
           onToggle={() => setExpandedId(expandedId === car.id ? null : car.id)}
           displayPrice={priceForYear(car.id, year, priceHistory, car.price_per_km)}
           year={year}
+          hasPnl={!!allPnL.find((c) => c.car_id === car.id)}
         />
       ))}
       {inactiveCars.length > 0 && (
@@ -869,6 +884,7 @@ function OwnerFleet() {
               onToggle={() => setExpandedId(expandedId === car.id ? null : car.id)}
               displayPrice={priceForYear(car.id, year, priceHistory, car.price_per_km)}
               year={year}
+              hasPnl={!!allPnL.find((c) => c.car_id === car.id)}
             />
           ))}
         </>

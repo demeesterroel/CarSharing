@@ -8,7 +8,7 @@ import { useT } from "@/components/locale-provider";
 import { useReservations, useOwnerCarShorts, useAdminSummary } from "./_shared";
 import { useMe } from "@/hooks/use-me";
 
-const OWNER_PAGES = ["/admin", "/admin/settlement", "/admin/vehicles", "/admin/old-cars"];
+const OWNER_PAGES = ["/admin", "/admin/settlement", "/admin/vehicles"];
 
 function SubNav() {
   const t = useT();

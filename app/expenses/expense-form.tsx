@@ -276,7 +276,7 @@ export function ExpenseForm({ defaultValues, onSubmit, onCancel, onDelete }: Pro
               <span
                 style={{ fontFamily: fontSerif, fontSize: 17, fontWeight: 600, color: paper.ink }}
               >
-                {person?.name ?? me?.personName ?? "—"}
+                {person?.name ?? me?.shortName ?? "—"}
               </span>
               {(person?.discount ?? 0) > 0 && (
                 <span style={{ color: paper.accent, fontSize: 13 }}>★</span>

@@ -1,5 +1,6 @@
 import type Database from "better-sqlite3";
 import type { Person } from "@/types";
+export { shortNameOf, fullNameOf } from "@/lib/person-utils";
 
 // Strip password_hash from public-facing person objects
 function strip(p: Person): Person {
@@ -30,15 +31,17 @@ export function insertPerson(
   db: Database.Database,
   data: Omit<Person, "id" | "updated_at" | "first_name" | "last_name"> & { first_name?: string; last_name?: string }
 ): number {
-  const firstName = data.first_name ?? data.name.split(" ")[0] ?? data.name;
-  const lastName = data.last_name ?? (data.name.includes(" ") ? data.name.slice(data.name.indexOf(" ") + 1) : "");
-  const fullName = lastName ? `${firstName} ${lastName}` : firstName;
+  const firstName = data.first_name || data.name.split(" ")[0] || "";
+  const lastName = data.last_name || (data.name.includes(" ") ? data.name.slice(data.name.indexOf(" ") + 1) : "");
+  const legacyName = data.first_name != null || data.last_name != null
+    ? (lastName ? `${firstName} ${lastName}` : firstName)
+    : data.name;
   const result = db
     .prepare(
       "INSERT INTO people (name,first_name,last_name,discount,discount_long,active,username,is_admin,bank_account,email) VALUES (?,?,?,?,?,?,?,?,?,?)"
     )
     .run(
-      fullName,
+      legacyName,
       firstName,
       lastName,
       data.discount,
@@ -57,13 +60,15 @@ export function updatePerson(
   id: number,
   data: Omit<Person, "id" | "updated_at" | "first_name" | "last_name"> & { first_name?: string; last_name?: string }
 ): void {
-  const firstName = data.first_name ?? data.name.split(" ")[0] ?? data.name;
-  const lastName = data.last_name ?? (data.name.includes(" ") ? data.name.slice(data.name.indexOf(" ") + 1) : "");
-  const fullName = lastName ? `${firstName} ${lastName}` : firstName;
+  const firstName = data.first_name || data.name.split(" ")[0] || "";
+  const lastName = data.last_name || (data.name.includes(" ") ? data.name.slice(data.name.indexOf(" ") + 1) : "");
+  const legacyName = data.first_name != null || data.last_name != null
+    ? (lastName ? `${firstName} ${lastName}` : firstName)
+    : data.name;
   db.prepare(
     "UPDATE people SET name=?,first_name=?,last_name=?,discount=?,discount_long=?,active=?,username=?,is_admin=?,bank_account=?,email=? WHERE id=?"
   ).run(
-    fullName,
+    legacyName,
     firstName,
     lastName,
     data.discount,

@@ -7,6 +7,7 @@ import { PageHeader } from "@/components/page-header";
 import { paper, fontMono, fontSerif } from "@/lib/paper-theme";
 import { apiFetch } from "@/lib/api/client";
 import type { Person } from "@/types";
+import { shortNameOf } from "@/lib/person-utils";
 
 export default function EditProfilePage({ params }: { params: Promise<{ id: string }> }) {
   const router = useRouter();
@@ -39,7 +40,7 @@ export default function EditProfilePage({ params }: { params: Promise<{ id: stri
       })
       .then((p) => {
         setPerson(p);
-        setFirstName(p.first_name || p.name.split(" ")[0] || "");
+        setFirstName(shortNameOf(p));
         setLastName(p.last_name || (p.name.includes(" ") ? p.name.slice(p.name.indexOf(" ") + 1) : ""));
         setBankAccount(p.bank_account ?? "");
         setEmail(p.email ?? "");
@@ -69,7 +70,7 @@ export default function EditProfilePage({ params }: { params: Promise<{ id: stri
     );
   }
 
-  const personFirstName = person.first_name || person.name.split(" ")[0] || "";
+  const personFirstName = shortNameOf(person);
   const personLastName = person.last_name || (person.name.includes(" ") ? person.name.slice(person.name.indexOf(" ") + 1) : "");
   const dirty =
     firstName !== personFirstName ||
@@ -155,71 +156,72 @@ export default function EditProfilePage({ params }: { params: Promise<{ id: stri
               />
             </div>
 
-            <div style={{ marginBottom: 12 }}>
-              <label
-                htmlFor="edit-first-name"
-                style={{
-                  display: "block",
-                  fontFamily: fontMono,
-                  fontSize: 9,
-                  color: paper.inkMute,
-                  letterSpacing: 1,
-                  marginBottom: 4,
-                }}
-              >
-                {t("form.first_name")}
-              </label>
-              <input
-                id="edit-first-name"
-                type="text"
-                value={firstName}
-                onChange={(e) => setFirstName(e.target.value)}
-                required
-                style={{
-                  width: "100%",
-                  padding: "8px 10px",
-                  fontFamily: fontMono,
-                  fontSize: 12,
-                  background: paper.paperDark,
-                  color: paper.ink,
-                  border: `1.5px solid ${firstName !== personFirstName ? paper.ink : paper.paperDark}`,
-                  outline: "none",
-                  boxSizing: "border-box",
-                }}
-              />
-            </div>
-
-            <div style={{ marginBottom: 12 }}>
-              <label
-                htmlFor="edit-last-name"
-                style={{
-                  display: "block",
-                  fontFamily: fontMono,
-                  fontSize: 9,
-                  color: paper.inkMute,
-                  letterSpacing: 1,
-                  marginBottom: 4,
-                }}
-              >
-                {t("form.last_name")}
-              </label>
-              <input
-                id="edit-last-name"
-                type="text"
-                value={lastName}
-                onChange={(e) => setLastName(e.target.value)}
-                style={{
-                  width: "100%",
-                  padding: "8px 10px",
-                  fontFamily: fontMono,
-                  fontSize: 12,
-                  background: paper.paperDark,
-                  color: paper.ink,
-                  border: `1.5px solid ${lastName !== personLastName ? paper.ink : paper.paperDark}`,
-                  outline: "none",
-                  boxSizing: "border-box",
-                }}
-              />
+            <div style={{ display: "flex", gap: 10, marginBottom: 12 }}>
+              <div style={{ flex: 1 }}>
+                <label
+                  htmlFor="edit-first-name"
+                  style={{
+                    display: "block",
+                    fontFamily: fontMono,
+                    fontSize: 9,
+                    color: paper.inkMute,
+                    letterSpacing: 1,
+                    marginBottom: 4,
+                  }}
+                >
+                  {t("form.first_name")}
+                </label>
+                <input
+                  id="edit-first-name"
+                  type="text"
+                  value={firstName}
+                  onChange={(e) => setFirstName(e.target.value)}
+                  required
+                  style={{
+                    width: "100%",
+                    padding: "8px 10px",
+                    fontFamily: fontMono,
+                    fontSize: 12,
+                    background: paper.paperDark,
+                    color: paper.ink,
+                    border: `1.5px solid ${firstName !== personFirstName ? paper.ink : paper.paperDark}`,
+                    outline: "none",
+                    boxSizing: "border-box",
+                  }}
+                />
+              </div>
+              <div style={{ flex: 1 }}>
+                <label
+                  htmlFor="edit-last-name"
+                  style={{
+                    display: "block",
+                    fontFamily: fontMono,
+                    fontSize: 9,
+                    color: paper.inkMute,
+                    letterSpacing: 1,
+                    marginBottom: 4,
+                  }}
+                >
+                  {t("form.last_name")}
+                </label>
+                <input
+                  id="edit-last-name"
+                  type="text"
+                  value={lastName}
+                  onChange={(e) => setLastName(e.target.value)}
+                  style={{
+                    width: "100%",
+                    padding: "8px 10px",
+                    fontFamily: fontMono,
+                    fontSize: 12,
+                    background: paper.paperDark,
+                    color: paper.ink,
+                    border: `1.5px solid ${lastName !== personLastName ? paper.ink : paper.paperDark}`,
+                    outline: "none",
+                    boxSizing: "border-box",
+                  }}
+                />
+              </div>
             </div>
 
             <div style={{ marginBottom: 12 }}>

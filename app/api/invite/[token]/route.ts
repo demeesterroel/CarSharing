@@ -7,6 +7,7 @@ import {
   deleteInviteToken,
   setPasswordHash,
   getPersonById,
+  shortNameOf,
 } from "@/lib/queries/people";
 import { getIronSession } from "iron-session";
 import { sessionOptions, type SessionData } from "@/lib/session";
@@ -52,7 +53,7 @@ export async function POST(req: Request, ctx: { params: Promise<{ token: string 
   const session = await getIronSession<SessionData>(req, res, sessionOptions);
   session.authenticated = true;
   session.personId = person.id;
-  session.personName = person.name;
+  session.shortName = shortNameOf(person);
   session.isAdmin = person.is_admin === 1;
   await session.save();
   return res;

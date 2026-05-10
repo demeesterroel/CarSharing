@@ -9,6 +9,7 @@ import { CarBadge } from "@/components/car-badge";
 import { apiFetch } from "@/lib/api/client";
 import { useCreateTrip } from "@/hooks/use-trips";
 import type { KmGap } from "@/lib/queries/admin";
+import { shortNameOf } from "@/lib/person-utils";
 
 function groupByYear<T extends { date?: string; after_date?: string }>(
   items: T[]
@@ -398,7 +399,7 @@ export default function AdminInboxPage() {
                               opacity: createTrip.isPending ? 0.5 : 1,
                             }}
                           >
-                            {person.name.split(" ")[0]}
+                            {shortNameOf(person)}
                           </button>
                         ))}
                       </div>

@@ -284,7 +284,7 @@ export function ReservationForm({ defaultValues, onSubmit, onCancel }: Props) {
             <span
               style={{ fontFamily: fontSerif, fontSize: 17, fontWeight: 600, color: paper.ink }}
             >
-              {person?.name ?? me?.personName ?? "—"}
+              {person?.name ?? me?.shortName ?? "—"}
             </span>
             <span style={{ fontSize: 13 }}>🔒</span>
           </div>

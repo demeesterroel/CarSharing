@@ -14,6 +14,7 @@ import { toast } from "sonner";
 import { CarBadge } from "@/components/car-badge";
 import { CostCoverageScreen } from "@/components/cost-coverage-screen";
 import { Fab } from "@/components/fab";
+import { shortNameOf } from "@/lib/person-utils";
 
 // ── Owner screen state ────────────────────────────────────────
 type OwnerScreen = { view: "fleet" } | { view: "detail"; carId: number };
@@ -50,7 +51,7 @@ function CarRow({
   expanded: boolean;
   onToggle: () => void;
   onSave: (data: Partial<Car>) => void;
-  people: { id: number; name: string }[];
+  people: { id: number; first_name?: string | null; last_name?: string | null; username?: string | null }[];
   isSaving?: boolean;
 }) {
   const t = useT();
@@ -176,7 +177,7 @@ function CarRow({
           }}
         >
           {car.owner_person_id
-            ? (displayName(people.find((p) => p.id === car.owner_person_id) ?? { name: "?", username: null }) )
+            ? (displayName(people.find((p) => p.id === car.owner_person_id) ?? { first_name: "?", username: null }) )
             : <span style={{ color: paper.inkMute, fontStyle: "italic" }}>—</span>}
         </div>
         <div
@@ -454,7 +455,7 @@ function OwnerCarTile({
           }}
         >
           {car.owner_person_id
-            ? (displayName(people.find((p) => p.id === car.owner_person_id) ?? { name: "?", username: null }) )
+            ? (displayName(people.find((p) => p.id === car.owner_person_id) ?? { first_name: "?", username: null }) )
             : <span style={{ color: paper.inkMute, fontStyle: "italic" }}>—</span>}
         </div>
         <div
@@ -1124,8 +1125,8 @@ function OwnerFleet({ myPersonId }: { myPersonId: number | null }) {
 }
 
 // ── Page ──────────────────────────────────────────────────────
-function displayName(p: { name: string; username?: string | null }): string {
-  return p.name?.split(" ")[0] || p.username || "?";
+function displayName(p: { first_name?: string | null; last_name?: string | null; username?: string | null }): string {
+  return shortNameOf(p) || "?";
 }
 
 export default function AdminWagensPage() {

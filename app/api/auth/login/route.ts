@@ -3,7 +3,7 @@ import { getIronSession } from "iron-session";
 import { sessionOptions, type SessionData } from "@/lib/session";
 import { verifyCredentials } from "@/lib/auth";
 import { getDb } from "@/lib/db";
-import { getPersonByUsername, isOwner } from "@/lib/queries/people";
+import { getPersonByUsername, isOwner, shortNameOf } from "@/lib/queries/people";
 import { env } from "@/lib/env";
 
 export async function POST(req: Request) {
@@ -24,7 +24,7 @@ export async function POST(req: Request) {
 
   let authenticated = false;
   let sessionPersonId: number | undefined;
-  let sessionPersonName: string | undefined;
+  let sessionShortName: string | undefined;
   let sessionIsAdmin = false;
 
   if (person?.password_hash) {
@@ -35,7 +35,7 @@ export async function POST(req: Request) {
     );
     if (authenticated) {
       sessionPersonId = person.id;
-      sessionPersonName = person.first_name || person.name;
+      sessionShortName = shortNameOf(person);
       sessionIsAdmin = person.is_admin === 1;
     }
   } else {
@@ -50,10 +50,10 @@ export async function POST(req: Request) {
         sessionIsAdmin = true;
         // Try to find a person row by username or name
         const adminPerson = db
-          .prepare("SELECT id, name FROM people WHERE username=? OR name=? LIMIT 1")
-          .get(AUTH_USERNAME, AUTH_USERNAME) as { id: number; name: string } | undefined;
+          .prepare("SELECT id, first_name, last_name, username FROM people WHERE username=? OR name=? LIMIT 1")
+          .get(AUTH_USERNAME, AUTH_USERNAME) as { id: number; first_name?: string; last_name?: string; username?: string | null } | undefined;
         sessionPersonId = adminPerson?.id;
-        sessionPersonName = (adminPerson as { first_name?: string } | undefined)?.first_name ?? adminPerson?.name ?? AUTH_USERNAME;
+        sessionShortName = adminPerson ? shortNameOf(adminPerson) : AUTH_USERNAME;
       }
     }
   }
@@ -66,7 +66,7 @@ export async function POST(req: Request) {
   const session = await getIronSession<SessionData>(req, res, sessionOptions);
   session.authenticated = true;
   session.personId = sessionPersonId;
-  session.personName = sessionPersonName;
+  session.shortName = sessionShortName;
   session.isAdmin = sessionIsAdmin;
   await session.save();
   return res;

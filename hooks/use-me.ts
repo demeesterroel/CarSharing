@@ -3,7 +3,7 @@ import { apiFetch, ApiError } from "@/lib/api/client";
 
 export interface Me {
   personId: number | null;
-  personName: string | null;
+  shortName: string | null;
   isAdmin: boolean;
   isOwner: boolean;
   isCloaked: boolean;

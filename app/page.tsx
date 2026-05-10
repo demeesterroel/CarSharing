@@ -321,17 +321,17 @@ function CarBreakdownSection({ bd, year }: { bd: CarDashboardBreakdown; year: nu
 }
 
 // ── Balance Receipt ───────────────────────────────────────────────
-function BalanceReceipt({ personName, personId }: { personName: string; personId: number | null }) {
+function BalanceReceipt({ fullName, personId }: { fullName: string; personId: number | null }) {
   const t = useT();
   const currentYear = new Date().getFullYear();
   const [year, setYear] = useState(currentYear);
   const { data: earliestYear = currentYear } = useEarliestDashboardYear();
   const { data: rows = [] } = useDashboard(year);
-  const myRow = personId ? rows.find((r) => r.person_id === personId) : rows.find((r) => r.person_name === personName);
+  const myRow = personId ? rows.find((r) => r.person_id === personId) : rows.find((r) => r.person_name === fullName);
   const { data: settlement } = useSettlement(year);
   const myStatement = personId
     ? settlement?.members.find((m) => m.person_id === personId)
-    : settlement?.members.find((m) => m.person_name === personName);
+    : settlement?.members.find((m) => m.person_name === fullName);
   const owner_net: number | null = myRow?.is_owner ? (myStatement?.net ?? null) : null;
   if (!myRow) return null;
 
@@ -955,8 +955,8 @@ function DashboardContent() {
         title={
           <>
             {t("dashboard.hello")}
-            {me?.personName && me?.personId ? (
-              <NameEditLink name={me.personName.split(" ")[0]} personId={me.personId} />
+            {me?.personId ? (
+              <NameEditLink name={me.shortName ?? ""} personId={me.personId} />
             ) : null}
           </>
         }
@@ -965,7 +965,7 @@ function DashboardContent() {
       />
 
       {/* Balance */}
-      <BalanceReceipt personName={me?.personName ?? ""} personId={me?.personId ?? null} />
+      <BalanceReceipt fullName={me?.shortName ?? ""} personId={me?.personId ?? null} />
 
       {/* Car locations */}
       <CarLocations trips={trips} onTripClick={setEditTrip} />

@@ -11,6 +11,7 @@ import type { Person } from "@/types";
 import { usePeople } from "../_shared";
 import { toast } from "sonner";
 import { apiFetch } from "@/lib/api/client";
+import { shortNameOf } from "@/lib/person-utils";
 
 // ── Person Row (accordion) ────────────────────────────────────
 function PersonRow({
@@ -489,7 +490,7 @@ export default function AdminLedenPage() {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          first_name: p.first_name || p.name.split(" ")[0] || p.name,
+          first_name: shortNameOf(p),
           last_name: p.last_name || (p.name.includes(" ") ? p.name.slice(p.name.indexOf(" ") + 1) : ""),
           discount: p.discount,
           discount_long: p.discount_long,

@@ -10,6 +10,7 @@ import { usePeople } from "@/hooks/use-people";
 import type { Car } from "@/types";
 import { paper, fontMono, fontSerif } from "@/lib/paper-theme";
 import { useT } from "@/components/locale-provider";
+import { shortNameOf } from "@/lib/person-utils";
 
 const sheetStyle: React.CSSProperties = {
   position: "fixed",
@@ -130,7 +131,7 @@ export default function CarsPage() {
                     letterSpacing: 1,
                   }}
                 >
-                  {owner.first_name || owner.name.split(" ")[0]}
+                  {shortNameOf(owner)}
                 </div>
               ) : null;
             })()}

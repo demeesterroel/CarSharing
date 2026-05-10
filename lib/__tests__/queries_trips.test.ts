@@ -21,6 +21,8 @@ function makeDb() {
 }
 
 const basePerson = {
+  first_name: "",
+  last_name: "",
   discount: 0,
   discount_long: 0,
   active: 1 as const,
@@ -28,12 +30,13 @@ const basePerson = {
   password_hash: null,
   is_admin: 0 as const,
   bank_account: "",
+  email: null,
 };
 
 describe("getTripById", () => {
   it("returns the correct trip with joined fields", () => {
     const db = makeDb();
-    const pid = insertPerson(db, { ...basePerson, name: "Alice" });
+    const pid = insertPerson(db, { ...basePerson, first_name: "Alice" });
     const cid = insertCar(db, {
       short: "CA",
       name: "Car A",
@@ -65,7 +68,7 @@ describe("getTripById", () => {
 describe("updateTrip", () => {
   it("with expectedUpdatedAt: succeeds when timestamp matches", () => {
     const db = makeDb();
-    const pid = insertPerson(db, { ...basePerson, name: "Alice" });
+    const pid = insertPerson(db, { ...basePerson, first_name: "Alice" });
     const cid = insertCar(db, {
       short: "CA",
       name: "Car A",
@@ -102,7 +105,7 @@ describe("updateTrip", () => {
 
   it("with expectedUpdatedAt: throws ConflictError when timestamp mismatches", () => {
     const db = makeDb();
-    const pid = insertPerson(db, { ...basePerson, name: "Alice" });
+    const pid = insertPerson(db, { ...basePerson, first_name: "Alice" });
     const cid = insertCar(db, {
       short: "CA",
       name: "Car A",
@@ -137,7 +140,7 @@ describe("updateTrip", () => {
 
   it("with expectedUpdatedAt: throws ConflictError when trip no longer exists", () => {
     const db = makeDb();
-    const pid = insertPerson(db, { ...basePerson, name: "Alice" });
+    const pid = insertPerson(db, { ...basePerson, first_name: "Alice" });
     const cid = insertCar(db, {
       short: "CA",
       name: "Car A",
@@ -164,7 +167,7 @@ describe("updateTrip", () => {
 
   it("throws when invalid person_id or car_id", () => {
     const db = makeDb();
-    const pid = insertPerson(db, { ...basePerson, name: "Alice" });
+    const pid = insertPerson(db, { ...basePerson, first_name: "Alice" });
     const cid = insertCar(db, {
       short: "CA",
       name: "Car A",
@@ -196,7 +199,7 @@ describe("updateTrip", () => {
 describe("deleteTrip", () => {
   it("removes the trip from the DB", () => {
     const db = makeDb();
-    const pid = insertPerson(db, { ...basePerson, name: "Alice" });
+    const pid = insertPerson(db, { ...basePerson, first_name: "Alice" });
     const cid = insertCar(db, {
       short: "CA",
       name: "Car A",

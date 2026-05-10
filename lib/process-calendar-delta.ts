@@ -31,7 +31,9 @@ export async function processCalendarDelta(
       .prepare(
         `SELECT r.id, r.start_date, r.end_date, r.note, r.status, r.last_synced_etag,
                 r.last_app_write_nonce, r.last_known_response_status,
-                c.short AS car_short, rq.name AS person_name, own.email AS owner_email
+                c.short AS car_short,
+                TRIM(rq.first_name || ' ' || rq.last_name) AS person_name,
+                own.email AS owner_email
          FROM reservations r
          JOIN cars c ON c.id = r.car_id
          JOIN people rq ON rq.id = r.person_id

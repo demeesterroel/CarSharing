@@ -74,11 +74,12 @@ describe("insertCar", () => {
     expect(car?.long_threshold).toBe(500);
   });
 
-  it("stores owner_name when provided", () => {
+  it("stores owner_person_id when provided", () => {
     const db = makeDb();
-    const id = insertCar(db, { ...baseCar, owner_name: "Alice" });
+    db.exec(`INSERT INTO people (id, first_name, last_name, active) VALUES (1, 'Alice', 'Owner', 1)`);
+    const id = insertCar(db, { ...baseCar, owner_person_id: 1 });
     const car = getCarById(db, id);
-    expect(car?.owner_name).toBe("Alice");
+    expect(car?.owner_person_id).toBe(1);
   });
 
   it("stores null brand and color", () => {
@@ -163,8 +164,8 @@ describe("carHasHistory", () => {
 
   it("returns true when the car has at least one trip", () => {
     const db = makeDb();
-    db.exec(`INSERT INTO people (id, name, active) VALUES (1, 'Alice', 1)`);
-    const id = insertCar(db, { ...baseCar, owner_name: "Alice" });
+    db.exec(`INSERT INTO people (id, first_name, last_name, active) VALUES (1, 'Alice', 'Owner', 1)`);
+    const id = insertCar(db, baseCar);
     db.exec(
       `INSERT INTO trips (person_id, car_id, date, start_odometer, end_odometer, km, amount)
        VALUES (1, ${id}, '2025-01-01', 0, 10, 10, 2.0)`
@@ -174,8 +175,8 @@ describe("carHasHistory", () => {
 
   it("returns true when the car has at least one fuel fillup", () => {
     const db = makeDb();
-    db.exec(`INSERT INTO people (id, name, active) VALUES (1, 'Alice', 1)`);
-    const id = insertCar(db, { ...baseCar, owner_name: "Alice" });
+    db.exec(`INSERT INTO people (id, first_name, last_name, active) VALUES (1, 'Alice', 'Owner', 1)`);
+    const id = insertCar(db, baseCar);
     db.prepare(
       "INSERT INTO fuel_fillups (person_id, car_id, date, liters, amount, price_per_liter) VALUES (?,?,?,?,?,?)"
     ).run(1, id, "2025-01-01", 50, 60, 1.2);
@@ -184,8 +185,8 @@ describe("carHasHistory", () => {
 
   it("returns true when the car has at least one expense", () => {
     const db = makeDb();
-    db.exec(`INSERT INTO people (id, name, active) VALUES (1, 'Alice', 1)`);
-    const id = insertCar(db, { ...baseCar, owner_name: "Alice" });
+    db.exec(`INSERT INTO people (id, first_name, last_name, active) VALUES (1, 'Alice', 'Owner', 1)`);
+    const id = insertCar(db, baseCar);
     db.prepare(
       "INSERT INTO expenses (person_id, car_id, date, amount, description, category) VALUES (?,?,?,?,?,?)"
     ).run(1, id, "2025-01-01", 150, "Maintenance", "repair");
@@ -194,8 +195,8 @@ describe("carHasHistory", () => {
 
   it("returns true when the car has at least one reservation", () => {
     const db = makeDb();
-    db.exec(`INSERT INTO people (id, name, active) VALUES (1, 'Alice', 1)`);
-    const id = insertCar(db, { ...baseCar, owner_name: "Alice" });
+    db.exec(`INSERT INTO people (id, first_name, last_name, active) VALUES (1, 'Alice', 'Owner', 1)`);
+    const id = insertCar(db, baseCar);
     db.prepare(
       "INSERT INTO reservations (person_id, car_id, start_date, end_date, status, note) VALUES (?,?,?,?,?,?)"
     ).run(1, id, "2025-01-01", "2025-01-03", "pending", "Weekend trip");
@@ -219,8 +220,8 @@ describe("deleteCar", () => {
 
   it("throws a FK constraint error when the car has trips (foreign keys enabled)", () => {
     const db = makeDb();
-    db.exec(`INSERT INTO people (id, name, active) VALUES (1, 'Alice', 1)`);
-    const id = insertCar(db, { ...baseCar, owner_name: "Alice" });
+    db.exec(`INSERT INTO people (id, first_name, last_name, active) VALUES (1, 'Alice', 'Owner', 1)`);
+    const id = insertCar(db, baseCar);
     db.exec(
       `INSERT INTO trips (person_id, car_id, date, start_odometer, end_odometer, km, amount)
        VALUES (1, ${id}, '2025-01-01', 0, 10, 10, 2.0)`

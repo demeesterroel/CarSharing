@@ -12,6 +12,7 @@ import { usePeople } from "@/hooks/use-people";
 import { apiFetch } from "@/lib/api/client";
 import { Card, Row, Perf } from "../_shared";
 import type { MemberStatement, AnnotatedTransfer } from "@/types";
+import { fullNameOf } from "@/lib/person-utils";
 
 function fmtL(liters: number): string {
   return liters.toLocaleString("nl-BE", { minimumFractionDigits: 1, maximumFractionDigits: 1 });
@@ -430,6 +431,7 @@ function MemberCard({
   year,
   bankAccount,
   personBankAccount,
+  personFullName,
   crossRows,
   settlementTransfer,
   showAll,
@@ -438,6 +440,7 @@ function MemberCard({
   year: number;
   bankAccount: string;
   personBankAccount: string;
+  personFullName: string;
   crossRows: { car_short: string; row: import("@/types").CarParticipantRow }[];
   settlementTransfer: AnnotatedTransfer | undefined;
   showAll: boolean;
@@ -555,7 +558,7 @@ function MemberCard({
     const separator = "─".repeat(W);
     const lines = [
       "```",
-      `Beste ${m.person_name},`,
+      `Beste ${personFullName},`,
       m.is_owner
         ? `Jouw eigenaarspayout voor ${year}:`
         : `Jouw aandeel in de jaarafrekening ${year}:`,
@@ -1165,7 +1168,10 @@ function AdminSettlementPageContent() {
                     m={m}
                     year={year}
                     bankAccount={settings?.coop_bank_account ?? ""}
-                    personBankAccount={people?.find((p) => p.name === m.person_name)?.bank_account ?? ""}
+                    personBankAccount={people?.find((p) => p.id === m.person_id)?.bank_account ?? ""}
+                    personFullName={fullNameOf(
+                      people?.find((p) => p.id === m.person_id) ?? { first_name: m.person_name, last_name: "", username: null }
+                    )}
                     crossRows={
                       m.is_owner
                         ? data.car_settlements.flatMap((cs) =>

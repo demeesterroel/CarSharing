@@ -36,7 +36,7 @@ export function CloakBanner() {
       }}
     >
       <span>
-        Viewing as {me.personName} ({roleLabel})
+        Viewing as {me.shortName} ({roleLabel})
       </span>
       <button
         onClick={handleExit}

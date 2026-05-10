@@ -15,7 +15,7 @@ export const CRITICAL_ENDPOINTS: readonly CriticalEndpoint[] = [
   { queryKey: ["expenses"], url: "/api/expenses" },
   { queryKey: ["reservations"], url: "/api/reservations" },
   { queryKey: ["people"], url: "/api/people" },
-  { queryKey: ["cars"], url: "/api/cars" },
+  { queryKey: ["cars"], url: "/api/vehicles" },
 ] as const;
 
 // Pages whose RSC payloads are pre-fetched so the SW caches them in `pages-rsc`.

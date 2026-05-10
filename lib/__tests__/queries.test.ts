@@ -18,6 +18,8 @@ function makeDb() {
 }
 
 const basePerson = {
+  first_name: "",
+  last_name: "",
   discount: 0,
   discount_long: 0,
   active: 1 as const,
@@ -25,14 +27,15 @@ const basePerson = {
   password_hash: null,
   is_admin: 0 as const,
   bank_account: "",
+  email: null,
 };
 
 describe("people queries", () => {
   it("inserts and retrieves a person", () => {
     const db = makeDb();
-    const id = insertPerson(db, { name: "Alice", ...basePerson });
+    const id = insertPerson(db, { ...basePerson, first_name: "Alice" });
     const person = getPersonById(db, id);
-    expect(person?.name).toBe("Alice");
+    expect(person?.first_name).toBe("Alice");
   });
 
   it("returns empty array when no people", () => {
@@ -60,7 +63,7 @@ describe("cars queries", () => {
 describe("trips queries", () => {
   it("inserts a trip and computes km and amount", () => {
     const db = makeDb();
-    const pid = insertPerson(db, { name: "Alice", ...basePerson });
+    const pid = insertPerson(db, { ...basePerson, first_name: "Alice" });
     const cid = insertCar(db, {
       short: "LEW",
       name: "Car LEW",
@@ -97,7 +100,7 @@ describe("getLastCarState", () => {
 
   it("returns the last trip's end_odometer when trips exist", () => {
     const db = makeDb();
-    const pid = insertPerson(db, { name: "P", ...basePerson });
+    const pid = insertPerson(db, { ...basePerson, first_name: "P" });
     const cid = insertCar(db, {
       short: "A",
       name: "A",
@@ -130,7 +133,7 @@ describe("getLastCarState", () => {
 
   it("prefers a later fuel fill-up over an earlier trip", () => {
     const db = makeDb();
-    const pid = insertPerson(db, { name: "P", ...basePerson });
+    const pid = insertPerson(db, { ...basePerson, first_name: "P" });
     const cid = insertCar(db, {
       short: "A",
       name: "A",
@@ -165,7 +168,7 @@ describe("getLastCarState", () => {
 
   it("ignores fuel fill-ups where odometer is null", () => {
     const db = makeDb();
-    const pid = insertPerson(db, { name: "P", ...basePerson });
+    const pid = insertPerson(db, { ...basePerson, first_name: "P" });
     const cid = insertCar(db, {
       short: "A",
       name: "A",
@@ -200,7 +203,7 @@ describe("getLastCarState", () => {
 
   it("prefers trip over fuel when both share the same date", () => {
     const db = makeDb();
-    const pid = insertPerson(db, { name: "P", ...basePerson });
+    const pid = insertPerson(db, { ...basePerson, first_name: "P" });
     const cid = insertCar(db, {
       short: "A",
       name: "A",
@@ -233,7 +236,7 @@ describe("getLastCarState", () => {
 describe("getDashboard", () => {
   it("returns zero balance for person with no activity", () => {
     const db = makeDb();
-    insertPerson(db, { name: "Test", ...basePerson });
+    insertPerson(db, { ...basePerson, first_name: "Test" });
     const rows = getDashboard(db, 2026);
     expect(rows[0].balance).toBe(0);
     expect(rows[0].trip_count).toBe(0);
@@ -241,7 +244,7 @@ describe("getDashboard", () => {
 
   it("computes negative balance when trip amount exceeds payments", () => {
     const db = makeDb();
-    const pid = insertPerson(db, { name: "Alice", ...basePerson });
+    const pid = insertPerson(db, { ...basePerson, first_name: "Alice" });
     const cid = insertCar(db, {
       short: "LEW",
       name: "Car LEW",
@@ -265,7 +268,7 @@ describe("getDashboard", () => {
 
   it("filters trips outside target year", () => {
     const db = makeDb();
-    const pid = insertPerson(db, { name: "X", ...basePerson });
+    const pid = insertPerson(db, { ...basePerson, first_name: "X" });
     const cid = insertCar(db, {
       short: "A",
       name: "A",
@@ -288,7 +291,7 @@ describe("getDashboard", () => {
 
   it("includes payments in balance calculation", () => {
     const db = makeDb();
-    const pid = insertPerson(db, { name: "Y", ...basePerson });
+    const pid = insertPerson(db, { ...basePerson, first_name: "Y" });
     const cid = insertCar(db, {
       short: "B",
       name: "B",
@@ -314,7 +317,7 @@ describe("getDashboard", () => {
 
   it("counts expenses in expense_count", () => {
     const db = makeDb();
-    const pid = insertPerson(db, { name: "Z", ...basePerson });
+    const pid = insertPerson(db, { ...basePerson, first_name: "Z" });
     const cid = insertCar(db, {
       short: "C",
       name: "C",

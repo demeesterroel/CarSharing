@@ -5,10 +5,12 @@ import * as Dialog from "@radix-ui/react-dialog";
 import { PageHeader } from "@/components/page-header";
 import { Fab } from "@/components/fab";
 import { CarForm } from "./car-form";
-import { useCars, useCreateCar, useUpdateCar } from "@/hooks/use-cars";
+import { useCars, useCreateCar, useUpdateCar } from "@/hooks/use-vehicles";
+import { usePeople } from "@/hooks/use-people";
 import type { Car } from "@/types";
 import { paper, fontMono, fontSerif } from "@/lib/paper-theme";
 import { useT } from "@/components/locale-provider";
+import { shortNameOf } from "@/lib/person-utils";
 
 const sheetStyle: React.CSSProperties = {
   position: "fixed",
@@ -27,6 +29,7 @@ const sheetStyle: React.CSSProperties = {
 export default function CarsPage() {
   const t = useT();
   const { data: cars = [], isLoading } = useCars();
+  const { data: people = [] } = usePeople();
   const createCar = useCreateCar();
   const updateCar = useUpdateCar();
   const [editing, setEditing] = useState<Car | null>(null);
@@ -115,20 +118,23 @@ export default function CarsPage() {
                 {c.brand || c.color ? " · " : ""}€{c.price_per_km}/km
               </div>
             </div>
-            {c.owner_name && (
-              <div
-                style={{
-                  padding: "2px 6px",
-                  background: paper.paperDark,
-                  fontFamily: fontMono,
-                  fontSize: 9,
-                  color: paper.inkDim,
-                  letterSpacing: 1,
-                }}
-              >
-                {c.owner_name}
-              </div>
-            )}
+            {c.owner_person_id && (() => {
+              const owner = people.find((p) => p.id === c.owner_person_id);
+              return owner ? (
+                <div
+                  style={{
+                    padding: "2px 6px",
+                    background: paper.paperDark,
+                    fontFamily: fontMono,
+                    fontSize: 9,
+                    color: paper.inkDim,
+                    letterSpacing: 1,
+                  }}
+                >
+                  {shortNameOf(owner)}
+                </div>
+              ) : null;
+            })()}
           </button>
         ))}
       </div>

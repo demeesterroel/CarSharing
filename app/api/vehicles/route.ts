@@ -9,8 +9,8 @@ export const GET = json(async () => getCars(getDb()));
 export const POST = json(async (req) => {
   const session = await requireAdminOrOwner(req);
   const data = await readBody(req, carSchema);
-  if (!session.isAdmin) {
-    data.owner_name = session.personName!;
+  if (!session.isAdmin && session.personId) {
+    data.owner_person_id = session.personId;
   }
   const id = insertCar(getDb(), data);
   return NextResponse.json({ id }, { status: 201 });

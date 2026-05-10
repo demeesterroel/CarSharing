@@ -20,7 +20,7 @@ const NAV_ITEMS = [
   { href: "/", label: t("nav.dashboard"), icon: LayoutDashboard },
   { href: "/calendar", label: t("nav.calendar"), icon: CalendarDays },
   { href: "/people", label: t("nav.people"), icon: Users },
-  { href: "/cars", label: t("nav.cars"), icon: Car },
+  { href: "/vehicles", label: t("nav.cars"), icon: Car },
   { href: "/expenses", label: t("nav.expenses"), icon: Wrench },
   { href: "/payments", label: t("nav.payments"), icon: CreditCard },
 ];

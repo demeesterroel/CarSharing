@@ -21,7 +21,7 @@ export const POST = json(async (req, ctx) => {
   if (result.frozen) {
     unlockSettlement(getDb(), year);
   } else {
-    lockSettlement(getDb(), year, session.personName ?? "admin");
+    lockSettlement(getDb(), year, session.shortName ?? "admin");
   }
   return { ok: true };
 });

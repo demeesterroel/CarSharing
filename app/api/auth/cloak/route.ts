@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { getIronSession } from "iron-session";
 import { sessionOptions, type SessionData } from "@/lib/session";
 import { getDb } from "@/lib/db";
-import { getPersonById } from "@/lib/queries/people";
+import { getPersonById, shortNameOf } from "@/lib/queries/people";
 
 export async function POST(req: Request) {
   const res = NextResponse.json({ ok: true });
@@ -31,7 +31,7 @@ export async function POST(req: Request) {
 
   session.cloakedAs = {
     personId: person.id,
-    personName: person.name,
+    shortName: shortNameOf(person),
     isAdmin: person.is_admin === 1,
   };
   await session.save();

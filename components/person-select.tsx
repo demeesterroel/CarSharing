@@ -1,6 +1,7 @@
 "use client";
 import type { Person } from "@/types";
 import { t } from "@/lib/i18n";
+import { fullNameOf } from "@/lib/person-utils";
 
 interface Props {
   people: Person[];
@@ -21,7 +22,7 @@ export function PersonSelect({ people, value, onChange, placeholder }: Props) {
       </option>
       {people.map((p) => (
         <option key={p.id} value={p.id}>
-          {p.name}
+          {fullNameOf(p)}
         </option>
       ))}
     </select>

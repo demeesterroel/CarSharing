@@ -6,7 +6,7 @@ import { useMe } from "@/hooks/use-me";
 import { paper, fontMono, fontSerif } from "@/lib/paper-theme";
 import { useT } from "@/components/locale-provider";
 import type { Car } from "@/types";
-import { useCars, useCreateCar, useUpdateCar, useDeleteCar } from "@/hooks/use-cars";
+import { useCars, useCreateCar, useUpdateCar, useDeleteCar } from "@/hooks/use-vehicles";
 import { usePeople } from "@/hooks/use-people";
 import { useAdminSummary } from "../_shared";
 import { useEarliestDashboardYear } from "@/hooks/use-dashboard";
@@ -15,6 +15,7 @@ import { CarBadge } from "@/components/car-badge";
 import { CostCoverageScreen } from "@/components/cost-coverage-screen";
 import { Fab } from "@/components/fab";
 import type { CarPriceHistory, CarPnL } from "@/lib/queries/admin";
+import { shortNameOf } from "@/lib/person-utils";
 
 // ── Style constants ───────────────────────────────────────────
 const overlayStyle: React.CSSProperties = {
@@ -239,7 +240,7 @@ function CarAccordion({
             whiteSpace: "nowrap",
           }}
         >
-          {car.owner_name ?? <span style={{ color: paper.inkMute, fontStyle: "italic" }}>—</span>}
+          {car.owner_person_id ? (displayName(people.find((p) => p.id === car.owner_person_id) ?? { first_name: "?", username: null })) : <span style={{ color: paper.inkMute, fontStyle: "italic" }}>—</span>}
         </div>
         <div
           style={{
@@ -334,7 +335,7 @@ function CarAccordion({
                   cursor: "default",
                 }}
               >
-                {car.owner_name ?? "—"}
+                {car.owner_person_id ? displayName(people.find((p) => p.id === car.owner_person_id) ?? { first_name: "?", username: null }) : "—"}
               </div>
             )}
           </div>
@@ -575,7 +576,7 @@ function AddCarForm({ onBack }: { onBack: () => void }) {
                 cursor: "default",
               }}
             >
-              {me?.personName ?? "—"}
+              {me?.shortName ?? "—"}
             </div>
           )}
         </div>
@@ -947,8 +948,8 @@ function OwnerFleet() {
 }
 
 // ── Page ──────────────────────────────────────────────────────
-function displayName(p: { name: string; username?: string | null }): string {
-  return p.name?.split(" ")[0] || p.username || "?";
+function displayName(p: { first_name?: string | null; last_name?: string | null; username?: string | null }): string {
+  return shortNameOf(p) || "?";
 }
 
 export default function AdminVehiclesPage() {

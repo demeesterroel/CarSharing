@@ -1,5 +1,6 @@
 import type Database from "better-sqlite3";
 import type { Person } from "@/types";
+export { shortNameOf, fullNameOf } from "@/lib/person-utils";
 
 // Strip password_hash from public-facing person objects
 function strip(p: Person): Person {
@@ -8,13 +9,17 @@ function strip(p: Person): Person {
 }
 
 export function getPeople(db: Database.Database): Person[] {
-  return (db.prepare("SELECT * FROM people ORDER BY name").all() as Person[]).map(strip);
+  return (db.prepare("SELECT * FROM people ORDER BY first_name, last_name").all() as Person[]).map(
+    strip
+  );
 }
 
 export function getActivePeople(db: Database.Database): Person[] {
-  return (db.prepare("SELECT * FROM people WHERE active=1 ORDER BY name").all() as Person[]).map(
-    strip
-  );
+  return (
+    db
+      .prepare("SELECT * FROM people WHERE active=1 ORDER BY first_name, last_name")
+      .all() as Person[]
+  ).map(strip);
 }
 
 export function getPersonById(db: Database.Database, id: number): Person | null {
@@ -28,14 +33,15 @@ export function getPersonByUsername(db: Database.Database, username: string): Pe
 
 export function insertPerson(
   db: Database.Database,
-  data: Omit<Person, "id" | "updated_at">
+  data: Omit<Person, "id" | "updated_at"> & { password_hash?: string | null }
 ): number {
   const result = db
     .prepare(
-      "INSERT INTO people (name,discount,discount_long,active,username,is_admin,bank_account,email) VALUES (?,?,?,?,?,?,?,?)"
+      "INSERT INTO people (first_name,last_name,discount,discount_long,active,username,is_admin,bank_account,email) VALUES (?,?,?,?,?,?,?,?,?)"
     )
     .run(
-      data.name,
+      data.first_name,
+      data.last_name,
       data.discount,
       data.discount_long,
       data.active,
@@ -50,12 +56,13 @@ export function insertPerson(
 export function updatePerson(
   db: Database.Database,
   id: number,
-  data: Omit<Person, "id" | "updated_at">
+  data: Omit<Person, "id" | "updated_at"> & { password_hash?: string | null }
 ): void {
   db.prepare(
-    "UPDATE people SET name=?,discount=?,discount_long=?,active=?,username=?,is_admin=?,bank_account=?,email=? WHERE id=?"
+    "UPDATE people SET first_name=?,last_name=?,discount=?,discount_long=?,active=?,username=?,is_admin=?,bank_account=?,email=? WHERE id=?"
   ).run(
-    data.name,
+    data.first_name,
+    data.last_name,
     data.discount,
     data.discount_long,
     data.active,

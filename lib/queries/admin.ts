@@ -70,11 +70,18 @@ export function getCarPnL(db: Database.Database, year: number): CarPnL[] {
   const yearStr = String(year);
   const prevYearStr = String(year - 1);
 
-  const cars = db.prepare("SELECT * FROM cars ORDER BY short").all() as {
+  const cars = db.prepare(`
+    SELECT c.id, c.short, c.name, c.price_per_km, c.owner_person_id, c.long_threshold, c.expected_km,
+           p.first_name || CASE WHEN p.last_name != '' THEN ' ' || p.last_name ELSE '' END AS owner_name
+    FROM cars c
+    LEFT JOIN people p ON p.id = c.owner_person_id
+    ORDER BY c.short
+  `).all() as {
     id: number;
     short: string;
     name: string;
     price_per_km: number;
+    owner_person_id: number | null;
     owner_name: string | null;
     long_threshold: number;
     expected_km: number | null;
@@ -117,37 +124,34 @@ export function getCarPnL(db: Database.Database, year: number): CarPnL[] {
       )
       .get(car.id, prevYearStr) as { km: number };
 
-    const ownerTrips = car.owner_name
+    const ownerTrips = car.owner_person_id
       ? (db
           .prepare(
             `SELECT COUNT(*) AS cnt, COALESCE(SUM(t.km), 0) AS km, COALESCE(SUM(t.amount), 0) AS amt
              FROM trips t
-             JOIN people p ON p.id = t.person_id
-             WHERE t.car_id = ? AND strftime('%Y', t.date) = ? AND p.name = ?`
+             WHERE t.car_id = ? AND strftime('%Y', t.date) = ? AND t.person_id = ?`
           )
-          .get(car.id, yearStr, car.owner_name) as { cnt: number; km: number; amt: number })
+          .get(car.id, yearStr, car.owner_person_id) as { cnt: number; km: number; amt: number })
       : { cnt: 0, km: 0, amt: 0 };
 
-    const ownerFuel = car.owner_name
+    const ownerFuel = car.owner_person_id
       ? (db
           .prepare(
             `SELECT COUNT(*) AS cnt, COALESCE(SUM(f.amount),0) AS amt, COALESCE(SUM(f.liters),0) AS liters
              FROM fuel_fillups f
-             JOIN people p ON p.id = f.person_id
-             WHERE f.car_id = ? AND strftime('%Y', f.date) = ? AND p.name = ?`
+             WHERE f.car_id = ? AND strftime('%Y', f.date) = ? AND f.person_id = ?`
           )
-          .get(car.id, yearStr, car.owner_name) as { cnt: number; amt: number; liters: number })
+          .get(car.id, yearStr, car.owner_person_id) as { cnt: number; amt: number; liters: number })
       : { cnt: 0, amt: 0, liters: 0 };
 
-    const ownerExp = car.owner_name
+    const ownerExp = car.owner_person_id
       ? (db
           .prepare(
             `SELECT COUNT(*) AS cnt, COALESCE(SUM(e.amount),0) AS amt
              FROM expenses e
-             JOIN people p ON p.id = e.person_id
-             WHERE e.car_id = ? AND strftime('%Y', e.date) = ? AND p.name = ?`
+             WHERE e.car_id = ? AND strftime('%Y', e.date) = ? AND e.person_id = ?`
           )
-          .get(car.id, yearStr, car.owner_name) as { cnt: number; amt: number })
+          .get(car.id, yearStr, car.owner_person_id) as { cnt: number; amt: number })
       : { cnt: 0, amt: 0 };
 
     const variable_total = fuel.amt + exp.amt;
@@ -204,7 +208,7 @@ export function getPersonContributions(db: Database.Database, year: number): Per
   return db
     .prepare(
       `
-    SELECT t.car_id, t.person_id, p.name AS person_name, SUM(t.km) AS km, SUM(t.amount) AS amount
+    SELECT t.car_id, t.person_id, p.first_name AS person_name, SUM(t.km) AS km, SUM(t.amount) AS amount
     FROM trips t
     JOIN people p ON p.id = t.person_id
     WHERE strftime('%Y', t.date) = ?
@@ -306,10 +310,9 @@ export function getHistoricalOwnerSplit(
     SELECT
       t.car_id,
       CAST(strftime('%Y', t.date) AS INTEGER) AS year,
-      COALESCE(SUM(CASE WHEN p.name = c.owner_name THEN t.km ELSE 0 END), 0) AS owner_km,
-      COALESCE(SUM(CASE WHEN p.name != c.owner_name OR c.owner_name IS NULL THEN t.km ELSE 0 END), 0) AS non_owner_km
+      COALESCE(SUM(CASE WHEN t.person_id = c.owner_person_id THEN t.km ELSE 0 END), 0) AS owner_km,
+      COALESCE(SUM(CASE WHEN t.person_id != c.owner_person_id OR c.owner_person_id IS NULL THEN t.km ELSE 0 END), 0) AS non_owner_km
     FROM trips t
-    JOIN people p ON p.id = t.person_id
     JOIN cars c ON c.id = t.car_id
     WHERE CAST(strftime('%Y', t.date) AS INTEGER) BETWEEN ? AND ?
     GROUP BY t.car_id, year
@@ -350,7 +353,7 @@ export function getZeroKmTrips(db: Database.Database): ZeroKmTrip[] {
   return db
     .prepare(
       `
-    SELECT t.id, t.date, c.short AS car_short, p.name AS person_name
+    SELECT t.id, t.date, c.short AS car_short, p.first_name AS person_name
     FROM trips t
     JOIN cars c ON c.id = t.car_id
     JOIN people p ON p.id = t.person_id
@@ -369,7 +372,7 @@ export function getKmGaps(db: Database.Database): KmGap[] {
     const trips = db
       .prepare(
         `
-      SELECT t.id, t.date, t.start_odometer, t.end_odometer, p.name AS person_name
+      SELECT t.id, t.date, t.start_odometer, t.end_odometer, p.first_name AS person_name
       FROM trips t JOIN people p ON p.id = t.person_id
       WHERE t.car_id=? ORDER BY t.date ASC, t.end_odometer ASC
     `

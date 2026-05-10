@@ -14,11 +14,6 @@ export const carSchema = z.object({
     .nullable()
     .optional()
     .transform((v) => v ?? null),
-  owner_name: z
-    .string()
-    .nullable()
-    .optional()
-    .transform((v) => v ?? null),
   owner_person_id: z
     .number()
     .int()

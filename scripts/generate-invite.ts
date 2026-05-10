@@ -15,14 +15,19 @@ if (!nameArg) {
 const db = new Database(DB_PATH, { readonly: false });
 
 const person = db
-  .prepare("SELECT id, name FROM people WHERE active=1 AND name LIKE ? COLLATE NOCASE")
-  .get(`%${nameArg}%`) as { id: number; name: string } | undefined;
+  .prepare(
+    "SELECT id, first_name, last_name FROM people WHERE active=1 AND (first_name LIKE ? COLLATE NOCASE OR last_name LIKE ? COLLATE NOCASE)"
+  )
+  .get(`%${nameArg}%`, `%${nameArg}%`) as
+  | { id: number; first_name: string; last_name: string }
+  | undefined;
 
 if (!person) {
   console.error(`No active person found matching "${nameArg}"`);
   process.exit(1);
 }
 
+const fullName = person.last_name ? `${person.first_name} ${person.last_name}` : person.first_name;
 const token = randomBytes(24).toString("hex");
 const expiresAt = new Date(Date.now() + DAYS * 24 * 60 * 60 * 1000).toISOString();
 
@@ -32,5 +37,5 @@ db.prepare("INSERT INTO invite_tokens (token, person_id, expires_at) VALUES (?, 
   expiresAt
 );
 
-console.log(`Invite for ${person.name} (valid ${DAYS} days):`);
+console.log(`Invite for ${fullName} (valid ${DAYS} days):`);
 console.log(`${BASE_URL}/invite/${token}`);

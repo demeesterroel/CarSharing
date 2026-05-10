@@ -95,7 +95,7 @@ export function makeApi(request: APIRequestContext, csrf: string) {
 export async function getTestEntities(api: ReturnType<typeof makeApi>) {
   const [people, cars] = await Promise.all([
     api.get<Array<{ id: number; name: string; active: number }>>("/api/people"),
-    api.get<Array<{ id: number; short: string; active: number }>>("/api/cars"),
+    api.get<Array<{ id: number; short: string; active: number }>>("/api/vehicles"),
   ]);
 
   const person = people.find((p) => p.active === 1) ?? people[0];

@@ -13,6 +13,7 @@
     "test:watch": "vitest",
     "e2e": "playwright test",
     "seed": "tsx scripts/seed-from-export.ts",
+    "seed:demo": "tsx scripts/seed-demo.ts",
     "prepare": "husky"
   },
   "repository": {

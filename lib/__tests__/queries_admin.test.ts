@@ -28,6 +28,8 @@ function makeDb() {
 }
 
 const basePerson = {
+  first_name: "",
+  last_name: "",
   discount: 0,
   discount_long: 0,
   active: 1 as const,
@@ -35,6 +37,7 @@ const basePerson = {
   password_hash: null,
   is_admin: 0 as const,
   bank_account: "",
+  email: null,
 };
 
 describe("getCarPnL", () => {
@@ -56,7 +59,7 @@ describe("getCarPnL", () => {
 
   it("aggregates trips, fuel and expenses for the correct year", () => {
     const db = makeDb();
-    const pid = insertPerson(db, { ...basePerson, name: "Alice" });
+    const pid = insertPerson(db, { ...basePerson, first_name: "Alice" });
     const cid = insertCar(db, {
       short: "CA",
       name: "Car A",
@@ -102,7 +105,7 @@ describe("getCarPnL", () => {
 
   it("does not include activities from other years", () => {
     const db = makeDb();
-    const pid = insertPerson(db, { ...basePerson, name: "Alice" });
+    const pid = insertPerson(db, { ...basePerson, first_name: "Alice" });
     const cid = insertCar(db, {
       short: "CA",
       name: "Car A",
@@ -124,16 +127,15 @@ describe("getCarPnL", () => {
 
   it("computes owner_trip_amount for owner's own car trips", () => {
     const db = makeDb();
-    const pid = insertPerson(db, { ...basePerson, name: "Alice" });
-    insertCar(db, {
+    const pid = insertPerson(db, { ...basePerson, first_name: "Alice", last_name: "Owner" });
+    const cid = insertCar(db, {
       short: "CA",
       name: "Car A",
       price_per_km: 0.2,
       brand: null,
       color: null,
-      owner_name: "Alice",
+      owner_person_id: pid,
     });
-    const cid = (db.prepare("SELECT id FROM cars WHERE short='CA'").get() as any).id;
     insertTrip(db, {
       person_id: pid,
       car_id: cid,
@@ -148,7 +150,7 @@ describe("getCarPnL", () => {
 
   it("includes previous year km in prev_year_trip_km", () => {
     const db = makeDb();
-    const pid = insertPerson(db, { ...basePerson, name: "Alice" });
+    const pid = insertPerson(db, { ...basePerson, first_name: "Alice" });
     const cid = insertCar(db, {
       short: "CA",
       name: "Car A",
@@ -178,7 +180,7 @@ describe("getMonthlyCarKm", () => {
 
   it("returns monthly km per car for the inserted car only", () => {
     const db = makeDb();
-    const pid = insertPerson(db, { ...basePerson, name: "Alice" });
+    const pid = insertPerson(db, { ...basePerson, first_name: "Alice" });
     const cid = insertCar(db, {
       short: "CA",
       name: "Car A",
@@ -229,8 +231,8 @@ describe("getPersonContributions", () => {
 
   it("returns contributions per person per car", () => {
     const db = makeDb();
-    const pid1 = insertPerson(db, { ...basePerson, name: "Alice" });
-    const pid2 = insertPerson(db, { ...basePerson, name: "Bob" });
+    const pid1 = insertPerson(db, { ...basePerson, first_name: "Alice" });
+    const pid2 = insertPerson(db, { ...basePerson, first_name: "Bob" });
     const cid = insertCar(db, {
       short: "CA",
       name: "Car A",
@@ -270,7 +272,7 @@ describe("getHistoricalCarKm", () => {
 
   it("returns km grouped by car and year for past 6 years", () => {
     const db = makeDb();
-    const pid = insertPerson(db, { ...basePerson, name: "Alice" });
+    const pid = insertPerson(db, { ...basePerson, first_name: "Alice" });
     const cid = insertCar(db, {
       short: "CA",
       name: "Car A",
@@ -311,7 +313,7 @@ describe("getPriceHistory", () => {
 describe("getZeroKmTrips", () => {
   it("returns empty array when no zero-km trips", () => {
     const db = makeDb();
-    const pid = insertPerson(db, { ...basePerson, name: "Alice" });
+    const pid = insertPerson(db, { ...basePerson, first_name: "Alice" });
     const cid = insertCar(db, {
       short: "CA",
       name: "Car A",
@@ -332,7 +334,7 @@ describe("getZeroKmTrips", () => {
 
   it("returns trips where km=0", () => {
     const db = makeDb();
-    const pid = insertPerson(db, { ...basePerson, name: "Alice" });
+    const pid = insertPerson(db, { ...basePerson, first_name: "Alice" });
     const cid = insertCar(db, {
       short: "CA",
       name: "Car A",
@@ -364,7 +366,7 @@ describe("getKmGaps", () => {
 
   it("returns empty array when trips are contiguous", () => {
     const db = makeDb();
-    const pid = insertPerson(db, { ...basePerson, name: "Alice" });
+    const pid = insertPerson(db, { ...basePerson, first_name: "Alice" });
     const cid = insertCar(db, {
       short: "CA",
       name: "Car A",
@@ -393,7 +395,7 @@ describe("getKmGaps", () => {
 
   it("detects gaps between non-contiguous trips", () => {
     const db = makeDb();
-    const pid = insertPerson(db, { ...basePerson, name: "Alice" });
+    const pid = insertPerson(db, { ...basePerson, first_name: "Alice" });
     const cid = insertCar(db, {
       short: "CA",
       name: "Car A",
@@ -425,7 +427,7 @@ describe("getKmGaps", () => {
 
   it("does not flag a gap when difference is <=1 km", () => {
     const db = makeDb();
-    const pid = insertPerson(db, { ...basePerson, name: "Alice" });
+    const pid = insertPerson(db, { ...basePerson, first_name: "Alice" });
     const cid = insertCar(db, {
       short: "CA",
       name: "Car A",
@@ -466,7 +468,7 @@ describe("getRollingFuelPerKm", () => {
 
   it("computes fuel/km from rolling 12-month window", () => {
     const db = makeDb();
-    const pid = insertPerson(db, { ...basePerson, name: "Alice" });
+    const pid = insertPerson(db, { ...basePerson, first_name: "Alice" });
     const cid = insertCar(db, { short: "CA", name: "Car A", price_per_km: 0.2, brand: null, color: null });
     const today = new Date().toISOString().slice(0, 10);
     insertTrip(db, { person_id: pid, car_id: cid, date: today, start_odometer: 0, end_odometer: 200, location: null });
@@ -486,9 +488,9 @@ describe("getHistoricalOwnerSplit", () => {
 
   it("splits km correctly between owner and non-owner", () => {
     const db = makeDb();
-    const owner = insertPerson(db, { ...basePerson, name: "Alice" });
-    const other = insertPerson(db, { ...basePerson, name: "Bob" });
-    const cid = insertCar(db, { short: "CA", name: "Car A", price_per_km: 0.2, brand: null, color: null, owner_name: "Alice" });
+    const owner = insertPerson(db, { ...basePerson, first_name: "Alice" });
+    const other = insertPerson(db, { ...basePerson, first_name: "Bob" });
+    const cid = insertCar(db, { short: "CA", name: "Car A", price_per_km: 0.2, brand: null, color: null, owner_person_id: owner });
     insertTrip(db, { person_id: owner, car_id: cid, date: "2022-06-01", start_odometer: 0, end_odometer: 100, location: null });
     insertTrip(db, { person_id: other, car_id: cid, date: "2022-06-02", start_odometer: 100, end_odometer: 250, location: null });
     const result = getHistoricalOwnerSplit(db, 2026);
@@ -506,7 +508,7 @@ describe("getHistoricalExpenses", () => {
 
   it("sums expenses per car per year", () => {
     const db = makeDb();
-    const pid = insertPerson(db, { ...basePerson, name: "Alice" });
+    const pid = insertPerson(db, { ...basePerson, first_name: "Alice" });
     const cid = insertCar(db, { short: "CA", name: "Car A", price_per_km: 0.2, brand: null, color: null });
     insertExpense(db, { person_id: pid, car_id: cid, date: "2022-03-01", amount: 300, description: "Insurance" });
     insertExpense(db, { person_id: pid, car_id: cid, date: "2022-09-01", amount: 150, description: "Tax" });

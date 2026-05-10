@@ -12,7 +12,7 @@ import {
   useUpdateReservation,
   useDeleteReservation,
 } from "@/hooks/use-reservations";
-import { useCars } from "@/hooks/use-cars";
+import { useCars } from "@/hooks/use-vehicles";
 import type { Reservation, Car } from "@/types";
 import { paper, fontMono, fontSerif } from "@/lib/paper-theme";
 import { useT } from "@/components/locale-provider";

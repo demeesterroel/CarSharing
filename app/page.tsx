@@ -47,7 +47,7 @@ import {
   useUpdateReservation,
   useDeleteReservation,
 } from "./dashboard-hooks";
-import { useCars } from "@/hooks/use-cars";
+import { useCars } from "@/hooks/use-vehicles";
 import { CarBadge } from "@/components/car-badge";
 import { ErrorBoundary } from "@/components/error-boundary";
 
@@ -520,15 +520,17 @@ function SectionSkeleton({ rows = 3 }: { rows?: number }) {
 }
 
 // ── Balance Receipt ───────────────────────────────────────────────
-function BalanceReceipt({ personName }: { personName: string }) {
+function BalanceReceipt({ fullName, personId }: { fullName: string; personId: number | null }) {
   const t = useT();
   const currentYear = new Date().getFullYear();
   const [year, setYear] = useState(currentYear);
   const { data: earliestYear = currentYear } = useEarliestDashboardYear();
   const { data: rows = [], isLoading: isDashboardLoading } = useDashboard(year);
-  const myRow = rows.find((r) => r.person_name === personName);
+  const myRow = personId ? rows.find((r) => r.person_id === personId) : rows.find((r) => r.person_name === fullName);
   const { data: settlement } = useSettlement(year);
-  const myStatement = settlement?.members.find((m) => m.person_name === personName);
+  const myStatement = personId
+    ? settlement?.members.find((m) => m.person_id === personId)
+    : settlement?.members.find((m) => m.person_name === fullName);
   const owner_net: number | null = myRow?.is_owner ? (myStatement?.net ?? null) : null;
   if (isDashboardLoading) return <BalanceCardSkeleton />;
   if (!myRow) return null;
@@ -1165,8 +1167,8 @@ function DashboardContent() {
         title={
           <>
             {t("dashboard.hello")}
-            {me?.personName && me?.personId ? (
-              <NameEditLink name={me.personName.split(" ")[0]} personId={me.personId} />
+            {me?.personId ? (
+              <NameEditLink name={me.shortName ?? ""} personId={me.personId} />
             ) : null}
           </>
         }
@@ -1175,7 +1177,7 @@ function DashboardContent() {
       />
 
       {/* Balance */}
-      <BalanceReceipt personName={me?.personName ?? ""} />
+      <BalanceReceipt fullName={me?.shortName ?? ""} personId={me?.personId ?? null} />
 
       {/* Car locations */}
       <CarLocations trips={trips} onTripClick={setEditTrip} />

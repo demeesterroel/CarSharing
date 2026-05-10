@@ -9,12 +9,13 @@ import { ReceiptUpload } from "@/components/receipt-upload";
 import { LocationPicker } from "@/components/location-picker";
 import { calcPricePerLiter } from "@/lib/formulas";
 import { usePeople } from "@/hooks/use-people";
-import { useCars } from "@/hooks/use-cars";
-import { useLastCarState } from "@/hooks/use-car-state";
+import { useCars } from "@/hooks/use-vehicles";
+import { useLastCarState } from "@/hooks/use-vehicle-state";
 import { useMe } from "@/hooks/use-me";
 import { useOnlineState } from "@/lib/offline/online-state";
 import type { FuelFillup, FuelFillupInput } from "@/types";
 import { t, buildMissingLabel } from "@/lib/i18n";
+import { fullNameOf } from "@/lib/person-utils";
 import { paper, fontMono, fontSerif } from "@/lib/paper-theme";
 
 const schema = z.object({
@@ -293,7 +294,7 @@ export function FuelForm({ defaultValues, onSubmit, onCancel, onDelete }: Props)
                 .filter((p) => p.active)
                 .map((p) => (
                   <option key={p.id} value={p.id}>
-                    {p.name}
+                    {fullNameOf(p)}
                   </option>
                 ))}
             </select>
@@ -302,7 +303,7 @@ export function FuelForm({ defaultValues, onSubmit, onCancel, onDelete }: Props)
               <span
                 style={{ fontFamily: fontSerif, fontSize: 17, fontWeight: 600, color: paper.ink }}
               >
-                {person?.name ?? me?.personName ?? "—"}
+                {person ? fullNameOf(person) : me?.shortName ?? "—"}
               </span>
               <span style={{ fontSize: 13 }}>🔒</span>
             </div>

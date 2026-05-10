@@ -1,21 +1,25 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useQueryClient } from "@tanstack/react-query";
 import { useMe } from "@/hooks/use-me";
 import { useT } from "@/components/locale-provider";
 import { PageHeader } from "@/components/page-header";
 import { paper, fontMono, fontSerif } from "@/lib/paper-theme";
 import { apiFetch } from "@/lib/api/client";
 import type { Person } from "@/types";
+import { fullNameOf } from "@/lib/person-utils";
 
 export default function EditProfilePage({ params }: { params: Promise<{ id: string }> }) {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const t = useT();
   const { data: me, isLoading: meLoading } = useMe();
   const [id, setId] = useState<number | null>(null);
   const [person, setPerson] = useState<Person | null>(null);
   const [loading, setLoading] = useState(true);
-  const [name, setName] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
   const [bankAccount, setBankAccount] = useState("");
   const [email, setEmail] = useState("");
   const [saving, setSaving] = useState(false);
@@ -38,7 +42,8 @@ export default function EditProfilePage({ params }: { params: Promise<{ id: stri
       })
       .then((p) => {
         setPerson(p);
-        setName(p.name);
+        setFirstName(p.first_name);
+        setLastName(p.last_name);
         setBankAccount(p.bank_account ?? "");
         setEmail(p.email ?? "");
         setLoading(false);
@@ -67,8 +72,11 @@ export default function EditProfilePage({ params }: { params: Promise<{ id: stri
     );
   }
 
+  const personFirstName = person.first_name;
+  const personLastName = person.last_name;
   const dirty =
-    name !== person.name ||
+    firstName !== personFirstName ||
+    lastName !== personLastName ||
     bankAccount !== (person.bank_account ?? "") ||
     email !== (person.email ?? "");
 
@@ -80,9 +88,10 @@ export default function EditProfilePage({ params }: { params: Promise<{ id: stri
       await apiFetch(`/api/people/${id}/profile`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, bank_account: bankAccount, email: email || null }),
+        body: JSON.stringify({ first_name: firstName, last_name: lastName, bank_account: bankAccount, email: email || null }),
       });
       setSaved(true);
+      await queryClient.invalidateQueries({ queryKey: ["me"] });
       setTimeout(() => router.push("/"), 800);
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Fout bij opslaan");
@@ -112,7 +121,7 @@ export default function EditProfilePage({ params }: { params: Promise<{ id: stri
               marginBottom: 16,
             }}
           >
-            {person.name}
+            {fullNameOf({ first_name: firstName, last_name: lastName, username: person.username })}
           </div>
 
           <form onSubmit={handleSubmit}>
@@ -150,38 +159,72 @@ export default function EditProfilePage({ params }: { params: Promise<{ id: stri
               />
             </div>
 
-            <div style={{ marginBottom: 12 }}>
-              <label
-                htmlFor="edit-name"
-                style={{
-                  display: "block",
-                  fontFamily: fontMono,
-                  fontSize: 9,
-                  color: paper.inkMute,
-                  letterSpacing: 1,
-                  marginBottom: 4,
-                }}
-              >
-                {t("form.full_name")}
-              </label>
-              <input
-                id="edit-name"
-                type="text"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                required
-                style={{
-                  width: "100%",
-                  padding: "8px 10px",
-                  fontFamily: fontMono,
-                  fontSize: 12,
-                  background: paper.paperDark,
-                  color: paper.ink,
-                  border: `1.5px solid ${name !== person.name ? paper.ink : paper.paperDark}`,
-                  outline: "none",
-                  boxSizing: "border-box",
-                }}
-              />
+            <div style={{ display: "flex", gap: 10, marginBottom: 12 }}>
+              <div style={{ flex: 1 }}>
+                <label
+                  htmlFor="edit-first-name"
+                  style={{
+                    display: "block",
+                    fontFamily: fontMono,
+                    fontSize: 9,
+                    color: paper.inkMute,
+                    letterSpacing: 1,
+                    marginBottom: 4,
+                  }}
+                >
+                  {t("form.first_name")}
+                </label>
+                <input
+                  id="edit-first-name"
+                  type="text"
+                  value={firstName}
+                  onChange={(e) => setFirstName(e.target.value)}
+                  required
+                  style={{
+                    width: "100%",
+                    padding: "8px 10px",
+                    fontFamily: fontMono,
+                    fontSize: 12,
+                    background: paper.paperDark,
+                    color: paper.ink,
+                    border: `1.5px solid ${firstName !== personFirstName ? paper.ink : paper.paperDark}`,
+                    outline: "none",
+                    boxSizing: "border-box",
+                  }}
+                />
+              </div>
+              <div style={{ flex: 1 }}>
+                <label
+                  htmlFor="edit-last-name"
+                  style={{
+                    display: "block",
+                    fontFamily: fontMono,
+                    fontSize: 9,
+                    color: paper.inkMute,
+                    letterSpacing: 1,
+                    marginBottom: 4,
+                  }}
+                >
+                  {t("form.last_name")}
+                </label>
+                <input
+                  id="edit-last-name"
+                  type="text"
+                  value={lastName}
+                  onChange={(e) => setLastName(e.target.value)}
+                  style={{
+                    width: "100%",
+                    padding: "8px 10px",
+                    fontFamily: fontMono,
+                    fontSize: 12,
+                    background: paper.paperDark,
+                    color: paper.ink,
+                    border: `1.5px solid ${lastName !== personLastName ? paper.ink : paper.paperDark}`,
+                    outline: "none",
+                    boxSizing: "border-box",
+                  }}
+                />
+              </div>
             </div>
 
             <div style={{ marginBottom: 12 }}>

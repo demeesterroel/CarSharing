@@ -5,12 +5,12 @@ import { env } from "./env";
 export interface SessionData {
   authenticated: boolean;
   personId?: number;
-  personName?: string;
+  shortName?: string;
   isAdmin?: boolean;
   /** Set while an admin is impersonating another person. */
   cloakedAs?: {
     personId: number;
-    personName: string;
+    shortName: string;
     isAdmin: boolean;
   };
 }

@@ -6,7 +6,8 @@ import type { Person } from "@/types";
 import { t } from "@/lib/i18n";
 
 const schema = z.object({
-  name: z.string().min(1, t("validation.name_required")),
+  first_name: z.string().min(1, t("validation.name_required")),
+  last_name: z.string().default(""),
   discount: z.coerce.number().min(0).max(1),
   discount_long: z.coerce.number().min(0).max(1),
   active: z.coerce
@@ -34,7 +35,7 @@ export function PersonForm({ defaultValues, onSubmit, onCancel }: Props) {
     formState: { errors },
   } = useForm<FormInput, unknown, FormData>({
     resolver: zodResolver(schema),
-    defaultValues: { discount: 0, discount_long: 0, active: 1, ...defaultValues },
+    defaultValues: { first_name: "", last_name: "", discount: 0, discount_long: 0, active: 1, ...defaultValues },
   });
 
   const activeValue = useWatch({ control, name: "active" });
@@ -42,9 +43,13 @@ export function PersonForm({ defaultValues, onSubmit, onCancel }: Props) {
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 p-4">
       <div>
-        <label className="block text-sm font-medium mb-1">{t("form.name")}</label>
-        <input {...register("name")} className="w-full border rounded-md px-3 py-2 text-sm" />
-        {errors.name && <p className="text-red-500 text-xs mt-1">{errors.name.message}</p>}
+        <label className="block text-sm font-medium mb-1">{t("form.first_name")}</label>
+        <input {...register("first_name")} className="w-full border rounded-md px-3 py-2 text-sm" />
+        {errors.first_name && <p className="text-red-500 text-xs mt-1">{errors.first_name.message}</p>}
+      </div>
+      <div>
+        <label className="block text-sm font-medium mb-1">{t("form.last_name")}</label>
+        <input {...register("last_name")} className="w-full border rounded-md px-3 py-2 text-sm" />
       </div>
       <div>
         <label className="block text-sm font-medium mb-1">{t("form.discount")}</label>

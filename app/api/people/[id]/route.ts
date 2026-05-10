@@ -18,6 +18,8 @@ export const PUT = json(async (req, ctx) => {
   updatePerson(getDb(), id, {
     ...existing,
     ...data,
+    first_name: data.first_name ?? existing.first_name,
+    last_name: data.last_name ?? existing.last_name,
     username: data.username ?? existing.username,
     is_admin: data.is_admin ?? existing.is_admin,
   });

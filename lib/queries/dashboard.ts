@@ -1,5 +1,6 @@
 import type Database from "better-sqlite3";
 import type { DashboardRow } from "@/types";
+import { shortNameOf } from "@/lib/person-utils";
 
 interface TripAgg {
   person_id: number;
@@ -78,9 +79,10 @@ export function getEarliestYear(db: Database.Database): number {
 export function getDashboard(db: Database.Database, year: number): DashboardRow[] {
   const yearStr = String(year);
 
-  const people = db.prepare("SELECT id, name FROM people ORDER BY name").all() as {
+  const people = db.prepare("SELECT id, first_name, username FROM people ORDER BY first_name, last_name").all() as {
     id: number;
-    name: string;
+    first_name: string;
+    username: string | null;
   }[];
 
   const tripRows = db
@@ -175,9 +177,9 @@ export function getDashboard(db: Database.Database, year: number): DashboardRow[
           WHERE e.car_id = c.id AND e.person_id = p_owner.id
             AND strftime('%Y', e.date) = ?), 0)                            AS own_expense_count
       FROM cars c
-      JOIN people p_owner ON c.owner_name = p_owner.name
+      JOIN people p_owner ON c.owner_person_id = p_owner.id
       LEFT JOIN trips t ON t.car_id = c.id AND strftime('%Y', t.date) = ?
-      WHERE c.owner_name IS NOT NULL
+      WHERE c.owner_person_id IS NOT NULL
       GROUP BY c.id, p_owner.id
       `
     )
@@ -223,9 +225,9 @@ export function getDashboard(db: Database.Database, year: number): DashboardRow[
             AND e.settled_outside = 0 AND strftime('%Y', e.date) = ?), 0)  AS expense_amount
       FROM trips t
       JOIN cars c ON t.car_id = c.id
-      JOIN people p_owner ON c.owner_name = p_owner.name
+      JOIN people p_owner ON c.owner_person_id = p_owner.id
       WHERE t.person_id != p_owner.id
-        AND c.owner_name IS NOT NULL
+        AND c.owner_person_id IS NOT NULL
         AND strftime('%Y', t.date) = ?
       GROUP BY t.person_id, c.id
       `
@@ -317,7 +319,7 @@ export function getDashboard(db: Database.Database, year: number): DashboardRow[
 
     return {
       person_id: person.id,
-      person_name: person.name,
+      person_name: shortNameOf(person),
       year,
       trip_count: t?.trip_count ?? 0,
       trip_km: t?.trip_km ?? 0,

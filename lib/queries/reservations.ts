@@ -12,7 +12,7 @@ export function getReservations(db: Database.Database): Reservation[] {
   return db
     .prepare(
       `
-    SELECT r.*, p.name AS person_name, c.short AS car_short
+    SELECT r.*, p.first_name AS person_name, c.short AS car_short
     FROM reservations r
     JOIN people p ON p.id = r.person_id
     JOIN cars c ON c.id = r.car_id
@@ -27,7 +27,7 @@ export function getReservationById(db: Database.Database, id: number): Reservati
     (db
       .prepare(
         `
-    SELECT r.*, p.name AS person_name, c.short AS car_short
+    SELECT r.*, p.first_name AS person_name, c.short AS car_short
     FROM reservations r
     JOIN people p ON p.id = r.person_id
     JOIN cars c ON c.id = r.car_id

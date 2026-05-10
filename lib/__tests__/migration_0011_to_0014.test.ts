@@ -17,8 +17,8 @@ describe("migration 0011 — people email", () => {
 
   it("email is nullable", () => {
     const db = makeDb();
-    db.prepare("INSERT INTO people (name, active) VALUES (?, 1)").run("Alice");
-    const row = db.prepare("SELECT email FROM people WHERE name = 'Alice'").get() as {
+    db.prepare("INSERT INTO people (first_name, active) VALUES (?, 1)").run("Alice");
+    const row = db.prepare("SELECT email FROM people WHERE first_name = 'Alice'").get() as {
       email: string | null;
     };
     expect(row.email).toBeNull();

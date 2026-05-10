@@ -13,7 +13,7 @@ export function getTrips(db: Database.Database): Trip[] {
   return db
     .prepare(
       `
-    SELECT t.*, p.name AS person_name, c.short AS car_short
+    SELECT t.*, p.first_name AS person_name, c.short AS car_short
     FROM trips t
     JOIN people p ON p.id = t.person_id
     JOIN cars c ON c.id = t.car_id
@@ -28,7 +28,7 @@ export function getTripById(db: Database.Database, id: number): Trip | null {
     (db
       .prepare(
         `
-    SELECT t.*, p.name AS person_name, c.short AS car_short
+    SELECT t.*, p.first_name AS person_name, c.short AS car_short
     FROM trips t
     JOIN people p ON p.id = t.person_id
     JOIN cars c ON c.id = t.car_id

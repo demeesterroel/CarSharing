@@ -9,12 +9,13 @@ import { CarToggle } from "@/components/car-toggle";
 import { LocationPicker } from "@/components/location-picker";
 import { calcTripAmount } from "@/lib/formulas";
 import { usePeople } from "@/hooks/use-people";
-import { useCars } from "@/hooks/use-cars";
-import { useLastCarState } from "@/hooks/use-car-state";
+import { useCars } from "@/hooks/use-vehicles";
+import { useLastCarState } from "@/hooks/use-vehicle-state";
 import { useMe } from "@/hooks/use-me";
 import { useOnlineState } from "@/lib/offline/online-state";
 import type { Trip } from "@/types";
 import { t, buildMissingLabel } from "@/lib/i18n";
+import { fullNameOf } from "@/lib/person-utils";
 import { paper, fontMono, fontSerif, fmtMoney } from "@/lib/paper-theme";
 
 const schema = z
@@ -307,7 +308,7 @@ export function TripForm({ defaultValues, onSubmit, onCancel, onDelete }: Props)
                 .filter((p) => p.active)
                 .map((p) => (
                   <option key={p.id} value={p.id}>
-                    {p.name}
+                    {fullNameOf(p)}
                   </option>
                 ))}
             </select>
@@ -316,7 +317,7 @@ export function TripForm({ defaultValues, onSubmit, onCancel, onDelete }: Props)
               <span
                 style={{ fontFamily: fontSerif, fontSize: 17, fontWeight: 600, color: paper.ink }}
               >
-                {person?.name ?? me?.personName ?? "—"}
+                {person ? fullNameOf(person) : me?.shortName ?? "—"}
               </span>
               {(person?.discount ?? 0) > 0 && (
                 <span style={{ color: paper.accent, fontSize: 13 }}>★</span>

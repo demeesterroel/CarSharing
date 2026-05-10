@@ -15,7 +15,7 @@ const PUBLIC_PATHS = [
 ];
 
 // Pages only admins can visit (non-admins get redirected to /).
-const ADMIN_ONLY_PAGES = ["/cars", "/people", "/payments"];
+const ADMIN_ONLY_PAGES = ["/vehicles", "/people", "/payments"];
 
 export async function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl;
@@ -48,9 +48,9 @@ export async function proxy(req: NextRequest) {
   }
 
   // While cloaking as a non-admin, block admin-only pages (redirect to dashboard).
-  // Owner-accessible pages (/admin, /admin/hygiene, /admin/settlement) are still allowed.
+
   if (session.cloakedAs && !session.cloakedAs.isAdmin) {
-    const adminOnlyPaths = ["/admin/cars", "/admin/members", "/admin/payout"];
+    const adminOnlyPaths = ["/admin/vehicles", "/admin/members", "/admin/payout"];
     if (adminOnlyPaths.some((p) => pathname === p || pathname.startsWith(p + "/"))) {
       return NextResponse.redirect(new URL("/admin", req.url));
     }

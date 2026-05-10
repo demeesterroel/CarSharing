@@ -1,19 +1,25 @@
 import type Database from "better-sqlite3";
 import type { SettlementResult, MemberStatement, CarEraBalance, AnnotatedTransfer } from "@/types";
 import { getPaymentsByYear } from "./payments";
+import { shortNameOf } from "@/lib/person-utils";
 
 interface CarEraRow {
   id: number;
   name: string;
   short: string;
-  owner_name: string;
+  owner_person_id: number;
+  owner_first_name: string;
+  owner_last_name: string;
+  owner_username: string | null;
   owner_from: string;
   owner_to: string; // COALESCE'd to '9999-12-31'
 }
 
 interface PersonRow {
   id: number;
-  name: string;
+  first_name: string;
+  last_name: string;
+  username: string | null;
 }
 
 interface AmountRow {
@@ -67,7 +73,17 @@ function round2(n: number): number {
  * transfer payer/payee names back to IDs.
  */
 function buildNameToId(people: PersonRow[]): Map<string, number> {
-  return new Map(people.map((p) => [p.name, p.id]));
+  const map = new Map<string, number>();
+  for (const p of people) {
+    const key = shortNameOf(p);
+    if (map.has(key)) {
+      console.warn(
+        `[settlement] duplicate shortName "${key}" — payment annotation may be wrong`
+      );
+    }
+    map.set(key, p.id);
+  }
+  return map;
 }
 
 function reduceDebts(
@@ -105,13 +121,17 @@ export function getSettlement(db: Database.Database, year: number): SettlementRe
   // 1. Car-eras active in this year
   const carEras = db
     .prepare(
-      `SELECT id, name, short, owner_name, owner_from,
-              COALESCE(owner_to, '9999-12-31') AS owner_to
-       FROM cars
-       WHERE owner_name IS NOT NULL
-         AND owner_from IS NOT NULL
-         AND owner_from <= ?
-         AND COALESCE(owner_to, '9999-12-31') >= ?`
+      `SELECT c.id, c.name, c.short, c.owner_person_id, c.owner_from,
+              COALESCE(c.owner_to, '9999-12-31') AS owner_to,
+              p.first_name AS owner_first_name,
+              p.last_name  AS owner_last_name,
+              p.username   AS owner_username
+       FROM cars c
+       JOIN people p ON p.id = c.owner_person_id
+       WHERE c.owner_person_id IS NOT NULL
+         AND c.owner_from IS NOT NULL
+         AND c.owner_from <= ?
+         AND COALESCE(c.owner_to, '9999-12-31') >= ?`
     )
     .all(`${yearStr}-12-31`, `${yearStr}-01-01`) as CarEraRow[];
 
@@ -136,12 +156,17 @@ export function getSettlement(db: Database.Database, year: number): SettlementRe
   }
 
   // 3. All people
-  const people = db.prepare("SELECT id, name FROM people ORDER BY name").all() as PersonRow[];
+  const people = db
+    .prepare(
+      `SELECT id, first_name, last_name, username
+       FROM people ORDER BY first_name, last_name`
+    )
+    .all() as PersonRow[];
 
-  // 4. Classify owners vs non-owners
-  const ownerNames = new Set(carEras.map((e) => e.owner_name));
-  const owners = people.filter((p) => ownerNames.has(p.name));
-  const nonOwners = people.filter((p) => !ownerNames.has(p.name));
+  // 4. Classify owners vs non-owners (by owner_person_id set on car eras)
+  const ownerPersonIds = new Set(carEras.map((e) => e.owner_person_id));
+  const owners = people.filter((p) => ownerPersonIds.has(p.id));
+  const nonOwners = people.filter((p) => !ownerPersonIds.has(p.id));
 
   // 5. Query all trips/fuel/expenses for owned cars in year, within era bounds
   const tripRows = db
@@ -149,7 +174,7 @@ export function getSettlement(db: Database.Database, year: number): SettlementRe
       `SELECT t.person_id, t.car_id, COALESCE(SUM(t.amount), 0) AS amount
        FROM trips t JOIN cars c ON c.id = t.car_id
        WHERE strftime('%Y', t.date) = ?
-         AND c.owner_name IS NOT NULL AND c.owner_from IS NOT NULL
+         AND c.owner_person_id IS NOT NULL AND c.owner_from IS NOT NULL
          AND t.date >= c.owner_from AND (c.owner_to IS NULL OR t.date <= c.owner_to)
        GROUP BY t.person_id, t.car_id`
     )
@@ -160,7 +185,7 @@ export function getSettlement(db: Database.Database, year: number): SettlementRe
       `SELECT t.person_id, t.car_id, COALESCE(SUM(t.km), 0) AS amount
        FROM trips t JOIN cars c ON c.id = t.car_id
        WHERE strftime('%Y', t.date) = ?
-         AND c.owner_name IS NOT NULL AND c.owner_from IS NOT NULL
+         AND c.owner_person_id IS NOT NULL AND c.owner_from IS NOT NULL
          AND t.date >= c.owner_from AND (c.owner_to IS NULL OR t.date <= c.owner_to)
        GROUP BY t.person_id, t.car_id`
     )
@@ -172,7 +197,7 @@ export function getSettlement(db: Database.Database, year: number): SettlementRe
               COALESCE(SUM(CASE WHEN f.settled_outside = 0 THEN f.amount ELSE 0 END), 0) AS amount
        FROM fuel_fillups f JOIN cars c ON c.id = f.car_id
        WHERE strftime('%Y', f.date) = ?
-         AND c.owner_name IS NOT NULL AND c.owner_from IS NOT NULL
+         AND c.owner_person_id IS NOT NULL AND c.owner_from IS NOT NULL
          AND f.date >= c.owner_from AND (c.owner_to IS NULL OR f.date <= c.owner_to)
        GROUP BY f.person_id, f.car_id`
     )
@@ -183,7 +208,7 @@ export function getSettlement(db: Database.Database, year: number): SettlementRe
       `SELECT f.person_id, f.car_id, COALESCE(SUM(f.liters), 0) AS amount
        FROM fuel_fillups f JOIN cars c ON c.id = f.car_id
        WHERE strftime('%Y', f.date) = ?
-         AND c.owner_name IS NOT NULL AND c.owner_from IS NOT NULL
+         AND c.owner_person_id IS NOT NULL AND c.owner_from IS NOT NULL
          AND f.date >= c.owner_from AND (c.owner_to IS NULL OR f.date <= c.owner_to)
        GROUP BY f.person_id, f.car_id`
     )
@@ -194,7 +219,7 @@ export function getSettlement(db: Database.Database, year: number): SettlementRe
       `SELECT f.person_id, f.car_id, COUNT(*) as cnt, COALESCE(SUM(f.liters), 0) as amount
        FROM fuel_fillups f JOIN cars c ON c.id = f.car_id
        WHERE strftime('%Y', f.date) = ?
-         AND c.owner_name IS NOT NULL AND c.owner_from IS NOT NULL
+         AND c.owner_person_id IS NOT NULL AND c.owner_from IS NOT NULL
          AND f.date >= c.owner_from AND (c.owner_to IS NULL OR f.date <= c.owner_to)
          AND f.settled_outside = 1
        GROUP BY f.person_id, f.car_id`
@@ -206,7 +231,7 @@ export function getSettlement(db: Database.Database, year: number): SettlementRe
       `SELECT e.person_id, e.car_id, COUNT(*) as cnt, COALESCE(SUM(e.amount), 0) as amount
        FROM expenses e JOIN cars c ON c.id = e.car_id
        WHERE strftime('%Y', e.date) = ?
-         AND c.owner_name IS NOT NULL AND c.owner_from IS NOT NULL
+         AND c.owner_person_id IS NOT NULL AND c.owner_from IS NOT NULL
          AND e.date >= c.owner_from AND (c.owner_to IS NULL OR e.date <= c.owner_to)
          AND e.settled_outside = 1
        GROUP BY e.person_id, e.car_id`
@@ -219,7 +244,7 @@ export function getSettlement(db: Database.Database, year: number): SettlementRe
               COALESCE(SUM(CASE WHEN e.settled_outside = 0 THEN e.amount ELSE 0 END), 0) AS amount
        FROM expenses e JOIN cars c ON c.id = e.car_id
        WHERE strftime('%Y', e.date) = ?
-         AND c.owner_name IS NOT NULL AND c.owner_from IS NOT NULL
+         AND c.owner_person_id IS NOT NULL AND c.owner_from IS NOT NULL
          AND e.date >= c.owner_from AND (c.owner_to IS NULL OR e.date <= c.owner_to)
        GROUP BY e.person_id, e.car_id`
     )
@@ -233,11 +258,11 @@ export function getSettlement(db: Database.Database, year: number): SettlementRe
   const fuelSettled = buildSettledMap(fuelSettledRows);
   const expSettled = buildSettledMap(expSettledRows);
 
-  // 6. Car-era lookup by owner
-  const carsByOwner = new Map<string, CarEraRow[]>();
+  // 6. Car-era lookup by owner_person_id
+  const carsByOwner = new Map<number, CarEraRow[]>();
   for (const era of carEras) {
-    if (!carsByOwner.has(era.owner_name)) carsByOwner.set(era.owner_name, []);
-    carsByOwner.get(era.owner_name)!.push(era);
+    if (!carsByOwner.has(era.owner_person_id)) carsByOwner.set(era.owner_person_id, []);
+    carsByOwner.get(era.owner_person_id)!.push(era);
   }
 
   // Helper: build a CarParticipantRow for a given person × car
@@ -252,7 +277,7 @@ export function getSettlement(db: Database.Database, year: number): SettlementRe
     const fs = fuelSettled.get(p.id)?.get(era.id);
     const es = expSettled.get(p.id)?.get(era.id);
     return {
-      person_name: p.name,
+      person_name: shortNameOf(p),
       row_type: rowType,
       trip_km: get(tripKm, p.id, era.id),
       trip_amount: tripAmt,
@@ -273,7 +298,7 @@ export function getSettlement(db: Database.Database, year: number): SettlementRe
   for (const era of carEras) {
     let n = 0;
     for (const p of people) {
-      if (p.name === era.owner_name) continue; // own-car trips are free (vestzak/broekzak)
+      if (p.id === era.owner_person_id) continue; // own-car trips are free (vestzak/broekzak)
       n += get(trips, p.id, era.id) - get(fuel, p.id, era.id) - get(exp, p.id, era.id);
     }
     N.set(era.id, round2(n));
@@ -290,22 +315,22 @@ export function getSettlement(db: Database.Database, year: number): SettlementRe
   }
 
   // 9. S₂(o) = Σ N_new(cars owned by o)
-  const S2 = new Map<string, number>();
+  const S2 = new Map<number, number>();
   for (const owner of owners) {
-    const ownedCars = carsByOwner.get(owner.name) ?? [];
-    S2.set(owner.name, round2(ownedCars.reduce((s, c) => s + (N.get(c.id) ?? 0), 0)));
+    const ownedCars = carsByOwner.get(owner.id) ?? [];
+    S2.set(owner.id, round2(ownedCars.reduce((s, c) => s + (N.get(c.id) ?? 0), 0)));
   }
 
   // 10. s1_cross(o) = balance of owner o for using OTHER owners' cars (negative = owes co-op)
-  const S1Cross = new Map<string, number>();
+  const S1Cross = new Map<number, number>();
   for (const owner of owners) {
     let s1c = 0;
     for (const era of carEras) {
-      if (era.owner_name === owner.name) continue; // skip own car
+      if (era.owner_person_id === owner.id) continue; // skip own car
       s1c +=
         -get(trips, owner.id, era.id) + get(fuel, owner.id, era.id) + get(exp, owner.id, era.id);
     }
-    S1Cross.set(owner.name, round2(s1c));
+    S1Cross.set(owner.id, round2(s1c));
   }
 
   // 11. Build car_settlements (car-centric view for display)
@@ -323,7 +348,7 @@ export function getSettlement(db: Database.Database, year: number): SettlementRe
 
     // Cross-owners (other car owners using this car)
     for (const o of owners) {
-      if (o.name === era.owner_name) continue;
+      if (o.id === era.owner_person_id) continue;
       const tripAmt = get(trips, o.id, era.id);
       const fuelAmt = get(fuel, o.id, era.id);
       const expAmt = get(exp, o.id, era.id);
@@ -332,7 +357,7 @@ export function getSettlement(db: Database.Database, year: number): SettlementRe
     }
 
     // Owner's own trips (shown as €0 — vestzak/broekzak)
-    const ownerPerson = people.find((p) => p.name === era.owner_name);
+    const ownerPerson = people.find((p) => p.id === era.owner_person_id);
     if (ownerPerson && get(tripKm, ownerPerson.id, era.id) > 0) {
       rows.push(makeRow(ownerPerson, era, "own"));
     }
@@ -348,7 +373,11 @@ export function getSettlement(db: Database.Database, year: number): SettlementRe
     return {
       car_name: era.name,
       car_short: era.short,
-      owner_name: era.owner_name,
+      owner_name: shortNameOf({
+        first_name: era.owner_first_name,
+        last_name: era.owner_last_name,
+        username: era.owner_username,
+      }),
       owner_from: era.owner_from,
       owner_to: era.owner_to === "9999-12-31" ? null : era.owner_to,
       rows,
@@ -371,7 +400,11 @@ export function getSettlement(db: Database.Database, year: number): SettlementRe
         return {
           car_name: era.name,
           car_short: era.short,
-          owner_name: era.owner_name,
+          owner_name: shortNameOf({
+            first_name: era.owner_first_name,
+            last_name: era.owner_last_name,
+            username: era.owner_username,
+          }),
           owner_from: era.owner_from,
           owner_to: era.owner_to === "9999-12-31" ? null : era.owner_to,
           trip_amount: tripAmt,
@@ -389,18 +422,22 @@ export function getSettlement(db: Database.Database, year: number): SettlementRe
       .filter((e) => e.trip_amount > 0 || e.fuel_amount > 0 || e.expense_amount > 0);
 
     if (car_eras.length > 0) {
-      members.push({ person_id: p.id, person_name: p.name, is_owner: false, s1, car_eras });
+      members.push({ person_id: p.id, person_name: shortNameOf(p), is_owner: false, s1, car_eras });
     }
   }
 
   for (const o of owners) {
-    const s2 = S2.get(o.name) ?? 0;
-    const s1_cross = S1Cross.get(o.name) ?? 0;
-    const ownedCars = carsByOwner.get(o.name) ?? [];
+    const s2 = S2.get(o.id) ?? 0;
+    const s1_cross = S1Cross.get(o.id) ?? 0;
+    const ownedCars = carsByOwner.get(o.id) ?? [];
     const car_eras: CarEraBalance[] = ownedCars.map((era) => ({
       car_name: era.name,
       car_short: era.short,
-      owner_name: era.owner_name,
+      owner_name: shortNameOf({
+        first_name: era.owner_first_name,
+        last_name: era.owner_last_name,
+        username: era.owner_username,
+      }),
       owner_from: era.owner_from,
       owner_to: era.owner_to === "9999-12-31" ? null : era.owner_to,
       trip_amount: 0,
@@ -411,12 +448,12 @@ export function getSettlement(db: Database.Database, year: number): SettlementRe
       balance: N.get(era.id) ?? 0,
       n_c_star: N.get(era.id) ?? 0,
       member_contributions: (() => {
-        const others = [...nonOwners, ...owners.filter((j) => j.name !== o.name)]
+        const others = [...nonOwners, ...owners.filter((j) => j.id !== o.id)]
           .map((p) => {
             const fs = fuelSettled.get(p.id)?.get(era.id);
             const es = expSettled.get(p.id)?.get(era.id);
             return {
-              person_name: p.name,
+              person_name: shortNameOf(p),
               trip_km: get(tripKm, p.id, era.id),
               fuel_liters: get(fuelLiters, p.id, era.id),
               expense_amount: get(exp, p.id, era.id),
@@ -440,7 +477,7 @@ export function getSettlement(db: Database.Database, year: number): SettlementRe
         const ownerExpAmt = get(exp, o.id, era.id);
         if (ownerKm > 0 || ownerFuelL > 0 || ownerExpAmt > 0) {
           others.push({
-            person_name: o.name,
+            person_name: shortNameOf(o),
             trip_km: ownerKm,
             fuel_liters: ownerFuelL,
             expense_amount: ownerExpAmt,
@@ -457,7 +494,7 @@ export function getSettlement(db: Database.Database, year: number): SettlementRe
 
     members.push({
       person_id: o.id,
-      person_name: o.name,
+      person_name: shortNameOf(o),
       is_owner: true,
       s2,
       s1_cross,
@@ -480,45 +517,47 @@ export function getSettlement(db: Database.Database, year: number): SettlementRe
   for (const p of nonOwners) {
     const s1 = S1.get(p.id) ?? 0;
     if (Math.abs(s1) < 0.005) continue;
+    const pName = shortNameOf(p);
     if (s1 < 0) {
       transfers.push({
-        from: p.name,
+        from: pName,
         to: "co-op",
         amount: round2(-s1),
         step: 1,
-        label: `${p.name} → co-op`,
+        label: `${pName} → co-op`,
       });
     } else {
       transfers.push({
         from: "co-op",
-        to: p.name,
+        to: pName,
         amount: s1,
         step: 1,
-        label: `co-op → ${p.name}`,
+        label: `co-op → ${pName}`,
       });
     }
   }
 
   for (const o of owners) {
-    const s2 = S2.get(o.name) ?? 0;
-    const s1c = S1Cross.get(o.name) ?? 0;
+    const s2 = S2.get(o.id) ?? 0;
+    const s1c = S1Cross.get(o.id) ?? 0;
     const net = round2(s2 + s1c);
     if (Math.abs(net) < 0.005) continue;
+    const oName = shortNameOf(o);
     if (net > 0) {
       transfers.push({
         from: "co-op",
-        to: o.name,
+        to: oName,
         amount: net,
         step: 2,
-        label: `co-op → ${o.name}`,
+        label: `co-op → ${oName}`,
       });
     } else {
       transfers.push({
-        from: o.name,
+        from: oName,
         to: "co-op",
         amount: round2(-net),
         step: 2,
-        label: `${o.name} → co-op`,
+        label: `${oName} → co-op`,
       });
     }
   }

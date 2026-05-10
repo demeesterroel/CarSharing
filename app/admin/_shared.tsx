@@ -95,7 +95,7 @@ import type {
 } from "@/lib/queries/admin";
 import type { DashboardRow, Reservation, Person } from "@/types";
 import { useMe } from "@/hooks/use-me";
-import { useCars } from "@/hooks/use-cars";
+import { useCars } from "@/hooks/use-vehicles";
 
 export interface AdminSummary {
   carPnL: CarPnL[];

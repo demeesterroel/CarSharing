@@ -1,7 +1,8 @@
 import { z } from "zod";
 
 export const personSchema = z.object({
-  name: z.string().min(1),
+  first_name: z.string().min(1),
+  last_name: z.string().default(""),
   discount: z.number().min(0).max(1).default(0),
   discount_long: z.number().min(0).max(1).default(0),
   active: z.union([z.literal(0), z.literal(1)]).default(1),

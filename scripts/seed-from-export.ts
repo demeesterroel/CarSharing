@@ -86,21 +86,29 @@ for (const p of data.people) {
 }
 
 const insertPerson = db.prepare(
-  "INSERT OR IGNORE INTO people (name, discount, discount_long, active) VALUES (?,?,?,?)"
+  "INSERT OR IGNORE INTO people (first_name, last_name, discount, discount_long, active) VALUES (?,?,?,?,?)"
 );
-const getPersonByName = db.prepare("SELECT id FROM people WHERE name=?");
+const getPersonByName = db.prepare(
+  "SELECT id FROM people WHERE first_name=? AND last_name=?"
+);
 
 db.transaction(() => {
-  for (const name of Array.from(allNames).sort()) {
-    const defaults = peopleDefaults[name] ?? { discount: 0, discount_long: 0, active: 0 };
-    insertPerson.run(name, defaults.discount, defaults.discount_long, defaults.active);
+  for (const fullName of Array.from(allNames).sort()) {
+    const spaceIdx = fullName.indexOf(" ");
+    const firstName = spaceIdx > 0 ? fullName.slice(0, spaceIdx) : fullName;
+    const lastName = spaceIdx > 0 ? fullName.slice(spaceIdx + 1) : "";
+    const defaults = peopleDefaults[fullName] ?? { discount: 0, discount_long: 0, active: 0 };
+    insertPerson.run(firstName, lastName, defaults.discount, defaults.discount_long, defaults.active);
   }
 })();
 
 // Build name → id lookup
-for (const name of allNames) {
-  const row = getPersonByName.get(name) as any;
-  if (row) personNameMap[name] = row.id;
+for (const fullName of allNames) {
+  const spaceIdx = fullName.indexOf(" ");
+  const firstName = spaceIdx > 0 ? fullName.slice(0, spaceIdx) : fullName;
+  const lastName = spaceIdx > 0 ? fullName.slice(spaceIdx + 1) : "";
+  const row = getPersonByName.get(firstName, lastName) as any;
+  if (row) personNameMap[fullName] = row.id;
 }
 // Also map aliases
 for (const [alias, canonical] of Object.entries(nameAlias)) {

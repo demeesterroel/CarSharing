@@ -7,7 +7,8 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 
 const profileSchema = z.object({
-  name: z.string().min(1),
+  first_name: z.string().min(1),
+  last_name: z.string().default(""),
   bank_account: z.string().default(""),
   email: z
     .string()
@@ -26,6 +27,12 @@ export const PATCH = json(async (req, ctx) => {
   const data = await readBody(req, profileSchema);
   const existing = getPersonById(getDb(), id);
   if (!existing) notFound();
-  updatePerson(getDb(), id, { ...existing, ...data, email: data.email ?? null });
+  updatePerson(getDb(), id, {
+    ...existing,
+    first_name: data.first_name,
+    last_name: data.last_name,
+    bank_account: data.bank_account,
+    email: data.email ?? null,
+  });
   return { ok: true };
 });

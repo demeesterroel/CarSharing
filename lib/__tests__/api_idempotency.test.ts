@@ -14,7 +14,7 @@ function makeDb() {
 }
 
 function seedPeopleAndCars(db: Database.Database) {
-  db.exec("INSERT INTO people (id,name) VALUES (1,'P')");
+  db.exec("INSERT INTO people (id,first_name) VALUES (1,'P')");
   db.exec("INSERT INTO cars (id,short,name,price_per_km) VALUES (1,'X','c',0.2)");
 }
 

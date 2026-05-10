@@ -48,7 +48,8 @@ export function FuelCard({ fuel, onClick }: FuelCardProps) {
             textOverflow: "ellipsis",
           }}
         >
-          ⛽ {fuel.location ?? t("dashboard.fillup_label")}
+          {fuel.liters.toFixed(1)}L {t("fuel.card_refueled")}
+          {fuel.location ? ` · ${fuel.location}` : ""}
           {fuel.id < 0 && <PendingBadge />}
         </div>
         <div
@@ -60,7 +61,7 @@ export function FuelCard({ fuel, onClick }: FuelCardProps) {
             marginTop: 2,
           }}
         >
-          {fuel.person_name} · {fmtDate(fuel.date, locale)} · {fuel.liters.toFixed(1)}L
+          {fuel.person_name} · {fmtDate(fuel.date, locale)}
         </div>
       </div>
       <div style={{ textAlign: "right", flexShrink: 0 }}>

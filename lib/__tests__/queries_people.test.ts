@@ -189,7 +189,7 @@ describe("setPasswordHash", () => {
 });
 
 describe("isOwner", () => {
-  it("returns false when person owns no active cars", () => {
+  it("returns false when person owns no cars", () => {
     const db = makeDb();
     const aliceId = insertPerson(db, { ...basePerson, first_name: "Alice" });
     expect(isOwner(db, aliceId)).toBe(false);

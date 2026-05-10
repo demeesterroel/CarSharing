@@ -106,8 +106,8 @@ Thin wrapper around the Google Calendar API. All methods accept an `OAuth2Client
 ```typescript
 getOAuthClient(refreshToken: string): OAuth2Client
 
-createEvent(client, calendarId, reservation, ownerEmail?: string): Promise<{ id: string; etag: string }>
-updateEvent(client, calendarId, eventId, reservation, ownerEmail?: string): Promise<{ etag: string }>
+createEvent(client, calendarId, reservation, nonce: string, ownerEmail?: string): Promise<{ id: string; etag: string }>
+updateEvent(client, calendarId, eventId, reservation, nonce: string, ownerEmail?: string): Promise<{ etag: string }>
 deleteEvent(client, calendarId, eventId): Promise<void>
 
 watchEvents(client, calendarId, webhookUrl, channelId): Promise<{
@@ -127,6 +127,10 @@ Event shape written to calendar:
 - `status`: `tentative` (pending), `confirmed` (confirmed), `cancelled` (declined/deleted)
 - `attendees`: `[{ email: ownerEmail }]` — only when owner has email set
 - `extendedProperties.private.appWriteNonce`: UUID written on every app-originated write
+
+### `lib/process-calendar-delta.ts`
+
+Handles incoming webhook delta processing: echo check, time-edit guard, RSVP processing. Called by both `/api/calendar-webhook` and `/api/admin/calendar-renew` (catch-up delta).
 
 ### `lib/reservation-sync.ts`
 

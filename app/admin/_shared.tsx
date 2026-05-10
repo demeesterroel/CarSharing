@@ -152,9 +152,7 @@ export function useOwnerCarShorts(): Set<string> | null {
   const { data: me } = useMe();
   const { data: cars = [] } = useCars();
   if (!me || me.isAdmin) return null;
-  return new Set(
-    cars.filter((c) => c.owner_person_id === me.personId).map((c) => c.short)
-  );
+  return new Set(cars.filter((c) => c.owner_person_id === me.personId).map((c) => c.short));
 }
 
 // ── Fleet economics helpers ───────────────────────────────────

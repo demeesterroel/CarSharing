@@ -241,6 +241,7 @@ export const en: Messages = {
   "dashboard.noun_trips": "trips",
   "dashboard.noun_fillup": "fill-up",
   "dashboard.noun_fillups": "fill-ups",
+  "fuel.card_refueled": "refueled",
   "dashboard.noun_expense": "expense",
   "dashboard.noun_expenses": "expenses",
   "dashboard.total_label": "Total",

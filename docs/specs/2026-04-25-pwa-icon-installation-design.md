@@ -70,7 +70,7 @@ Changes from current:
 
 - `appleWebApp.title`: "Autodelen" → "AutoDelen"
 - `apple-touch-icon` href: `/icons/icon-192.png` → `/icons/apple-touch-icon.png` (dedicated 180px file)
-- `viewport.themeColor`: keep `#f5f0e6` — controls browser chrome colour, separate from manifest `theme_color` which controls splash
+- `viewport.themeColor`: `#1a1a1a` (ink) — matches manifest `theme_color`; browser chrome and splash use the same colour
 
 ---
 

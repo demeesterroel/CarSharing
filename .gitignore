@@ -38,8 +38,9 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-# Superpowers brainstorm sessions
+# Superpowers / Claude
 .superpowers/
+.claude/
 
 # @ducanh2912/next-pwa generated files
 public/sw.js

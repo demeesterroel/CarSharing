@@ -20,6 +20,7 @@ import { ReservationCard } from "@/components/reservation-card";
 import { PickCalendar } from "@/components/pick-calendar";
 import { CarBadge } from "@/components/car-badge";
 import { ErrorBoundary } from "@/components/error-boundary";
+import { Fab } from "@/components/fab";
 
 // ── Bottom Sheet ──────────────────────────────────────────────
 function BottomSheet({
@@ -123,8 +124,7 @@ function CalendarContent() {
   const actionParam = searchParams.get("action");
   const editIdParam = searchParams.get("edit");
 
-  const sheet: "add" | "edit" | null =
-    actionParam === "add" ? "add" : editIdParam ? "edit" : null;
+  const sheet: "add" | "edit" | null = actionParam === "add" ? "add" : editIdParam ? "edit" : null;
   const editing =
     !isLoading && editIdParam
       ? (reservations.find((r) => r.id === Number(editIdParam)) ?? null)
@@ -166,6 +166,15 @@ function CalendarContent() {
   };
 
   const closeSheet = () => router.back();
+
+  const openAdd = () => {
+    setPrefillCarId(undefined);
+    setPrefillFrom(undefined);
+    setPrefillTo(undefined);
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("action", "add");
+    router.push(`${pathname}?${params.toString()}`, { scroll: false });
+  };
 
   const openEdit = (r: Reservation) => {
     const params = new URLSearchParams(searchParams.toString());
@@ -294,6 +303,8 @@ function CalendarContent() {
           <ReservationCard key={r.id} reservation={r} onClick={() => openEdit(r)} />
         ))}
       </div>
+
+      <Fab onClick={openAdd} label={t("page.reservation_add")} />
 
       {/* Add sheet */}
       <BottomSheet open={sheet === "add"} onClose={() => closeSheet()}>

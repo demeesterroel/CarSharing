@@ -121,7 +121,7 @@ export default function EditProfilePage({ params }: { params: Promise<{ id: stri
               marginBottom: 16,
             }}
           >
-            {fullNameOf(person)}
+            {fullNameOf({ first_name: firstName, last_name: lastName, username: person.username })}
           </div>
 
           <form onSubmit={handleSubmit}>

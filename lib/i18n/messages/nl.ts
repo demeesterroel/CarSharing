@@ -237,6 +237,7 @@ export const nl = {
   "dashboard.noun_trips": "ritten",
   "dashboard.noun_fillup": "tankbeurt",
   "dashboard.noun_fillups": "tankbeurten",
+  "fuel.card_refueled": "getankt",
   "dashboard.noun_expense": "uitgave",
   "dashboard.noun_expenses": "uitgaven",
   "dashboard.total_label": "Totaal",

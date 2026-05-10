@@ -8,7 +8,7 @@ import { useT } from "@/components/locale-provider";
 import { useReservations, useOwnerCarShorts, useAdminSummary } from "./_shared";
 import { useMe } from "@/hooks/use-me";
 
-const OWNER_PAGES = ["/admin", "/admin/settlement", "/admin/cars"];
+const OWNER_PAGES = ["/admin", "/admin/settlement", "/admin/vehicles", "/admin/old-cars"];
 
 function SubNav() {
   const t = useT();
@@ -32,7 +32,7 @@ function SubNav() {
       href: "/admin",
       label: t("admin.sub_inbox") + (inboxCount > 0 ? ` (${inboxCount})` : ""),
     },
-    { href: "/admin/cars", label: t("admin.sub_cars") },
+    { href: "/admin/vehicles", label: t("admin.sub_cars") },
     { href: "/admin/members", label: t("admin.sub_members") },
     { href: "/admin/settlement", label: t("admin.sub_settlement") },
     { href: "/admin/payments", label: t("admin.sub_payments") },

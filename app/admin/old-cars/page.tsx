@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, Suspense } from "react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import * as Dialog from "@radix-ui/react-dialog";
 import { useMe } from "@/hooks/use-me";
@@ -36,295 +36,6 @@ const sheetStyle: React.CSSProperties = {
   zIndex: 50,
   overflowY: "auto",
 };
-
-// ── Car Row (accordion) ───────────────────────────────────────
-function CarRow({
-  car,
-  expanded,
-  onToggle,
-  onSave,
-  people,
-  isSaving,
-}: {
-  car: Car;
-  expanded: boolean;
-  onToggle: () => void;
-  onSave: (data: Partial<Car>) => void;
-  people: { id: number; name: string }[];
-  isSaving?: boolean;
-}) {
-  const t = useT();
-  const [name, setName] = useState(car.name);
-  const [price, setPrice] = useState(car.price_per_km);
-  const [owner, setOwner] = useState(car.owner_name ?? "");
-  const [ownerPersonId, setOwnerPersonId] = useState<number | null>(car.owner_person_id ?? null);
-  const isActive = car.active !== 0;
-
-  const [prevId, setPrevId] = useState(car.id);
-  if (car.id !== prevId) {
-    setPrevId(car.id);
-    setName(car.name);
-    setPrice(car.price_per_km);
-    setOwner(car.owner_name ?? "");
-    setOwnerPersonId(car.owner_person_id ?? null);
-  }
-
-  const dirty =
-    name !== car.name ||
-    price !== car.price_per_km ||
-    owner !== (car.owner_name ?? "") ||
-    ownerPersonId !== (car.owner_person_id ?? null);
-
-  const reset = () => {
-    setName(car.name);
-    setPrice(car.price_per_km);
-    setOwner(car.owner_name ?? "");
-    setOwnerPersonId(car.owner_person_id ?? null);
-  };
-
-  const inputStyle: React.CSSProperties = {
-    width: "100%",
-    padding: "6px 8px",
-    fontFamily: fontMono,
-    fontSize: 11,
-    border: `1px solid ${paper.paperDark}`,
-    background: paper.paperDeep,
-    color: paper.ink,
-    outline: "none",
-  };
-  const labelStyle: React.CSSProperties = {
-    fontFamily: fontMono,
-    fontSize: 9,
-    color: paper.inkDim,
-    letterSpacing: 1.5,
-    textTransform: "uppercase",
-    display: "block",
-    marginBottom: 3,
-  };
-
-  // Inactive: name + activate only
-  if (!isActive) {
-    return (
-      <div
-        style={{
-          background: paper.paper,
-          marginBottom: 6,
-          opacity: 0.55,
-          boxShadow: "0 1px 2px rgba(0,0,0,0.05), 0 4px 16px rgba(0,0,0,0.06)",
-          borderLeft: "3px solid transparent",
-          display: "flex",
-          alignItems: "center",
-          padding: "12px 14px",
-        }}
-      >
-        <CarBadge short={car.short} active={false} />
-        <div style={{ flex: 1 }} />
-        <button
-          disabled={isSaving}
-          onClick={() => onSave({ active: 1 })}
-          style={{
-            padding: "5px 12px",
-            background: paper.green,
-            color: paper.paper,
-            border: "none",
-            cursor: isSaving ? "default" : "pointer",
-            opacity: isSaving ? 0.6 : 1,
-            fontFamily: fontMono,
-            fontSize: 9,
-            fontWeight: 700,
-            letterSpacing: 1.5,
-            textTransform: "uppercase",
-          }}
-        >
-          {isSaving ? "…" : t("admin.activate")}
-        </button>
-      </div>
-    );
-  }
-
-  return (
-    <div
-      style={{
-        background: paper.paper,
-        marginBottom: 6,
-        boxShadow: "0 1px 2px rgba(0,0,0,0.05), 0 4px 16px rgba(0,0,0,0.06)",
-        borderLeft: expanded ? `3px solid ${paper.blue}` : `3px solid transparent`,
-      }}
-    >
-      {/* Collapsed header — click to toggle */}
-      <div
-        role="button"
-        tabIndex={0}
-        onClick={onToggle}
-        onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && onToggle()}
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: 12,
-          padding: "12px 14px",
-          cursor: "pointer",
-          userSelect: "none",
-        }}
-      >
-        <CarBadge short={car.short} active={isActive} />
-        <div
-          style={{
-            flex: 1,
-            fontFamily: fontSerif,
-            fontSize: 14,
-            fontWeight: 600,
-            color: paper.ink,
-            overflow: "hidden",
-            textOverflow: "ellipsis",
-            whiteSpace: "nowrap",
-          }}
-        >
-          {car.owner_name ?? <span style={{ color: paper.inkMute, fontStyle: "italic" }}>—</span>}
-        </div>
-        <div
-          style={{
-            fontFamily: fontMono,
-            fontSize: 11,
-            fontWeight: 700,
-            color: paper.ink,
-            flexShrink: 0,
-          }}
-        >
-          €{car.price_per_km.toFixed(2)}/km
-        </div>
-      </div>
-
-      {/* Expanded edit form */}
-      {expanded && (
-        <div style={{ padding: "0 14px 14px", borderTop: `1px dashed ${paper.paperDark}` }}>
-          <div style={{ paddingTop: 12, marginBottom: 8 }}>
-            <label style={labelStyle}>{t("form.name")}</label>
-            <input value={name} onChange={(e) => setName(e.target.value)} style={inputStyle} />
-          </div>
-          <div style={{ marginBottom: 8 }}>
-            <label style={labelStyle}>{t("form.price_per_km")}</label>
-            <input
-              type="number"
-              step="0.005"
-              value={price}
-              onChange={(e) => setPrice(parseFloat(e.target.value) || 0)}
-              style={inputStyle}
-            />
-          </div>
-          <div style={{ marginBottom: 8 }}>
-            <label style={labelStyle}>{t("form.owner")}</label>
-            <select value={owner} onChange={(e) => setOwner(e.target.value)} style={inputStyle}>
-              <option value="">—</option>
-              {people.map((p) => (
-                <option key={p.id} value={p.name}>
-                  {displayName(p)}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div style={{ marginBottom: 14 }}>
-            <label style={labelStyle}>Eigenaar (persoon)</label>
-            <select
-              value={ownerPersonId ?? ""}
-              onChange={(e) => setOwnerPersonId(e.target.value ? Number(e.target.value) : null)}
-              style={{
-                ...inputStyle,
-                background: paper.paperDeep,
-              }}
-            >
-              <option value="">— geen —</option>
-              {people.map((p) => (
-                <option key={p.id} value={p.id}>
-                  {displayName(p)}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div style={{ marginBottom: 12 }}>
-            <button
-              disabled={isSaving}
-              onClick={() =>
-                onSave({
-                  name,
-                  price_per_km: price,
-                  owner_name: owner || null,
-                  owner_person_id: ownerPersonId,
-                  active: 0,
-                })
-              }
-              style={{
-                width: "100%",
-                padding: "8px",
-                background: paper.accent,
-                color: paper.paper,
-                border: "none",
-                cursor: isSaving ? "default" : "pointer",
-                opacity: isSaving ? 0.6 : 1,
-                fontFamily: fontMono,
-                fontSize: 9,
-                fontWeight: 700,
-                letterSpacing: 1.5,
-                textTransform: "uppercase",
-              }}
-            >
-              {isSaving ? "…" : t("admin.deactivate")}
-            </button>
-          </div>
-          <div style={{ display: "flex", gap: 8 }}>
-            <button
-              onClick={() => {
-                reset();
-                onToggle();
-              }}
-              style={{
-                flex: 1,
-                padding: "9px",
-                background: "transparent",
-                color: paper.inkDim,
-                border: `1px solid ${paper.paperDark}`,
-                cursor: "pointer",
-                fontFamily: fontMono,
-                fontSize: 9,
-                fontWeight: 700,
-                letterSpacing: 1.5,
-                textTransform: "uppercase",
-              }}
-            >
-              {t("action.cancel")}
-            </button>
-            <button
-              disabled={!dirty || isSaving}
-              onClick={() =>
-                onSave({
-                  name,
-                  price_per_km: price,
-                  owner_name: owner || null,
-                  owner_person_id: ownerPersonId,
-                  active: car.active,
-                })
-              }
-              style={{
-                flex: 2,
-                padding: "9px",
-                background: dirty && !isSaving ? paper.ink : paper.paperDark,
-                color: dirty && !isSaving ? paper.paper : paper.inkMute,
-                border: "none",
-                cursor: dirty && !isSaving ? "pointer" : "default",
-                fontFamily: fontMono,
-                fontSize: 9,
-                fontWeight: 700,
-                letterSpacing: 2,
-                textTransform: "uppercase",
-              }}
-            >
-              {isSaving ? "…" : t("action.save")}
-            </button>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
 
 // ── Owner car tile (accordion) ────────────────────────────────
 function OwnerCarTile({
@@ -387,7 +98,6 @@ function OwnerCarTile({
     display: "block",
     marginBottom: 3,
   };
-
   function resetForm() {
     setName(car.name);
     setPrice(car.price_per_km);
@@ -878,7 +588,9 @@ function generateCarDetailMd(car: import("@/lib/queries/admin").CarPnL, year: nu
 }
 
 // ── Owner fleet view ──────────────────────────────────────────
-function OwnerFleet({ myPersonId }: { myPersonId: number | null }) {
+function OwnerFleet() {
+  const { data: me } = useMe();
+  const myPersonId = me?.isAdmin ? null : (me?.personId ?? null);
   const t = useT();
   const currentYear = new Date().getFullYear();
   const searchParams = useSearchParams();
@@ -1142,18 +854,9 @@ function displayName(p: { name: string; username?: string | null }): string {
 }
 
 export default function AdminWagensPage() {
-  const { data: me, isLoading } = useMe();
-  const router = useRouter();
-
-  useEffect(() => {
-    if (!isLoading && me && !me.isAdmin && !me.isOwner) {
-      router.replace("/");
-    }
-  }, [me, isLoading, router]);
-
-  if (isLoading || !me) return null;
-  if (!me.isAdmin && !me.isOwner) return null;
-
-  if (me.isAdmin) return <OwnerFleet myPersonId={null} />;
-  return <OwnerFleet myPersonId={me.personId} />;
+  return (
+    <Suspense>
+      <OwnerFleet />
+    </Suspense>
+  );
 }

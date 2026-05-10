@@ -28,6 +28,13 @@ Open [http://localhost:3000](http://localhost:3000).
 
 To reset: delete `data/carsharing.db` and re-run `npm run seed:demo`. The `data/` directory is gitignored.
 
+To seed into an isolated file (e.g. alongside a production-synced DB):
+
+```bash
+DB_PATH=./data/demo.db npm run seed:demo
+DB_PATH=./data/demo.db npm run dev
+```
+
 ## Features
 
 - **Kilometers** — log trips with odometer start/end, GPS location, auto-calculated cost

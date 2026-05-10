@@ -6,7 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { CarToggle } from "@/components/car-toggle";
 import { usePeople } from "@/hooks/use-people";
-import { useCars } from "@/hooks/use-cars";
+import { useCars } from "@/hooks/use-vehicles";
 import { useMe } from "@/hooks/use-me";
 import { useOnlineState } from "@/lib/offline/online-state";
 import type { Expense, ExpenseCategory, ExpenseInput } from "@/types";

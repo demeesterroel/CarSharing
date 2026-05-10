@@ -47,7 +47,7 @@ import {
   useUpdateReservation,
   useDeleteReservation,
 } from "./dashboard-hooks";
-import { useCars } from "@/hooks/use-cars";
+import { useCars } from "@/hooks/use-vehicles";
 import { CarBadge } from "@/components/car-badge";
 import { ErrorBoundary } from "@/components/error-boundary";
 

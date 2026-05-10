@@ -5,7 +5,7 @@ import * as Dialog from "@radix-ui/react-dialog";
 import { PageHeader } from "@/components/page-header";
 import { Fab } from "@/components/fab";
 import { CarForm } from "./car-form";
-import { useCars, useCreateCar, useUpdateCar } from "@/hooks/use-cars";
+import { useCars, useCreateCar, useUpdateCar } from "@/hooks/use-vehicles";
 import { usePeople } from "@/hooks/use-people";
 import type { Car } from "@/types";
 import { paper, fontMono, fontSerif } from "@/lib/paper-theme";

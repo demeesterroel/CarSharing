@@ -6,7 +6,7 @@ import { useMe } from "@/hooks/use-me";
 import { paper, fontMono, fontSerif, fmtMoney } from "@/lib/paper-theme";
 import { useT } from "@/components/locale-provider";
 import type { Car } from "@/types";
-import { useCars, useCreateCar, useUpdateCar, useDeleteCar } from "@/hooks/use-cars";
+import { useCars, useCreateCar, useUpdateCar, useDeleteCar } from "@/hooks/use-vehicles";
 import { usePeople } from "@/hooks/use-people";
 import { useAdminSummary, beMetrics, Card } from "../_shared";
 import { useEarliestDashboardYear } from "@/hooks/use-dashboard";

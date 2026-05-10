@@ -15,7 +15,7 @@ const PUBLIC_PATHS = [
 ];
 
 // Pages only admins can visit (non-admins get redirected to /).
-const ADMIN_ONLY_PAGES = ["/cars", "/people", "/payments"];
+const ADMIN_ONLY_PAGES = ["/vehicles", "/people", "/payments"];
 
 export async function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl;

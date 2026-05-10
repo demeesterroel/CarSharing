@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { paper, fontMono, fontSerif, fmtMoney } from "@/lib/paper-theme";
 import { useT } from "@/components/locale-provider";
-import { useUpdateCar } from "@/hooks/use-cars";
+import { useUpdateCar } from "@/hooks/use-vehicles";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Card, Row } from "@/app/admin/_shared";

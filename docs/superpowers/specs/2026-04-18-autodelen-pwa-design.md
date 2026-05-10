@@ -169,7 +169,7 @@ Dashboard also shows per-person stats: `rit_aantal`, `rit_km`, `tank_aantal`, `t
 | `/tanken`   | Tanken       | List grouped by year-month, add/edit with receipt photo |
 | `/calendar` | Calendar     | Day/Week/Month reservation view, add/edit reservations  |
 | `/people`   | People       | Member list, korting rates, trip/fuel counts            |
-| `/cars`     | Cars         | Car list, prijs/km, merk, kleur                         |
+| `/vehicles` | Cars         | Car list, prijs/km, merk, kleur                         |
 | `/kosten`   | Extra Kosten | Maintenance/tax costs grouped by year-month             |
 | `/betaald`  | Betalingen   | Settlement payments list, add payment                   |
 

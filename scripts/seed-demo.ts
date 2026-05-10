@@ -34,10 +34,10 @@ const pick = <T>(arr: readonly T[] | T[]): T => arr[Math.floor(rng() * arr.lengt
 const YEARS = [2021, 2022, 2023, 2024, 2025];
 
 const PEOPLE = [
-  { first_name: "Admin", last_name: "One",   username: "admin", password: "admin", is_admin: 1, discount: 0.25, discount_long: 0.50 },
-  { first_name: "Owner", last_name: "Two",   username: "owner", password: "owner", is_admin: 0, discount: 0.25, discount_long: 0.50 },
+  { first_name: "Admin", last_name: "One", username: "admin", password: "admin", is_admin: 1, discount: 0.25, discount_long: 0.50 },
+  { first_name: "Owner", last_name: "Two", username: "owner", password: "owner", is_admin: 0, discount: 0.25, discount_long: 0.50 },
   { first_name: "Alice", last_name: "Smith", username: "alice", password: "alice", is_admin: 0, discount: 0.25, discount_long: 0.50 },
-  { first_name: "Bob",   last_name: "Jones", username: "bob",   password: "bob",   is_admin: 0, discount: 0.25, discount_long: 0.50 },
+  { first_name: "Bob", last_name: "Jones", username: "bob", password: "bob", is_admin: 0, discount: 0.25, discount_long: 0.50 },
   { first_name: "Carol", last_name: "Brown", username: "carol", password: "carol", is_admin: 0, discount: 0.25, discount_long: 0.50 },
 ] as const;
 
@@ -295,10 +295,9 @@ console.log(`  → ${expensesTotal} expenses`);
 // ── 6. Payments ───────────────────────────────────────────────────────────────
 
 console.log("Seeding payments...");
-
 function getPersonYearBalance(personId: number, year: number): number {
-  const trips    = (sumTripsByPersonYear.get(personId, String(year))    as { t: number }).t;
-  const fuel     = (sumFuelByPersonYear.get(personId, String(year))     as { t: number }).t;
+  const trips = (sumTripsByPersonYear.get(personId, String(year)) as { t: number }).t;
+  const fuel = (sumFuelByPersonYear.get(personId, String(year)) as { t: number }).t;
   const expenses = (sumExpensesByPersonYear.get(personId, String(year)) as { t: number }).t;
   return -trips + fuel + expenses;
 }
@@ -388,12 +387,12 @@ db.prepare(`
 // ── Summary ───────────────────────────────────────────────────────────────────
 
 const counts = {
-  people:      (db.prepare("SELECT COUNT(*) AS n FROM people").get() as { n: number }).n,
-  cars:        (db.prepare("SELECT COUNT(*) AS n FROM cars").get() as { n: number }).n,
-  trips:       (db.prepare("SELECT COUNT(*) AS n FROM trips").get() as { n: number }).n,
-  fuel:        (db.prepare("SELECT COUNT(*) AS n FROM fuel_fillups").get() as { n: number }).n,
-  expenses:    (db.prepare("SELECT COUNT(*) AS n FROM expenses").get() as { n: number }).n,
-  payments:    (db.prepare("SELECT COUNT(*) AS n FROM payments").get() as { n: number }).n,
+  people: (db.prepare("SELECT COUNT(*) AS n FROM people").get() as { n: number }).n,
+  cars: (db.prepare("SELECT COUNT(*) AS n FROM cars").get() as { n: number }).n,
+  trips: (db.prepare("SELECT COUNT(*) AS n FROM trips").get() as { n: number }).n,
+  fuel: (db.prepare("SELECT COUNT(*) AS n FROM fuel_fillups").get() as { n: number }).n,
+  expenses: (db.prepare("SELECT COUNT(*) AS n FROM expenses").get() as { n: number }).n,
+  payments: (db.prepare("SELECT COUNT(*) AS n FROM payments").get() as { n: number }).n,
   settlements: (db.prepare("SELECT COUNT(*) AS n FROM settlements").get() as { n: number }).n,
 };
 

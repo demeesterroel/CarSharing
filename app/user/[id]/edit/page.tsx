@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useQueryClient } from "@tanstack/react-query";
 import { useMe } from "@/hooks/use-me";
 import { useT } from "@/components/locale-provider";
 import { PageHeader } from "@/components/page-header";
@@ -11,6 +12,7 @@ import { fullNameOf } from "@/lib/person-utils";
 
 export default function EditProfilePage({ params }: { params: Promise<{ id: string }> }) {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const t = useT();
   const { data: me, isLoading: meLoading } = useMe();
   const [id, setId] = useState<number | null>(null);
@@ -89,6 +91,7 @@ export default function EditProfilePage({ params }: { params: Promise<{ id: stri
         body: JSON.stringify({ first_name: firstName, last_name: lastName, bank_account: bankAccount, email: email || null }),
       });
       setSaved(true);
+      await queryClient.invalidateQueries({ queryKey: ["me"] });
       setTimeout(() => router.push("/"), 800);
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Fout bij opslaan");

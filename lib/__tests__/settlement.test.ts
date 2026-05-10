@@ -103,9 +103,9 @@ describe("getSettlement", () => {
     seed(db);
     const result = getSettlement(db, 2025);
     const step1 = result.transfers.filter((t) => t.step === 1);
-    const carol = step1.find((t) => t.from === "Carol Member");
-    const dave = step1.find((t) => t.from === "Dave Member");
-    const alice = step1.find((t) => t.from === "Alice Owner");
+    const carol = step1.find((t) => t.from === "Carol");
+    const dave = step1.find((t) => t.from === "Dave");
+    const alice = step1.find((t) => t.from === "Alice");
     expect(carol?.amount).toBe(180);
     expect(carol?.to).toBe("co-op");
     expect(dave?.amount).toBe(90);
@@ -119,8 +119,8 @@ describe("getSettlement", () => {
     seed(db);
     const result = getSettlement(db, 2025);
     const step2 = result.transfers.filter((t) => t.step === 2);
-    const toAlice = step2.find((t) => t.to === "Alice Owner");
-    const toBob = step2.find((t) => t.to === "Bob Owner");
+    const toAlice = step2.find((t) => t.to === "Alice");
+    const toBob = step2.find((t) => t.to === "Bob");
     // Alice net = S2(150) + S1Cross(-30) = 120
     expect(toAlice?.amount).toBe(120);
     // Bob net = S2(150) + S1Cross(0) = 150
@@ -143,9 +143,9 @@ describe("getSettlement", () => {
     const members = carB.rows.filter((r) => r.row_type === "member");
     const crossOwner = carB.rows.filter((r) => r.row_type === "cross_owner");
     const own = carB.rows.filter((r) => r.row_type === "own");
-    expect(members.map((r) => r.person_name).sort()).toEqual(["Carol Member", "Dave Member"]);
+    expect(members.map((r) => r.person_name).sort()).toEqual(["Carol", "Dave"]);
     expect(crossOwner).toHaveLength(1);
-    expect(crossOwner[0].person_name).toBe("Alice Owner");
+    expect(crossOwner[0].person_name).toBe("Alice");
     expect(crossOwner[0].trip_amount).toBe(30);
     expect(crossOwner[0].balance).toBe(30);
     expect(own).toHaveLength(0); // Bob has no own trips recorded
@@ -159,7 +159,7 @@ describe("getSettlement", () => {
     expect(carA.total_balance).toBe(150);
     const own = carA.rows.filter((r) => r.row_type === "own");
     expect(own).toHaveLength(1);
-    expect(own[0].person_name).toBe("Alice Owner");
+    expect(own[0].person_name).toBe("Alice");
     expect(own[0].trip_km).toBe(150);
     expect(own[0].trip_amount).toBe(0); // own trips = €0 in settlement
     expect(own[0].balance).toBe(0);
@@ -207,7 +207,7 @@ describe("getSettlement — payment integration", () => {
     seed(db);
     const result0 = getSettlement(db, 2025);
     // Find Carol's step-1 transfer (Carol has s1 < 0 → she owes the co-op)
-    const carolTransfer = result0.transfers.find((t) => t.step === 1 && t.from === "Carol Member");
+    const carolTransfer = result0.transfers.find((t) => t.step === 1 && t.from === "Carol");
     if (!carolTransfer) return; // skip if Carol has no debt
     const carolId = 3; // from seed
     // Carol pays half
@@ -219,7 +219,7 @@ describe("getSettlement — payment integration", () => {
       note: null,
     });
     const result1 = getSettlement(db, 2025);
-    const carolT = result1.transfers.find((t) => t.step === 1 && t.from === "Carol Member")!;
+    const carolT = result1.transfers.find((t) => t.step === 1 && t.from === "Carol")!;
     expect(carolT.payment_status).not.toBeNull();
     expect(carolT.payment_status!.paid).toBeCloseTo(halfAmount, 2);
     expect(carolT.payment_status!.open).toBeCloseTo(halfAmount, 2);
@@ -238,7 +238,7 @@ describe("getSettlement — payment integration", () => {
   it("reports all_paid=true when all transfers are fully paid", () => {
     const db = makeDb();
     seed(db);
-    const nameToId: Record<string, number> = { "Alice Owner": 1, "Bob Owner": 2, "Carol Member": 3, "Dave Member": 4 };
+    const nameToId: Record<string, number> = { "Alice": 1, "Bob": 2, "Carol": 3, "Dave": 4 };
     const result0 = getSettlement(db, 2025);
     // Pay every transfer that has a payment_status
     for (const t of result0.transfers) {

@@ -1,20 +1,25 @@
 import type Database from "better-sqlite3";
 import type { SettlementResult, MemberStatement, CarEraBalance, AnnotatedTransfer } from "@/types";
 import { getPaymentsByYear } from "./payments";
+import { shortNameOf } from "@/lib/person-utils";
 
 interface CarEraRow {
   id: number;
   name: string;
   short: string;
   owner_person_id: number;
-  owner_name: string; // derived: first_name + ' ' + last_name
+  owner_first_name: string;
+  owner_last_name: string;
+  owner_username: string | null;
   owner_from: string;
   owner_to: string; // COALESCE'd to '9999-12-31'
 }
 
 interface PersonRow {
   id: number;
-  name: string; // full name (first_name + ' ' + last_name)
+  first_name: string;
+  last_name: string;
+  username: string | null;
 }
 
 interface AmountRow {
@@ -68,7 +73,7 @@ function round2(n: number): number {
  * transfer payer/payee names back to IDs.
  */
 function buildNameToId(people: PersonRow[]): Map<string, number> {
-  return new Map(people.map((p) => [p.name, p.id]));
+  return new Map(people.map((p) => [shortNameOf(p), p.id]));
 }
 
 function reduceDebts(
@@ -108,7 +113,9 @@ export function getSettlement(db: Database.Database, year: number): SettlementRe
     .prepare(
       `SELECT c.id, c.name, c.short, c.owner_person_id, c.owner_from,
               COALESCE(c.owner_to, '9999-12-31') AS owner_to,
-              p.first_name || CASE WHEN p.last_name != '' THEN ' ' || p.last_name ELSE '' END AS owner_name
+              p.first_name AS owner_first_name,
+              p.last_name  AS owner_last_name,
+              p.username   AS owner_username
        FROM cars c
        JOIN people p ON p.id = c.owner_person_id
        WHERE c.owner_person_id IS NOT NULL
@@ -141,9 +148,8 @@ export function getSettlement(db: Database.Database, year: number): SettlementRe
   // 3. All people
   const people = db
     .prepare(
-      `SELECT id,
-              first_name || CASE WHEN last_name != '' THEN ' ' || last_name ELSE '' END AS name
-       FROM people ORDER BY name`
+      `SELECT id, first_name, last_name, username
+       FROM people ORDER BY first_name, last_name`
     )
     .all() as PersonRow[];
 
@@ -261,7 +267,7 @@ export function getSettlement(db: Database.Database, year: number): SettlementRe
     const fs = fuelSettled.get(p.id)?.get(era.id);
     const es = expSettled.get(p.id)?.get(era.id);
     return {
-      person_name: p.name,
+      person_name: shortNameOf(p),
       row_type: rowType,
       trip_km: get(tripKm, p.id, era.id),
       trip_amount: tripAmt,
@@ -357,7 +363,11 @@ export function getSettlement(db: Database.Database, year: number): SettlementRe
     return {
       car_name: era.name,
       car_short: era.short,
-      owner_name: era.owner_name,
+      owner_name: shortNameOf({
+        first_name: era.owner_first_name,
+        last_name: era.owner_last_name,
+        username: era.owner_username,
+      }),
       owner_from: era.owner_from,
       owner_to: era.owner_to === "9999-12-31" ? null : era.owner_to,
       rows,
@@ -380,7 +390,11 @@ export function getSettlement(db: Database.Database, year: number): SettlementRe
         return {
           car_name: era.name,
           car_short: era.short,
-          owner_name: era.owner_name,
+          owner_name: shortNameOf({
+        first_name: era.owner_first_name,
+        last_name: era.owner_last_name,
+        username: era.owner_username,
+      }),
           owner_from: era.owner_from,
           owner_to: era.owner_to === "9999-12-31" ? null : era.owner_to,
           trip_amount: tripAmt,
@@ -398,7 +412,7 @@ export function getSettlement(db: Database.Database, year: number): SettlementRe
       .filter((e) => e.trip_amount > 0 || e.fuel_amount > 0 || e.expense_amount > 0);
 
     if (car_eras.length > 0) {
-      members.push({ person_id: p.id, person_name: p.name, is_owner: false, s1, car_eras });
+      members.push({ person_id: p.id, person_name: shortNameOf(p), is_owner: false, s1, car_eras });
     }
   }
 
@@ -409,7 +423,11 @@ export function getSettlement(db: Database.Database, year: number): SettlementRe
     const car_eras: CarEraBalance[] = ownedCars.map((era) => ({
       car_name: era.name,
       car_short: era.short,
-      owner_name: era.owner_name,
+      owner_name: shortNameOf({
+        first_name: era.owner_first_name,
+        last_name: era.owner_last_name,
+        username: era.owner_username,
+      }),
       owner_from: era.owner_from,
       owner_to: era.owner_to === "9999-12-31" ? null : era.owner_to,
       trip_amount: 0,
@@ -425,7 +443,7 @@ export function getSettlement(db: Database.Database, year: number): SettlementRe
             const fs = fuelSettled.get(p.id)?.get(era.id);
             const es = expSettled.get(p.id)?.get(era.id);
             return {
-              person_name: p.name,
+              person_name: shortNameOf(p),
               trip_km: get(tripKm, p.id, era.id),
               fuel_liters: get(fuelLiters, p.id, era.id),
               expense_amount: get(exp, p.id, era.id),
@@ -449,7 +467,7 @@ export function getSettlement(db: Database.Database, year: number): SettlementRe
         const ownerExpAmt = get(exp, o.id, era.id);
         if (ownerKm > 0 || ownerFuelL > 0 || ownerExpAmt > 0) {
           others.push({
-            person_name: o.name,
+            person_name: shortNameOf(o),
             trip_km: ownerKm,
             fuel_liters: ownerFuelL,
             expense_amount: ownerExpAmt,
@@ -466,7 +484,7 @@ export function getSettlement(db: Database.Database, year: number): SettlementRe
 
     members.push({
       person_id: o.id,
-      person_name: o.name,
+      person_name: shortNameOf(o),
       is_owner: true,
       s2,
       s1_cross,
@@ -489,21 +507,22 @@ export function getSettlement(db: Database.Database, year: number): SettlementRe
   for (const p of nonOwners) {
     const s1 = S1.get(p.id) ?? 0;
     if (Math.abs(s1) < 0.005) continue;
+    const pName = shortNameOf(p);
     if (s1 < 0) {
       transfers.push({
-        from: p.name,
+        from: pName,
         to: "co-op",
         amount: round2(-s1),
         step: 1,
-        label: `${p.name} → co-op`,
+        label: `${pName} → co-op`,
       });
     } else {
       transfers.push({
         from: "co-op",
-        to: p.name,
+        to: pName,
         amount: s1,
         step: 1,
-        label: `co-op → ${p.name}`,
+        label: `co-op → ${pName}`,
       });
     }
   }
@@ -513,21 +532,22 @@ export function getSettlement(db: Database.Database, year: number): SettlementRe
     const s1c = S1Cross.get(o.id) ?? 0;
     const net = round2(s2 + s1c);
     if (Math.abs(net) < 0.005) continue;
+    const oName = shortNameOf(o);
     if (net > 0) {
       transfers.push({
         from: "co-op",
-        to: o.name,
+        to: oName,
         amount: net,
         step: 2,
-        label: `co-op → ${o.name}`,
+        label: `co-op → ${oName}`,
       });
     } else {
       transfers.push({
-        from: o.name,
+        from: oName,
         to: "co-op",
         amount: round2(-net),
         step: 2,
-        label: `${o.name} → co-op`,
+        label: `${oName} → co-op`,
       });
     }
   }

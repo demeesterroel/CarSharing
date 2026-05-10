@@ -50,7 +50,7 @@ export interface SessionData {
 }
 
 export const sessionOptions: IronSessionOptions = {
-  cookieName: "autodelen_session",
+  cookieName: "carsharing_session",
   password: process.env.SESSION_PASSWORD!,
   cookieOptions: {
     httpOnly: true,
@@ -88,19 +88,7 @@ POST /api/auth/logout
 
 Destroys the session cookie, returns `200 { ok: true }`. The client redirects to `/login`.
 
-**`middleware.ts`** (new file at project root)
-
-Runs on every request. Allowlisted paths that bypass auth:
-
-- `/login`
-- `/api/auth/login`
-- `/_next/*`
-- `/uploads/*`
-- `/favicon.ico`, `*.png`, `*.webp` (PWA icons)
-
-All other paths: read session via `getIronSession`. If `!session.authenticated` → `NextResponse.redirect(new URL("/login", req.url))`.
-
-Middleware never touches the DB — only reads the sealed cookie.
+**`middleware.ts`** — ⚠️ **Not implemented.** Server-side middleware was planned but never built. Auth is enforced client-side: the app shell calls `/api/me` on boot and redirects to `/login` if unauthenticated. API routes do not redirect unauthenticated requests server-side.
 
 **`scripts/hash-password.ts`**
 
@@ -217,8 +205,8 @@ All of these are Phase B concerns.
 - Login with correct credentials → session cookie set, redirected to `/`.
 - Login with wrong username → `401`, same error message as wrong password.
 - Login with wrong password → `401`.
-- Access `/trips` without session → redirected to `/login`.
-- Access `/api/trips` without session → redirected to `/login` (middleware covers API routes too).
+- Access `/trips` without session → client redirects to `/login` (app-shell check, not server middleware).
+- Access `/api/trips` without session → returns 401 (no server-side redirect).
 - Logout → cookie cleared, next request redirects to `/login`.
 
 **Phase B (future):**

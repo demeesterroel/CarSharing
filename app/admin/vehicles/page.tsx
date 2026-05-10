@@ -36,6 +36,27 @@ const sheetStyle: React.CSSProperties = {
   overflowY: "auto",
 };
 
+const sharedInputStyle: React.CSSProperties = {
+  width: "100%",
+  padding: "6px 8px",
+  fontFamily: fontMono,
+  fontSize: 11,
+  border: `1px solid ${paper.paperDark}`,
+  background: paper.paperDeep,
+  color: paper.ink,
+  outline: "none",
+  boxSizing: "border-box",
+};
+const sharedLabelStyle: React.CSSProperties = {
+  fontFamily: fontMono,
+  fontSize: 9,
+  color: paper.inkDim,
+  letterSpacing: 1.5,
+  textTransform: "uppercase",
+  display: "block",
+  marginBottom: 3,
+};
+
 // ── Toggle ────────────────────────────────────────────────────
 function Toggle({ value, onChange }: { value: boolean; onChange: (v: boolean) => void }) {
   return (
@@ -413,6 +434,8 @@ function AddCarForm({ onBack }: { onBack: () => void }) {
   const createCar = useCreateCar();
   const { data: me } = useMe();
   const { data: people = [] } = usePeople();
+  const inputStyle = sharedInputStyle;
+  const labelStyle = sharedLabelStyle;
   const [name, setName] = useState("");
   const [short, setShort] = useState("");
   const [price, setPrice] = useState(0.2);

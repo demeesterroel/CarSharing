@@ -2,6 +2,32 @@
 
 A self-hosted Progressive Web App (PWA) for managing a car-sharing cooperative. Track mileage trips, fuel fill-ups, maintenance costs, car reservations, and per-member financial balances.
 
+## Getting started
+
+```bash
+git clone https://github.com/demeesterroel/CarSharing.git
+cd CarSharing
+npm install
+npm run seed:demo     # creates data/carsharing.db with demo data
+npm run dev           # http://localhost:3000
+```
+
+Open [http://localhost:3000](http://localhost:3000).
+
+**Demo accounts** (username = password):
+
+| Account | Role |
+|---------|------|
+| `admin` | Admin — manages cars, people, settlement |
+| `owner` | Car owner (Car BB) |
+| `alice` | Member — pays balance in full each year |
+| `bob`   | Member — partial payments |
+| `carol` | Member — partial payments |
+
+**What's populated:** dashboard with 5-year balances, trips/fuel/expenses across 3 cars, settlement 2021–2024 locked (2025 open).
+
+To reset: delete `data/carsharing.db` and re-run `npm run seed:demo`. The `data/` directory is gitignored.
+
 ## Features
 
 - **Kilometers** — log trips with odometer start/end, GPS location, auto-calculated cost

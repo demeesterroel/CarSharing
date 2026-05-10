@@ -20,7 +20,7 @@ function makeDb() {
 }
 
 function seed(db: Database.Database) {
-  db.exec(`INSERT INTO people (id, name, first_name, last_name, active) VALUES (1, 'Alice Owner', 'Alice', 'Owner', 1), (2, 'Bob Member', 'Bob', 'Member', 1)`);
+  db.exec(`INSERT INTO people (id, first_name, last_name, active) VALUES (1, 'Alice', 'Owner', 1), (2, 'Bob', 'Member', 1)`);
   db.exec(
     `INSERT INTO cars (id, short, name, price_per_km, owner_person_id, owner_from, active) VALUES (1, 'CA', 'Car A', 0.2, 1, '2020-01-01', 1)`
   );
@@ -176,7 +176,7 @@ describe("updateReservation", () => {
   it("updates all fields of a reservation", () => {
     const db = makeDb();
     seed(db);
-    db.exec(`INSERT INTO people (id, name, first_name, last_name, active) VALUES (3, 'Carol', 'Carol', '', 1)`);
+    db.exec(`INSERT INTO people (id, first_name, last_name, active) VALUES (3, 'Carol', '', 1)`);
     const id = insertReservation(db, {
       person_id: 1,
       car_id: 1,

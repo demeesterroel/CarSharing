@@ -65,15 +65,14 @@ console.log("Seeding people...");
 
 const insertPerson = db.prepare(`
   INSERT OR IGNORE INTO people
-    (name, first_name, last_name, username, password_hash, is_admin, discount, discount_long, active)
-  VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1)
+    (first_name, last_name, username, password_hash, is_admin, discount, discount_long, active)
+  VALUES (?, ?, ?, ?, ?, ?, ?, 1)
 `);
 
 db.transaction(() => {
   for (const p of PEOPLE) {
     const hash = bcrypt.hashSync(p.password, 10);
-    const name = `${p.first_name} ${p.last_name}`;
-    insertPerson.run(name, p.first_name, p.last_name, p.username, hash, p.is_admin, p.discount, p.discount_long);
+    insertPerson.run(p.first_name, p.last_name, p.username, hash, p.is_admin, p.discount, p.discount_long);
   }
 })();
 

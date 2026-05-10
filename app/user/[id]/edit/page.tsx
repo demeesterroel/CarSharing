@@ -7,7 +7,7 @@ import { PageHeader } from "@/components/page-header";
 import { paper, fontMono, fontSerif } from "@/lib/paper-theme";
 import { apiFetch } from "@/lib/api/client";
 import type { Person } from "@/types";
-import { shortNameOf } from "@/lib/person-utils";
+import { fullNameOf } from "@/lib/person-utils";
 
 export default function EditProfilePage({ params }: { params: Promise<{ id: string }> }) {
   const router = useRouter();
@@ -40,8 +40,8 @@ export default function EditProfilePage({ params }: { params: Promise<{ id: stri
       })
       .then((p) => {
         setPerson(p);
-        setFirstName(shortNameOf(p));
-        setLastName(p.last_name || (p.name.includes(" ") ? p.name.slice(p.name.indexOf(" ") + 1) : ""));
+        setFirstName(p.first_name);
+        setLastName(p.last_name);
         setBankAccount(p.bank_account ?? "");
         setEmail(p.email ?? "");
         setLoading(false);
@@ -70,8 +70,8 @@ export default function EditProfilePage({ params }: { params: Promise<{ id: stri
     );
   }
 
-  const personFirstName = shortNameOf(person);
-  const personLastName = person.last_name || (person.name.includes(" ") ? person.name.slice(person.name.indexOf(" ") + 1) : "");
+  const personFirstName = person.first_name;
+  const personLastName = person.last_name;
   const dirty =
     firstName !== personFirstName ||
     lastName !== personLastName ||
@@ -118,7 +118,7 @@ export default function EditProfilePage({ params }: { params: Promise<{ id: stri
               marginBottom: 16,
             }}
           >
-            {person.name}
+            {fullNameOf(person)}
           </div>
 
           <form onSubmit={handleSubmit}>

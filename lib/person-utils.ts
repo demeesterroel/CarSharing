@@ -20,8 +20,3 @@ export function fullNameOf(person: {
   const last = person.last_name?.trim();
   return last ? `${short} ${last.toUpperCase()}` : short;
 }
-
-/** @deprecated Use shortNameOf instead */
-export function firstNameOf(person: { first_name?: string | null; name: string }): string {
-  return person.first_name || person.name.split(" ")[0] || person.name;
-}

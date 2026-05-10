@@ -15,6 +15,7 @@ import { useT, useLocale } from "@/components/locale-provider";
 import { buildMissingLabel } from "@/lib/i18n";
 import { paper, fontMono, fontSerif, fmtDate } from "@/lib/paper-theme";
 import { PickCalendar } from "@/components/pick-calendar";
+import { fullNameOf } from "@/lib/person-utils";
 
 const schema = z
   .object({
@@ -275,7 +276,7 @@ export function ReservationForm({ defaultValues, onSubmit, onCancel }: Props) {
               .filter((p) => p.active)
               .map((p) => (
                 <option key={p.id} value={p.id}>
-                  {p.name}
+                  {fullNameOf(p)}
                 </option>
               ))}
           </select>
@@ -284,7 +285,7 @@ export function ReservationForm({ defaultValues, onSubmit, onCancel }: Props) {
             <span
               style={{ fontFamily: fontSerif, fontSize: 17, fontWeight: 600, color: paper.ink }}
             >
-              {person?.name ?? me?.shortName ?? "—"}
+              {person ? fullNameOf(person) : me?.shortName ?? "—"}
             </span>
             <span style={{ fontSize: 13 }}>🔒</span>
           </div>

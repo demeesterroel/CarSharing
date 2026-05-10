@@ -37,6 +37,7 @@ describe("migration 0004 — car owner era", () => {
       INSERT INTO _migrations (filename) VALUES ('0014_calendar_sync_state.sql');
       INSERT INTO _migrations (filename) VALUES ('0015_people_first_last_name.sql');
       INSERT INTO _migrations (filename) VALUES ('0016_cars_drop_owner_name.sql');
+      INSERT INTO _migrations (filename) VALUES ('0017_drop_people_name.sql');
     `);
     runMigrations(db2);
     const car = db2.prepare("SELECT owner_from FROM cars WHERE short = 'XX'").get() as {

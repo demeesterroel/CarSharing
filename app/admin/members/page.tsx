@@ -11,7 +11,7 @@ import type { Person } from "@/types";
 import { usePeople } from "../_shared";
 import { toast } from "sonner";
 import { apiFetch } from "@/lib/api/client";
-import { shortNameOf } from "@/lib/person-utils";
+import { fullNameOf } from "@/lib/person-utils";
 
 // ── Person Row (accordion) ────────────────────────────────────
 function PersonRow({
@@ -97,7 +97,7 @@ function PersonRow({
         }}
       >
         <div style={{ fontFamily: fontSerif, fontSize: 15, fontWeight: 700, color: paper.inkDim }}>
-          {person.name}
+          {fullNameOf(person)}
         </div>
         <button
           disabled={isSaving}
@@ -162,7 +162,7 @@ function PersonRow({
                 whiteSpace: "nowrap",
               }}
             >
-              {person.name}
+              {fullNameOf(person)}
             </span>
             <Link
               href={`/user/${person.id}/edit`}
@@ -490,8 +490,8 @@ export default function AdminLedenPage() {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          first_name: shortNameOf(p),
-          last_name: p.last_name || (p.name.includes(" ") ? p.name.slice(p.name.indexOf(" ") + 1) : ""),
+          first_name: p.first_name,
+          last_name: p.last_name,
           discount: p.discount,
           discount_long: p.discount_long,
           active: p.active,

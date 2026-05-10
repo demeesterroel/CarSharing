@@ -15,15 +15,11 @@ export const PUT = json(async (req, ctx) => {
   const data = await readBody(req, personSchema);
   const existing = getPersonById(getDb(), id);
   if (!existing) notFound();
-  const firstName = data.first_name ?? existing.first_name;
-  const lastName = data.last_name ?? existing.last_name;
-  const fullName = lastName ? `${firstName} ${lastName}` : firstName;
   updatePerson(getDb(), id, {
     ...existing,
     ...data,
-    first_name: firstName,
-    last_name: lastName,
-    name: fullName,
+    first_name: data.first_name ?? existing.first_name,
+    last_name: data.last_name ?? existing.last_name,
     username: data.username ?? existing.username,
     is_admin: data.is_admin ?? existing.is_admin,
   });

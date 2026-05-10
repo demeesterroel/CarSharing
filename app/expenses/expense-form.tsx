@@ -12,6 +12,7 @@ import { useOnlineState } from "@/lib/offline/online-state";
 import type { Expense, ExpenseCategory, ExpenseInput } from "@/types";
 import { useT } from "@/components/locale-provider";
 import { buildMissingLabel } from "@/lib/i18n";
+import { fullNameOf } from "@/lib/person-utils";
 import { paper, fontMono, fontSerif } from "@/lib/paper-theme";
 
 const EXPENSE_CATEGORIES: { key: ExpenseCategory; icon: string; labelKey: string }[] = [
@@ -267,7 +268,7 @@ export function ExpenseForm({ defaultValues, onSubmit, onCancel, onDelete }: Pro
                 .filter((p) => p.active)
                 .map((p) => (
                   <option key={p.id} value={p.id}>
-                    {p.name}
+                    {fullNameOf(p)}
                   </option>
                 ))}
             </select>
@@ -276,7 +277,7 @@ export function ExpenseForm({ defaultValues, onSubmit, onCancel, onDelete }: Pro
               <span
                 style={{ fontFamily: fontSerif, fontSize: 17, fontWeight: 600, color: paper.ink }}
               >
-                {person?.name ?? me?.shortName ?? "—"}
+                {person ? fullNameOf(person) : me?.shortName ?? "—"}
               </span>
               {(person?.discount ?? 0) > 0 && (
                 <span style={{ color: paper.accent, fontSize: 13 }}>★</span>

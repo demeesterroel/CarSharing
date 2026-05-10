@@ -27,12 +27,10 @@ export const PATCH = json(async (req, ctx) => {
   const data = await readBody(req, profileSchema);
   const existing = getPersonById(getDb(), id);
   if (!existing) notFound();
-  const fullName = data.last_name ? `${data.first_name} ${data.last_name}` : data.first_name;
   updatePerson(getDb(), id, {
     ...existing,
     first_name: data.first_name,
     last_name: data.last_name,
-    name: fullName,
     bank_account: data.bank_account,
     email: data.email ?? null,
   });

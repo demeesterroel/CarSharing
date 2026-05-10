@@ -48,9 +48,9 @@ export async function POST(req: Request) {
       );
       if (authenticated) {
         sessionIsAdmin = true;
-        // Try to find a person row by username or name
+        // Try to find a person row by username or first_name
         const adminPerson = db
-          .prepare("SELECT id, first_name, last_name, username FROM people WHERE username=? OR name=? LIMIT 1")
+          .prepare("SELECT id, first_name, last_name, username FROM people WHERE username=? OR first_name=? LIMIT 1")
           .get(AUTH_USERNAME, AUTH_USERNAME) as { id: number; first_name?: string; last_name?: string; username?: string | null } | undefined;
         sessionPersonId = adminPerson?.id;
         sessionShortName = adminPerson ? shortNameOf(adminPerson) : AUTH_USERNAME;

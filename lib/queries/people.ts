@@ -9,13 +9,17 @@ function strip(p: Person): Person {
 }
 
 export function getPeople(db: Database.Database): Person[] {
-  return (db.prepare("SELECT * FROM people ORDER BY name").all() as Person[]).map(strip);
+  return (db.prepare("SELECT * FROM people ORDER BY first_name, last_name").all() as Person[]).map(
+    strip
+  );
 }
 
 export function getActivePeople(db: Database.Database): Person[] {
-  return (db.prepare("SELECT * FROM people WHERE active=1 ORDER BY name").all() as Person[]).map(
-    strip
-  );
+  return (
+    db
+      .prepare("SELECT * FROM people WHERE active=1 ORDER BY first_name, last_name")
+      .all() as Person[]
+  ).map(strip);
 }
 
 export function getPersonById(db: Database.Database, id: number): Person | null {
@@ -29,21 +33,15 @@ export function getPersonByUsername(db: Database.Database, username: string): Pe
 
 export function insertPerson(
   db: Database.Database,
-  data: Omit<Person, "id" | "updated_at" | "first_name" | "last_name"> & { first_name?: string; last_name?: string }
+  data: Omit<Person, "id" | "updated_at"> & { password_hash?: string | null }
 ): number {
-  const firstName = data.first_name || data.name.split(" ")[0] || "";
-  const lastName = data.last_name || (data.name.includes(" ") ? data.name.slice(data.name.indexOf(" ") + 1) : "");
-  const legacyName = data.first_name != null || data.last_name != null
-    ? (lastName ? `${firstName} ${lastName}` : firstName)
-    : data.name;
   const result = db
     .prepare(
-      "INSERT INTO people (name,first_name,last_name,discount,discount_long,active,username,is_admin,bank_account,email) VALUES (?,?,?,?,?,?,?,?,?,?)"
+      "INSERT INTO people (first_name,last_name,discount,discount_long,active,username,is_admin,bank_account,email) VALUES (?,?,?,?,?,?,?,?,?)"
     )
     .run(
-      legacyName,
-      firstName,
-      lastName,
+      data.first_name,
+      data.last_name,
       data.discount,
       data.discount_long,
       data.active,
@@ -58,19 +56,13 @@ export function insertPerson(
 export function updatePerson(
   db: Database.Database,
   id: number,
-  data: Omit<Person, "id" | "updated_at" | "first_name" | "last_name"> & { first_name?: string; last_name?: string }
+  data: Omit<Person, "id" | "updated_at"> & { password_hash?: string | null }
 ): void {
-  const firstName = data.first_name || data.name.split(" ")[0] || "";
-  const lastName = data.last_name || (data.name.includes(" ") ? data.name.slice(data.name.indexOf(" ") + 1) : "");
-  const legacyName = data.first_name != null || data.last_name != null
-    ? (lastName ? `${firstName} ${lastName}` : firstName)
-    : data.name;
   db.prepare(
-    "UPDATE people SET name=?,first_name=?,last_name=?,discount=?,discount_long=?,active=?,username=?,is_admin=?,bank_account=?,email=? WHERE id=?"
+    "UPDATE people SET first_name=?,last_name=?,discount=?,discount_long=?,active=?,username=?,is_admin=?,bank_account=?,email=? WHERE id=?"
   ).run(
-    legacyName,
-    firstName,
-    lastName,
+    data.first_name,
+    data.last_name,
     data.discount,
     data.discount_long,
     data.active,

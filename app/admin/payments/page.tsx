@@ -6,6 +6,7 @@ import { usePayments, useCreatePayment, useUpdatePayment, useDeletePayment } fro
 import { usePeople } from "@/hooks/use-people";
 import { Card, Perf } from "../_shared";
 import type { Payment } from "@/types";
+import { fullNameOf } from "@/lib/person-utils";
 
 // ── Form ──────────────────────────────────────────────────────
 
@@ -61,7 +62,7 @@ function PaymentForm({ initial, onSave, onCancel, saving }: FormProps) {
           >
             <option value="">— {t("form.person")} —</option>
             {people.filter(p => p.active).map(p => (
-              <option key={p.id} value={p.id}>{p.name}</option>
+              <option key={p.id} value={p.id}>{fullNameOf(p)}</option>
             ))}
           </select>
         </div>
@@ -187,7 +188,7 @@ export default function AdminPaymentsPage() {
           style={{ flex: 1, padding: "7px 10px", fontFamily: fontMono, fontSize: 10, background: paper.paper, color: paper.ink, border: `1.5px solid ${paper.paperDark}`, outline: "none" }}
         >
           <option value="">{t("filter.all_persons")}</option>
-          {people.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+          {people.map(p => <option key={p.id} value={p.id}>{fullNameOf(p)}</option>)}
         </select>
         <select
           value={yearFilter}

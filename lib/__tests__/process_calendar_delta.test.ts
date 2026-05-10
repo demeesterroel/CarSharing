@@ -27,7 +27,7 @@ function makeDb() {
 
 function seedWithEvent(db: Database.Database, overrides: Record<string, unknown> = {}) {
   db.prepare(
-    "INSERT INTO people (id, name, active, email) VALUES (1, 'Alice', 1, null), (2, 'Owner Bob', 1, 'bob@example.com') ON CONFLICT DO NOTHING"
+    "INSERT INTO people (id, first_name, last_name, active, email) VALUES (1, 'Alice', '', 1, null), (2, 'Owner', 'Bob', 1, 'bob@example.com') ON CONFLICT DO NOTHING"
   ).run();
   db.prepare(
     "INSERT INTO cars (id, short, name, price_per_km, owner_person_id, active) VALUES (1, 'CA', 'Car A', 0.2, 2, 1) ON CONFLICT DO NOTHING"

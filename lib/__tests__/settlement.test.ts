@@ -14,11 +14,11 @@ function makeDb() {
 
 function seed(db: Database.Database) {
   db.exec(`
-    INSERT INTO people (id, name, first_name, last_name, active) VALUES
-      (1, 'Alice Owner', 'Alice', 'Owner', 1),
-      (2, 'Bob Owner',   'Bob',   'Owner', 1),
-      (3, 'Carol Member', 'Carol', 'Member', 1),
-      (4, 'Dave Member',  'Dave',  'Member', 1);
+    INSERT INTO people (id, first_name, last_name, active) VALUES
+      (1, 'Alice', 'Owner', 1),
+      (2, 'Bob',   'Owner', 1),
+      (3, 'Carol', 'Member', 1),
+      (4, 'Dave',  'Member', 1);
   `);
   db.exec(`
     INSERT INTO cars (id, short, name, price_per_km, owner_person_id, owner_from, active)

@@ -9,12 +9,8 @@ export const GET = json(async () => getPeople(getDb()));
 export const POST = json(async (req) => {
   await requireAdmin(req);
   const data = await readBody(req, personSchema);
-  const fullName = data.last_name
-    ? `${data.first_name} ${data.last_name}`
-    : data.first_name;
   const id = insertPerson(getDb(), {
     ...data,
-    name: data.name ?? fullName,
     password_hash: null,
     username: data.username ?? null,
     is_admin: data.is_admin ?? 0,

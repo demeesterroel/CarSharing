@@ -27,9 +27,9 @@ function makeDb() {
 }
 
 function seedReservation(db: Database.Database): number {
-  db.prepare("INSERT INTO people (id, name, active) VALUES (1, 'Alice', 1)").run();
+  db.prepare("INSERT INTO people (id, first_name, active) VALUES (1, 'Alice', 1)").run();
   db.prepare(
-    "INSERT INTO people (id, name, active, email) VALUES (2, 'Owner Bob', 1, 'bob@example.com')"
+    "INSERT INTO people (id, first_name, last_name, active, email) VALUES (2, 'Owner', 'Bob', 1, 'bob@example.com')"
   ).run();
   db.prepare(
     "INSERT INTO cars (id, short, name, price_per_km, owner_person_id, active) VALUES (1, 'CA', 'Car A', 0.2, 2, 1)"

@@ -1,6 +1,5 @@
 export interface Person {
   id: number;
-  name: string;
   first_name: string;
   last_name: string;
   discount: number;
@@ -175,7 +174,7 @@ export interface DashboardRow {
 }
 
 // Form input types (no id, no computed fields)
-export type PersonInput = Pick<Person, "name" | "first_name" | "last_name" | "discount" | "discount_long" | "active"> & {
+export type PersonInput = Pick<Person, "first_name" | "last_name" | "discount" | "discount_long" | "active"> & {
   username?: string | null;
   is_admin?: 0 | 1;
 };

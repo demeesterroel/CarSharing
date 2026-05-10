@@ -10,6 +10,7 @@ import type { Person } from "@/types";
 import { paper, fontMono, fontSerif } from "@/lib/paper-theme";
 import { useT } from "@/components/locale-provider";
 import { ErrorBoundary } from "@/components/error-boundary";
+import { fullNameOf } from "@/lib/person-utils";
 
 const sheetStyle: React.CSSProperties = {
   position: "fixed",
@@ -93,7 +94,7 @@ function PeopleContent() {
                   color: p.active ? paper.ink : paper.inkDim,
                 }}
               >
-                {p.name}
+                {fullNameOf(p)}
               </div>
               {(p.discount > 0 || p.discount_long > 0) && (
                 <div
@@ -146,7 +147,7 @@ function PeopleContent() {
             </Dialog.Title>
             <PersonForm
               onSubmit={(data) => {
-                createPerson.mutate(data as Omit<Person, "id">, {
+                createPerson.mutate({ ...data, last_name: data.last_name ?? "", username: null, password_hash: null, is_admin: 0, bank_account: "", email: null, updated_at: "" }, {
                   onSuccess: () => {
                     setAdding(false);
                     toast.success(t("toast.person_added"));

@@ -27,7 +27,7 @@ describe("migration 0003", () => {
     const db = new Database(":memory:");
     runMigrations(db);
     // seed
-    db.exec("INSERT INTO people (id,name) VALUES (1,'P')");
+    db.exec("INSERT INTO people (id,first_name) VALUES (1,'P')");
     db.exec("INSERT INTO cars (id,short,name,price_per_km) VALUES (1,'X','c',0.2)");
     db.prepare(
       "INSERT INTO trips (person_id,car_id,date,start_odometer,end_odometer,km,amount,client_id) VALUES (?,?,?,?,?,?,?,?)"
@@ -44,7 +44,7 @@ describe("migration 0003", () => {
   it("populates updated_at with a default of CURRENT_TIMESTAMP on insert", () => {
     const db = new Database(":memory:");
     runMigrations(db);
-    db.exec("INSERT INTO people (id,name) VALUES (1,'P')");
+    db.exec("INSERT INTO people (id,first_name) VALUES (1,'P')");
     db.exec("INSERT INTO cars (id,short,name,price_per_km) VALUES (1,'X','c',0.2)");
     db.prepare(
       "INSERT INTO trips (person_id,car_id,date,start_odometer,end_odometer,km,amount) VALUES (?,?,?,?,?,?,?)"

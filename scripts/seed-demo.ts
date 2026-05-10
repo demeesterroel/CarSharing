@@ -31,14 +31,14 @@ const pick = <T>(arr: readonly T[] | T[]): T => arr[Math.floor(rng() * arr.lengt
 
 // ── Static data ───────────────────────────────────────────────────────────────
 
-const YEARS = [2021, 2022, 2023, 2024, 2025];
+const YEARS = [2021, 2022, 2023, 2024, 2025, 2026];
 
 const PEOPLE = [
-  { first_name: "Admin", last_name: "One", username: "admin", password: "admin", is_admin: 1, discount: 0.25, discount_long: 0.50 },
-  { first_name: "Owner", last_name: "Two", username: "owner", password: "owner", is_admin: 0, discount: 0.25, discount_long: 0.50 },
-  { first_name: "Alice", last_name: "Smith", username: "alice", password: "alice", is_admin: 0, discount: 0.25, discount_long: 0.50 },
-  { first_name: "Bob", last_name: "Jones", username: "bob", password: "bob", is_admin: 0, discount: 0.25, discount_long: 0.50 },
-  { first_name: "Carol", last_name: "Brown", username: "carol", password: "carol", is_admin: 0, discount: 0.25, discount_long: 0.50 },
+  { name: "Admin One", username: "admin", password: "admin", is_admin: 1, discount: 0, discount_long: 0, bank_account: "BE00 0000 0000 0001", email: "admin@demo.local" },
+  { name: "Owner Two", username: "owner", password: "owner", is_admin: 0, discount: 0, discount_long: 0, bank_account: "BE00 0000 0000 0002", email: "owner@demo.local" },
+  { name: "Alice Smith", username: "alice", password: "alice", is_admin: 0, discount: 0, discount_long: 0, bank_account: "BE00 0000 0000 0003", email: "alice@demo.local" },
+  { name: "Bob Jones", username: "bob", password: "bob", is_admin: 0, discount: 0.25, discount_long: 0.50, bank_account: "BE00 0000 0000 0004", email: "bob@demo.local" },
+  { name: "Carol Brown", username: "carol", password: "carol", is_admin: 0, discount: 0.25, discount_long: 0.50, bank_account: "BE00 0000 0000 0005", email: "carol@demo.local" },
 ] as const;
 
 const CARS = [
@@ -65,14 +65,14 @@ console.log("Seeding people...");
 
 const insertPerson = db.prepare(`
   INSERT OR IGNORE INTO people
-    (first_name, last_name, username, password_hash, is_admin, discount, discount_long, active)
-  VALUES (?, ?, ?, ?, ?, ?, ?, 1)
+    (name, username, password_hash, is_admin, discount, discount_long, bank_account, email, active)
+  VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1)
 `);
 
 db.transaction(() => {
   for (const p of PEOPLE) {
     const hash = bcrypt.hashSync(p.password, 10);
-    insertPerson.run(p.first_name, p.last_name, p.username, hash, p.is_admin, p.discount, p.discount_long);
+    insertPerson.run(p.name, p.username, hash, p.is_admin, p.discount, p.discount_long, p.bank_account, p.email);
   }
 })();
 
@@ -383,6 +383,16 @@ db.prepare(`
   INSERT OR IGNORE INTO settings (key, value)
   VALUES ('coop_bank_account', 'BE00 0000 0000 0000')
 `).run();
+
+// ── Pending reservations (for inbox screenshot) ────────────────────────────
+const bobId = personIdByUsername["bob"];
+const carAAId = (db.prepare("SELECT id FROM cars WHERE short = 'AA'").get() as { id: number }).id;
+const carBBId = (db.prepare("SELECT id FROM cars WHERE short = 'BB'").get() as { id: number }).id;
+db.prepare(`
+  INSERT OR IGNORE INTO reservations (person_id, car_id, start_date, end_date, status, note)
+  VALUES (?, ?, '2026-05-15', '2026-05-17', 'pending', 'Weekend trip to Ghent'),
+         (?, ?, '2026-05-20', '2026-05-22', 'pending', 'Family visit')
+`).run(aliceId, carAAId, bobId, carBBId);
 
 // ── Summary ───────────────────────────────────────────────────────────────────
 

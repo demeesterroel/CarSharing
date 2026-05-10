@@ -14,6 +14,7 @@
     "e2e": "playwright test",
     "seed": "tsx scripts/seed-from-export.ts",
     "seed:demo": "tsx scripts/seed-demo.ts",
+    "screenshots": "tsx scripts/screenshot-docs.ts",
     "prepare": "husky"
   },
   "repository": {

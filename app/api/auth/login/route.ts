@@ -3,7 +3,7 @@ import { getIronSession } from "iron-session";
 import { sessionOptions, type SessionData } from "@/lib/session";
 import { verifyCredentials } from "@/lib/auth";
 import { getDb } from "@/lib/db";
-import { getPersonByUsername, isOwner, shortNameOf } from "@/lib/queries/people";
+import { getPersonByUsername, isOwner } from "@/lib/queries/people";
 import { env } from "@/lib/env";
 
 export async function POST(req: Request) {
@@ -24,7 +24,7 @@ export async function POST(req: Request) {
 
   let authenticated = false;
   let sessionPersonId: number | undefined;
-  let sessionShortName: string | undefined;
+  let sessionPersonName: string | undefined;
   let sessionIsAdmin = false;
 
   if (person?.password_hash) {
@@ -35,7 +35,7 @@ export async function POST(req: Request) {
     );
     if (authenticated) {
       sessionPersonId = person.id;
-      sessionShortName = shortNameOf(person);
+      sessionPersonName = person.name;
       sessionIsAdmin = person.is_admin === 1;
     }
   } else {
@@ -48,12 +48,14 @@ export async function POST(req: Request) {
       );
       if (authenticated) {
         sessionIsAdmin = true;
-        // Try to find a person row by username or first_name
-        const adminPerson = db
-          .prepare("SELECT id, first_name, last_name, username FROM people WHERE username=? OR first_name=? LIMIT 1")
-          .get(AUTH_USERNAME, AUTH_USERNAME) as { id: number; first_name?: string; last_name?: string; username?: string | null } | undefined;
+        // Try to find a person row by username or name, then fall back to any admin row
+        const adminPerson = (db
+          .prepare("SELECT id, name FROM people WHERE username=? OR name=? LIMIT 1")
+          .get(AUTH_USERNAME, AUTH_USERNAME) ??
+          db.prepare("SELECT id, name FROM people WHERE is_admin=1 LIMIT 1").get()
+        ) as { id: number; name: string } | undefined;
         sessionPersonId = adminPerson?.id;
-        sessionShortName = adminPerson ? shortNameOf(adminPerson) : AUTH_USERNAME;
+        sessionPersonName = adminPerson?.name ?? AUTH_USERNAME;
       }
     }
   }
@@ -66,7 +68,7 @@ export async function POST(req: Request) {
   const session = await getIronSession<SessionData>(req, res, sessionOptions);
   session.authenticated = true;
   session.personId = sessionPersonId;
-  session.shortName = sessionShortName;
+  session.personName = sessionPersonName;
   session.isAdmin = sessionIsAdmin;
   await session.save();
   return res;

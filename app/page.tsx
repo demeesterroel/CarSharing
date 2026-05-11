@@ -61,7 +61,7 @@ function NameEditLink({ name, personId }: { name: string; personId: number }) {
       onMouseLeave={() => setHover(false)}
       style={{
         color: "inherit",
-        textDecoration: "none",
+        textDecoration: hover ? "underline" : "none",
         display: "inline-flex",
         alignItems: "baseline",
         gap: 6,

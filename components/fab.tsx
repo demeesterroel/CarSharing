@@ -74,6 +74,7 @@ export function Fab({ onClick, label }: Props) {
 
 export function MultiFab({ onPick }: { onPick: (action: string) => void }) {
   const [open, setOpen] = useState(false);
+  const [hoveredKey, setHoveredKey] = useState<string | null>(null);
   const { online } = useOnlineState();
 
   return (
@@ -122,13 +123,15 @@ export function MultiFab({ onPick }: { onPick: (action: string) => void }) {
               setOpen(false);
               onPick(chit.key);
             }}
+            onMouseEnter={() => setHoveredKey(chit.key)}
+            onMouseLeave={() => setHoveredKey(null)}
             className="animate-pop-in"
             style={{
               display: "flex",
               alignItems: "center",
               gap: 10,
               padding: "10px 14px",
-              background: paper.paper,
+              background: hoveredKey === chit.key ? paper.ink : paper.paper,
               border: `1.5px solid ${paper.ink}`,
               cursor: "pointer",
               fontFamily: fontMono,
@@ -136,9 +139,10 @@ export function MultiFab({ onPick }: { onPick: (action: string) => void }) {
               letterSpacing: 2,
               textTransform: "uppercase" as const,
               fontWeight: 700,
-              color: paper.ink,
+              color: hoveredKey === chit.key ? paper.paper : paper.ink,
               transform: `rotate(${chit.rotate}deg)`,
               boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
+              transition: "background 0.1s, color 0.1s",
             }}
           >
             <span style={{ fontSize: 16 }}>{chit.emoji}</span>

@@ -8,7 +8,9 @@ This guide walks you through using the car sharing app as a member — from acce
 
 The owner sends you a personal invite link by email or message. Click the link to open the app.
 
-![Invite link in email or message](screenshots/01-invite-link.png)
+The owner generates this link from the **Members** page in the admin panel — you will receive it directly.
+
+![Admin copying an invite link from the members page](screenshots/01-invite-link.png)
 
 You will land on a login page pre-filled for your account. Set a password and log in.
 
@@ -145,8 +147,9 @@ Fill in the form:
 | **Car** | Which car was driven |
 | **Date** | Date of the trip |
 | **Driver** | Who drove (defaults to you) |
-| **Distance (km)** | Kilometres driven |
-| **Notes** | Optional description |
+| **Start km** | Odometer reading at the start of the trip |
+| **End km** | Odometer reading at the end (distance is calculated automatically) |
+| **Parking note** | Optional note about where the car is parked |
 
 ![New trip form filled in](screenshots/18-trip-form.png)
 
@@ -168,12 +171,18 @@ Fill in the form:
 |---|---|
 | **Car** | Which car was refuelled |
 | **Date** | Date of the fill-up |
-| **Litres** | Amount of fuel added |
-| **Price per litre** | Pump price (€/L) |
-| **Paid by** | Who paid at the pump |
+| **Driver** | Who paid at the pump (defaults to you) |
+| **Amount (€)** | Total amount paid |
+| **Litres** | Amount of fuel added (price per litre is calculated automatically) |
 
 ![New fuel form filled in](screenshots/21-fuel-form.png)
 
 Tap **Save**. The entry appears on the Fuel page and is included in cost calculations.
 
 ![Fuel list with new entry at top](screenshots/22-fuel-after-add.png)
+
+---
+
+## Owner?
+
+If you manage the car sharing group, see the [Owner Guide](owner-guide.md) for admin-specific documentation.

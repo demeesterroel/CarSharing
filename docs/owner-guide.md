@@ -6,20 +6,20 @@ This guide covers the admin-only pages available to car sharing owners.
 
 ## 1. Inbox
 
-The Inbox collects items that require your attention — typically new trip or fuel entries submitted by members that need review or approval.
+The Inbox collects items that require your attention — primarily **reservation requests** from members, and **odometer gap warnings** where trip odometer readings don't line up.
 
 ![Inbox page full view](screenshots/100-inbox.png)
 
-Each inbox item shows:
+Each reservation request shows:
 
-- Who submitted it
-- What type of entry (trip / fuel / expense)
-- Date and key details
-- Action buttons (approve / reject)
+- Which member submitted it
+- The car and date range requested
+- A note from the member
+- Action buttons: **Confirm** or **Reject**
 
-![Single inbox item with approve/reject buttons](screenshots/101-inbox-item.png)
+![Inbox scrolled — reservation items and odometer gap section](screenshots/101-inbox-item.png)
 
-Work through the inbox regularly to keep balances and settlements up to date.
+Work through the inbox regularly to keep the calendar and odometer history consistent.
 
 ---
 
@@ -50,26 +50,31 @@ Click a car in the list to edit its details or remove it.
 
 ## 3. Car overview
 
-Click a car name anywhere in the app to open its detail page.
+Click the **✦** button next to a car's price field (in the car edit form) to open its detail page.
 
-![Car overview page full view](screenshots/105-car-overview.png)
+![Car detail view — cost and coverage statistics](screenshots/105-car-overview.png)
 
 The overview shows:
 
-- **Total km driven** — aggregate across all trips
-- **Fuel summary** — total litres and cost
-- **Members who used this car** — with their km share
-- **Recent trips** — latest entries for this car
+- **Trips** — total trips, km driven, split between owner and others
+- **Fuel** — total fill-ups, litres, and cost split
+- **Expenses** — total costs
+- **Cost coverage bar** — visual indicator of whether the price/km covers fuel and expense costs
+- **Sliders** — simulate different price/km, fuel cost, and km scenarios
 
-![Car overview stats section](screenshots/106-car-overview-stats.png)
-
-![Car overview member km breakdown](screenshots/107-car-overview-members.png)
-
-Use this page to quickly audit usage and spot anomalies before running a settlement.
+Use this page to audit usage and verify that the price/km is set correctly before running a settlement.
 
 ---
 
-## 4. Settlements page
+## 4. Members
+
+The **Members** page lists all registered members and lets you log in as any member (view-as) for troubleshooting.
+
+![Members page with all members listed](screenshots/107-car-overview-members.png)
+
+---
+
+## 5. Settlements page
 
 The Settlements page calculates who owes what and generates the payment instructions for all members.
 
@@ -88,33 +93,26 @@ The difference between what each person paid and what they owe determines their 
 
 ### Reading the settlement table
 
-![Settlement table with member balances](screenshots/109-settlement-table.png)
+Each member row shows their net balance for the period. A **positive** amount means the member receives money; a **negative** amount means they owe money.
 
-| Column | Meaning |
-|---|---|
-| **Member** | Name of the member |
-| **Paid** | Total amount paid by this member (fuel, expenses) |
-| **Owes** | Calculated share of total group costs |
-| **Balance** | Paid − Owes (positive = receives, negative = pays) |
+![Settlement page — member balances](screenshots/109-settlement-table.png)
+
+The green summary box at the bottom confirms that inflows and outflows balance to zero.
 
 ### Transfers
 
-The app calculates the minimal set of payments needed to settle all balances.
+The red box shows the number of transfers still outstanding. The app calculates the minimal set of payments needed to settle all balances.
 
-![Transfer / payment instructions list](screenshots/110-settlement-transfers.png)
-
-Each transfer shows: who pays, who receives, and the amount.
+![Settlement page — balance summary and outstanding transfers](screenshots/110-settlement-transfers.png)
 
 ### Sending settlement messages
 
-Click **Send message** next to a transfer to generate a pre-filled payment message addressed to the member by full name.
+Click **Send message** next to a member row to copy a pre-filled payment message to your clipboard. Send it to the member via your preferred channel.
 
-![Settlement message dialog](screenshots/111-settlement-message.png)
-
-Copy and send the message to the member via your preferred channel.
+![Send message — copied to clipboard](screenshots/111-settlement-message.png)
 
 ### Locking a settlement
 
-Once all transfers are confirmed, click **Lock settlement** to close the period. Locked settlements are archived and excluded from future calculations.
+Once all transfers are confirmed, click **Lock settlement** to close the period. Locked settlements are archived and excluded from future calculations. A locked settlement can be reopened with **Reopen settlement** if corrections are needed.
 
-![Lock settlement button / confirmation dialog](screenshots/112-settlement-lock.png)
+![Settlement locked — Reopen settlement button visible](screenshots/112-settlement-lock.png)

@@ -47,6 +47,11 @@ DB_PATH=./data/demo.db npm run dev
 - **Admin** — manage members, cars, and app settings
 - **Offline** — add entries offline, sync when back online (PWA)
 
+## Documentation
+
+- [User Guide](docs/user-guide.md) — for members: logging trips, fuel, and reading your costs
+- [Owner Guide](docs/owner-guide.md) — for admins: managing cars, members, and settlements
+
 ## Tech Stack
 
 - [Next.js](https://nextjs.org/) (App Router) + React + TypeScript

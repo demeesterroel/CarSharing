@@ -80,21 +80,7 @@ export function PickCalendar({
     );
   }
 
-  // A day is blocked only if it's strictly inside a reservation (not on its boundary).
-  // Boundary days (start/end) can be shared between consecutive reservations.
-  function isBlockedDay(day: string): boolean {
-    return reservations.some(
-      (r) =>
-        r.car_id === carId &&
-        r.status !== "rejected" &&
-        !(excludeId && r.id === excludeId) &&
-        day > r.start_date &&
-        day < r.end_date
-    );
-  }
-
   function handleCell(day: string) {
-    if (isBlockedDay(day)) return;
     if (!pickFrom) {
       setPickFrom(day);
       return;
@@ -168,10 +154,20 @@ export function PickCalendar({
             <span style={{ color: paper.inkDim }}>{monthRange(days[0], days[13], locale)}</span>
           )}
         </div>
-        <button type="button" onClick={() => setWeekOffset((o) => o - 1)} aria-label={t("calendar.prev_weeks")} style={navBtn}>
+        <button
+          type="button"
+          onClick={() => setWeekOffset((o) => o - 1)}
+          aria-label={t("calendar.prev_weeks")}
+          style={navBtn}
+        >
           ‹
         </button>
-        <button type="button" onClick={() => setWeekOffset((o) => o + 1)} aria-label={t("calendar.next_weeks")} style={navBtn}>
+        <button
+          type="button"
+          onClick={() => setWeekOffset((o) => o + 1)}
+          aria-label={t("calendar.next_weeks")}
+          style={navBtn}
+        >
           ›
         </button>
       </div>
@@ -233,7 +229,7 @@ export function PickCalendar({
                   fontSize: 9,
                   minHeight: 44,
                   position: "relative",
-                  cursor: isBlockedDay(day) ? "default" : "pointer",
+                  cursor: "pointer",
                 }}
               >
                 <div style={{ fontSize: 8, opacity: 0.75 }}>{dayNames[d.getUTCDay()]}</div>

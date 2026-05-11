@@ -687,47 +687,6 @@ function MemberCard({
 
       {open && (
         <div style={{ borderTop: `1px dashed ${paper.paperDark}`, padding: "10px 14px 14px" }}>
-          {/* Cross-car sections — owners who drove other cars */}
-          {m.is_owner &&
-            crossRows.map((item, i) => {
-              const crossSaldo = -item.row.balance;
-              return (
-                <div key={i} style={{ marginTop: i === 0 ? 0 : 14 }}>
-                  <CarSectionHeader label={item.car_short} saldo={crossSaldo} />
-                  {item.row.trip_km > 0 && (
-                    <BreakdownCarRow
-                      car={`ritten (${item.row.trip_km} km)`}
-                      detail={null}
-                      amount={`− ${fmtMoney(item.row.trip_amount)}`}
-                      amountColor={paper.accent}
-                    />
-                  )}
-                  {item.row.fuel_liters > 0 && (
-                    <BreakdownCarRow
-                      car={`brandstof (${fmtL(item.row.fuel_liters)} L)${item.row.fuel_settled_liters > 0.05 ? " (*)" : ""}`}
-                      detail={null}
-                      amount={`+ ${fmtMoney(item.row.fuel_amount)}`}
-                      amountColor={paper.green}
-                    />
-                  )}
-                  {item.row.expense_amount > 0 && (
-                    <BreakdownCarRow
-                      car={`kosten${item.row.expense_settled_amount > 0.005 ? (item.row.fuel_settled_liters > 0.05 ? " (**)" : " (*)") : ""}`}
-                      detail={null}
-                      amount={`+ ${fmtMoney(item.row.expense_amount)}`}
-                      amountColor={paper.green}
-                    />
-                  )}
-                  <SettledNote
-                    fuelCount={item.row.fuel_settled_count}
-                    fuelLiters={item.row.fuel_settled_liters}
-                    expCount={item.row.expense_settled_count}
-                    expAmt={item.row.expense_settled_amount}
-                  />
-                </div>
-              );
-            })}
-
           {/* Non-owner: per-car breakdown */}
           {!m.is_owner &&
             m.car_eras.map((era, i) => (
@@ -766,7 +725,7 @@ function MemberCard({
               </div>
             ))}
 
-          {/* EIGEN WAGEN section — owners only */}
+          {/* EIGEN WAGEN section — owners only, shown first */}
           {m.is_owner &&
             m.car_eras.map((era, i) => {
               const nStar = era.n_c_star ?? 0;
@@ -776,10 +735,9 @@ function MemberCard({
                 <div
                   key={i}
                   style={{
-                    marginTop: crossRows.length > 0 || i > 0 ? 14 : 0,
-                    borderTop:
-                      crossRows.length > 0 || i > 0 ? `1px dashed ${paper.paperDark}` : undefined,
-                    paddingTop: crossRows.length > 0 || i > 0 ? 10 : 0,
+                    marginTop: i > 0 ? 14 : 0,
+                    borderTop: i > 0 ? `1px dashed ${paper.paperDark}` : undefined,
+                    paddingTop: i > 0 ? 10 : 0,
                   }}
                 >
                   <CarSectionHeader
@@ -834,6 +792,56 @@ function MemberCard({
                 </div>
               );
             })}
+
+          {/* Cross-car sections — owners who drove other owners' cars */}
+          {m.is_owner && crossRows.length > 0 && (
+            <div
+              style={{
+                marginTop: 14,
+                borderTop: `1px dashed ${paper.paperDark}`,
+                paddingTop: 10,
+              }}
+            >
+              {crossRows.map((item, i) => {
+                const crossSaldo = -item.row.balance;
+                return (
+                  <div key={i} style={{ marginTop: i === 0 ? 0 : 14 }}>
+                    <CarSectionHeader label={item.car_short} saldo={crossSaldo} />
+                    {item.row.trip_km > 0 && (
+                      <BreakdownCarRow
+                        car={`ritten (${item.row.trip_km} km)`}
+                        detail={null}
+                        amount={`− ${fmtMoney(item.row.trip_amount)}`}
+                        amountColor={paper.accent}
+                      />
+                    )}
+                    {item.row.fuel_liters > 0 && (
+                      <BreakdownCarRow
+                        car={`brandstof (${fmtL(item.row.fuel_liters)} L)${item.row.fuel_settled_liters > 0.05 ? " (*)" : ""}`}
+                        detail={null}
+                        amount={`+ ${fmtMoney(item.row.fuel_amount)}`}
+                        amountColor={paper.green}
+                      />
+                    )}
+                    {item.row.expense_amount > 0 && (
+                      <BreakdownCarRow
+                        car={`kosten${item.row.expense_settled_amount > 0.005 ? (item.row.fuel_settled_liters > 0.05 ? " (**)" : " (*)") : ""}`}
+                        detail={null}
+                        amount={`+ ${fmtMoney(item.row.expense_amount)}`}
+                        amountColor={paper.green}
+                      />
+                    )}
+                    <SettledNote
+                      fuelCount={item.row.fuel_settled_count}
+                      fuelLiters={item.row.fuel_settled_liters}
+                      expCount={item.row.expense_settled_count}
+                      expAmt={item.row.expense_settled_amount}
+                    />
+                  </div>
+                );
+              })}
+            </div>
+          )}
 
           {/* SALDO */}
           <div

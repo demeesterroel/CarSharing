@@ -138,7 +138,7 @@ Each expense card shows: date, car, amount, description, and category. Click an 
 ![Expense detail view](screenshots/member-36-expense-detail.png)
 
 
-## Note : Settled outside
+### Note : Mark Costs that have been Settled outside the app
 When editing an Expense or Fill-up, you can enabled the check box "settled outside" in case you have already received the reimbursment of this cost, either directly or through a another setllment app like Splitser etc..
 
 ---
@@ -173,7 +173,7 @@ There are three ways to open the reservation form:
 
 **2. "+ Add reservation" button** — tap the button in the Upcoming list header. Same as the FAB: no dates pre-filled.
 
-**3. Calendar pick** — tap a day in the per-car timeline to start a range; tap the end day. The form opens with those dates already filled in.
+**3. Calendar pick** — tap a day in the per-car timeline to start a range; tap the end day. The form opens with those dates and the selected car already filled in.
 
 ![Reservation form with dates from calendar pick](screenshots/member-26-reservation-form-calendar.png)
 

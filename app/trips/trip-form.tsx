@@ -3,7 +3,6 @@ import { useEffect } from "react";
 import { useForm, useWatch, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { CarToggle } from "@/components/car-toggle";
 import { LocationPicker } from "@/components/location-picker";
@@ -133,16 +132,7 @@ export function TripForm({ defaultValues, onSubmit, onCancel, onDelete }: Props)
   const amount = shortAmount + longAmount;
 
   const { data: lastState } = useLastCarState(carId);
-  const qc = useQueryClient();
   const { online } = useOnlineState();
-
-  // Force a fresh fetch of the selected car's last state whenever the form
-  // opens online or the car changes. Stale start_km is the one offline-related
-  // staleness that can corrupt data, so we always re-pull when we can.
-  useEffect(() => {
-    if (!isAddMode || !carId || !online) return;
-    qc.invalidateQueries({ queryKey: ["car-state", carId] });
-  }, [isAddMode, carId, online, qc]);
 
   useEffect(() => {
     if (!isAddMode || !carId || !lastState) return;

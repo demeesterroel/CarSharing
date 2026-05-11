@@ -37,6 +37,10 @@ interface OwnCarRow {
   others_fuel_amount: number;
   others_expense_count: number;
   others_expense_amount: number;
+  others_fuel_settled_count: number;
+  others_fuel_settled_liters: number;
+  others_expense_settled_count: number;
+  others_expense_settled_amount: number;
   own_trip_count: number;
   own_trip_km: number;
   own_fuel_count: number;
@@ -57,6 +61,10 @@ interface CrossCarRow {
   fuel_amount: number;
   expense_count: number;
   expense_amount: number;
+  fuel_settled_count: number;
+  fuel_settled_liters: number;
+  expense_settled_count: number;
+  expense_settled_amount: number;
 }
 
 export function getEarliestYear(db: Database.Database): number {
@@ -165,6 +173,18 @@ export function getDashboard(db: Database.Database, year: number): DashboardRow[
         COALESCE((SELECT SUM(e.amount) FROM expenses e
           WHERE e.car_id = c.id AND e.person_id != p_owner.id
             AND e.settled_outside = 0 AND strftime('%Y', e.date) = ?), 0)  AS others_expense_amount,
+        COALESCE((SELECT COUNT(*) FROM fuel_fillups f
+          WHERE f.car_id = c.id AND f.person_id != p_owner.id
+            AND f.settled_outside = 1 AND strftime('%Y', f.date) = ?), 0)  AS others_fuel_settled_count,
+        COALESCE((SELECT SUM(f.liters) FROM fuel_fillups f
+          WHERE f.car_id = c.id AND f.person_id != p_owner.id
+            AND f.settled_outside = 1 AND strftime('%Y', f.date) = ?), 0)  AS others_fuel_settled_liters,
+        COALESCE((SELECT COUNT(*) FROM expenses e
+          WHERE e.car_id = c.id AND e.person_id != p_owner.id
+            AND e.settled_outside = 1 AND strftime('%Y', e.date) = ?), 0)  AS others_expense_settled_count,
+        COALESCE((SELECT SUM(e.amount) FROM expenses e
+          WHERE e.car_id = c.id AND e.person_id != p_owner.id
+            AND e.settled_outside = 1 AND strftime('%Y', e.date) = ?), 0)  AS others_expense_settled_amount,
         COUNT(CASE WHEN t.person_id = p_owner.id THEN 1 END)               AS own_trip_count,
         COALESCE(SUM(CASE WHEN t.person_id = p_owner.id THEN t.km END), 0) AS own_trip_km,
         COALESCE((SELECT COUNT(*) FROM fuel_fillups f
@@ -184,17 +204,20 @@ export function getDashboard(db: Database.Database, year: number): DashboardRow[
       `
     )
     .all(
-      yearStr,
-      yearStr,
-      yearStr,
-      yearStr,
-      yearStr,
-      yearStr,
-      yearStr,
-      yearStr,
-      yearStr
+      yearStr, // others_fuel_count
+      yearStr, // others_fuel_liters
+      yearStr, // others_fuel_amount
+      yearStr, // others_expense_count
+      yearStr, // others_expense_amount
+      yearStr, // others_fuel_settled_count
+      yearStr, // others_fuel_settled_liters
+      yearStr, // others_expense_settled_count
+      yearStr, // others_expense_settled_amount
+      yearStr, // own_fuel_count
+      yearStr, // own_fuel_liters
+      yearStr, // own_expense_count
+      yearStr  // LEFT JOIN trips date filter
     ) as OwnCarRow[];
-  // bind count: 5 subquery params (fuel_count,liters,amount,expense_count,amount) + 2 own subqueries (fuel,expense) + 1 own expense count + 1 LEFT JOIN = 9
 
   // Owners: trips/fuel/expenses on OTHER owners' cars
   const crossCarRows = db
@@ -222,7 +245,19 @@ export function getDashboard(db: Database.Database, year: number): DashboardRow[
             AND e.settled_outside = 0 AND strftime('%Y', e.date) = ?), 0)  AS expense_count,
         COALESCE((SELECT SUM(e.amount) FROM expenses e
           WHERE e.car_id = c.id AND e.person_id = t.person_id
-            AND e.settled_outside = 0 AND strftime('%Y', e.date) = ?), 0)  AS expense_amount
+            AND e.settled_outside = 0 AND strftime('%Y', e.date) = ?), 0)  AS expense_amount,
+        COALESCE((SELECT COUNT(*) FROM fuel_fillups f
+          WHERE f.car_id = c.id AND f.person_id = t.person_id
+            AND f.settled_outside = 1 AND strftime('%Y', f.date) = ?), 0)  AS fuel_settled_count,
+        COALESCE((SELECT SUM(f.liters) FROM fuel_fillups f
+          WHERE f.car_id = c.id AND f.person_id = t.person_id
+            AND f.settled_outside = 1 AND strftime('%Y', f.date) = ?), 0)  AS fuel_settled_liters,
+        COALESCE((SELECT COUNT(*) FROM expenses e
+          WHERE e.car_id = c.id AND e.person_id = t.person_id
+            AND e.settled_outside = 1 AND strftime('%Y', e.date) = ?), 0)  AS expense_settled_count,
+        COALESCE((SELECT SUM(e.amount) FROM expenses e
+          WHERE e.car_id = c.id AND e.person_id = t.person_id
+            AND e.settled_outside = 1 AND strftime('%Y', e.date) = ?), 0)  AS expense_settled_amount
       FROM trips t
       JOIN cars c ON t.car_id = c.id
       JOIN people p_owner ON c.owner_person_id = p_owner.id
@@ -232,7 +267,7 @@ export function getDashboard(db: Database.Database, year: number): DashboardRow[
       GROUP BY t.person_id, c.id
       `
     )
-    .all(yearStr, yearStr, yearStr, yearStr, yearStr, yearStr) as CrossCarRow[];
+    .all(yearStr, yearStr, yearStr, yearStr, yearStr, yearStr, yearStr, yearStr, yearStr, yearStr) as CrossCarRow[];
 
   const ownCarByPerson = new Map<number, OwnCarRow[]>();
   for (const row of ownCarRows) {
@@ -295,6 +330,10 @@ export function getDashboard(db: Database.Database, year: number): DashboardRow[
         own_fuel_count: c.own_fuel_count,
         own_fuel_liters: c.own_fuel_liters,
         own_expense_count: c.own_expense_count,
+        fuel_settled_count: c.others_fuel_settled_count,
+        fuel_settled_liters: c.others_fuel_settled_liters,
+        expense_settled_count: c.others_expense_settled_count,
+        expense_settled_amount: c.others_expense_settled_amount,
       })),
       ...crossCars.map((c) => ({
         car_short: c.car_short,
@@ -314,6 +353,10 @@ export function getDashboard(db: Database.Database, year: number): DashboardRow[
         own_fuel_count: 0,
         own_fuel_liters: 0,
         own_expense_count: 0,
+        fuel_settled_count: c.fuel_settled_count,
+        fuel_settled_liters: c.fuel_settled_liters,
+        expense_settled_count: c.expense_settled_count,
+        expense_settled_amount: c.expense_settled_amount,
       })),
     ];
 

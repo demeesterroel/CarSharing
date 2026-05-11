@@ -104,7 +104,12 @@ Each fuel entry shows: date, car, litres, price per litre, total cost, and who p
 
 ![Fuel filter panel open](screenshots/member-11-fuel-filters.png)
 
-### Fuel Details
+### Fill-up Details
+
+When editing a fill-up, you can optionally 
+- mark if this was a FULL tank fill (usefull to be able to better calculate average consumption)
+- the location where you filled up
+- a receipt 
 
 ![Fuel detail view](screenshots/member-35-fuel-detail.png)
 
@@ -115,7 +120,6 @@ Each fuel entry shows: date, car, litres, price per litre, total cost, and who p
 The expenses page lists all one-off costs — parking fees, maintenance contributions, accessories, and other shared costs
 
 Each expense card shows: date, car, amount, description, and category. Click an expense to view and edit its details.
-
 
 ![Expenses page full view](screenshots/member-13-cost.png)
 
@@ -132,6 +136,10 @@ Each expense card shows: date, car, amount, description, and category. Click an 
 ### Expense Details
 
 ![Expense detail view](screenshots/member-36-expense-detail.png)
+
+
+## Note : Settled outside
+When editing an Expense or Fill-up, you can enabled the check box "settled outside" in case you have already received the reimbursment of this cost, either directly or through a another setllment app like Splitser etc..
 
 ---
 

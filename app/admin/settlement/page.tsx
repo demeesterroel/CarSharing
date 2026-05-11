@@ -62,7 +62,7 @@ function SettledNote({
       style={{
         fontFamily: fontMono,
         fontSize: 8,
-        color: paper.inkMute,
+        color: paper.inkDim,
         paddingLeft: 16,
         marginTop: 6,
         fontStyle: "italic",
@@ -127,7 +127,7 @@ function YearPicker({
         style={{
           ...btnBase,
           borderRight: "none",
-          color: year <= earliest ? paper.inkMute : paper.ink,
+          color: year <= earliest ? paper.inkDim : paper.ink,
           cursor: year <= earliest ? "default" : "pointer",
         }}
       >
@@ -153,7 +153,7 @@ function YearPicker({
         style={{
           ...btnBase,
           borderLeft: "none",
-          color: year >= current ? paper.inkMute : paper.ink,
+          color: year >= current ? paper.inkDim : paper.ink,
           cursor: year >= current ? "default" : "pointer",
         }}
       >
@@ -186,7 +186,7 @@ function BreakdownSection({
             letterSpacing: 1.5,
             textTransform: "uppercase" as const,
             fontWeight: 700,
-            color: paper.inkMute,
+            color: paper.inkDim,
           }}
         >
           {label}
@@ -289,7 +289,7 @@ function TransferPaymentRow({ transfer }: { transfer: AnnotatedTransfer }) {
         </span>
         <span
           style={{
-            color: overpaid ? paper.accent : ps.open > 0.005 ? paper.accent : paper.inkMute,
+            color: overpaid ? paper.accent : ps.open > 0.005 ? paper.accent : paper.inkDim,
           }}
         >
           {overpaid
@@ -330,7 +330,7 @@ function TransferPaymentRow({ transfer }: { transfer: AnnotatedTransfer }) {
                 gridTemplateColumns: "16px 90px 1fr",
                 fontFamily: fontMono,
                 fontSize: 9,
-                color: paper.inkMute,
+                color: paper.inkDim,
                 letterSpacing: 0.5,
               }}
             >
@@ -404,7 +404,7 @@ function CarSectionHeader({ label, saldo }: { label: string; saldo: number }) {
           fontSize: 9,
           letterSpacing: 1.5,
           textTransform: "uppercase" as const,
-          color: paper.inkMute,
+          color: paper.inkDim,
           fontWeight: 700,
         }}
       >
@@ -600,7 +600,7 @@ function MemberCard({
         }}
       >
         <span
-          style={{ fontFamily: fontSerif, fontSize: 11, color: paper.inkMute, flex: "1 1 auto" }}
+          style={{ fontFamily: fontSerif, fontSize: 11, color: paper.inkDim, flex: "1 1 auto" }}
         >
           {m.person_name}
         </span>
@@ -664,7 +664,7 @@ function MemberCard({
             letterSpacing: 1,
             textTransform: "uppercase",
             background: msgCopied ? paper.green : "transparent",
-            color: msgCopied ? paper.paper : paper.inkMute,
+            color: msgCopied ? paper.paper : paper.inkDim,
             border: `1px solid ${msgCopied ? paper.green : paper.paperDark}`,
             cursor: "pointer",
             whiteSpace: "nowrap",
@@ -796,7 +796,7 @@ function MemberCard({
                           marginTop: 2,
                         }}
                       >
-                        <span style={{ fontFamily: fontMono, fontSize: 10, color: paper.inkMute }}>
+                        <span style={{ fontFamily: fontMono, fontSize: 10, color: paper.inkDim }}>
                           {contrib.person_name}
                           {detail ? ` ${detail}` : ""}
                         </span>
@@ -860,7 +860,7 @@ function MemberCard({
               style={{
                 fontFamily: fontMono,
                 fontSize: 9,
-                color: paper.inkMute,
+                color: paper.inkDim,
                 marginTop: 4,
                 paddingLeft: 16,
               }}
@@ -1053,7 +1053,7 @@ function AdminSettlementPageContent() {
                 letterSpacing: 1,
                 textTransform: "uppercase",
                 background: "transparent",
-                color: paper.inkMute,
+                color: paper.inkDim,
                 border: `1px solid ${paper.paperDark}`,
                 cursor: "pointer",
                 padding: "4px 10px",
@@ -1101,7 +1101,7 @@ function AdminSettlementPageContent() {
             {t("settlement.frozen_badge")}
           </span>
           {data.settled_by && (
-            <div style={{ fontFamily: fontMono, fontSize: 9, color: paper.inkMute, marginTop: 4 }}>
+            <div style={{ fontFamily: fontMono, fontSize: 9, color: paper.inkDim, marginTop: 4 }}>
               {t("settlement.frozen_by", {
                 date: data.settled_at?.slice(0, 10) ?? "",
                 name: data.settled_by,
@@ -1116,7 +1116,7 @@ function AdminSettlementPageContent() {
           style={{
             fontFamily: fontMono,
             fontSize: 10,
-            color: paper.inkMute,
+            color: paper.inkDim,
             textAlign: "center",
             padding: 32,
           }}
@@ -1130,7 +1130,7 @@ function AdminSettlementPageContent() {
           style={{
             fontFamily: fontMono,
             fontSize: 10,
-            color: paper.inkMute,
+            color: paper.inkDim,
             textAlign: "center",
             padding: 32,
           }}
@@ -1261,7 +1261,7 @@ function AdminSettlementPageContent() {
                 letterSpacing: 2,
                 textTransform: "uppercase",
                 background: data.frozen ? paper.paperDark : paper.ink,
-                color: data.frozen ? paper.inkMute : paper.paper,
+                color: data.frozen ? paper.inkDim : paper.paper,
                 border: "none",
                 cursor: lock.isPending ? "default" : "pointer",
               }}

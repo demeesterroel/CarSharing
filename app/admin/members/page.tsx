@@ -132,76 +132,35 @@ function PersonRow({
       }}
     >
       {/* Collapsed header */}
-      <div
-        role="button"
-        tabIndex={0}
-        onClick={onToggle}
-        onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && onToggle()}
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: 10,
-          padding: "12px 14px",
-          cursor: "pointer",
-          userSelect: "none",
-        }}
-      >
-        {/* Name + ← view as + username */}
-        <div style={{ flex: 1, display: "flex", alignItems: "baseline", gap: 8, minWidth: 0 }}>
+      <div style={{ display: "flex", alignItems: "center" }}>
+        {/* Toggle area — no nested interactive elements */}
+        <div
+          role="button"
+          tabIndex={0}
+          onClick={onToggle}
+          onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && onToggle()}
+          style={{
+            flex: 1,
+            display: "flex",
+            alignItems: "center",
+            gap: 8,
+            padding: "12px 0 12px 14px",
+            cursor: "pointer",
+            userSelect: "none",
+            minWidth: 0,
+          }}
+        >
           <span
-            style={{ display: "inline-flex", alignItems: "center", gap: 4 }}
-            onMouseEnter={() => setHovered(true)}
-            onMouseLeave={() => setHovered(false)}
+            style={{
+              fontFamily: fontSerif,
+              fontSize: 15,
+              fontWeight: 700,
+              color: paper.ink,
+              whiteSpace: "nowrap",
+            }}
           >
-            <span
-              style={{
-                fontFamily: fontSerif,
-                fontSize: 15,
-                fontWeight: 700,
-                color: paper.ink,
-                whiteSpace: "nowrap",
-              }}
-            >
-              {fullNameOf(person)}
-            </span>
-            <Link
-              href={`/user/${person.id}/edit`}
-              onClick={(e) => e.stopPropagation()}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                color: paper.inkDim,
-                opacity: hovered ? 1 : 0,
-                transition: "opacity 0.15s",
-              }}
-            >
-              <Pencil size={11} />
-            </Link>
+            {fullNameOf(person)}
           </span>
-          {onCloak && (
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                onCloak(person.id);
-              }}
-              style={{
-                background: "none",
-                border: "none",
-                padding: 0,
-                cursor: "pointer",
-                fontFamily: fontMono,
-                fontSize: 8,
-                fontWeight: 700,
-                letterSpacing: 1.5,
-                textTransform: "uppercase",
-                color: paper.amber,
-                whiteSpace: "nowrap",
-                flexShrink: 0,
-              }}
-            >
-              ← view as
-            </button>
-          )}
           {person.username && (
             <span
               style={{
@@ -216,26 +175,63 @@ function PersonRow({
               {person.username}
             </span>
           )}
+          {hasDiscount && (
+            <div
+              style={{
+                fontFamily: fontMono,
+                fontSize: 9,
+                color: paper.inkDim,
+                fontWeight: 700,
+                letterSpacing: 1,
+                border: `1px solid ${paper.amber}`,
+                padding: "2px 5px",
+                textTransform: "uppercase",
+                flexShrink: 0,
+              }}
+            >
+              {t("admin.discount_badge")}
+            </div>
+          )}
         </div>
 
-        {/* Discount badge */}
-        {hasDiscount && (
-          <div
+        {/* Actions — outside role="button" to avoid nested-interactive */}
+        <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "12px 14px 12px 4px", flexShrink: 0 }}>
+          <Link
+            href={`/user/${person.id}/edit`}
+            aria-label={t("admin.edit_member").replace("{name}", fullNameOf(person))}
+            onMouseEnter={() => setHovered(true)}
+            onMouseLeave={() => setHovered(false)}
             style={{
-              fontFamily: fontMono,
-              fontSize: 8,
-              color: paper.amber,
-              fontWeight: 700,
-              letterSpacing: 1,
-              border: `1px solid ${paper.amber}`,
-              padding: "2px 5px",
-              textTransform: "uppercase",
-              flexShrink: 0,
+              display: "flex",
+              alignItems: "center",
+              color: paper.inkDim,
+              opacity: hovered ? 1 : 0,
+              transition: "opacity 0.15s",
             }}
           >
-            {t("admin.discount_badge")}
-          </div>
-        )}
+            <Pencil size={11} />
+          </Link>
+          {onCloak && (
+            <button
+              onClick={() => onCloak(person.id)}
+              style={{
+                background: "none",
+                border: "none",
+                padding: 0,
+                cursor: "pointer",
+                fontFamily: fontMono,
+                fontSize: 9,
+                fontWeight: 700,
+                letterSpacing: 1.5,
+                textTransform: "uppercase",
+                color: paper.inkDim,
+                whiteSpace: "nowrap",
+              }}
+            >
+              ← view as
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Expanded edit form */}

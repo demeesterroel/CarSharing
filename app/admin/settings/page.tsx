@@ -51,7 +51,7 @@ export default function AdminSettingsPage() {
   const labelStyle = {
     fontFamily: fontMono,
     fontSize: 9,
-    color: paper.inkMute,
+    color: paper.inkDim,
     letterSpacing: 1,
     marginBottom: 4,
   };
@@ -87,7 +87,7 @@ export default function AdminSettingsPage() {
           style={{
             fontFamily: fontMono,
             fontSize: 9,
-            color: paper.inkMute,
+            color: paper.inkDim,
             letterSpacing: 1,
             marginBottom: 8,
           }}
@@ -98,7 +98,7 @@ export default function AdminSettingsPage() {
         <Perf margin="0 0 12px" />
 
         {isLoading ? (
-          <div style={{ fontFamily: fontMono, fontSize: 10, color: paper.inkMute }}>…</div>
+          <div style={{ fontFamily: fontMono, fontSize: 10, color: paper.inkDim }}>…</div>
         ) : (
           <>
             <input
@@ -161,7 +161,7 @@ export default function AdminSettingsPage() {
             style={{
               fontFamily: fontMono,
               fontSize: 9,
-              color: paper.inkMute,
+              color: paper.inkDim,
               letterSpacing: 1,
               marginBottom: 8,
             }}
@@ -187,7 +187,7 @@ export default function AdminSettingsPage() {
           )}
 
           {isLoading ? (
-            <div style={{ fontFamily: fontMono, fontSize: 10, color: paper.inkMute }}>…</div>
+            <div style={{ fontFamily: fontMono, fontSize: 10, color: paper.inkDim }}>…</div>
           ) : (
             <>
               <div style={{ marginBottom: 12 }}>
@@ -223,6 +223,7 @@ export default function AdminSettingsPage() {
                   />
                   <button
                     type="button"
+                    aria-label={showToken ? t("settings.token_hide") : t("settings.token_show")}
                     onClick={() => setShowToken((v) => !v)}
                     style={{
                       position: "absolute",
@@ -233,7 +234,7 @@ export default function AdminSettingsPage() {
                       border: "none",
                       cursor: "pointer",
                       padding: 0,
-                      color: paper.inkMute,
+                      color: paper.inkDim,
                       display: "flex",
                     }}
                   >

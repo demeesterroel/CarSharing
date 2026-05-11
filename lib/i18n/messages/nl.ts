@@ -519,6 +519,8 @@ export const nl = {
   "settings.calendar_hint": "Laat leeg om de integratie uit te schakelen.",
   "settings.calendar_id_label": "Google Calendar ID",
   "settings.token_label": "OAuth Refresh Token",
+  "settings.token_show": "Token tonen",
+  "settings.token_hide": "Token verbergen",
   "settings.token_stored": "opgeslagen — plak om te wijzigen",
   "settings.token_empty": "plak refresh token hier",
   "settings.env_warning":
@@ -540,6 +542,7 @@ export const nl = {
 
   // Admin members
   "admin.members_title": "Leden",
+  "admin.edit_member": "Bewerk {name}",
   "admin.invite_copy": "Kopieer uitnodigingslink",
   "admin.invite_copied": "Link gekopieerd!",
   "admin.username_label": "Gebruikersnaam",

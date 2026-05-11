@@ -44,7 +44,7 @@ export default function CarsPage() {
             padding: "32px 20px",
             fontFamily: fontMono,
             fontSize: 11,
-            color: paper.inkMute,
+            color: paper.inkDim,
             letterSpacing: 1,
           }}
         >

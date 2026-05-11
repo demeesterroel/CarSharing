@@ -200,7 +200,7 @@ function CarBreakdownSection({ bd, year }: { bd: CarDashboardBreakdown; year: nu
                 fontFamily: fontMono,
                 fontSize: 9,
                 letterSpacing: 1,
-                color: paper.inkMute,
+                color: paper.inkDim,
                 textTransform: "uppercase",
                 marginBottom: 2,
               }}
@@ -241,7 +241,7 @@ function CarBreakdownSection({ bd, year }: { bd: CarDashboardBreakdown; year: nu
                 fontFamily: fontMono,
                 fontSize: 9,
                 letterSpacing: 1,
-                color: paper.inkMute,
+                color: paper.inkDim,
                 textTransform: "uppercase",
                 marginBottom: 2,
               }}
@@ -252,21 +252,21 @@ function CarBreakdownSection({ bd, year }: { bd: CarDashboardBreakdown; year: nu
               <ReceiptRow
                 href={`/trips?mine=true&car=${bd.car_short}&year=${year}`}
                 label={`${bd.own_trip_count} ritten · ${bd.own_trip_km.toLocaleString("nl-BE")} km`}
-                color={paper.inkMute}
+                color={paper.inkDim}
               />
             )}
             {bd.own_fuel_count > 0 && (
               <ReceiptRow
                 href={`/fuel?mine=true&car=${bd.car_short}&year=${year}`}
                 label={`${bd.own_fuel_count} tankbeurten, ${fmtL(bd.own_fuel_liters)} L`}
-                color={paper.inkMute}
+                color={paper.inkDim}
               />
             )}
             {bd.own_expense_count > 0 && (
               <ReceiptRow
                 href={`/expenses?mine=true&car=${bd.car_short}&year=${year}`}
                 label={`${bd.own_expense_count} kosten`}
-                color={paper.inkMute}
+                color={paper.inkDim}
               />
             )}
           </div>
@@ -409,7 +409,7 @@ function BalanceCardSkeleton() {
                 fontFamily: fontMono,
                 fontSize: 10,
                 fontWeight: 700,
-                color: paper.inkMute,
+                color: paper.inkDim,
                 letterSpacing: 1,
               }}
             >
@@ -419,7 +419,7 @@ function BalanceCardSkeleton() {
               style={{
                 padding: "6px 18px",
                 background: paper.paperDark,
-                color: paper.inkMute,
+                color: paper.inkDim,
                 fontFamily: fontMono,
                 fontSize: 10,
                 fontWeight: 700,
@@ -437,7 +437,7 @@ function BalanceCardSkeleton() {
                 fontFamily: fontMono,
                 fontSize: 10,
                 fontWeight: 700,
-                color: paper.inkMute,
+                color: paper.inkDim,
                 letterSpacing: 1,
               }}
             >
@@ -577,7 +577,7 @@ function BalanceReceipt({ fullName, personId }: { fullName: string; personId: nu
               fontFamily: fontMono,
               fontSize: 10,
               fontWeight: 700,
-              color: year <= earliestYear ? paper.inkMute : paper.ink,
+              color: year <= earliestYear ? paper.inkDim : paper.ink,
               cursor: year <= earliestYear ? "default" : "pointer",
               letterSpacing: 1,
             }}
@@ -609,7 +609,7 @@ function BalanceReceipt({ fullName, personId }: { fullName: string; personId: nu
               fontFamily: fontMono,
               fontSize: 10,
               fontWeight: 700,
-              color: year >= currentYear ? paper.inkMute : paper.ink,
+              color: year >= currentYear ? paper.inkDim : paper.ink,
               cursor: year >= currentYear ? "default" : "pointer",
               letterSpacing: 1,
             }}
@@ -676,7 +676,7 @@ function BalanceReceipt({ fullName, personId }: { fullName: string; personId: nu
                     : `− ${fmtMoney(Math.abs(owner_net))}`
                   : "—"
               }
-              color={owner_net !== null ? amtColor(owner_net) : paper.inkMute}
+              color={owner_net !== null ? amtColor(owner_net) : paper.inkDim}
               big
             />
 
@@ -688,7 +688,7 @@ function BalanceReceipt({ fullName, personId }: { fullName: string; personId: nu
                 value={`${signPrefix(-myRow.paid_amount)}${fmtMoney(myRow.paid_amount)}`}
               />
             ) : (
-              <ReceiptRow label={t("dashboard.not_yet_paid")} value="—" color={paper.inkMute} />
+              <ReceiptRow label={t("dashboard.not_yet_paid")} value="—" color={paper.inkDim} />
             )}
 
             {/* Balance = owner_net + paid_amount */}
@@ -783,7 +783,7 @@ function BalanceReceipt({ fullName, personId }: { fullName: string; personId: nu
                 value={`${signPrefix(-myRow.paid_amount)}${fmtMoney(myRow.paid_amount)}`}
               />
             ) : (
-              <ReceiptRow label={t("dashboard.not_yet_paid")} value="—" color={paper.inkMute} />
+              <ReceiptRow label={t("dashboard.not_yet_paid")} value="—" color={paper.inkDim} />
             )}
 
             {/* Balance row — only when a payment has been recorded */}
@@ -965,7 +965,7 @@ function CarLocations({
                   style={{
                     fontFamily: fontMono,
                     fontSize: 9,
-                    color: paper.inkMute,
+                    color: paper.inkDim,
                     letterSpacing: 1,
                     marginTop: 2,
                   }}
@@ -974,7 +974,7 @@ function CarLocations({
                 </div>
               </div>
               <div
-                style={{ fontFamily: fontMono, fontSize: 11, color: paper.inkMute, flexShrink: 0 }}
+                style={{ fontFamily: fontMono, fontSize: 11, color: paper.inkDim, flexShrink: 0 }}
               >
                 ›
               </div>
@@ -1193,7 +1193,7 @@ function DashboardContent() {
               style={{
                 fontFamily: fontMono,
                 fontSize: 11,
-                color: paper.inkMute,
+                color: paper.inkDim,
                 padding: "8px 0",
                 letterSpacing: 1,
               }}
@@ -1219,7 +1219,7 @@ function DashboardContent() {
               style={{
                 fontFamily: fontMono,
                 fontSize: 11,
-                color: paper.inkMute,
+                color: paper.inkDim,
                 padding: "8px 0",
                 letterSpacing: 1,
               }}
@@ -1243,7 +1243,7 @@ function DashboardContent() {
               style={{
                 fontFamily: fontMono,
                 fontSize: 11,
-                color: paper.inkMute,
+                color: paper.inkDim,
                 padding: "8px 0",
                 letterSpacing: 1,
               }}
@@ -1276,7 +1276,7 @@ function DashboardContent() {
           fontFamily: fontSerif,
           fontSize: 12,
           fontStyle: "italic",
-          color: paper.inkMute,
+          color: paper.inkDim,
           textAlign: "center",
           padding: "32px 32px 20px",
           lineHeight: 1.5,

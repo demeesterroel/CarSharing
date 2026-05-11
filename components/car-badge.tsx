@@ -5,7 +5,7 @@ export function CarBadge({ short, active = true }: { short: string; active?: boo
     <div
       style={{
         padding: "6px 8px",
-        background: active ? paper.ink : paper.inkMute,
+        background: active ? paper.ink : paper.inkDim,
         color: paper.paper,
         fontFamily: fontMono,
         fontSize: 11,

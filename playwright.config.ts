@@ -7,6 +7,7 @@ export default defineConfig({
   use: {
     baseURL,
     screenshot: "only-on-failure",
+    launchOptions: { slowMo: process.env.SLOW_MO ? parseInt(process.env.SLOW_MO) : 0 },
   },
   webServer: process.env.TEST_BASE_URL
     ? undefined

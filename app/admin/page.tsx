@@ -3,13 +3,21 @@ import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { paper, fontMono, fontSerif } from "@/lib/paper-theme";
 import { useT } from "@/components/locale-provider";
-import { useReservations, useOwnerCarShorts, useAdminSummary, usePeople, Card, Perf } from "./_shared";
+import {
+  useReservations,
+  useOwnerCarShorts,
+  useAdminSummary,
+  usePeople,
+  Card,
+  Perf,
+} from "./_shared";
 import { toast } from "sonner";
 import { CarBadge } from "@/components/car-badge";
 import { apiFetch } from "@/lib/api/client";
 import { useCreateTrip } from "@/hooks/use-trips";
 import type { KmGap } from "@/lib/queries/admin";
 import { shortNameOf } from "@/lib/person-utils";
+import { ShimmerBar, shimmerKeyframes } from "@/components/shimmer";
 
 function groupByYear<T extends { date?: string; after_date?: string }>(
   items: T[]
@@ -50,10 +58,12 @@ function SectionHeader({
   label,
   count,
   countSuffix,
+  isLoading,
 }: {
   label: string;
   count: number;
   countSuffix: string;
+  isLoading?: boolean;
 }) {
   return (
     <div
@@ -72,12 +82,55 @@ function SectionHeader({
       }}
     >
       <span>{label}</span>
-      {count > 0 && (
-        <span style={{ color: paper.accent }}>
-          {count} {countSuffix}
-        </span>
+      {isLoading ? (
+        <ShimmerBar width={40} height={12} />
+      ) : (
+        count > 0 && (
+          <span style={{ color: paper.accent }}>
+            {count} {countSuffix}
+          </span>
+        )
       )}
     </div>
+  );
+}
+
+function InboxCardSkeleton() {
+  return (
+    <Card style={{ marginBottom: 8 }}>
+      <div style={{ display: "flex", alignItems: "flex-start", gap: 12, marginBottom: 12 }}>
+        <ShimmerBar width={42} height={24} />
+        <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 7 }}>
+          <ShimmerBar width="55%" height={16} />
+          <ShimmerBar width="70%" height={10} />
+        </div>
+        <ShimmerBar width={60} height={14} />
+      </div>
+      <Perf margin="8px 0" />
+      <div style={{ display: "flex", gap: 8 }}>
+        <ShimmerBar width="50%" height={38} />
+        <ShimmerBar width="50%" height={38} />
+      </div>
+    </Card>
+  );
+}
+
+function GapCardSkeleton() {
+  return (
+    <Card style={{ borderLeft: `3px solid ${paper.paperDark}`, marginBottom: 8 }}>
+      <div style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
+        <ShimmerBar width={42} height={24} />
+        <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 7 }}>
+          <ShimmerBar width="60%" height={16} />
+          <ShimmerBar width="75%" height={9} />
+          <div style={{ marginTop: 8, display: "flex", flexDirection: "column", gap: 5 }}>
+            <ShimmerBar width="80%" height={10} />
+            <ShimmerBar width="65%" height={10} />
+            <ShimmerBar width="78%" height={10} />
+          </div>
+        </div>
+      </div>
+    </Card>
   );
 }
 
@@ -87,9 +140,9 @@ export default function AdminInboxPage() {
   const qc = useQueryClient();
   const year = new Date().getFullYear();
 
-  const { data: reservations = [] } = useReservations();
+  const { data: reservations = [], isLoading: isResLoading } = useReservations();
   const ownerCarShorts = useOwnerCarShorts();
-  const { data: adminData } = useAdminSummary(year);
+  const { data: adminData, isLoading: isAdminLoading } = useAdminSummary(year);
   const { data: people = [] } = usePeople();
   const createTrip = useCreateTrip();
 
@@ -148,14 +201,23 @@ export default function AdminInboxPage() {
 
   return (
     <div style={{ padding: "16px" }}>
+      <style>{shimmerKeyframes}</style>
+
       {/* ── Open reservations ─────────────────────────────── */}
       <SectionHeader
         label={t("admin.sub_inbox")}
         count={pending.length}
         countSuffix={t("admin.pending_badge").toLowerCase()}
+        isLoading={isResLoading}
       />
 
-      {pending.length === 0 ? (
+      {isResLoading ? (
+        <div data-testid="admin-inbox-skeleton">
+          {Array.from({ length: 2 }).map((_, i) => (
+            <InboxCardSkeleton key={i} />
+          ))}
+        </div>
+      ) : pending.length === 0 ? (
         <div
           style={{
             padding: "12px 0 4px",
@@ -280,9 +342,16 @@ export default function AdminInboxPage() {
         label={t("admin.km_gaps_title")}
         count={gaps.length}
         countSuffix={t("admin.gaps_count")}
+        isLoading={isAdminLoading}
       />
 
-      {gaps.length === 0 ? (
+      {isAdminLoading ? (
+        <div data-testid="admin-gaps-skeleton">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <GapCardSkeleton key={i} />
+          ))}
+        </div>
+      ) : gaps.length === 0 ? (
         <div
           style={{
             padding: "12px 0 4px",

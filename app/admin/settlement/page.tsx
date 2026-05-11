@@ -25,14 +25,16 @@ function fmtDetail(
   settledFuelLiters?: number,
   settledExpAmt?: number
 ): string {
+  const hasFuelSettled = (settledFuelLiters ?? 0) > 0.05;
+  const hasExpSettled = (settledExpAmt ?? 0) > 0.005;
   const parts: string[] = [];
   if (km > 0) parts.push(`+${km} km`);
   if (liters > 0.05) {
-    const star = (settledFuelLiters ?? 0) > 0.05 ? "(*)" : "";
+    const star = hasFuelSettled ? " (*)" : "";
     parts.push(`−${fmtL(liters)} L${star}`);
   }
   if (expAmt > 0.005) {
-    const star = (settledExpAmt ?? 0) > 0.005 ? "(*)" : "";
+    const star = hasExpSettled ? (hasFuelSettled ? " (**)" : " (*)") : "";
     parts.push(`− € ${expAmt.toFixed(2).replace(".", ",")}${star}`);
   }
   return parts.length > 0 ? `(${parts.join(", ")})` : "";
@@ -53,23 +55,31 @@ function SettledNote({
   const fuelHas = fuelLiters > 0.05;
   const expHas = expAmt > 0.005;
   if (!fuelHas && !expHas) return null;
-  const parts: string[] = [];
-  if (fuelHas)
-    parts.push(`${fuelCount} tankbeurt${fuelCount !== 1 ? "en" : ""} (${fmtL(fuelLiters)} L)`);
-  if (expHas) parts.push(`${expCount} kost${expCount !== 1 ? "en" : ""} (${fmtMoney(expAmt)})`);
+  const expPrefix = fuelHas ? "(**)" : "(*)";
+  const noteStyle: React.CSSProperties = {
+    fontFamily: fontMono,
+    fontSize: 8,
+    color: paper.inkMute,
+    paddingLeft: 16,
+    marginTop: 4,
+    fontStyle: "italic",
+  };
   return (
-    <div
-      style={{
-        fontFamily: fontMono,
-        fontSize: 8,
-        color: paper.inkMute,
-        paddingLeft: 16,
-        marginTop: 6,
-        fontStyle: "italic",
-      }}
-    >
-      {"(*) "}
-      {parts.join(" en ")} {t("settlement.settled_outside_note")}
+    <div style={{ marginTop: 6 }}>
+      {fuelHas && (
+        <div style={noteStyle}>
+          {"(*) "}
+          {fuelCount} tankbeurt{fuelCount !== 1 ? "en" : ""} ({fmtL(fuelLiters)} L){" "}
+          {t("settlement.settled_outside_note")}
+        </div>
+      )}
+      {expHas && (
+        <div style={noteStyle}>
+          {expPrefix}{" "}
+          {expCount} kost{expCount !== 1 ? "en" : ""} ({fmtMoney(expAmt)}){" "}
+          {t("settlement.settled_outside_note")}
+        </div>
+      )}
     </div>
   );
 }
@@ -694,7 +704,7 @@ function MemberCard({
                   )}
                   {item.row.fuel_liters > 0 && (
                     <BreakdownCarRow
-                      car={`brandstof (${fmtL(item.row.fuel_liters)} L)`}
+                      car={`brandstof (${fmtL(item.row.fuel_liters)} L)${item.row.fuel_settled_liters > 0.05 ? " (*)" : ""}`}
                       detail={null}
                       amount={`+ ${fmtMoney(item.row.fuel_amount)}`}
                       amountColor={paper.green}
@@ -702,7 +712,7 @@ function MemberCard({
                   )}
                   {item.row.expense_amount > 0 && (
                     <BreakdownCarRow
-                      car="kosten"
+                      car={`kosten${item.row.expense_settled_amount > 0.005 ? (item.row.fuel_settled_liters > 0.05 ? " (**)" : " (*)") : ""}`}
                       detail={null}
                       amount={`+ ${fmtMoney(item.row.expense_amount)}`}
                       amountColor={paper.green}
@@ -741,7 +751,7 @@ function MemberCard({
                 )}
                 {era.expense_amount > 0 && (
                   <BreakdownCarRow
-                    car={`${t("settlement.breakdown_costs")}${(era.expense_settled_amount ?? 0) > 0.005 ? " (*)" : ""}`}
+                    car={`${t("settlement.breakdown_costs")}${(era.expense_settled_amount ?? 0) > 0.005 ? ((era.fuel_settled_liters ?? 0) > 0.05 ? " (**)" : " (*)") : ""}`}
                     detail={null}
                     amount={`+ ${fmtMoney(era.expense_amount)}`}
                     amountColor={paper.green}

@@ -24,9 +24,9 @@ Choose a password (minimum 8 characters), confirm it, and click **Set password**
 
 ## 2. Setting up your profile
 
-After logging in, open your profile via the **profile icon** in the top-right corner of any page.
+After logging in, hover over your **name** in the top-right corner of any page to reveal the pencil icon, then click it.
 
-![Profile icon in the top-right navbar](screenshots/member-03-profile-menu.png)
+![Hover over your name to reveal the edit pencil](screenshots/member-03-profile-menu.png)
 
 Fill in two required fields:
 
@@ -43,19 +43,22 @@ Save your changes. You can update these at any time.
 
 ## 3. Dashboard
 
-The dashboard is your home page. It shows your recent trips, fuel entries, and a running cost summary for all cars you have access to.
+The dashboard is your home page. It shows an overview of all cars you have access to.
 
 ![Full dashboard view](screenshots/member-05-dashboard.png)
+
+The dashboard contains:
+
+- **Balance** — your running cost balance across all cars
+- **Car locations** — where each car is currently parked
+- **Recent trips, fuel, and expenses** — the latest entries with an **All** link to the full page
+- **Upcoming reservations** — your next confirmed and pending reservations
 
 ### Year summary
 
 Scroll down to see a breakdown by year — total distance driven, fuel cost, and your share of expenses.
 
 ![Dashboard year summary section](screenshots/member-06-dashboard-filters.png)
-
-### Filters
-
-Use the filter buttons at the top to narrow the view by car or by year.
 
 ---
 
@@ -67,17 +70,19 @@ The trips page lists all recorded drives.
 
 ### Filters
 
-| Filter     | Description                     |
-| ---------- | ------------------------------- |
-| **Car**    | Show trips for one car only     |
-| **Year**   | Limit to a specific year        |
-| **Driver** | Show trips by a specific member |
+| Filter   | Description                 |
+| -------- | --------------------------- |
+| **Car**  | Show trips for one car only |
+| **Year** | Limit to a specific year    |
+| **Mine** | Show only your own trips    |
 
 ![Trips filter panel open](screenshots/member-08-trips-filters.png)
 
-Each trip card shows: date, driver, car, distance (km), and any notes.
+Each trip card shows: destination, driver, date, odometer range, and cost. Click a trip to view and edit its details.
 
 ![Single trip card](screenshots/member-09-trip-card.png)
+
+![Trip detail view](screenshots/member-34-trip-detail.png)
 
 ---
 
@@ -93,12 +98,15 @@ The fuel page lists all recorded fill-ups.
 | -------- | ---------------------------------- |
 | **Car**  | Show fuel entries for one car only |
 | **Year** | Limit to a specific year           |
+| **Mine** | Show only fill-ups you paid for    |
 
 ![Fuel filter panel open](screenshots/member-11-fuel-filters.png)
 
-Each fuel entry shows: date, car, litres, price per litre, total cost, and who paid.
+Each fuel entry shows: date, car, litres, price per litre, total cost, and who paid. Click an entry to view and edit its details.
 
 ![Single fuel card](screenshots/member-12-fuel-card.png)
+
+![Fuel detail view](screenshots/member-35-fuel-detail.png)
 
 ---
 
@@ -118,9 +126,11 @@ The expenses page lists all one-off costs — parking fees, maintenance contribu
 
 ![Expenses filter panel open](screenshots/member-14-cost-filters.png)
 
-Each expense card shows: date, car, amount, description, and category.
+Each expense card shows: date, car, amount, description, and category. Click an expense to view and edit its details.
 
 ![Single expense card](screenshots/member-23-expense-card.png)
+
+![Expense detail view](screenshots/member-36-expense-detail.png)
 
 ---
 
@@ -129,6 +139,20 @@ Each expense card shows: date, car, amount, description, and category.
 The reservations page lets you request dates for a car in advance. The car owner confirms or rejects requests.
 
 ![Reservations page — timeline and upcoming list](screenshots/member-24-reservation-list.png)
+
+The timeline uses these indicators:
+
+| Symbol | Meaning               |
+| ------ | --------------------- |
+| □      | Day is available      |
+| ▦      | Pending reservation   |
+| ■      | Confirmed reservation |
+
+### Viewing and editing a reservation
+
+Tap any reservation card in the Upcoming list to open it. You can change the dates, car, or note — or cancel the reservation.
+
+![Reservation detail view](screenshots/member-37-reservation-detail.png)
 
 ### Creating a reservation
 

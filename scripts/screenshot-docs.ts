@@ -204,15 +204,24 @@ async function main() {
     await shot(page, "admin-01-invite-link.png");
   }
 
-  // Switch to alice for shots 03-33
-  if (START_FROM <= 33 && END_AT >= 3) {
+  // Switch to alice for shots 03-37
+  if (START_FROM <= 37 && END_AT >= 3) {
     await login(page, "alice", "alice");
   }
 
-  // ── 03. Profile icon in navbar ────────────────────────────────────────────
+  // ── 03. Username in navbar — hover to reveal pencil ──────────────────────
   if (shouldRun(3)) {
     await page.goto(`${BASE_URL}/`);
     await idle(page);
+    // Hover over the name link to reveal pencil icon (React synthetic event — use evaluate)
+    const nameLink = page.locator('a[href*="/user/"]').first();
+    await nameLink.waitFor({ state: "visible" });
+    await nameLink.evaluate((el: HTMLElement) => {
+      el.style.textDecoration = "underline";
+      const pencil = el.querySelector("span");
+      if (pencil) (pencil as HTMLElement).style.opacity = "0.6";
+    });
+    await page.waitForTimeout(200);
     await shot(page, "member-03-profile-menu.png");
   }
 
@@ -248,24 +257,17 @@ async function main() {
     await shot(page, "member-07-trips.png");
   }
 
-  // ── 08. Trips filters — click AA car filter ────────────────────────────────
+  // ── 08. Trips filters — year 2024, mine, car CC ───────────────────────────
   if (shouldRun(8)) {
-    if (!shouldRun(7)) {
-      await page.goto(`${BASE_URL}/trips`);
-      await idle(page);
-    }
-    const tripFilterAA = page.locator("button").filter({ hasText: /^AA$/ }).first();
-    if ((await tripFilterAA.count()) > 0) {
-      await tripFilterAA.click();
-      await page.waitForTimeout(500);
-    }
+    await page.goto(`${BASE_URL}/trips?year=2024&mine=true&car=CC`);
+    await idle(page);
     await shot(page, "member-08-trips-filters.png");
   }
 
   // ── 09. Single trip card ───────────────────────────────────────────────────
   if (shouldRun(9)) {
-    if (!shouldRun(7) && !shouldRun(8)) {
-      await page.goto(`${BASE_URL}/trips`);
+    if (!shouldRun(8)) {
+      await page.goto(`${BASE_URL}/trips?year=2024&mine=true&car=CC`);
       await idle(page);
     }
     await page.evaluate(() => window.scrollTo(0, 100));
@@ -280,24 +282,17 @@ async function main() {
     await shot(page, "member-10-fuel.png");
   }
 
-  // ── 11. Fuel filters — click AA car filter ─────────────────────────────────
+  // ── 11. Fuel filters — year 2024, mine, car CC ────────────────────────────
   if (shouldRun(11)) {
-    if (!shouldRun(10)) {
-      await page.goto(`${BASE_URL}/fuel`);
-      await idle(page);
-    }
-    const fuelFilterAA = page.locator("button").filter({ hasText: /^AA$/ }).first();
-    if ((await fuelFilterAA.count()) > 0) {
-      await fuelFilterAA.click();
-      await page.waitForTimeout(500);
-    }
+    await page.goto(`${BASE_URL}/fuel?year=2024&mine=true&car=CC`);
+    await idle(page);
     await shot(page, "member-11-fuel-filters.png");
   }
 
   // ── 12. Single fuel card ───────────────────────────────────────────────────
   if (shouldRun(12)) {
-    if (!shouldRun(10) && !shouldRun(11)) {
-      await page.goto(`${BASE_URL}/fuel`);
+    if (!shouldRun(11)) {
+      await page.goto(`${BASE_URL}/fuel?year=2024&mine=true&car=CC`);
       await idle(page);
     }
     await page.evaluate(() => window.scrollTo(0, 100));
@@ -312,20 +307,10 @@ async function main() {
     await shot(page, "member-13-cost.png");
   }
 
-  // ── 14. Expense filters — click MINE filter ────────────────────────────────
+  // ── 14. Expense filters — year 2024, mine, car CC ─────────────────────────
   if (shouldRun(14)) {
-    if (!shouldRun(13)) {
-      await page.goto(`${BASE_URL}/expenses`);
-      await idle(page);
-    }
-    const expFilterMine = page
-      .locator("button")
-      .filter({ hasText: /^MINE$|^MIJN$/i })
-      .first();
-    if ((await expFilterMine.count()) > 0) {
-      await expFilterMine.click();
-      await page.waitForTimeout(500);
-    }
+    await page.goto(`${BASE_URL}/expenses?year=2024&mine=true&car=CC`);
+    await idle(page);
     await shot(page, "member-14-cost-filters.png");
   }
 
@@ -713,6 +698,79 @@ async function main() {
       await page.waitForTimeout(200);
     }
     await shot(page, "member-33-fab-add-reservation.png");
+  }
+
+  // ── 34. Trip detail — first trip card opened ──────────────────────────────
+  if (shouldRun(34)) {
+    await page.goto(`${BASE_URL}/trips`);
+    await idle(page);
+    const tripCard = page
+      .locator("button")
+      .filter({ hasText: /\d+ km/i })
+      .first();
+    await tripCard.waitFor({ state: "visible", timeout: 5000 });
+    await tripCard.click();
+    await page.waitForSelector('[role="dialog"]', { state: "visible", timeout: 5000 });
+    await page.waitForTimeout(400);
+    await shot(page, "member-34-trip-detail.png");
+    await page.keyboard.press("Escape");
+    await page.waitForTimeout(300);
+  }
+
+  // ── 35. Fuel detail — first fuel card opened ──────────────────────────────
+  if (shouldRun(35)) {
+    await page.goto(`${BASE_URL}/fuel`);
+    await idle(page);
+    const fuelCard = page
+      .locator("button")
+      .filter({ hasText: /\d+\.\d+L/i })
+      .first();
+    await fuelCard.waitFor({ state: "visible", timeout: 5000 });
+    await fuelCard.click();
+    await page.waitForSelector('[role="dialog"]', { state: "visible", timeout: 5000 });
+    await page.waitForTimeout(400);
+    await shot(page, "member-35-fuel-detail.png");
+    await page.keyboard.press("Escape");
+    await page.waitForTimeout(300);
+  }
+
+  // ── 36. Expense detail — first expense card opened ────────────────────────
+  if (shouldRun(36)) {
+    await page.goto(`${BASE_URL}/expenses`);
+    await idle(page);
+    // Expense cards are buttons with € amounts (fmtMoney uses € ); filter buttons show car names
+    const expenseCard = page.locator("button").filter({ hasText: /€/ }).first();
+    await expenseCard.waitFor({ state: "visible", timeout: 5000 });
+    await expenseCard.click();
+    await page.waitForSelector('[role="dialog"]', { state: "visible", timeout: 5000 });
+    await page.waitForTimeout(400);
+    await shot(page, "member-36-expense-detail.png");
+    await page.keyboard.press("Escape");
+    await page.waitForTimeout(300);
+  }
+
+  // ── 37. Reservation detail — first upcoming reservation opened ────────────
+  if (shouldRun(37)) {
+    await page.goto(`${BASE_URL}/calendar`);
+    await idle(page);
+    // Scroll to upcoming list at bottom
+    await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+    await page.waitForTimeout(400);
+    // Reservation cards show Nd day count (e.g. "3d"); filter buttons do not
+    const resCard = page.locator("button").filter({ hasText: /\d+d/ }).first();
+    if ((await resCard.count()) > 0) {
+      await resCard.click();
+      // Edit opens via URL ?edit=<id> — wait for URL to update
+      await page.waitForURL(/[?&]edit=/, { timeout: 5000 });
+      await page.waitForTimeout(600);
+      await shot(page, "member-37-reservation-detail.png");
+      // Close by clicking the X button inside the form
+      const closeBtn = page.locator("button[aria-label]").first();
+      await closeBtn.click({ force: true }).catch(() => {});
+      await page.waitForTimeout(300);
+    } else {
+      await shot(page, "member-37-reservation-detail.png");
+    }
   }
 
   // ── Owner guide ─────────────────────────────────────────────────────────────

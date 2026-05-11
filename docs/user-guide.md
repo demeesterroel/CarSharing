@@ -66,6 +66,8 @@ Scroll down to see a overview of latest info.
 
 The trips page lists all recorded drives.
 
+Each trip card shows: destination, driver, date, odometer range, and cost. Click a trip to view and edit its details.
+
 ![Trips page full view](screenshots/member-07-trips.png)
 
 ### Filters
@@ -77,10 +79,6 @@ The trips page lists all recorded drives.
 | **Mine** | Show only your own trips    |
 
 ![Trips filter panel open](screenshots/member-08-trips-filters.png)
-
-Each trip card shows: destination, driver, date, odometer range, and cost. Click a trip to view and edit its details.
-
-![Single trip card](screenshots/member-09-trip-card.png)
 
 ![Trip detail view](screenshots/member-34-trip-detail.png)
 

@@ -550,17 +550,25 @@ function MemberCard({
         const sec = [row(era.car_short, era.balance >= 0 ? "+" : "−", Math.abs(era.balance))];
         if (era.trip_km > 0)
           sec.push(row(`  ${t("page.trips")} (${era.trip_km} km)`, "−", era.trip_amount, WC));
+        const hasFuelStar = (era.fuel_settled_liters ?? 0) > 0.05;
+        const hasExpStar = (era.expense_settled_amount ?? 0) > 0.005;
         if (era.fuel_liters > 0)
           sec.push(
             row(
-              `  ${t("settlement.breakdown_fuel")} (${fmtL(era.fuel_liters)} L)`,
+              `  ${t("settlement.breakdown_fuel")} (${fmtL(era.fuel_liters)} L)${hasFuelStar ? " (*)" : ""}`,
               "+",
               era.fuel_amount,
               WC
             )
           );
         if (era.expense_amount > 0)
-          sec.push(row(`  ${t("settlement.breakdown_costs")}`, "+", era.expense_amount, WC));
+          sec.push(row(`  ${t("settlement.breakdown_costs")}${hasExpStar ? (hasFuelStar ? " (**)" : " (*)") : ""}`, "+", era.expense_amount, WC));
+        if (hasFuelStar)
+          sec.push(`  (*) ${era.fuel_settled_count} tankbeurt${(era.fuel_settled_count ?? 0) !== 1 ? "en" : ""} (${fmtL(era.fuel_settled_liters ?? 0)} L) buiten afrekening`);
+        if (hasExpStar) {
+          const prefix = hasFuelStar ? "(**)" : "(*)";
+          sec.push(`  ${prefix} ${era.expense_settled_count} kost${(era.expense_settled_count ?? 0) !== 1 ? "en" : ""} buiten afrekening`);
+        }
         sections.push(sec.join("\n"));
       }
     }
@@ -936,12 +944,21 @@ function generateSettlementMd(data: import("@/types").SettlementResult, year: nu
   for (const m of [...nonOwners].sort((a, b) => a.person_name.localeCompare(b.person_name, "nl"))) {
     lines.push(`### ${m.person_name}  ${sign(m.s1 ?? 0)}`);
     for (const e of m.car_eras) {
+      const hasFuelStar = (e.fuel_settled_liters ?? 0) > 0.05;
+      const hasExpStar = (e.expense_settled_amount ?? 0) > 0.005;
       lines.push(`- **${e.car_name}** (${e.owner_name})`);
       lines.push(`  - Ritten: ${e.trip_km} km · € ${fmt(e.trip_amount)}`);
       if (e.fuel_amount)
-        lines.push(`  - Brandstof: ${fmtL(e.fuel_liters)} L · € ${fmt(e.fuel_amount)}`);
-      if (e.expense_amount) lines.push(`  - Kosten: € ${fmt(e.expense_amount)}`);
+        lines.push(`  - Brandstof: ${fmtL(e.fuel_liters)} L · € ${fmt(e.fuel_amount)}${hasFuelStar ? " (*)" : ""}`);
+      if (e.expense_amount)
+        lines.push(`  - Kosten: € ${fmt(e.expense_amount)}${hasExpStar ? (hasFuelStar ? " (**)" : " (*)") : ""}`);
       lines.push(`  - Saldo: ${sign(e.balance)}`);
+      if (hasFuelStar)
+        lines.push(`  - _(*) ${e.fuel_settled_count} tankbeurt${(e.fuel_settled_count ?? 0) !== 1 ? "en" : ""} (${fmtL(e.fuel_settled_liters ?? 0)} L) buiten afrekening_`);
+      if (hasExpStar) {
+        const prefix = hasFuelStar ? "(**)" : "(*)";
+        lines.push(`  - _(${prefix}) ${e.expense_settled_count} kost${(e.expense_settled_count ?? 0) !== 1 ? "en" : ""} (€ ${fmt(e.expense_settled_amount ?? 0)}) buiten afrekening_`);
+      }
     }
   }
 
@@ -980,13 +997,22 @@ function generateSettlementMd(data: import("@/types").SettlementResult, year: nu
           (r) => r.row_type === "cross_owner" && r.person_name === m.person_name
         );
         if (!row) continue;
+        const rHasFuelStar = row.fuel_settled_liters > 0.05;
+        const rHasExpStar = row.expense_settled_amount > 0.005;
         lines.push(`- **${cs.car_name}** (${cs.owner_name})`);
         if (row.trip_km > 0)
           lines.push(`  - Ritten: ${row.trip_km} km · € ${fmt(row.trip_amount)}`);
         if (row.fuel_liters > 0.05)
-          lines.push(`  - Brandstof: ${fmtL(row.fuel_liters)} L · € ${fmt(row.fuel_amount)}`);
-        if (row.expense_amount > 0.005) lines.push(`  - Kosten: € ${fmt(row.expense_amount)}`);
+          lines.push(`  - Brandstof: ${fmtL(row.fuel_liters)} L · € ${fmt(row.fuel_amount)}${rHasFuelStar ? " (*)" : ""}`);
+        if (row.expense_amount > 0.005)
+          lines.push(`  - Kosten: € ${fmt(row.expense_amount)}${rHasExpStar ? (rHasFuelStar ? " (**)" : " (*)") : ""}`);
         lines.push(`  - Saldo: ${sign(row.balance)}`);
+        if (rHasFuelStar)
+          lines.push(`  - _(*) ${row.fuel_settled_count} tankbeurt${row.fuel_settled_count !== 1 ? "en" : ""} (${fmtL(row.fuel_settled_liters)} L) buiten afrekening_`);
+        if (rHasExpStar) {
+          const prefix = rHasFuelStar ? "(**)" : "(*)";
+          lines.push(`  - _(${prefix}) ${row.expense_settled_count} kost${row.expense_settled_count !== 1 ? "en" : ""} (€ ${fmt(row.expense_settled_amount)}) buiten afrekening_`);
+        }
       }
       lines.push(`- **Gebruik andere wagens: ${sign(s1c)}**`);
       lines.push(`- **Netto: ${sign(net)}**`);

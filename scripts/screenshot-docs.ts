@@ -573,7 +573,7 @@ async function main() {
   console.log("\n[owner guide]");
 
   if (START_FROM <= 112 && END_AT >= 100) {
-    await login(page, "admin", "admin");
+    await login(page, "owner", "owner");
   }
 
   // ── 100. Inbox — pending reservations ─────────────────────────────────────

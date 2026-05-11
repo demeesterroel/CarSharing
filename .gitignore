@@ -51,3 +51,4 @@ public/workbox-*.js.map
 .worktrees/
 data
 coverage/
+test-results/

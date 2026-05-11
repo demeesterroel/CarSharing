@@ -2,7 +2,7 @@
 
 This guide walks you through using the car sharing app as a member — from accepting your invite to logging trips and reading your costs.
 
-> Looking for the admin documentation? See the [Owner Guide](owner-guide.md).
+> Looking for the car owner documentation? See the [Owner Guide](owner-guide.md).
 
 ---
 

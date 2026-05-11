@@ -111,3 +111,34 @@ Click **Send message** next to a member row to copy a pre-filled payment message
 Once all transfers are confirmed, click **Finalize settlement** to close the period. Finalized settlements are archived and excluded from future calculations. A finalized settlement can be reopened with **Reopen settlement** if corrections are needed.
 
 ![Settlement — Finalize settlement button](screenshots/owner-112-settlement-lock.png)
+
+### Year navigation bar controls
+
+Two extra buttons appear in the year navigation bar when settlement data is loaded:
+
+- **Top-left ⚠ / ≡ button** — toggles between two views:
+  - **⚠ (default)**: only cards with problems (outstanding or unconfirmed transfers) are shown as expandable. Fully-paid members appear as compact rows.
+  - **≡ (show all)**: every member card is shown in full, including members who have already paid. Use this to review or compare all members at once.
+- **Top-right ↓ button** — downloads the settlement summary as a Markdown (`.md`) file. Useful for archiving or sharing outside the app.
+
+![Settlement — all member cards expanded via ⚠ button](screenshots/owner-113-settlement-expanded.png)
+
+### Member card detail
+
+Click any member's name to expand their card and see a full breakdown of how their balance was calculated:
+
+- **Non-owner members** see a per-car breakdown: km driven, fuel used, and expenses, grouped by vehicle.
+- **SALDO** shows the final net amount they owe or are owed.
+- **Payment status** shows what has been paid, what is outstanding, and the payment date if confirmed.
+
+![Settlement — member card expanded (Alice, fully paid)](screenshots/owner-114-settlement-member-card.png)
+
+### Owner card detail
+
+Car owners see additional sections in their expanded card:
+
+- **Cross-car trips** (AA, CC, …) — trips driven in cars that belong to other owners. The owner pays their share of those costs.
+- **Own car — BB** — the co-op's contribution from members who drove the owner's car. Each member's km, fuel, and expenses are listed individually.
+- The owner's own trips in their own car are excluded from the settlement (owner's pocket).
+
+![Settlement — owner card expanded with own-car breakdown](screenshots/owner-115-settlement-owner-card.png)

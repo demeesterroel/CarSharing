@@ -4,6 +4,8 @@ import { mkdirSync } from "fs";
 import path from "path";
 import { runMigrations } from "../lib/db/migrate.js";
 import { calcTripAmount, calcPricePerLiter } from "../lib/formulas.js";
+import { getSettlement } from "../lib/queries/settlement.js";
+import { shortNameOf } from "../lib/person-utils.js";
 
 const DB_PATH = process.env.DB_PATH ?? path.join(process.cwd(), "data", "carsharing.db");
 mkdirSync(path.dirname(DB_PATH), { recursive: true });
@@ -34,11 +36,11 @@ const pick = <T>(arr: readonly T[] | T[]): T => arr[Math.floor(rng() * arr.lengt
 const YEARS = [2021, 2022, 2023, 2024, 2025, 2026];
 
 const PEOPLE = [
-  { name: "Admin One", username: "admin", password: "admin", is_admin: 1, discount: 0, discount_long: 0, bank_account: "BE00 0000 0000 0001", email: "admin@demo.local" },
-  { name: "Owner Two", username: "owner", password: "owner", is_admin: 0, discount: 0, discount_long: 0, bank_account: "BE00 0000 0000 0002", email: "owner@demo.local" },
-  { name: "Alice Smith", username: "alice", password: "alice", is_admin: 0, discount: 0, discount_long: 0, bank_account: "BE00 0000 0000 0003", email: "alice@demo.local" },
-  { name: "Bob Jones", username: "bob", password: "bob", is_admin: 0, discount: 0.25, discount_long: 0.50, bank_account: "BE00 0000 0000 0004", email: "bob@demo.local" },
-  { name: "Carol Brown", username: "carol", password: "carol", is_admin: 0, discount: 0.25, discount_long: 0.50, bank_account: "BE00 0000 0000 0005", email: "carol@demo.local" },
+  { first_name: "Admin", last_name: "One",   username: "admin", password: "admin", is_admin: 1, discount: 0,    discount_long: 0,    bank_account: "BE00 0000 0000 0001", email: "admin@demo.local" },
+  { first_name: "Owner", last_name: "Two",   username: "owner", password: "owner", is_admin: 0, discount: 0,    discount_long: 0,    bank_account: "BE00 0000 0000 0002", email: "owner@demo.local" },
+  { first_name: "Alice", last_name: "Smith", username: "alice", password: "alice", is_admin: 0, discount: 0,    discount_long: 0,    bank_account: "BE00 0000 0000 0003", email: "alice@demo.local" },
+  { first_name: "Bob",   last_name: "Jones", username: "bob",   password: "bob",   is_admin: 0, discount: 0.25, discount_long: 0.50, bank_account: "BE00 0000 0000 0004", email: "bob@demo.local"   },
+  { first_name: "Carol", last_name: "Brown", username: "carol", password: "carol", is_admin: 0, discount: 0.25, discount_long: 0.50, bank_account: "BE00 0000 0000 0005", email: "carol@demo.local" },
 ] as const;
 
 const CARS = [
@@ -66,18 +68,18 @@ console.log("Seeding people...");
 
 const insertPerson = db.prepare(`
   INSERT OR IGNORE INTO people
-    (name, username, password_hash, is_admin, discount, discount_long, bank_account, email, active)
-  VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1)
+    (first_name, last_name, username, password_hash, is_admin, discount, discount_long, bank_account, email, active)
+  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 1)
 `);
 const updatePerson = db.prepare(`
-  UPDATE people SET name = ?, is_admin = ?, discount = ?, discount_long = ?, bank_account = ?, email = ? WHERE username = ?
+  UPDATE people SET first_name = ?, last_name = ?, is_admin = ?, discount = ?, discount_long = ?, bank_account = ?, email = ? WHERE username = ?
 `);
 
 db.transaction(() => {
   for (const p of PEOPLE) {
     const hash = bcrypt.hashSync(p.password, 10);
-    insertPerson.run(p.name, p.username, hash, p.is_admin, p.discount, p.discount_long, p.bank_account, p.email);
-    updatePerson.run(p.name, p.is_admin, p.discount, p.discount_long, p.bank_account, p.email, p.username);
+    insertPerson.run(p.first_name, p.last_name, p.username, hash, p.is_admin, p.discount, p.discount_long, p.bank_account, p.email);
+    updatePerson.run(p.first_name, p.last_name, p.is_admin, p.discount, p.discount_long, p.bank_account, p.email, p.username);
   }
 })();
 
@@ -101,11 +103,11 @@ console.log(`  → ${PEOPLE.length} people`);
 console.log("Seeding cars...");
 
 const insertCar = db.prepare(`
-  INSERT OR IGNORE INTO cars (short, name, price_per_km, owner_person_id, owner_name, owner_from, active)
-  VALUES (?, ?, ?, ?, ?, ?, ?)
+  INSERT OR IGNORE INTO cars (short, name, price_per_km, owner_person_id, owner_from, active)
+  VALUES (?, ?, ?, ?, ?, ?)
 `);
 const updateCar = db.prepare(`
-  UPDATE cars SET name = ?, price_per_km = ?, owner_person_id = ?, owner_name = ?, owner_from = ?, active = ? WHERE short = ?
+  UPDATE cars SET name = ?, price_per_km = ?, owner_person_id = ?, owner_from = ?, active = ? WHERE short = ?
 `);
 
 const OWNER_FROM = "2020-01-01";
@@ -113,9 +115,8 @@ const OWNER_FROM = "2020-01-01";
 db.transaction(() => {
   for (const c of CARS) {
     const ownerId = personIdByUsername[c.owner_username];
-    const ownerName = PEOPLE.find(p => p.username === c.owner_username)?.name ?? null;
-    insertCar.run(c.short, c.name, c.price_per_km, ownerId, ownerName, OWNER_FROM, c.active);
-    updateCar.run(c.name, c.price_per_km, ownerId, ownerName, OWNER_FROM, c.active, c.short);
+    insertCar.run(c.short, c.name, c.price_per_km, ownerId, OWNER_FROM, c.active);
+    updateCar.run(c.name, c.price_per_km, ownerId, OWNER_FROM, c.active, c.short);
   }
 })();
 
@@ -328,77 +329,45 @@ console.log(`  → ${expensesTotal} expenses`);
 }
 
 // ── 6. Payments ───────────────────────────────────────────────────────────────
+// 2023: all transfers fully paid (settlement will be finalized).
+// 2024: all transfers paid EXCEPT Owner — they still have an outstanding balance.
 
 console.log("Seeding payments...");
-function getPersonYearBalance(personId: number, year: number): number {
-  const trips = (sumTripsByPersonYear.get(personId, String(year)) as { t: number }).t;
-  const fuel = (sumFuelByPersonYear.get(personId, String(year)) as { t: number }).t;
-  const expenses = (sumExpensesByPersonYear.get(personId, String(year)) as { t: number }).t;
-  return -trips + fuel + expenses;
-}
 
-const sumTripsByPersonYear = db.prepare(
-  "SELECT COALESCE(SUM(amount), 0) AS t FROM trips WHERE person_id = ? AND date LIKE ? || '%'"
-);
-const sumFuelByPersonYear = db.prepare(
-  "SELECT COALESCE(SUM(amount), 0) AS t FROM fuel_fillups WHERE person_id = ? AND date LIKE ? || '%'"
-);
-const sumExpensesByPersonYear = db.prepare(
-  "SELECT COALESCE(SUM(amount), 0) AS t FROM expenses WHERE person_id = ? AND date LIKE ? || '%'"
+const deletePaymentsByYear = db.prepare("DELETE FROM payments WHERE year = ?");
+const insertPayment = db.prepare(
+  "INSERT INTO payments (person_id, date, amount, note, year) VALUES (?, ?, ?, ?, ?)"
 );
 
-const checkPayments = db.prepare(
-  "SELECT COUNT(*) AS n FROM payments WHERE person_id = ? AND year = ?"
-);
-const insertPayment = db.prepare(`
-  INSERT INTO payments (person_id, date, amount, note, year)
-  VALUES (?, ?, ?, ?, ?)
-`);
+interface PersonRow { id: number; first_name: string; last_name: string; username: string | null; }
+const allPeople = db.prepare("SELECT id, first_name, last_name, username FROM people").all() as PersonRow[];
+const personByShort = new Map<string, number>(allPeople.map(p => [shortNameOf(p), p.id]));
+const ownerPersonId = personIdByUsername["owner"];
 
-const aliceId = personIdByUsername["alice"];
-const carolId = personIdByUsername["carol"];
 let paymentsTotal = 0;
 
-for (const year of YEARS) {
-  if (year === 2025) continue;
-  const existing = (checkPayments.get(aliceId, year) as { n: number }).n;
-  if (existing > 0) continue;
+for (const { year, skipPersonIds } of [
+  { year: 2023, skipPersonIds: new Set<number>() },
+  { year: 2024, skipPersonIds: new Set([ownerPersonId]) },
+]) {
+  deletePaymentsByYear.run(year);
+  const settlement = getSettlement(db, year);
+  const payDate = `${year + 1}-02-15`;
 
-  const balance = getPersonYearBalance(aliceId, year);
-  if (balance >= 0) continue;
-
-  const installment = +(-balance / 10).toFixed(2);
   db.transaction(() => {
-    for (let month = 1; month <= 10; month++) {
-      const date = `${year + 1}-${String(month).padStart(2, "0")}-15`;
-      insertPayment.run(aliceId, date, installment, `Payment ${month}/10`, year);
+    for (const transfer of settlement.transfers) {
+      if (transfer.payment_status === null) continue;
+      const personName = transfer.from === "co-op" ? transfer.to : transfer.from;
+      const personId = personByShort.get(personName);
+      if (!personId) continue;
+      if (skipPersonIds.has(personId)) continue;
+      // Positive = person pays co-op; negative = co-op pays person.
+      // Step 2 (owner transfers) uses abs(sum), so sign doesn't matter for them.
+      const amount = transfer.from === "co-op" ? -transfer.amount : transfer.amount;
+      insertPayment.run(personId, payDate, +amount.toFixed(2), null, year);
+      paymentsTotal++;
     }
   })();
-  paymentsTotal += 10;
-}
-
-for (const username of ["bob", "carol"] as const) {
-  const personId = personIdByUsername[username];
-  for (const year of YEARS) {
-    if (year === 2025) continue;
-    const existing = (checkPayments.get(personId, year) as { n: number }).n;
-    if (existing > 0) continue;
-
-    const balance = getPersonYearBalance(personId, year);
-    if (balance >= 0) continue;
-
-    const payCount = randInt(1, 2);
-    const totalToPay = +(-balance * rand(0.60, 0.80)).toFixed(2);
-    const perInstallment = +(totalToPay / payCount).toFixed(2);
-    db.transaction(() => {
-      for (let i = 0; i < payCount; i++) {
-        const month = randInt(1, 6);
-        const date = `${year + 1}-${String(month).padStart(2, "0")}-${String(randInt(1, 28)).padStart(2, "0")}`;
-        insertPayment.run(personId, date, perInstallment, null, year);
-      }
-    })();
-    paymentsTotal += payCount;
-  }
 }
 
 console.log(`  → ${paymentsTotal} payments`);
@@ -411,9 +380,10 @@ db.prepare(`
   INSERT OR IGNORE INTO settlements (year, settled_at, settled_by) VALUES
   (2021, '2022-02-01T10:00:00', 'admin'),
   (2022, '2023-02-01T10:00:00', 'admin'),
-  (2023, '2024-02-01T10:00:00', 'admin'),
-  (2024, '2025-02-01T10:00:00', 'admin')
+  (2023, '2024-02-01T10:00:00', 'admin')
 `).run();
+// 2024 is intentionally left open so screenshots show an active settlement
+db.prepare("DELETE FROM settlements WHERE year = 2024").run();
 
 db.prepare(`
   INSERT OR IGNORE INTO settings (key, value)
@@ -421,6 +391,8 @@ db.prepare(`
 `).run();
 
 // ── Pending reservations (for inbox screenshot) ────────────────────────────
+const aliceId = personIdByUsername["alice"];
+const carolId = personIdByUsername["carol"];
 db.prepare("DELETE FROM reservations WHERE status = 'pending'").run();
 db.prepare(`
   INSERT INTO reservations (person_id, car_id, start_date, end_date, status, note)

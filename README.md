@@ -32,6 +32,7 @@ Open [http://localhost:3000](http://localhost:3000).
 **What's populated:** dashboard with 5-year balances, trips/fuel/expenses across 3 cars, settlement 2021–2024 locked (2025 open).
 
 To reset: delete the database in `data/<databasefile>.db` and re-run the `seed:demo` and `dev` commands. 
+
 Note : The `data/` directory is gitignored.
 
 ## Features

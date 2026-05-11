@@ -50,7 +50,8 @@ Note : The `data/` directory is gitignored.
 ## Documentation
 
 - [End-user Guide](docs/user-guide.md) — for members: logging trips, fuel, and reading your costs
-- [Owner Guide](docs/owner-guide.md) — for admins: managing cars, members, and settlements
+- [Owner Guide](docs/owner-guide.md) — for car owners: inbox, cars, members, and settlements
+- [Admin Guide](docs/admin-guide.md) — for admins: payments and settings
 
 ## Tech Stack
 

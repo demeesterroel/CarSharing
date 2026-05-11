@@ -3,6 +3,7 @@
 This guide covers the admin-only pages available to car sharing owners.
 
 > Looking for member documentation? See the [End-user Guide](user-guide.md).
+> Looking for admin-only pages (Payments, Settings)? See the [Admin Guide](admin-guide.md).
 
 ---
 

@@ -10,7 +10,7 @@ This guide covers the pages that are only visible to **admins** (not regular car
 
 The Members page (`Admin → Members`) lists all registered members. Only admins can access this page — car owners cannot see it.
 
-![Members page with all members listed](screenshots/107-car-overview-members.png)
+![Members page with all members listed](screenshots/admin-107-car-overview-members.png)
 
 Click a member row to expand it and edit their details:
 
@@ -25,7 +25,7 @@ Click a member row to expand it and edit their details:
 
 Click **Copy invite link** inside an expanded member row to copy a one-time invite URL to your clipboard. Send it to the member — they use it to set their password and log in for the first time.
 
-![Admin copying an invite link from the members page](screenshots/01-invite-link.png)
+![Admin copying an invite link from the members page](screenshots/admin-01-invite-link.png)
 
 The link is valid for 7 days. Generate a new one if it expires.
 

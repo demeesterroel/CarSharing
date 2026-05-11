@@ -16,7 +16,7 @@ The car owner sends you a personal invite link by email or message. The link loo
 
 Click the link to open the app. You will land on a **Set password** screen.
 
-![Invite page — set your password to get started](screenshots/02-invite-page.png)
+![Invite page — set your password to get started](screenshots/member-02-invite-page.png)
 
 Choose a password (minimum 8 characters), confirm it, and click **Set password**. You are logged in immediately and land on your profile page to fill in your details.
 
@@ -26,7 +26,7 @@ Choose a password (minimum 8 characters), confirm it, and click **Set password**
 
 After logging in, open your profile via the menu (top-right corner).
 
-![Profile menu entry](screenshots/03-profile-menu.png)
+![Profile menu entry](screenshots/member-03-profile-menu.png)
 
 Fill in two required fields:
 
@@ -35,7 +35,7 @@ Fill in two required fields:
 | **Email address**       | Used for settlement notifications              |
 | **Bank account (IBAN)** | Used to send or receive payments at settlement |
 
-![Profile edit form with email and IBAN fields](screenshots/04-profile-edit.png)
+![Profile edit form with email and IBAN fields](screenshots/member-04-profile-edit.png)
 
 Save your changes. You can update these at any time.
 
@@ -45,7 +45,7 @@ Save your changes. You can update these at any time.
 
 The dashboard is your home page. It shows a summary of recent activity across all cars you have access to.
 
-![Full dashboard view](screenshots/05-dashboard.png)
+![Full dashboard view](screenshots/member-05-dashboard.png)
 
 ### What you see
 
@@ -60,7 +60,7 @@ Use the filter bar at the top to narrow the view by:
 - **Car** — show data for one specific car
 - **Date range** — limit to a specific period
 
-![Dashboard filter bar open](screenshots/06-dashboard-filters.png)
+![Dashboard filter bar open](screenshots/member-06-dashboard-filters.png)
 
 ---
 
@@ -68,7 +68,7 @@ Use the filter bar at the top to narrow the view by:
 
 The trips page lists all recorded drives.
 
-![Trips page full view](screenshots/07-trips.png)
+![Trips page full view](screenshots/member-07-trips.png)
 
 ### Filters
 
@@ -78,11 +78,11 @@ The trips page lists all recorded drives.
 | **Driver**     | Show trips by a specific member |
 | **Date range** | Limit to a start and end date   |
 
-![Trips filter panel open](screenshots/08-trips-filters.png)
+![Trips filter panel open](screenshots/member-08-trips-filters.png)
 
 Each trip card shows: date, driver, car, distance (km), and any notes.
 
-![Single trip card](screenshots/09-trip-card.png)
+![Single trip card](screenshots/member-09-trip-card.png)
 
 ---
 
@@ -90,7 +90,7 @@ Each trip card shows: date, driver, car, distance (km), and any notes.
 
 The fuel page lists all recorded fill-ups.
 
-![Fuel page full view](screenshots/10-fuel.png)
+![Fuel page full view](screenshots/member-10-fuel.png)
 
 ### Filters
 
@@ -99,11 +99,11 @@ The fuel page lists all recorded fill-ups.
 | **Car**        | Show fuel entries for one car only |
 | **Date range** | Limit to a start and end date      |
 
-![Fuel filter panel open](screenshots/11-fuel-filters.png)
+![Fuel filter panel open](screenshots/member-11-fuel-filters.png)
 
 Each fuel entry shows: date, car, litres, price per litre, total cost, and who paid.
 
-![Single fuel card](screenshots/12-fuel-card.png)
+![Single fuel card](screenshots/member-12-fuel-card.png)
 
 ---
 
@@ -111,7 +111,7 @@ Each fuel entry shows: date, car, litres, price per litre, total cost, and who p
 
 The cost page breaks down what you owe or are owed.
 
-![Cost page full view](screenshots/13-cost.png)
+![Cost page full view](screenshots/member-13-cost.png)
 
 Costs are split by category (trips, fuel, expenses) and show your share versus the group total.
 
@@ -122,7 +122,7 @@ Costs are split by category (trips, fuel, expenses) and show your share versus t
 | **Car**           | Costs for one car only       |
 | **Period / year** | Limit to a settlement period |
 
-![Cost filter panel open](screenshots/14-cost-filters.png)
+![Cost filter panel open](screenshots/member-14-cost-filters.png)
 
 ---
 
@@ -130,11 +130,11 @@ Costs are split by category (trips, fuel, expenses) and show your share versus t
 
 The **FAB** (Floating Action Button) is the **+** button at the bottom-right of the screen. It is the fastest way to log new information.
 
-![FAB button collapsed](screenshots/15-fab-closed.png)
+![FAB button collapsed](screenshots/member-15-fab-closed.png)
 
 Tap the FAB to expand it. On the dashboard it shows all options; on individual pages it shows the relevant action for that page.
 
-![FAB expanded showing options (trip, fuel, expense)](screenshots/16-fab-expanded.png)
+![FAB expanded showing options (trip, fuel, expense)](screenshots/member-16-fab-expanded.png)
 
 ---
 
@@ -142,7 +142,7 @@ Tap the FAB to expand it. On the dashboard it shows all options; on individual p
 
 Tap the FAB → **Add trip** (or use the button on the Trips page).
 
-![FAB expanded with Add trip highlighted](screenshots/17-fab-add-trip.png)
+![FAB expanded with Add trip highlighted](screenshots/member-17-fab-add-trip.png)
 
 Fill in the form:
 
@@ -155,11 +155,11 @@ Fill in the form:
 | **End km**       | Odometer reading at the end (distance is calculated automatically) |
 | **Parking note** | Optional note about where the car is parked                        |
 
-![New trip form filled in](screenshots/18-trip-form.png)
+![New trip form filled in](screenshots/member-18-trip-form.png)
 
 Tap **Save**. The trip appears immediately in the list.
 
-![Trips list with new trip at top](screenshots/19-trips-after-add.png)
+![Trips list with new trip at top](screenshots/member-19-trips-after-add.png)
 
 ---
 
@@ -167,7 +167,7 @@ Tap **Save**. The trip appears immediately in the list.
 
 Tap the FAB → **Add fuel** (or use the button on the Fuel page).
 
-![FAB expanded with Add fuel highlighted](screenshots/20-fab-add-fuel.png)
+![FAB expanded with Add fuel highlighted](screenshots/member-20-fab-add-fuel.png)
 
 Fill in the form:
 
@@ -179,8 +179,8 @@ Fill in the form:
 | **Amount (€)** | Total amount paid                                                  |
 | **Litres**     | Amount of fuel added (price per litre is calculated automatically) |
 
-![New fuel form filled in](screenshots/21-fuel-form.png)
+![New fuel form filled in](screenshots/member-21-fuel-form.png)
 
 Tap **Save**. The entry appears on the Fuel page and is included in cost calculations.
 
-![Fuel list with new entry at top](screenshots/22-fuel-after-add.png)
+![Fuel list with new entry at top](screenshots/member-22-fuel-after-add.png)

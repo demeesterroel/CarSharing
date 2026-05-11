@@ -116,6 +116,7 @@ export function getDashboard(db: Database.Database, year: number): DashboardRow[
              COALESCE(SUM(amount),0) AS fuel_amount
       FROM fuel_fillups
       WHERE strftime('%Y', date) = ?
+        AND settled_outside = 0
       GROUP BY person_id
     `
     )
@@ -129,6 +130,7 @@ export function getDashboard(db: Database.Database, year: number): DashboardRow[
              COALESCE(SUM(amount),0) AS expense_amount
       FROM expenses
       WHERE strftime('%Y', date) = ?
+        AND settled_outside = 0
       GROUP BY person_id
     `
     )

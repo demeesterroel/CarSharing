@@ -1044,6 +1044,14 @@ function AdminSettlementPageContent() {
           <>
             <button
               onClick={() => setShowAll((v) => !v)}
+              title={showAll ? t("settlement.show_problems") : t("settlement.show_all")}
+              data-testid="settlement-expand-all"
+              onMouseEnter={(e) => {
+                (e.currentTarget as HTMLButtonElement).style.background = paper.paperDark;
+              }}
+              onMouseLeave={(e) => {
+                (e.currentTarget as HTMLButtonElement).style.background = "transparent";
+              }}
               style={{
                 position: "absolute",
                 left: 0,
@@ -1063,7 +1071,16 @@ function AdminSettlementPageContent() {
             </button>
             <button
               onClick={handleDownload}
-              title="Download als .md"
+              title={t("settlement.download")}
+              data-testid="settlement-download"
+              onMouseEnter={(e) => {
+                (e.currentTarget as HTMLButtonElement).style.background = paper.paperDark;
+                (e.currentTarget as HTMLButtonElement).style.borderColor = paper.paperDark;
+              }}
+              onMouseLeave={(e) => {
+                (e.currentTarget as HTMLButtonElement).style.background = "transparent";
+                (e.currentTarget as HTMLButtonElement).style.borderColor = paper.ink;
+              }}
               style={{
                 position: "absolute",
                 right: 0,

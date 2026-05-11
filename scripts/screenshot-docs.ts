@@ -572,7 +572,7 @@ async function main() {
   // ── Owner guide ─────────────────────────────────────────────────────────────
   console.log("\n[owner guide]");
 
-  if (START_FROM <= 112 && END_AT >= 100) {
+  if (START_FROM <= 115 && END_AT >= 100) {
     await login(page, "owner", "owner");
   }
 
@@ -666,27 +666,28 @@ async function main() {
     await shot(page, "admin-107-car-overview-members.png");
   }
 
-  // ── 108. Settlements page ──────────────────────────────────────────────────
+  // ── 108. Settlements page — open year ────────────────────────────────────
   if (shouldRun(108)) {
-    await page.goto(`${BASE_URL}/admin/settlement?year=2025`);
+    // 2024 is the open (not yet finalized) year
+    await page.goto(`${BASE_URL}/admin/settlement?year=2024`);
     await idle(page);
     await page.waitForTimeout(2000);
     await shot(page, "owner-108-settlements.png");
   }
 
-  // ── 109. Settlement table — finalized year ────────────────────────────────
+  // ── 109. Settlement table — finalized year (2023) ─────────────────────────
   if (shouldRun(109)) {
-    // Always navigate to a finalized year so FINALIZED badge + REOPEN button are visible
-    await page.goto(`${BASE_URL}/admin/settlement?year=2024`, { waitUntil: "domcontentloaded" });
+    // 2023 is finalized: all transfers paid, REOPEN button visible
+    await page.goto(`${BASE_URL}/admin/settlement?year=2023`, { waitUntil: "domcontentloaded" });
     await idle(page);
     await page.waitForTimeout(2000);
     await shot(page, "owner-109-settlement-table.png");
   }
 
-  // ── 110. Open settlement — ready to lock ──────────────────────────────────
+  // ── 110. Open settlement — outstanding transfers ───────────────────────────
   if (shouldRun(110)) {
-    // Navigate to the open (not yet finalized) year to show LOCK SETTLEMENT button
-    await page.goto(`${BASE_URL}/admin/settlement?year=2025`, { waitUntil: "domcontentloaded" });
+    // 2024: open, Owner has outstanding balance — shows FINALIZE + red transfer box
+    await page.goto(`${BASE_URL}/admin/settlement?year=2024`, { waitUntil: "domcontentloaded" });
     await idle(page);
     await page.waitForTimeout(2000);
     await shot(page, "owner-110-settlement-transfers.png");
@@ -695,7 +696,7 @@ async function main() {
   // ── 111. Settlement message dialog ────────────────────────────────────────
   if (shouldRun(111)) {
     if (!shouldRun(110)) {
-      await page.goto(`${BASE_URL}/admin/settlement?year=2025`);
+      await page.goto(`${BASE_URL}/admin/settlement?year=2024`);
       await idle(page);
       await page.waitForTimeout(2000);
     }
@@ -715,16 +716,64 @@ async function main() {
     }
   }
 
-  // ── 112. Lock settlement ───────────────────────────────────────────────────
+  // ── 112. Lock settlement button ────────────────────────────────────────────
   if (shouldRun(112)) {
     if (!shouldRun(108) && !shouldRun(109) && !shouldRun(110) && !shouldRun(111)) {
-      await page.goto(`${BASE_URL}/admin/settlement?year=2025`);
+      await page.goto(`${BASE_URL}/admin/settlement?year=2024`);
       await idle(page);
       await page.waitForTimeout(2000);
     }
     await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
     await page.waitForTimeout(300);
     await shot(page, "owner-112-settlement-lock.png");
+  }
+
+  // ── 113. Expand-all view — all member cards open ──────────────────────────
+  if (shouldRun(113)) {
+    await page.goto(`${BASE_URL}/admin/settlement?year=2024`, { waitUntil: "networkidle", timeout: 60000 });
+    await page.waitForTimeout(1500);
+    const expandBtn113 = page.locator("[data-testid='settlement-expand-all']");
+    await expandBtn113.waitFor({ state: "visible", timeout: 20000 });
+    // Only click if showAll is currently OFF (title = "Show all" / "Toon alles")
+    const title113 = await expandBtn113.getAttribute("title");
+    if (!title113?.toLowerCase().includes("problem") && !title113?.toLowerCase().includes("problemen")) {
+      await expandBtn113.click({ force: true });
+      await page.waitForTimeout(1000);
+    }
+    await shot(page, "owner-113-settlement-expanded.png");
+  }
+
+  // ── 114. Member card detail — Alice (non-owner) ───────────────────────────
+  if (shouldRun(114)) {
+    // Alice is fully-paid (isSlim=true) so we need expand-all active before clicking her card
+    await page.goto(`${BASE_URL}/admin/settlement?year=2024`, { waitUntil: "networkidle", timeout: 60000 });
+    await page.waitForTimeout(1500);
+    const expandBtn114 = page.locator("[data-testid='settlement-expand-all']");
+    await expandBtn114.waitFor({ state: "visible", timeout: 20000 });
+    // Enable showAll via force-click (bypass any overlay/actionability checks)
+    const title114 = await expandBtn114.getAttribute("title");
+    if (!title114?.toLowerCase().includes("problem") && !title114?.toLowerCase().includes("problemen")) {
+      await expandBtn114.click({ force: true });
+      await page.waitForTimeout(1000);
+    }
+    // Alice's card is now non-slim; wait for her name button then force-click to expand detail
+    const aliceBtn = page.locator("button").filter({ hasText: /Alice/ }).first();
+    await aliceBtn.waitFor({ state: "visible", timeout: 10000 });
+    await aliceBtn.click({ force: true });
+    await page.waitForTimeout(800);
+    await shot(page, "owner-114-settlement-member-card.png");
+  }
+
+  // ── 115. Owner card detail — Owner (outstanding balance) ─────────────────
+  if (shouldRun(115)) {
+    await page.goto(`${BASE_URL}/admin/settlement?year=2024`, { waitUntil: "networkidle", timeout: 60000 });
+    await page.waitForTimeout(1500);
+    // Owner is always non-slim (outstanding balance); click directly
+    const ownerBtn = page.locator("button").filter({ hasText: /^Owner$/ }).first();
+    await ownerBtn.waitFor({ state: "visible", timeout: 20000 });
+    await ownerBtn.click({ force: true });
+    await page.waitForTimeout(800);
+    await shot(page, "owner-115-settlement-owner-card.png");
   }
 
   // ── Admin guide ──────────────────────────────────────────────────────────────

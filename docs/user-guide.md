@@ -66,7 +66,7 @@ Scroll down to see a overview of latest info.
 
 The trips page lists all recorded drives.
 
-Each trip card shows: destination, driver, date, odometer range, and cost. Click a trip to view and edit its details.
+Each trip card shows: parking location, driver, date, odometer range, and cost. Click a trip to view and edit its details.
 
 ![Trips page full view](screenshots/member-07-trips.png)
 

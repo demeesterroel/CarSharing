@@ -204,20 +204,15 @@ async function main() {
     await shot(page, "admin-01-invite-link.png");
   }
 
-  // Switch to alice for shots 03-22
-  if (START_FROM <= 22 && END_AT >= 3) {
+  // Switch to alice for shots 03-33
+  if (START_FROM <= 33 && END_AT >= 3) {
     await login(page, "alice", "alice");
   }
 
-  // ── 03. Profile — hover "Hello Alice" heading ──────────────────────────────
+  // ── 03. Profile icon in navbar ────────────────────────────────────────────
   if (shouldRun(3)) {
     await page.goto(`${BASE_URL}/`);
     await idle(page);
-    const helloLink = page.locator('a[href*="/user/"]').first();
-    await helloLink.hover().catch(() => {});
-    const pencilSpan = helloLink.locator("span").last();
-    await pencilSpan.waitFor({ state: "visible" }).catch(() => page.waitForTimeout(500));
-    await page.waitForTimeout(200);
     await shot(page, "member-03-profile-menu.png");
   }
 
@@ -569,6 +564,157 @@ async function main() {
     });
   }
 
+  // ── 23. Single expense card ────────────────────────────────────────────────
+  if (shouldRun(23)) {
+    await page.goto(`${BASE_URL}/expenses`);
+    await idle(page);
+    await page.evaluate(() => window.scrollTo(0, 100));
+    await page.waitForTimeout(300);
+    await shot(page, "member-23-expense-card.png");
+  }
+
+  // ── 24. Reservations page (calendar + upcoming list) ──────────────────────
+  if (shouldRun(24)) {
+    await page.goto(`${BASE_URL}/calendar`);
+    await idle(page);
+    await shot(page, "member-24-reservation-list.png");
+  }
+
+  // ── 25. Reservation form via FAB — no dates pre-filled ────────────────────
+  if (shouldRun(25)) {
+    if (!shouldRun(24)) {
+      await page.goto(`${BASE_URL}/calendar`);
+      await idle(page);
+    }
+    await openFab(page);
+    const reservationFabOption = page
+      .locator("button.animate-pop-in")
+      .filter({ hasText: /reservat/i })
+      .first();
+    if ((await reservationFabOption.count()) > 0) {
+      await reservationFabOption.click({ force: true });
+      await page.waitForTimeout(600);
+    }
+    await shot(page, "member-25-reservation-form-empty.png");
+  }
+
+  // ── 26. Reservation form via calendar pick — dates pre-filled ─────────────
+  if (shouldRun(26)) {
+    await page.goto(`${BASE_URL}/calendar`);
+    await idle(page);
+    // Click on a day cell to start range selection, then click an end day
+    const dayCells26 = page.locator("[data-date]");
+    const count26 = await dayCells26.count();
+    if (count26 >= 3) {
+      await dayCells26.nth(2).click({ force: true });
+      await page.waitForTimeout(200);
+      await dayCells26.nth(4).click({ force: true });
+      await page.waitForTimeout(600);
+    }
+    await shot(page, "member-26-reservation-form-calendar.png");
+  }
+
+  // ── 27. Reservation form showing conflict warning ─────────────────────────
+  if (shouldRun(27)) {
+    // Open form via FAB, then select dates that overlap an existing reservation
+    await page.goto(`${BASE_URL}/calendar`);
+    await idle(page);
+    await openFab(page);
+    const reservationFabOption27 = page
+      .locator("button.animate-pop-in")
+      .filter({ hasText: /reservat/i })
+      .first();
+    if ((await reservationFabOption27.count()) > 0) {
+      await reservationFabOption27.click({ force: true });
+      await page.waitForTimeout(600);
+    }
+    // Select the first available days — demo data has reservations in the visible range
+    const dayCells27 = page.locator("[data-date]");
+    const count27 = await dayCells27.count();
+    if (count27 >= 2) {
+      await dayCells27.nth(0).click({ force: true });
+      await page.waitForTimeout(200);
+      await dayCells27.nth(1).click({ force: true });
+      await page.waitForTimeout(600);
+    }
+    await shot(page, "member-27-reservation-conflict.png");
+  }
+
+  // ── 28. Pending + confirmed reservation cards in upcoming list ────────────
+  if (shouldRun(28)) {
+    await page.goto(`${BASE_URL}/calendar`);
+    await idle(page);
+    await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+    await page.waitForTimeout(400);
+    await shot(page, "member-28-reservation-cards.png");
+  }
+
+  // ── 30. FAB → expense option highlighted ──────────────────────────────────
+  if (shouldRun(30)) {
+    await page.goto(`${BASE_URL}/`);
+    await idle(page);
+    await openFab(page);
+    const expenseOption30 = page
+      .locator("button.animate-pop-in")
+      .filter({ hasText: /expense|uitgave/i })
+      .first();
+    if ((await expenseOption30.count()) > 0) {
+      await expenseOption30.hover();
+      await page.waitForTimeout(200);
+    }
+    await shot(page, "member-30-fab-add-expense.png");
+  }
+
+  // ── 31. Expense form filled ────────────────────────────────────────────────
+  if (shouldRun(31)) {
+    if (!shouldRun(30)) {
+      await page.goto(`${BASE_URL}/`);
+      await idle(page);
+      await openFab(page);
+    }
+    const expenseOption31 = page
+      .locator("button.animate-pop-in")
+      .filter({ hasText: /expense|uitgave/i })
+      .first();
+    if ((await expenseOption31.count()) > 0) {
+      await expenseOption31.click({ force: true });
+      await page.waitForTimeout(600);
+    }
+    const amountInput31 = page.locator('input[name="amount"]').first();
+    if ((await amountInput31.count()) > 0) {
+      await amountInput31.fill("28.50");
+    }
+    const descInput31 = page.locator('input[name="description"]').first();
+    if ((await descInput31.count()) > 0) {
+      await descInput31.fill("Parking garage");
+    }
+    await page.waitForTimeout(300);
+    await shot(page, "member-31-expense-form.png");
+  }
+
+  // ── 32. Expenses list — after navigating back ─────────────────────────────
+  if (shouldRun(32)) {
+    await page.goto(`${BASE_URL}/expenses`);
+    await idle(page);
+    await shot(page, "member-32-expense-after-add.png");
+  }
+
+  // ── 33. FAB → reservation option highlighted ──────────────────────────────
+  if (shouldRun(33)) {
+    await page.goto(`${BASE_URL}/`);
+    await idle(page);
+    await openFab(page);
+    const resOption33 = page
+      .locator("button.animate-pop-in")
+      .filter({ hasText: /reservat/i })
+      .first();
+    if ((await resOption33.count()) > 0) {
+      await resOption33.hover();
+      await page.waitForTimeout(200);
+    }
+    await shot(page, "member-33-fab-add-reservation.png");
+  }
+
   // ── Owner guide ─────────────────────────────────────────────────────────────
   console.log("\n[owner guide]");
 
@@ -730,13 +876,19 @@ async function main() {
 
   // ── 113. Expand-all view — all member cards open ──────────────────────────
   if (shouldRun(113)) {
-    await page.goto(`${BASE_URL}/admin/settlement?year=2024`, { waitUntil: "networkidle", timeout: 60000 });
+    await page.goto(`${BASE_URL}/admin/settlement?year=2024`, {
+      waitUntil: "networkidle",
+      timeout: 60000,
+    });
     await page.waitForTimeout(1500);
     const expandBtn113 = page.locator("[data-testid='settlement-expand-all']");
     await expandBtn113.waitFor({ state: "visible", timeout: 20000 });
     // Only click if showAll is currently OFF (title = "Show all" / "Toon alles")
     const title113 = await expandBtn113.getAttribute("title");
-    if (!title113?.toLowerCase().includes("problem") && !title113?.toLowerCase().includes("problemen")) {
+    if (
+      !title113?.toLowerCase().includes("problem") &&
+      !title113?.toLowerCase().includes("problemen")
+    ) {
       await expandBtn113.click({ force: true });
       await page.waitForTimeout(1000);
     }
@@ -746,13 +898,19 @@ async function main() {
   // ── 114. Member card detail — Alice (non-owner) ───────────────────────────
   if (shouldRun(114)) {
     // Alice is fully-paid (isSlim=true) so we need expand-all active before clicking her card
-    await page.goto(`${BASE_URL}/admin/settlement?year=2024`, { waitUntil: "networkidle", timeout: 60000 });
+    await page.goto(`${BASE_URL}/admin/settlement?year=2024`, {
+      waitUntil: "networkidle",
+      timeout: 60000,
+    });
     await page.waitForTimeout(1500);
     const expandBtn114 = page.locator("[data-testid='settlement-expand-all']");
     await expandBtn114.waitFor({ state: "visible", timeout: 20000 });
     // Enable showAll via force-click (bypass any overlay/actionability checks)
     const title114 = await expandBtn114.getAttribute("title");
-    if (!title114?.toLowerCase().includes("problem") && !title114?.toLowerCase().includes("problemen")) {
+    if (
+      !title114?.toLowerCase().includes("problem") &&
+      !title114?.toLowerCase().includes("problemen")
+    ) {
       await expandBtn114.click({ force: true });
       await page.waitForTimeout(1000);
     }
@@ -766,10 +924,16 @@ async function main() {
 
   // ── 115. Owner card detail — Owner (outstanding balance) ─────────────────
   if (shouldRun(115)) {
-    await page.goto(`${BASE_URL}/admin/settlement?year=2024`, { waitUntil: "networkidle", timeout: 60000 });
+    await page.goto(`${BASE_URL}/admin/settlement?year=2024`, {
+      waitUntil: "networkidle",
+      timeout: 60000,
+    });
     await page.waitForTimeout(1500);
     // Owner is always non-slim (outstanding balance); click directly
-    const ownerBtn = page.locator("button").filter({ hasText: /^Owner$/ }).first();
+    const ownerBtn = page
+      .locator("button")
+      .filter({ hasText: /^Owner$/ })
+      .first();
     await ownerBtn.waitFor({ state: "visible", timeout: 20000 });
     await ownerBtn.click({ force: true });
     await page.waitForTimeout(800);

@@ -65,6 +65,8 @@ export const en: Messages = {
   "action.copied": "Copied!",
   "action.cancel": "Cancel",
   "action.close": "Close",
+  "action.show_password": "Show password",
+  "action.hide_password": "Hide password",
   "action.delete": "Delete",
   "action.see_all": "All →",
   "action.clear_gps": "Clear GPS pin",
@@ -519,6 +521,8 @@ export const en: Messages = {
   "settings.calendar_hint": "Leave empty to disable the integration.",
   "settings.calendar_id_label": "Google Calendar ID",
   "settings.token_label": "OAuth Refresh Token",
+  "settings.token_show": "Show token",
+  "settings.token_hide": "Hide token",
   "settings.token_stored": "stored — paste to change",
   "settings.token_empty": "paste refresh token here",
   "settings.env_warning":
@@ -540,6 +544,7 @@ export const en: Messages = {
 
   // Admin members
   "admin.members_title": "Members",
+  "admin.edit_member": "Edit {name}",
   "admin.invite_copy": "Copy invite link",
   "admin.invite_copied": "Link copied!",
   "admin.username_label": "Username",

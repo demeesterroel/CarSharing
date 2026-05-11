@@ -183,6 +183,7 @@ export default function AdminPaymentsPage() {
       {/* Filters */}
       <div style={{ display: "flex", gap: 8, marginBottom: 16 }}>
         <select
+          aria-label={t("filter.all_persons")}
           value={personFilter}
           onChange={(e) => setPersonFilter(e.target.value === "" ? "" : Number(e.target.value))}
           style={{ flex: 1, padding: "7px 10px", fontFamily: fontMono, fontSize: 10, background: paper.paper, color: paper.ink, border: `1.5px solid ${paper.paperDark}`, outline: "none" }}
@@ -191,6 +192,7 @@ export default function AdminPaymentsPage() {
           {people.map(p => <option key={p.id} value={p.id}>{fullNameOf(p)}</option>)}
         </select>
         <select
+          aria-label={t("filter.all_years")}
           value={yearFilter}
           onChange={(e) => setYearFilter(e.target.value === "" ? "" : Number(e.target.value))}
           style={{ flex: 1, padding: "7px 10px", fontFamily: fontMono, fontSize: 10, background: paper.paper, color: paper.ink, border: `1.5px solid ${paper.paperDark}`, outline: "none" }}
@@ -223,7 +225,7 @@ export default function AdminPaymentsPage() {
       )}
 
       {isLoading && (
-        <div style={{ fontFamily: fontMono, fontSize: 10, color: paper.inkMute, padding: "24px 0", textAlign: "center" }}>…</div>
+        <div style={{ fontFamily: fontMono, fontSize: 10, color: paper.inkDim, padding: "24px 0", textAlign: "center" }}>…</div>
       )}
 
       {/* Grouped by year */}
@@ -237,7 +239,7 @@ export default function AdminPaymentsPage() {
               <div style={{ fontFamily: fontMono, fontSize: 9, color: paper.inkDim, letterSpacing: 2, textTransform: "uppercase" }}>
                 {t("settlement.year")} {year}
               </div>
-              <div style={{ fontFamily: fontMono, fontSize: 10, color: paper.inkMute }}>
+              <div style={{ fontFamily: fontMono, fontSize: 10, color: paper.inkDim }}>
                 {fmtMoney(total)}
               </div>
             </div>
@@ -275,7 +277,7 @@ export default function AdminPaymentsPage() {
                     </div>
                   ) : (
                     <div style={{ display: "flex", alignItems: "baseline", gap: 8, padding: "10px 0" }}>
-                      <div style={{ fontFamily: fontMono, fontSize: 9, color: paper.inkMute, whiteSpace: "nowrap" }}>
+                      <div style={{ fontFamily: fontMono, fontSize: 9, color: paper.inkDim, whiteSpace: "nowrap" }}>
                         {fmtDate(p.date)}
                       </div>
                       <div style={{ flex: 1 }}>
@@ -283,7 +285,7 @@ export default function AdminPaymentsPage() {
                           {p.person_name}
                         </div>
                         {p.note && (
-                          <div style={{ fontFamily: fontMono, fontSize: 9, color: paper.inkMute, marginTop: 2 }}>
+                          <div style={{ fontFamily: fontMono, fontSize: 9, color: paper.inkDim, marginTop: 2 }}>
                             {p.note}
                           </div>
                         )}
@@ -313,7 +315,7 @@ export default function AdminPaymentsPage() {
       })}
 
       {!isLoading && filtered.length === 0 && (
-        <div style={{ fontFamily: fontMono, fontSize: 10, color: paper.inkMute, padding: "32px 0", textAlign: "center" }}>
+        <div style={{ fontFamily: fontMono, fontSize: 10, color: paper.inkDim, padding: "32px 0", textAlign: "center" }}>
           {t("admin.inbox_empty")}
         </div>
       )}

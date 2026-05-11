@@ -191,7 +191,7 @@ function CalendarContent() {
             padding: "32px 20px",
             fontFamily: fontMono,
             fontSize: 11,
-            color: paper.inkMute,
+            color: paper.inkDim,
             letterSpacing: 1,
           }}
         >
@@ -292,7 +292,7 @@ function CalendarContent() {
               textAlign: "center",
               fontFamily: fontMono,
               fontSize: 11,
-              color: paper.inkMute,
+              color: paper.inkDim,
               letterSpacing: 1,
             }}
           >

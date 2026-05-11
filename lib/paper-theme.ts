@@ -7,10 +7,10 @@ export const paper = {
   ink: "#1a1a1a",
   inkDim: "#555047",
   inkMute: "#8a8273",
-  accent: "#c44536",
-  green: "#5a7a3c",
+  accent: "#a83929",
+  green: "#4d6e35",
   blue: "#3d5a7a",
-  amber: "#b87e0f",
+  amber: "#8a5a00",
 } as const;
 
 export const fontMono = "var(--font-courier-prime, 'Courier Prime', ui-monospace, monospace)";

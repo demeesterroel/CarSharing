@@ -205,11 +205,10 @@ function CarAccordion({
   return (
     <div
       style={{
-        background: paper.paper,
+        background: car.active !== 0 ? paper.paper : paper.paperDeep,
         marginBottom: 6,
         boxShadow: "0 1px 2px rgba(0,0,0,0.05), 0 4px 16px rgba(0,0,0,0.06)",
         borderLeft: expanded ? `3px solid ${paper.blue}` : "3px solid transparent",
-        opacity: car.active !== 0 ? 1 : 0.55,
       }}
     >
       {/* Collapsed header — click to toggle */}
@@ -240,7 +239,7 @@ function CarAccordion({
             whiteSpace: "nowrap",
           }}
         >
-          {car.owner_person_id ? (displayName(people.find((p) => p.id === car.owner_person_id) ?? { first_name: "?", username: null })) : <span style={{ color: paper.inkMute, fontStyle: "italic" }}>—</span>}
+          {car.owner_person_id ? (displayName(people.find((p) => p.id === car.owner_person_id) ?? { first_name: "?", username: null })) : <span style={{ color: paper.inkDim, fontStyle: "italic" }}>—</span>}
         </div>
         <div
           style={{
@@ -785,7 +784,7 @@ function OwnerFleet() {
       return (
         <div style={{ padding: 16 }}>
           {yearSelector}
-          <div style={{ fontFamily: fontMono, fontSize: 11, color: paper.inkMute }}>
+          <div style={{ fontFamily: fontMono, fontSize: 11, color: paper.inkDim }}>
             geen data voor dit jaar
           </div>
         </div>
@@ -914,7 +913,7 @@ function OwnerFleet() {
         </>
       )}
       {myCars.length === 0 && (
-        <div style={{ fontFamily: fontMono, fontSize: 11, color: paper.inkMute }}>
+        <div style={{ fontFamily: fontMono, fontSize: 11, color: paper.inkDim }}>
           {t("owner.no_cars")}
         </div>
       )}

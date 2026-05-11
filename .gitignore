@@ -40,7 +40,8 @@ next-env.d.ts
 
 # Superpowers / Claude
 .superpowers/
-.claude/
+.claude/*
+!.claude/skills/
 
 # @ducanh2912/next-pwa generated files
 public/sw.js

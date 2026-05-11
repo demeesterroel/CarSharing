@@ -99,6 +99,7 @@ export default function LoginPage() {
           {/* Username field */}
           <div style={{ marginBottom: 20 }}>
             <label
+              htmlFor="login-username"
               style={{
                 display: "block",
                 fontFamily: fontMono,
@@ -112,6 +113,7 @@ export default function LoginPage() {
               {t("form.name")}
             </label>
             <input
+              id="login-username"
               type="text"
               autoComplete="username"
               value={username}
@@ -135,6 +137,7 @@ export default function LoginPage() {
           {/* Password field */}
           <div style={{ marginBottom: 24 }}>
             <label
+              htmlFor="login-password"
               style={{
                 display: "block",
                 fontFamily: fontMono,
@@ -149,6 +152,7 @@ export default function LoginPage() {
             </label>
             <div style={{ position: "relative" }}>
               <input
+                id="login-password"
                 type={showPassword ? "text" : "password"}
                 autoComplete="current-password"
                 value={password}
@@ -171,6 +175,7 @@ export default function LoginPage() {
               <button
                 type="button"
                 onClick={() => setShowPassword((v) => !v)}
+                aria-label={showPassword ? t("action.hide_password") : t("action.show_password")}
                 style={{ position: "absolute", right: 10, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", padding: 0, color: paper.inkMute, display: "flex" }}
               >
                 {showPassword ? <EyeOff size={15} /> : <Eye size={15} />}

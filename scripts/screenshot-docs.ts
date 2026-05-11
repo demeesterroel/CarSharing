@@ -30,7 +30,7 @@ function shouldRun(num: number): boolean {
 
 async function shot(page: Page, filename: string) {
   await page.waitForTimeout(300);
-  const num = parseInt(filename.replace(/^0+/, "").match(/^\d+/)?.[0] ?? "0", 10);
+  const num = parseInt(filename.match(/\d+/)?.[0] ?? "0", 10);
   if (!shouldRun(num)) {
     console.log(`  ↷ ${filename} (skipped)`);
     return;
@@ -725,6 +725,63 @@ async function main() {
     await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
     await page.waitForTimeout(300);
     await shot(page, "owner-112-settlement-lock.png");
+  }
+
+  // ── Admin guide ──────────────────────────────────────────────────────────────
+  console.log("\n[admin guide]");
+
+  if (START_FROM <= 204 && END_AT >= 200) {
+    await login(page, "admin", "admin");
+  }
+
+  // ── 200. Members list (all rows collapsed) ────────────────────────────────
+  if (shouldRun(200)) {
+    await page.goto(`${BASE_URL}/admin/members`);
+    await idle(page);
+    await shot(page, "admin-200-members.png");
+  }
+
+  // ── 201. Member row expanded — edit form ─────────────────────────────────
+  if (shouldRun(201)) {
+    if (!shouldRun(200)) {
+      await page.goto(`${BASE_URL}/admin/members`);
+      await idle(page);
+    }
+    const firstRow = page.locator('div[role="button"]').first();
+    await firstRow.click();
+    await page.waitForTimeout(600);
+    await shot(page, "admin-201-member-expanded.png");
+  }
+
+  // ── 202. Payments list ────────────────────────────────────────────────────
+  if (shouldRun(202)) {
+    await page.goto(`${BASE_URL}/admin/payments`);
+    await idle(page);
+    await shot(page, "admin-202-payments.png");
+  }
+
+  // ── 203. Add payment form ─────────────────────────────────────────────────
+  if (shouldRun(203)) {
+    if (!shouldRun(202)) {
+      await page.goto(`${BASE_URL}/admin/payments`);
+      await idle(page);
+    }
+    const addBtn = page
+      .locator("button")
+      .filter({ hasText: /\+\s*add/i })
+      .first();
+    if ((await addBtn.count()) > 0) {
+      await addBtn.click();
+      await page.waitForTimeout(500);
+    }
+    await shot(page, "admin-203-payment-form.png");
+  }
+
+  // ── 204. Settings page ────────────────────────────────────────────────────
+  if (shouldRun(204)) {
+    await page.goto(`${BASE_URL}/admin/settings`);
+    await idle(page);
+    await shot(page, "admin-204-settings.png");
   }
 
   // ── Done ────────────────────────────────────────────────────────────────────

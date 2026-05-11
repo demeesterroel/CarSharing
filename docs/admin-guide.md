@@ -10,16 +10,28 @@ This guide covers the pages that are only visible to **admins** (not regular car
 
 The Members page (`Admin → Members`) lists all registered members. Only admins can access this page — car owners cannot see it.
 
-![Members page with all members listed](screenshots/admin-107-car-overview-members.png)
+![Members page with all members listed](screenshots/admin-200-members.png)
 
-Click a member row to expand it and edit their details:
+Each row shows the member's name, username, and a **View as** link. Members with an active discount show a **Discount** badge.
 
-| Field                  | Description                                |
-| ---------------------- | ------------------------------------------ |
-| **Username**           | Login name for the member                  |
-| **Admin**              | Toggle to grant or revoke admin privileges |
-| **Base discount**      | Discount % applied to trips ≤ 500 km       |
-| **Long-trip discount** | Discount % applied to trips > 500 km       |
+### Editing a member
+
+Click a row to expand it:
+
+![Member row expanded — edit form](screenshots/admin-201-member-expanded.png)
+
+| Field                  | Description                                          |
+| ---------------------- | ---------------------------------------------------- |
+| **Username**           | Login name for the member                            |
+| **Admin**              | Toggle to grant or revoke admin privileges           |
+| **Base discount**      | Discount % applied to trips ≤ 500 km (slider 0–50 %) |
+| **Long-trip discount** | Discount % applied to trips > 500 km (slider 0–75 %) |
+
+Click **Save** to apply changes. Click **Cancel** to discard.
+
+### Deactivating a member
+
+Click **Deactivate** inside an expanded row to remove the member from active use. Deactivated members appear in a separate **Inactive** section at the bottom of the list. Click **Activate** on an inactive row to restore them.
 
 ### Generating an invite link
 
@@ -31,7 +43,7 @@ The link is valid for 7 days. Generate a new one if it expires.
 
 ### View as member
 
-Click **View as** next to any member to log in as them. Useful for troubleshooting what a member sees. Switch back by logging out and logging in as yourself.
+Click **← View as** next to any member to log in as them. Useful for troubleshooting what a member sees. Switch back by logging out and logging in as yourself.
 
 ---
 
@@ -41,28 +53,36 @@ The Payments page (`Admin → Payments`) is where you record money that members 
 
 After a settlement is finalized, members with a negative balance owe money. As those transfers arrive, log them here so the settlement page can track what is still outstanding.
 
+![Payments page with recorded transfers](screenshots/admin-202-payments.png)
+
+Payments are grouped by year. The year header shows the total amount received for that period.
+
 ### Adding a payment
 
-Click **+ Add**, then fill in:
+Click **+ Add**, then fill in the form:
 
-| Field      | Description                                      |
-| ---------- | ------------------------------------------------ |
-| **Person** | The member who made the payment                  |
-| **Date**   | Date the transfer was received                   |
-| **Amount** | Amount in euro                                   |
-| **Note**   | Optional — e.g. bank reference or partial reason |
+![Add payment form](screenshots/admin-203-payment-form.png)
+
+| Field          | Description                                      |
+| -------------- | ------------------------------------------------ |
+| **Member**     | The member who made the payment                  |
+| **Date**       | Date the transfer was received                   |
+| **Amount (€)** | Amount in euro                                   |
+| **Note**       | Optional — e.g. bank reference or partial reason |
 
 Click **Save**. The payment is linked to the settlement year matching the payment date and updates the outstanding-transfers count on the Settlement page.
 
 ### Editing or deleting a payment
 
-Each payment row has an edit and delete button. Use delete only to correct a data entry error — not to reverse a real transfer.
+Each payment row has an edit (pencil) and delete (×) button. Use delete only to correct a data entry error — not to reverse a real transfer.
 
 ---
 
-## 2. Settings
+## 3. Settings
 
 The Settings page (`Admin → Settings`) has two sections.
+
+![Settings page](screenshots/admin-204-settings.png)
 
 ### Cooperative bank account
 
@@ -78,6 +98,8 @@ If you want approved reservations to appear in a shared Google Calendar, configu
 | **OAuth Refresh Token** | A long-lived token that lets the app write to the calendar |
 
 After saving, click **Test connection** to verify the credentials are working. If the token expires, paste a new one here without touching any other settings.
+
+Click **Sync upcoming reservations** to push all future confirmed reservations to the calendar immediately — useful after first-time setup or after a token refresh.
 
 Leave both fields empty to disable the calendar integration.
 

@@ -353,6 +353,7 @@ export const en: Messages = {
   "settlement.frozen_badge": "FINALIZED",
   "settlement.show_all": "Show all",
   "settlement.show_problems": "Show problems",
+  "settlement.download": "Download as .md",
   "settlement.frozen_by": "Finalized on {date} by {name}",
   "settlement.copy_transfer": "Copy",
   "settlement.copied": "Copied!",

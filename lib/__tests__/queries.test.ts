@@ -344,4 +344,164 @@ describe("getDashboard", () => {
     const rows = getDashboard(db, 2026);
     expect(rows[0].expense_count).toBe(2);
   });
+
+  it("populates fuel_settled_* on own-car others breakdown", () => {
+    const db = makeDb();
+    const ownerId = insertPerson(db, { ...basePerson, first_name: "Owner A" });
+    const memberId = insertPerson(db, { ...basePerson, first_name: "Alice" });
+    const cid = insertCar(db, { short: "JF", name: "Car JF", price_per_km: 0.25, brand: null, color: null });
+    db.prepare("UPDATE cars SET owner_person_id = ? WHERE id = ?").run(ownerId, cid);
+
+    insertFuelFillup(db, {
+      person_id: memberId, car_id: cid, date: "2026-01-10",
+      amount: 40, liters: 25, price_per_liter: null, full_tank: 0,
+      odometer: null, receipt: null, location: null, gps_coords: null,
+      settled_outside: 1,
+    });
+    insertFuelFillup(db, {
+      person_id: memberId, car_id: cid, date: "2026-01-11",
+      amount: 20, liters: 12, price_per_liter: null, full_tank: 0,
+      odometer: null, receipt: null, location: null, gps_coords: null,
+      settled_outside: 0,
+    });
+
+    const rows = getDashboard(db, 2026);
+    const ownerRow = rows.find((r) => r.person_id === ownerId)!;
+    const ownCarBd = ownerRow.car_breakdowns.find((b) => b.is_own_car)!;
+    expect(ownCarBd.fuel_settled_count).toBe(1);
+    expect(ownCarBd.fuel_settled_liters).toBeCloseTo(25);
+    expect(ownCarBd.expense_settled_count).toBe(0);
+    expect(ownCarBd.expense_settled_amount).toBeCloseTo(0);
+  });
+
+  it("populates fuel_settled_* on cross-car breakdown", () => {
+    const db = makeDb();
+    const ownerId = insertPerson(db, { ...basePerson, first_name: "Owner A" });
+    const owner2Id = insertPerson(db, { ...basePerson, first_name: "Owner B" });
+    const cid = insertCar(db, { short: "JF", name: "Car JF", price_per_km: 0.25, brand: null, color: null });
+    const cid2 = insertCar(db, { short: "LW", name: "Car LW", price_per_km: 0.25, brand: null, color: null });
+    db.prepare("UPDATE cars SET owner_person_id = ? WHERE id = ?").run(ownerId, cid);
+    db.prepare("UPDATE cars SET owner_person_id = ? WHERE id = ?").run(owner2Id, cid2);
+
+    insertTrip(db, {
+      person_id: ownerId, car_id: cid2, date: "2026-02-01",
+      start_odometer: 0, end_odometer: 100, location: null,
+    });
+    insertFuelFillup(db, {
+      person_id: ownerId, car_id: cid2, date: "2026-02-01",
+      amount: 50, liters: 30, price_per_liter: null, full_tank: 0,
+      odometer: null, receipt: null, location: null, gps_coords: null,
+      settled_outside: 1,
+    });
+
+    const rows = getDashboard(db, 2026);
+    const ownerARow = rows.find((r) => r.person_id === ownerId)!;
+    const crossBd = ownerARow.car_breakdowns.find((b) => !b.is_own_car && b.car_short === "LW")!;
+    expect(crossBd.fuel_settled_count).toBe(1);
+    expect(crossBd.fuel_settled_liters).toBeCloseTo(30);
+  });
+
+  it("excludes settled_outside=1 fuel from fuel_amount and balance", () => {
+    const db = makeDb();
+    const pid = insertPerson(db, { ...basePerson, first_name: "Alice" });
+    const cid = insertCar(db, {
+      short: "JF",
+      name: "Car JF",
+      price_per_km: 0.25,
+      brand: null,
+      color: null,
+    });
+    insertTrip(db, {
+      person_id: pid,
+      car_id: cid,
+      date: "2026-01-10",
+      start_odometer: 0,
+      end_odometer: 100,
+      location: null,
+    });
+    // settled_outside=1: should be excluded
+    insertFuelFillup(db, {
+      person_id: pid,
+      car_id: cid,
+      date: "2026-01-10",
+      amount: 50,
+      liters: 30,
+      price_per_liter: null,
+      full_tank: 0,
+      odometer: null,
+      receipt: null,
+      location: null,
+      gps_coords: null,
+      settled_outside: 1,
+    });
+    // settled_outside=0: should be included
+    insertFuelFillup(db, {
+      person_id: pid,
+      car_id: cid,
+      date: "2026-01-10",
+      amount: 20,
+      liters: 12,
+      price_per_liter: null,
+      full_tank: 0,
+      odometer: null,
+      receipt: null,
+      location: null,
+      gps_coords: null,
+      settled_outside: 0,
+    });
+    // trip_amount = -25 (100km * 0.25), fuel_amount should = 20 (not 70)
+    // total_amount = -25 + 20 = -5, balance = -5
+    const rows = getDashboard(db, 2026);
+    expect(rows[0].fuel_amount).toBeCloseTo(20);
+    expect(rows[0].fuel_count).toBe(1);
+    expect(rows[0].total_amount).toBeCloseTo(-5);
+    expect(rows[0].balance).toBeCloseTo(-5);
+  });
+
+  it("excludes settled_outside=1 expenses from expense_amount and balance", () => {
+    const db = makeDb();
+    const pid = insertPerson(db, { ...basePerson, first_name: "Bob" });
+    const cid = insertCar(db, {
+      short: "LW",
+      name: "Car LW",
+      price_per_km: 0.25,
+      brand: null,
+      color: null,
+    });
+    insertTrip(db, {
+      person_id: pid,
+      car_id: cid,
+      date: "2026-02-01",
+      start_odometer: 0,
+      end_odometer: 100,
+      location: null,
+    });
+    // settled_outside=1: should be excluded
+    insertExpense(db, {
+      person_id: pid,
+      car_id: cid,
+      date: "2026-02-01",
+      amount: 80,
+      description: "big repair",
+      category: null,
+      settled_outside: 1,
+    });
+    // settled_outside=0: should be included
+    insertExpense(db, {
+      person_id: pid,
+      car_id: cid,
+      date: "2026-02-01",
+      amount: 30,
+      description: "oil",
+      category: null,
+      settled_outside: 0,
+    });
+    // trip_amount = -25, expense_amount should = 30 (not 110)
+    // total_amount = -25 + 30 = 5, balance = 5
+    const rows = getDashboard(db, 2026);
+    expect(rows[0].expense_amount).toBeCloseTo(30);
+    expect(rows[0].expense_count).toBe(1);
+    expect(rows[0].total_amount).toBeCloseTo(5);
+    expect(rows[0].balance).toBeCloseTo(5);
+  });
 });

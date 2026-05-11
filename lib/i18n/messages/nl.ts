@@ -352,6 +352,7 @@ export const nl = {
   "settlement.frozen_badge": "AFGESLOTEN",
   "settlement.show_all": "Toon alles",
   "settlement.show_problems": "Toon problemen",
+  "settlement.download": "Downloaden als .md",
   "settlement.frozen_by": "Afgesloten op {date} door {name}",
   "settlement.copy_transfer": "Kopieer",
   "settlement.copied": "Gekopieerd!",

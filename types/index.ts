@@ -152,6 +152,12 @@ export interface CarDashboardBreakdown {
   own_fuel_count: number;
   own_fuel_liters: number;
   own_expense_count: number;
+
+  // Settled-outside counts (settled_outside=1, excluded from amounts above):
+  fuel_settled_count?: number;
+  fuel_settled_liters?: number;
+  expense_settled_count?: number;
+  expense_settled_amount?: number;
 }
 
 export interface DashboardRow {

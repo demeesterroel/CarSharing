@@ -164,10 +164,54 @@ function ReceiptRow({
   return inner;
 }
 
+function DashboardSettledNote({
+  fuelCount,
+  fuelLiters,
+  expCount,
+  expAmt,
+}: {
+  fuelCount?: number;
+  fuelLiters?: number;
+  expCount?: number;
+  expAmt?: number;
+}) {
+  const fuelHas = (fuelLiters ?? 0) > 0.05;
+  const expHas = (expAmt ?? 0) > 0.005;
+  if (!fuelHas && !expHas) return null;
+  const expPrefix = fuelHas ? "(**)" : "(*)";
+  const noteStyle: React.CSSProperties = {
+    fontFamily: fontMono,
+    fontSize: 8,
+    color: paper.inkMute,
+    paddingLeft: 8,
+    marginTop: 3,
+    fontStyle: "italic",
+  };
+  return (
+    <div style={{ marginTop: 4 }}>
+      {fuelHas && (
+        <div style={noteStyle}>
+          {"(*) "}
+          {fuelCount} tankbeurt{fuelCount !== 1 ? "en" : ""} ({(fuelLiters ?? 0).toFixed(1)} L){" "}
+          buiten afrekening
+        </div>
+      )}
+      {expHas && (
+        <div style={noteStyle}>
+          {expPrefix}{" "}
+          {expCount} kost{expCount !== 1 ? "en" : ""} buiten afrekening
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ── Car Breakdown Section ─────────────────────────────────────────
 function CarBreakdownSection({ bd, year }: { bd: CarDashboardBreakdown; year: number }) {
   const fmtL = (l: number) => l.toFixed(0);
-  const headerLabel = `${bd.car_short} — ${bd.car_name}`;
+  const headerLabel = bd.is_own_car
+    ? `${bd.car_short} — ${bd.car_name} (Eigen wagen)`
+    : `${bd.car_short} — ${bd.car_name}`;
   const headerNet = bd.net_car;
 
   if (bd.is_own_car) {
@@ -218,7 +262,7 @@ function CarBreakdownSection({ bd, year }: { bd: CarDashboardBreakdown; year: nu
             {bd.fuel_count > 0 && (
               <ReceiptRow
                 href={`/fuel?mine=false&car=${bd.car_short}&year=${year}`}
-                label={`${bd.fuel_count} tankbeurten, ${fmtL(bd.fuel_liters)} L`}
+                label={`${bd.fuel_count} tankbeurten, ${fmtL(bd.fuel_liters)} L${(bd.fuel_settled_liters ?? 0) > 0.05 ? " (*)" : ""}`}
                 value={`− ${fmtMoney(bd.fuel_amount)}`}
                 color={paper.accent}
               />
@@ -226,11 +270,17 @@ function CarBreakdownSection({ bd, year }: { bd: CarDashboardBreakdown; year: nu
             {bd.expense_count > 0 && (
               <ReceiptRow
                 href={`/expenses?mine=false&car=${bd.car_short}&year=${year}`}
-                label={`${bd.expense_count} kosten`}
+                label={`${bd.expense_count} kosten${(bd.expense_settled_amount ?? 0) > 0.005 ? ((bd.fuel_settled_liters ?? 0) > 0.05 ? " (**)" : " (*)") : ""}`}
                 value={`− ${fmtMoney(bd.expense_amount)}`}
                 color={paper.accent}
               />
             )}
+            <DashboardSettledNote
+              fuelCount={bd.fuel_settled_count}
+              fuelLiters={bd.fuel_settled_liters}
+              expCount={bd.expense_settled_count}
+              expAmt={bd.expense_settled_amount}
+            />
           </div>
         )}
 
@@ -309,7 +359,7 @@ function CarBreakdownSection({ bd, year }: { bd: CarDashboardBreakdown; year: nu
         {bd.fuel_count > 0 && (
           <ReceiptRow
             href={`/fuel?mine=true&car=${bd.car_short}&year=${year}`}
-            label={`${bd.fuel_count} tankbeurten, ${fmtL(bd.fuel_liters)} L`}
+            label={`${bd.fuel_count} tankbeurten, ${fmtL(bd.fuel_liters)} L${(bd.fuel_settled_liters ?? 0) > 0.05 ? " (*)" : ""}`}
             value={`+ ${fmtMoney(bd.fuel_amount)}`}
             color={paper.green}
           />
@@ -317,11 +367,17 @@ function CarBreakdownSection({ bd, year }: { bd: CarDashboardBreakdown; year: nu
         {bd.expense_count > 0 && (
           <ReceiptRow
             href={`/expenses?mine=true&car=${bd.car_short}&year=${year}`}
-            label={`${bd.expense_count} kosten`}
+            label={`${bd.expense_count} kosten${(bd.expense_settled_amount ?? 0) > 0.005 ? ((bd.fuel_settled_liters ?? 0) > 0.05 ? " (**)" : " (*)") : ""}`}
             value={`+ ${fmtMoney(bd.expense_amount)}`}
             color={paper.green}
           />
         )}
+        <DashboardSettledNote
+          fuelCount={bd.fuel_settled_count}
+          fuelLiters={bd.fuel_settled_liters}
+          expCount={bd.expense_settled_count}
+          expAmt={bd.expense_settled_amount}
+        />
       </div>
     </div>
   );

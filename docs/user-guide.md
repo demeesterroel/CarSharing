@@ -1,6 +1,8 @@
-# User Guide
+# End-user Guide
 
 This guide walks you through using the car sharing app as a member — from accepting your invite to logging trips and reading your costs.
+
+> Looking for the admin documentation? See the [Owner Guide](owner-guide.md).
 
 ---
 
@@ -26,9 +28,9 @@ After logging in, open your profile via the menu (top-right corner).
 
 Fill in two required fields:
 
-| Field | Why it matters |
-|---|---|
-| **Email address** | Used for settlement notifications |
+| Field                   | Why it matters                                 |
+| ----------------------- | ---------------------------------------------- |
+| **Email address**       | Used for settlement notifications              |
 | **Bank account (IBAN)** | Used to send or receive payments at settlement |
 
 ![Profile edit form with email and IBAN fields](screenshots/04-profile-edit.png)
@@ -68,11 +70,11 @@ The trips page lists all recorded drives.
 
 ### Filters
 
-| Filter | Description |
-|---|---|
-| **Car** | Show trips for one car only |
-| **Driver** | Show trips by a specific member |
-| **Date range** | Limit to a start and end date |
+| Filter         | Description                     |
+| -------------- | ------------------------------- |
+| **Car**        | Show trips for one car only     |
+| **Driver**     | Show trips by a specific member |
+| **Date range** | Limit to a start and end date   |
 
 ![Trips filter panel open](screenshots/08-trips-filters.png)
 
@@ -90,10 +92,10 @@ The fuel page lists all recorded fill-ups.
 
 ### Filters
 
-| Filter | Description |
-|---|---|
-| **Car** | Show fuel entries for one car only |
-| **Date range** | Limit to a start and end date |
+| Filter         | Description                        |
+| -------------- | ---------------------------------- |
+| **Car**        | Show fuel entries for one car only |
+| **Date range** | Limit to a start and end date      |
 
 ![Fuel filter panel open](screenshots/11-fuel-filters.png)
 
@@ -113,9 +115,9 @@ Costs are split by category (trips, fuel, expenses) and show your share versus t
 
 ### Filters
 
-| Filter | Description |
-|---|---|
-| **Car** | Costs for one car only |
+| Filter            | Description                  |
+| ----------------- | ---------------------------- |
+| **Car**           | Costs for one car only       |
 | **Period / year** | Limit to a settlement period |
 
 ![Cost filter panel open](screenshots/14-cost-filters.png)
@@ -142,14 +144,14 @@ Tap the FAB → **Add trip** (or use the button on the Trips page).
 
 Fill in the form:
 
-| Field | Description |
-|---|---|
-| **Car** | Which car was driven |
-| **Date** | Date of the trip |
-| **Driver** | Who drove (defaults to you) |
-| **Start km** | Odometer reading at the start of the trip |
-| **End km** | Odometer reading at the end (distance is calculated automatically) |
-| **Parking note** | Optional note about where the car is parked |
+| Field            | Description                                                        |
+| ---------------- | ------------------------------------------------------------------ |
+| **Car**          | Which car was driven                                               |
+| **Date**         | Date of the trip                                                   |
+| **Driver**       | Who drove (defaults to you)                                        |
+| **Start km**     | Odometer reading at the start of the trip                          |
+| **End km**       | Odometer reading at the end (distance is calculated automatically) |
+| **Parking note** | Optional note about where the car is parked                        |
 
 ![New trip form filled in](screenshots/18-trip-form.png)
 
@@ -167,22 +169,16 @@ Tap the FAB → **Add fuel** (or use the button on the Fuel page).
 
 Fill in the form:
 
-| Field | Description |
-|---|---|
-| **Car** | Which car was refuelled |
-| **Date** | Date of the fill-up |
-| **Driver** | Who paid at the pump (defaults to you) |
-| **Amount (€)** | Total amount paid |
-| **Litres** | Amount of fuel added (price per litre is calculated automatically) |
+| Field          | Description                                                        |
+| -------------- | ------------------------------------------------------------------ |
+| **Car**        | Which car was refuelled                                            |
+| **Date**       | Date of the fill-up                                                |
+| **Driver**     | Who paid at the pump (defaults to you)                             |
+| **Amount (€)** | Total amount paid                                                  |
+| **Litres**     | Amount of fuel added (price per litre is calculated automatically) |
 
 ![New fuel form filled in](screenshots/21-fuel-form.png)
 
 Tap **Save**. The entry appears on the Fuel page and is included in cost calculations.
 
 ![Fuel list with new entry at top](screenshots/22-fuel-after-add.png)
-
----
-
-## Owner?
-
-If you manage the car sharing group, see the [Owner Guide](owner-guide.md) for admin-specific documentation.

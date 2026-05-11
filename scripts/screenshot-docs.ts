@@ -587,39 +587,42 @@ async function main() {
   if (shouldRun(26)) {
     await page.goto(`${BASE_URL}/calendar`);
     await idle(page);
-    // Click on a day cell to start range selection, then click an end day
-    const dayCells26 = page.locator("[data-date]");
-    const count26 = await dayCells26.count();
-    if (count26 >= 3) {
-      await dayCells26.nth(2).click({ force: true });
-      await page.waitForTimeout(200);
-      await dayCells26.nth(4).click({ force: true });
+    // Advance first car's calendar 2 weeks (past seeded reservations ending May 25)
+    // PickCalendar week grids use div[style*="grid-template-columns"] — one div per week row
+    const nextBtn26 = page.locator("button").filter({ hasText: "›" }).first();
+    await nextBtn26.waitFor({ state: "visible", timeout: 5000 });
+    await nextBtn26.click();
+    await page.waitForTimeout(300);
+    await nextBtn26.click();
+    await page.waitForTimeout(300);
+    // First grid row is now the first week of car 1's advanced calendar (May 25+)
+    // Cell layout (Mon-start): cell 0=Mon, 1=Tue, 2=Wed, 3=Thu, 4=Fri, 5=Sat, 6=Sun
+    const firstRow26 = page.locator('div[style*="grid-template-columns"]').first();
+    const cells26 = firstRow26.locator("> div");
+    if ((await cells26.count()) >= 5) {
+      await cells26.nth(1).click({ force: true }); // Tue
+      await page.waitForTimeout(300);
+      await cells26.nth(3).click({ force: true }); // Thu — form opens with car + dates
+      await page.waitForURL(/[?&]action=add/, { timeout: 5000 });
       await page.waitForTimeout(600);
     }
     await shot(page, "member-26-reservation-form-calendar.png");
+    await page.goto(`${BASE_URL}/calendar`);
   }
 
   // ── 27. Reservation form showing conflict warning ─────────────────────────
   if (shouldRun(27)) {
-    // Open form via FAB, then select dates that overlap an existing reservation
     await page.goto(`${BASE_URL}/calendar`);
     await idle(page);
-    await openFab(page);
-    const reservationFabOption27 = page
-      .locator("button.animate-pop-in")
-      .filter({ hasText: /reservat/i })
-      .first();
-    if ((await reservationFabOption27.count()) > 0) {
-      await reservationFabOption27.click({ force: true });
-      await page.waitForTimeout(600);
-    }
-    // Select the first available days — demo data has reservations in the visible range
-    const dayCells27 = page.locator("[data-date]");
-    const count27 = await dayCells27.count();
-    if (count27 >= 2) {
-      await dayCells27.nth(0).click({ force: true });
-      await page.waitForTimeout(200);
-      await dayCells27.nth(1).click({ force: true });
+    // Click cells overlapping Alice's pending reservation on Car AA (May 15-17)
+    // Week 1: Mon May 11=cell 0, ..., Fri May 15=cell 4, Sun May 17=cell 6
+    const firstRow27 = page.locator('div[style*="grid-template-columns"]').first();
+    const cells27 = firstRow27.locator("> div");
+    if ((await cells27.count()) >= 7) {
+      await cells27.nth(4).click({ force: true }); // May 15 = start
+      await page.waitForTimeout(300);
+      await cells27.nth(6).click({ force: true }); // May 17 = end → conflict shown
+      await page.waitForURL(/[?&]action=add/, { timeout: 5000 });
       await page.waitForTimeout(600);
     }
     await shot(page, "member-27-reservation-conflict.png");

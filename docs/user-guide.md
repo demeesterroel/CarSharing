@@ -51,12 +51,12 @@ The dashboard contains:
 
 - **Balance** — your running cost balance across all cars
 - **Car locations** — where each car is currently parked
+
+### Latest info
+
+Scroll down to see a overview of latest info.
 - **Recent trips, fuel, and expenses** — the latest entries with an **All** link to the full page
 - **Upcoming reservations** — your next confirmed and pending reservations
-
-### Year summary
-
-Scroll down to see a breakdown by year — total distance driven, fuel cost, and your share of expenses.
 
 ![Dashboard year summary section](screenshots/member-06-dashboard-filters.png)
 

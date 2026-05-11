@@ -189,7 +189,6 @@ If you select dates that overlap an existing reservation for the same car, a war
 | ------------- | ------------------------------------------------ |
 | **Pending**   | Submitted, waiting for owner to confirm          |
 | **Confirmed** | Owner approved — the car is yours on those dates |
-| **Rejected**  | Owner declined                                   |
 
 Pending reservations appear with an amber indicator; confirmed ones appear in black.
 

@@ -49,7 +49,7 @@ let localeSet = false;
 async function ensureEnglish(page: Page) {
   if (localeSet) return;
   const enBtn = page.locator("button", { hasText: /^EN$/ });
-  if (await enBtn.count() > 0) {
+  if ((await enBtn.count()) > 0) {
     await enBtn.click();
     await page.waitForTimeout(300);
   }
@@ -81,7 +81,9 @@ async function idle(page: Page) {
 
 async function openFab(page: Page) {
   const fab = page
-    .locator('button[aria-label*="menu" i], button[aria-label*="add" i], button[aria-label*="toe" i]')
+    .locator(
+      'button[aria-label*="menu" i], button[aria-label*="add" i], button[aria-label*="toe" i]'
+    )
     .last();
   const expanded = await fab.getAttribute("aria-expanded").catch(() => null);
   if (expanded !== "true") {
@@ -233,7 +235,7 @@ async function main() {
       await idle(page);
     }
     const tripFilterAA = page.locator("button").filter({ hasText: /^AA$/ }).first();
-    if (await tripFilterAA.count() > 0) {
+    if ((await tripFilterAA.count()) > 0) {
       await tripFilterAA.click();
       await page.waitForTimeout(500);
     }
@@ -265,7 +267,7 @@ async function main() {
       await idle(page);
     }
     const fuelFilterAA = page.locator("button").filter({ hasText: /^AA$/ }).first();
-    if (await fuelFilterAA.count() > 0) {
+    if ((await fuelFilterAA.count()) > 0) {
       await fuelFilterAA.click();
       await page.waitForTimeout(500);
     }
@@ -296,8 +298,11 @@ async function main() {
       await page.goto(`${BASE_URL}/expenses`);
       await idle(page);
     }
-    const expFilterMine = page.locator("button").filter({ hasText: /^MINE$|^MIJN$/i }).first();
-    if (await expFilterMine.count() > 0) {
+    const expFilterMine = page
+      .locator("button")
+      .filter({ hasText: /^MINE$|^MIJN$/i })
+      .first();
+    if ((await expFilterMine.count()) > 0) {
       await expFilterMine.click();
       await page.waitForTimeout(500);
     }
@@ -329,8 +334,11 @@ async function main() {
       await openFab(page);
     }
     // FAB chit buttons have className="animate-pop-in" — use it to avoid matching nav/trip-card buttons
-    const tripOption = page.locator("button.animate-pop-in").filter({ hasText: /\btrip\b|\brit\b/i }).first();
-    if (await tripOption.count() > 0) {
+    const tripOption = page
+      .locator("button.animate-pop-in")
+      .filter({ hasText: /\btrip\b|\brit\b/i })
+      .first();
+    if ((await tripOption.count()) > 0) {
       // React onMouseEnter won't fire from Playwright — force hover style via inline style injection
       await tripOption.evaluate((el: HTMLElement) => {
         el.style.background = "#1a1a1a";
@@ -346,15 +354,24 @@ async function main() {
     // Pre-cleanup: delete any leftover test trips from previous runs before adding a fresh one
     await page.goto(`${BASE_URL}/trips`, { waitUntil: "domcontentloaded" });
     await page.evaluate(async () => {
-      const csrf = document.cookie.split(";").find(c => c.trim().startsWith("csrf-token="))?.split("=")?.[1] ?? "";
+      const csrf =
+        document.cookie
+          .split(";")
+          .find((c) => c.trim().startsWith("csrf-token="))
+          ?.split("=")?.[1] ?? "";
       const trips: { id: number; date: string; start_odometer: number; end_odometer: number }[] =
-        await fetch("/api/trips").then((r) => r.json()).catch(() => []);
+        await fetch("/api/trips")
+          .then((r) => r.json())
+          .catch(() => []);
       for (const t of trips.filter(
         (t) =>
           (t.date === "2026-12-31" && t.end_odometer - t.start_odometer === 100) ||
           (t.start_odometer === 0 && t.end_odometer === 100)
       )) {
-        await fetch(`/api/trips/${t.id}`, { method: "DELETE", headers: { "x-csrf-token": csrf } }).catch(() => {});
+        await fetch(`/api/trips/${t.id}`, {
+          method: "DELETE",
+          headers: { "x-csrf-token": csrf },
+        }).catch(() => {});
       }
     });
     // Navigate fresh — avoids any FAB state leftover from previous shots
@@ -370,18 +387,24 @@ async function main() {
     await aaCarTab.evaluate((el: HTMLElement) => el.click());
     await page.waitForTimeout(3000); // trip form invalidates & re-fetches car state — needs extra time
     const numInputs = page.locator('input[type="number"]');
-    const startVal = await numInputs.nth(0).inputValue().catch(() => "0");
+    const startVal = await numInputs
+      .nth(0)
+      .inputValue()
+      .catch(() => "0");
     const endVal = (parseInt(startVal || "0") + 100).toString();
     await numInputs.nth(1).click({ clickCount: 3 });
     await numInputs.nth(1).fill(endVal);
     const tripMapEl = page.locator(".leaflet-container").first();
-    if (await tripMapEl.count() > 0) {
+    if ((await tripMapEl.count()) > 0) {
       const box = await tripMapEl.boundingBox();
       if (box) await page.mouse.click(box.x + box.width * 0.5, box.y + box.height * 0.5);
       await page.waitForTimeout(2000);
     }
     await shot(page, "18-trip-form.png");
-    const saveTripBtn = page.locator("button").filter({ hasText: /save trip|sla rit op/i }).first();
+    const saveTripBtn = page
+      .locator("button")
+      .filter({ hasText: /save trip|sla rit op/i })
+      .first();
     await saveTripBtn.click({ force: true }).catch(() => {});
     await page.waitForTimeout(2000);
     await page.goto(`${BASE_URL}/trips`);
@@ -397,15 +420,24 @@ async function main() {
     await shot(page, "19-trips-after-add.png");
     // Clean up trips added by this script: date 2026-12-31 with +100km delta, or legacy start=0/end=100
     await page.evaluate(async () => {
-      const csrf = document.cookie.split(";").find(c => c.trim().startsWith("csrf-token="))?.split("=")?.[1] ?? "";
+      const csrf =
+        document.cookie
+          .split(";")
+          .find((c) => c.trim().startsWith("csrf-token="))
+          ?.split("=")?.[1] ?? "";
       const trips: { id: number; date: string; start_odometer: number; end_odometer: number }[] =
-        await fetch("/api/trips").then((r) => r.json()).catch(() => []);
+        await fetch("/api/trips")
+          .then((r) => r.json())
+          .catch(() => []);
       for (const t of trips.filter(
         (t) =>
           (t.date === "2026-12-31" && t.end_odometer - t.start_odometer === 100) ||
           (t.start_odometer === 0 && t.end_odometer === 100)
       )) {
-        await fetch(`/api/trips/${t.id}`, { method: "DELETE", headers: { "x-csrf-token": csrf } }).catch(() => {});
+        await fetch(`/api/trips/${t.id}`, {
+          method: "DELETE",
+          headers: { "x-csrf-token": csrf },
+        }).catch(() => {});
       }
     });
   }
@@ -415,8 +447,11 @@ async function main() {
     await page.goto(`${BASE_URL}/`);
     await idle(page);
     await openFab(page);
-    const fillupOption = page.locator("button.animate-pop-in").filter({ hasText: /fill.up|tanken/i }).first();
-    if (await fillupOption.count() > 0) {
+    const fillupOption = page
+      .locator("button.animate-pop-in")
+      .filter({ hasText: /fill.up|tanken/i })
+      .first();
+    if ((await fillupOption.count()) > 0) {
       await fillupOption.evaluate((el: HTMLElement) => {
         el.style.background = "#1a1a1a";
         el.style.color = "#f5f0e8";
@@ -430,11 +465,23 @@ async function main() {
     // Pre-cleanup: remove leftover test fill-ups from previous runs
     await page.goto(`${BASE_URL}/fuel`, { waitUntil: "domcontentloaded" });
     await page.evaluate(async () => {
-      const csrf = document.cookie.split(";").find(c => c.trim().startsWith("csrf-token="))?.split("=")?.[1] ?? "";
-      const fuel: { id: number; date: string; liters: number; amount: number }[] =
-        await fetch("/api/fuel").then((r) => r.json()).catch(() => []);
-      for (const f of fuel.filter((f) => f.date === "2026-12-31" && f.liters === 30 && f.amount === 50)) {
-        await fetch(`/api/fuel/${f.id}`, { method: "DELETE", headers: { "x-csrf-token": csrf } }).catch(() => {});
+      const csrf =
+        document.cookie
+          .split(";")
+          .find((c) => c.trim().startsWith("csrf-token="))
+          ?.split("=")?.[1] ?? "";
+      const fuel: { id: number; date: string; liters: number; amount: number }[] = await fetch(
+        "/api/fuel"
+      )
+        .then((r) => r.json())
+        .catch(() => []);
+      for (const f of fuel.filter(
+        (f) => f.date === "2026-12-31" && f.liters === 30 && f.amount === 50
+      )) {
+        await fetch(`/api/fuel/${f.id}`, {
+          method: "DELETE",
+          headers: { "x-csrf-token": csrf },
+        }).catch(() => {});
       }
     });
     // Navigate fresh — avoids any FAB state leftover
@@ -453,13 +500,16 @@ async function main() {
     await fuelNumInputs.nth(1).click({ clickCount: 3 });
     await fuelNumInputs.nth(1).fill("30"); // liters 30L → €1.67/L
     const fuelMapEl = page.locator(".leaflet-container").first();
-    if (await fuelMapEl.count() > 0) {
+    if ((await fuelMapEl.count()) > 0) {
       const box = await fuelMapEl.boundingBox();
       if (box) await page.mouse.click(box.x + box.width * 0.6, box.y + box.height * 0.35);
       await page.waitForTimeout(2000);
     }
     await shot(page, "21-fuel-form.png");
-    const saveFuelBtn = page.locator("button").filter({ hasText: /save|sla op|opslaan|fill.up/i }).first();
+    const saveFuelBtn = page
+      .locator("button")
+      .filter({ hasText: /save|sla op|opslaan|fill.up/i })
+      .first();
     await saveFuelBtn.click({ force: true }).catch(() => {});
     await page.waitForTimeout(2000);
     await page.goto(`${BASE_URL}/fuel`);
@@ -473,11 +523,23 @@ async function main() {
     await shot(page, "22-fuel-after-add.png");
     // Clean up fill-ups added by this script (30L / €50)
     await page.evaluate(async () => {
-      const csrf = document.cookie.split(";").find(c => c.trim().startsWith("csrf-token="))?.split("=")?.[1] ?? "";
-      const fuel: { id: number; date: string; liters: number; amount: number }[] =
-        await fetch("/api/fuel").then((r) => r.json()).catch(() => []);
-      for (const f of fuel.filter((f) => f.date === "2026-12-31" && f.liters === 30 && f.amount === 50)) {
-        await fetch(`/api/fuel/${f.id}`, { method: "DELETE", headers: { "x-csrf-token": csrf } }).catch(() => {});
+      const csrf =
+        document.cookie
+          .split(";")
+          .find((c) => c.trim().startsWith("csrf-token="))
+          ?.split("=")?.[1] ?? "";
+      const fuel: { id: number; date: string; liters: number; amount: number }[] = await fetch(
+        "/api/fuel"
+      )
+        .then((r) => r.json())
+        .catch(() => []);
+      for (const f of fuel.filter(
+        (f) => f.date === "2026-12-31" && f.liters === 30 && f.amount === 50
+      )) {
+        await fetch(`/api/fuel/${f.id}`, {
+          method: "DELETE",
+          headers: { "x-csrf-token": csrf },
+        }).catch(() => {});
       }
     });
   }
@@ -527,7 +589,7 @@ async function main() {
         'button[aria-label*="car" i], button[aria-label*="wagen" i], button[aria-label*="new" i], button[aria-label*="add" i]'
       )
       .last();
-    if (await addCarFab.count() > 0) await addCarFab.click();
+    if ((await addCarFab.count()) > 0) await addCarFab.click();
     const shortInput = page.locator('input[placeholder="ETH"]');
     await shortInput.waitFor({ state: "visible" });
     const carNameInput = page.locator("input:not([placeholder]):not([type])").first();
@@ -556,9 +618,16 @@ async function main() {
 
   // ── 105. Car detail view — cost/coverage stats ────────────────────────────
   if (shouldRun(105)) {
-    await page.goto(`${BASE_URL}/admin/vehicles?view=detail&car=1`, { waitUntil: "domcontentloaded" });
-    // Wait for CostCoverageScreen to render — unique label only in detail view
-    await page.waitForSelector("text=Cost coverage", { timeout: 20000 }).catch(() => {});
+    await page.goto(`${BASE_URL}/admin/vehicles?view=detail&car=1`, {
+      waitUntil: "networkidle",
+      timeout: 30000,
+    });
+    // Poll until CostCoverageScreen renders (useAdminSummary is async; shows "geen data" until loaded)
+    // Use textContent not innerText — CSS text-transform:uppercase changes innerText case
+    await page.waitForFunction(
+      () => document.body.textContent?.includes("Cost coverage") === true,
+      { timeout: 20000, polling: 300 }
+    );
     await page.waitForTimeout(300);
     await shot(page, "105-car-overview.png");
   }
@@ -580,41 +649,38 @@ async function main() {
     await shot(page, "108-settlements.png");
   }
 
-  // ── 109. Settlement table ──────────────────────────────────────────────────
+  // ── 109. Settlement table — finalized year ────────────────────────────────
   if (shouldRun(109)) {
-    if (!shouldRun(108)) {
-      await page.goto(`${BASE_URL}/admin/settlement?year=2024`);
-      await idle(page);
-      await page.waitForTimeout(2000);
-    }
-    await page.evaluate(() => window.scrollTo(0, 200));
-    await page.waitForTimeout(300);
+    // Always navigate to a finalized year so FINALIZED badge + REOPEN button are visible
+    await page.goto(`${BASE_URL}/admin/settlement?year=2024`, { waitUntil: "domcontentloaded" });
+    await idle(page);
+    await page.waitForTimeout(2000);
     await shot(page, "109-settlement-table.png");
   }
 
-  // ── 110. Transfers list ────────────────────────────────────────────────────
+  // ── 110. Open settlement — ready to lock ──────────────────────────────────
   if (shouldRun(110)) {
-    if (!shouldRun(108) && !shouldRun(109)) {
-      await page.goto(`${BASE_URL}/admin/settlement?year=2024`);
-      await idle(page);
-      await page.waitForTimeout(2000);
-    }
-    await page.evaluate(() => window.scrollTo(0, 500));
-    await page.waitForTimeout(200);
+    // Navigate to the open (not yet finalized) year to show LOCK SETTLEMENT button
+    await page.goto(`${BASE_URL}/admin/settlement?year=2025`, { waitUntil: "domcontentloaded" });
+    await idle(page);
+    await page.waitForTimeout(2000);
     await shot(page, "110-settlement-transfers.png");
   }
 
   // ── 111. Settlement message dialog ────────────────────────────────────────
   if (shouldRun(111)) {
-    if (!shouldRun(108) && !shouldRun(109) && !shouldRun(110)) {
-      await page.goto(`${BASE_URL}/admin/settlement?year=2024`);
+    if (!shouldRun(110)) {
+      await page.goto(`${BASE_URL}/admin/settlement?year=2025`);
       await idle(page);
       await page.waitForTimeout(2000);
     }
     await page.evaluate(() => window.scrollTo(0, 0));
     await page.waitForTimeout(200);
-    const msgBtn = page.locator("button").filter({ hasText: /bericht|message|send/i }).first();
-    if (await msgBtn.count() > 0) {
+    const msgBtn = page
+      .locator("button")
+      .filter({ hasText: /bericht|message|send/i })
+      .first();
+    if ((await msgBtn.count()) > 0) {
       await msgBtn.click();
       await page.waitForTimeout(500);
       await shot(page, "111-settlement-message.png");
@@ -627,7 +693,7 @@ async function main() {
   // ── 112. Lock settlement ───────────────────────────────────────────────────
   if (shouldRun(112)) {
     if (!shouldRun(108) && !shouldRun(109) && !shouldRun(110) && !shouldRun(111)) {
-      await page.goto(`${BASE_URL}/admin/settlement?year=2024`);
+      await page.goto(`${BASE_URL}/admin/settlement?year=2025`);
       await idle(page);
       await page.waitForTimeout(2000);
     }

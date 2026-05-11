@@ -13,7 +13,7 @@ const OWNER_PAGES = ["/admin", "/admin/settlement", "/admin/vehicles"];
 function SubNav() {
   const t = useT();
   const pathname = usePathname();
-  const { data: reservations = [] } = useReservations();
+  const { data: reservations = [], isLoading: isResLoading } = useReservations();
   const { data: me } = useMe();
   const ownerCarShorts = useOwnerCarShorts();
   const pendingCount = reservations.filter(
@@ -21,7 +21,8 @@ function SubNav() {
   ).length;
 
   const year = new Date().getFullYear();
-  const { data: adminData } = useAdminSummary(year);
+  const { data: adminData, isLoading: isAdminLoading } = useAdminSummary(year);
+  const isInboxLoading = isResLoading || isAdminLoading;
   const gapsCount = (adminData?.kmGaps ?? []).filter(
     (g) => !ownerCarShorts || ownerCarShorts.has(g.car_short)
   ).length;
@@ -30,7 +31,9 @@ function SubNav() {
   const ALL_PAGES = [
     {
       href: "/admin",
-      label: t("admin.sub_inbox") + (inboxCount > 0 ? ` (${inboxCount})` : ""),
+      label: isInboxLoading
+        ? t("admin.sub_inbox") + " (—)"
+        : t("admin.sub_inbox") + (inboxCount > 0 ? ` (${inboxCount})` : ""),
     },
     { href: "/admin/vehicles", label: t("admin.sub_cars") },
     { href: "/admin/members", label: t("admin.sub_members") },

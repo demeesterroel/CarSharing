@@ -80,6 +80,8 @@ Each trip card shows: parking location, driver, date, odometer range, and cost. 
 
 ![Trips filter panel open](screenshots/member-08-trips-filters.png)
 
+### Trip Details
+
 ![Trip detail view](screenshots/member-34-trip-detail.png)
 
 ---
@@ -87,6 +89,8 @@ Each trip card shows: parking location, driver, date, odometer range, and cost. 
 ## 5. Fuel page
 
 The fuel page lists all recorded fill-ups.
+
+Each fuel entry shows: date, car, litres, price per litre, total cost, and who paid. Click an entry to view and edit its details.
 
 ![Fuel page full view](screenshots/member-10-fuel.png)
 
@@ -100,9 +104,7 @@ The fuel page lists all recorded fill-ups.
 
 ![Fuel filter panel open](screenshots/member-11-fuel-filters.png)
 
-Each fuel entry shows: date, car, litres, price per litre, total cost, and who paid. Click an entry to view and edit its details.
-
-![Single fuel card](screenshots/member-12-fuel-card.png)
+### Fuel Details
 
 ![Fuel detail view](screenshots/member-35-fuel-detail.png)
 
@@ -110,7 +112,10 @@ Each fuel entry shows: date, car, litres, price per litre, total cost, and who p
 
 ## 6. Expenses page
 
-The expenses page lists all one-off costs — parking fees, maintenance contributions, accessories, and other shared costs.
+The expenses page lists all one-off costs — parking fees, maintenance contributions, accessories, and other shared costs
+
+Each expense card shows: date, car, amount, description, and category. Click an expense to view and edit its details.
+
 
 ![Expenses page full view](screenshots/member-13-cost.png)
 
@@ -124,9 +129,7 @@ The expenses page lists all one-off costs — parking fees, maintenance contribu
 
 ![Expenses filter panel open](screenshots/member-14-cost-filters.png)
 
-Each expense card shows: date, car, amount, description, and category. Click an expense to view and edit its details.
-
-![Single expense card](screenshots/member-23-expense-card.png)
+### Expense Details
 
 ![Expense detail view](screenshots/member-36-expense-detail.png)
 

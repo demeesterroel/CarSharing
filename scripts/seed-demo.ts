@@ -36,23 +36,109 @@ const pick = <T>(arr: readonly T[] | T[]): T => arr[Math.floor(rng() * arr.lengt
 const YEARS = [2021, 2022, 2023, 2024, 2025, 2026];
 
 const PEOPLE = [
-  { first_name: "Admin", last_name: "One",   username: "admin", password: "admin", is_admin: 1, discount: 0,    discount_long: 0,    bank_account: "BE00 0000 0000 0001", email: "admin@demo.local" },
-  { first_name: "Owner", last_name: "Two",   username: "owner", password: "owner", is_admin: 0, discount: 0,    discount_long: 0,    bank_account: "BE00 0000 0000 0002", email: "owner@demo.local" },
-  { first_name: "Alice", last_name: "Smith", username: "alice", password: "alice", is_admin: 0, discount: 0,    discount_long: 0,    bank_account: "BE00 0000 0000 0003", email: "alice@demo.local" },
-  { first_name: "Bob",   last_name: "Jones", username: "bob",   password: "bob",   is_admin: 0, discount: 0.25, discount_long: 0.50, bank_account: "BE00 0000 0000 0004", email: "bob@demo.local"   },
-  { first_name: "Carol", last_name: "Brown", username: "carol", password: "carol", is_admin: 0, discount: 0.25, discount_long: 0.50, bank_account: "BE00 0000 0000 0005", email: "carol@demo.local" },
+  {
+    first_name: "Admin",
+    last_name: "One",
+    username: "admin",
+    password: "admin",
+    is_admin: 1,
+    discount: 0,
+    discount_long: 0,
+    bank_account: "BE00 0000 0000 0001",
+    email: "admin@demo.local",
+  },
+  {
+    first_name: "Owner",
+    last_name: "Two",
+    username: "owner",
+    password: "owner",
+    is_admin: 0,
+    discount: 0,
+    discount_long: 0,
+    bank_account: "BE00 0000 0000 0002",
+    email: "owner@demo.local",
+  },
+  {
+    first_name: "Alice",
+    last_name: "Smith",
+    username: "alice",
+    password: "alice",
+    is_admin: 0,
+    discount: 0,
+    discount_long: 0,
+    bank_account: "BE00 0000 0000 0003",
+    email: "alice@demo.local",
+  },
+  {
+    first_name: "Bob",
+    last_name: "Jones",
+    username: "bob",
+    password: "bob",
+    is_admin: 0,
+    discount: 0.25,
+    discount_long: 0.5,
+    bank_account: "BE00 0000 0000 0004",
+    email: "bob@demo.local",
+  },
+  {
+    first_name: "Carol",
+    last_name: "Brown",
+    username: "carol",
+    password: "carol",
+    is_admin: 0,
+    discount: 0.25,
+    discount_long: 0.5,
+    bank_account: "BE00 0000 0000 0005",
+    email: "carol@demo.local",
+  },
 ] as const;
 
 const CARS = [
-  { short: "AA", name: "Car AA", price_per_km: 0.28, owner_username: "admin", start_odometer: 45000, active: 1 },
-  { short: "BB", name: "Car BB", price_per_km: 0.30, owner_username: "owner", start_odometer: 30000, active: 1 },
-  { short: "CC", name: "Car CC", price_per_km: 0.26, owner_username: "admin", start_odometer: 62000, active: 1 },
-  { short: "DD", name: "Car DD", price_per_km: 0.32, owner_username: "owner", start_odometer: 15000, active: 0 },
+  {
+    short: "AA",
+    name: "Car AA",
+    price_per_km: 0.28,
+    owner_username: "admin",
+    start_odometer: 45000,
+    active: 1,
+  },
+  {
+    short: "BB",
+    name: "Car BB",
+    price_per_km: 0.3,
+    owner_username: "owner",
+    start_odometer: 30000,
+    active: 1,
+  },
+  {
+    short: "CC",
+    name: "Car CC",
+    price_per_km: 0.26,
+    owner_username: "admin",
+    start_odometer: 62000,
+    active: 1,
+  },
+  {
+    short: "DD",
+    name: "Car DD",
+    price_per_km: 0.32,
+    owner_username: "owner",
+    start_odometer: 15000,
+    active: 0,
+  },
 ] as const;
 
 const LOCATIONS = [
-  "Antwerpen", "Gent", "Brussel", "Leuven", "Mechelen",
-  "Hasselt", "Turnhout", "Herentals", "Mol", "Aarschot",
+  "Antwerpen",
+  "Gent",
+  "Brussel",
+  "Leuven",
+  "Mechelen",
+  "Hasselt",
+  "Turnhout",
+  "Herentals",
+  "Mol",
+  "Aarschot",
 ];
 
 const EXPENSE_CATEGORIES = ["maintenance", "repair", "insurance"] as const;
@@ -78,8 +164,27 @@ const updatePerson = db.prepare(`
 db.transaction(() => {
   for (const p of PEOPLE) {
     const hash = bcrypt.hashSync(p.password, 10);
-    insertPerson.run(p.first_name, p.last_name, p.username, hash, p.is_admin, p.discount, p.discount_long, p.bank_account, p.email);
-    updatePerson.run(p.first_name, p.last_name, p.is_admin, p.discount, p.discount_long, p.bank_account, p.email, p.username);
+    insertPerson.run(
+      p.first_name,
+      p.last_name,
+      p.username,
+      hash,
+      p.is_admin,
+      p.discount,
+      p.discount_long,
+      p.bank_account,
+      p.email
+    );
+    updatePerson.run(
+      p.first_name,
+      p.last_name,
+      p.is_admin,
+      p.discount,
+      p.discount_long,
+      p.bank_account,
+      p.email,
+      p.username
+    );
   }
 })();
 
@@ -93,7 +198,10 @@ for (const p of PEOPLE) {
 // Build discount lookup map: person id → {discount, discount_long}
 const personDiscounts = new Map<number, { discount: number; discount_long: number }>();
 for (const p of PEOPLE) {
-  personDiscounts.set(personIdByUsername[p.username], { discount: p.discount, discount_long: p.discount_long });
+  personDiscounts.set(personIdByUsername[p.username], {
+    discount: p.discount,
+    discount_long: p.discount_long,
+  });
 }
 
 console.log(`  → ${PEOPLE.length} people`);
@@ -127,14 +235,14 @@ for (const c of CARS) {
   const row = getCarByShort.get(c.short) as { id: number };
   carIdByShort[c.short] = row.id;
   if (c.active) {
-    const existing = db.prepare(
-      "SELECT MAX(end_odometer) AS max_odo FROM trips WHERE car_id = ?"
-    ).get(row.id) as { max_odo: number | null };
+    const existing = db
+      .prepare("SELECT MAX(end_odometer) AS max_odo FROM trips WHERE car_id = ?")
+      .get(row.id) as { max_odo: number | null };
     carOdometer[c.short] = existing.max_odo ?? c.start_odometer;
   }
 }
 
-const ACTIVE_CARS = CARS.filter(c => c.active !== 0);
+const ACTIVE_CARS = CARS.filter((c) => c.active !== 0);
 console.log(`  → ${CARS.length} cars (${ACTIVE_CARS.length} active)`);
 
 // ── Price per litre drift table ───────────────────────────────────────────────
@@ -144,8 +252,8 @@ function buildPriceTable(): Map<string, number> {
   let price = 1.85;
   for (const year of YEARS) {
     for (let month = 1; month <= 12; month++) {
-      const step = (rng() - 0.5) * 0.10;
-      price = Math.max(1.50, Math.min(2.50, price + step));
+      const step = (rng() - 0.5) * 0.1;
+      price = Math.max(1.5, Math.min(2.5, price + step));
       prices.set(`${year}-${String(month).padStart(2, "0")}`, +price.toFixed(4));
     }
   }
@@ -219,7 +327,16 @@ for (const car of ACTIVE_CARS) {
         carOdometer[car.short] = end_odometer;
         kmBudget -= km;
 
-        insertTrip.run(personId, carId, dates[i], start_odometer, end_odometer, km, +amount.toFixed(2), pick(LOCATIONS));
+        insertTrip.run(
+          personId,
+          carId,
+          dates[i],
+          start_odometer,
+          end_odometer,
+          km,
+          +amount.toFixed(2),
+          pick(LOCATIONS)
+        );
       }
     })();
     tripsTotal += dates.length;
@@ -256,7 +373,9 @@ for (const car of ACTIVE_CARS) {
       for (let i = 0; i < dates.length; i++) {
         const remaining = dates.length - i;
         const avgNeeded = litersBudget / remaining;
-        const liters = +Math.max(10, Math.min(45, rand(avgNeeded * 0.8, avgNeeded * 1.2))).toFixed(1);
+        const liters = +Math.max(10, Math.min(45, rand(avgNeeded * 0.8, avgNeeded * 1.2))).toFixed(
+          1
+        );
         const ppl = priceForDate(dates[i]);
         const amount = +(liters * ppl).toFixed(2);
         const price_per_liter = +calcPricePerLiter(amount, liters).toFixed(4);
@@ -311,19 +430,21 @@ console.log(`  → ${expensesTotal} expenses`);
 
 // ── Odometer gap for AA (shows in admin inbox) ────────────────────────────────
 {
-  const lastTrip = db.prepare(
-    "SELECT end_odometer FROM trips WHERE car_id = ? ORDER BY date DESC, id DESC LIMIT 1"
-  ).get(carIdByShort["AA"]) as { end_odometer: number } | undefined;
+  const lastTrip = db
+    .prepare("SELECT end_odometer FROM trips WHERE car_id = ? ORDER BY date DESC, id DESC LIMIT 1")
+    .get(carIdByShort["AA"]) as { end_odometer: number } | undefined;
   if (lastTrip) {
     const gapStart = lastTrip.end_odometer + 300;
-    const alreadyExists = db.prepare(
-      "SELECT 1 FROM trips WHERE car_id = ? AND start_odometer = ?"
-    ).get(carIdByShort["AA"], gapStart);
+    const alreadyExists = db
+      .prepare("SELECT 1 FROM trips WHERE car_id = ? AND start_odometer = ?")
+      .get(carIdByShort["AA"], gapStart);
     if (!alreadyExists) {
-      db.prepare(`
+      db.prepare(
+        `
         INSERT INTO trips (person_id, car_id, date, start_odometer, end_odometer, km, amount, location)
         VALUES (?, ?, '2026-12-30', ?, ?, 85, 23.80, 'Turnhout')
-      `).run(personIdByUsername["alice"], carIdByShort["AA"], gapStart, gapStart + 85);
+      `
+      ).run(personIdByUsername["alice"], carIdByShort["AA"], gapStart, gapStart + 85);
     }
   }
 }
@@ -339,9 +460,16 @@ const insertPayment = db.prepare(
   "INSERT INTO payments (person_id, date, amount, note, year) VALUES (?, ?, ?, ?, ?)"
 );
 
-interface PersonRow { id: number; first_name: string; last_name: string; username: string | null; }
-const allPeople = db.prepare("SELECT id, first_name, last_name, username FROM people").all() as PersonRow[];
-const personByShort = new Map<string, number>(allPeople.map(p => [shortNameOf(p), p.id]));
+interface PersonRow {
+  id: number;
+  first_name: string;
+  last_name: string;
+  username: string | null;
+}
+const allPeople = db
+  .prepare("SELECT id, first_name, last_name, username FROM people")
+  .all() as PersonRow[];
+const personByShort = new Map<string, number>(allPeople.map((p) => [shortNameOf(p), p.id]));
 const ownerPersonId = personIdByUsername["owner"];
 
 let paymentsTotal = 0;
@@ -376,34 +504,43 @@ console.log(`  → ${paymentsTotal} payments`);
 
 console.log("Seeding settlements and settings...");
 
-db.prepare(`
+db.prepare(
+  `
   INSERT OR IGNORE INTO settlements (year, settled_at, settled_by) VALUES
   (2021, '2022-02-01T10:00:00', 'admin'),
   (2022, '2023-02-01T10:00:00', 'admin'),
   (2023, '2024-02-01T10:00:00', 'admin')
-`).run();
+`
+).run();
 // 2024 is intentionally left open so screenshots show an active settlement
 db.prepare("DELETE FROM settlements WHERE year = 2024").run();
 
-db.prepare(`
+db.prepare(
+  `
   INSERT OR IGNORE INTO settings (key, value)
   VALUES ('coop_bank_account', 'BE00 0000 0000 0000')
-`).run();
+`
+).run();
 
-// ── Pending reservations (for inbox screenshot) ────────────────────────────
+// ── Reservations (for screenshots) ─────────────────────────────────────────
 const aliceId = personIdByUsername["alice"];
 const carolId = personIdByUsername["carol"];
-db.prepare("DELETE FROM reservations WHERE status = 'pending'").run();
-db.prepare(`
+db.prepare("DELETE FROM reservations WHERE status IN ('pending', 'confirmed')").run();
+db.prepare(
+  `
   INSERT INTO reservations (person_id, car_id, start_date, end_date, status, note)
   VALUES
-    (?, ?, '2026-05-15', '2026-05-17', 'pending', 'Weekend trip to Ghent'),
-    (?, ?, '2026-05-20', '2026-05-25', 'pending', 'Family visit'),
-    (?, ?, '2026-06-01', '2026-06-04', 'pending', 'School run week')
-`).run(
-  aliceId,  carIdByShort["AA"],
-  personIdByUsername["bob"],  carIdByShort["BB"],
-  carolId,  carIdByShort["CC"]
+    (?, ?, '2026-05-15', '2026-05-17', 'pending',   'Weekend trip to Ghent'),
+    (?, ?, '2026-05-20', '2026-05-25', 'confirmed', 'Family visit'),
+    (?, ?, '2026-06-01', '2026-06-04', 'confirmed', 'School run week')
+`
+).run(
+  aliceId,
+  carIdByShort["AA"],
+  personIdByUsername["bob"],
+  carIdByShort["BB"],
+  carolId,
+  carIdByShort["CC"]
 );
 
 // ── Summary ───────────────────────────────────────────────────────────────────
@@ -416,7 +553,7 @@ const counts = {
   expenses: (db.prepare("SELECT COUNT(*) AS n FROM expenses").get() as { n: number }).n,
   payments: (db.prepare("SELECT COUNT(*) AS n FROM payments").get() as { n: number }).n,
   settlements: (db.prepare("SELECT COUNT(*) AS n FROM settlements").get() as { n: number }).n,
-  reservations: (db.prepare("SELECT COUNT(*) AS n FROM reservations WHERE status = 'pending'").get() as { n: number }).n,
+  reservations: (db.prepare("SELECT COUNT(*) AS n FROM reservations").get() as { n: number }).n,
 };
 
 console.log("\n✅ Demo seed complete:");

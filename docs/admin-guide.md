@@ -2,11 +2,40 @@
 
 This guide covers the pages that are only visible to **admins** (not regular car owners).
 
-> Car owner pages (Inbox, Cars, Members, Settlements) are documented in the [Owner Guide](owner-guide.md).
+> Car owner pages (Inbox, Cars, Settlements) are documented in the [Owner Guide](owner-guide.md).
 
 ---
 
-## 1. Payments
+## 1. Members
+
+The Members page (`Admin → Members`) lists all registered members. Only admins can access this page — car owners cannot see it.
+
+![Members page with all members listed](screenshots/107-car-overview-members.png)
+
+Click a member row to expand it and edit their details:
+
+| Field                  | Description                                |
+| ---------------------- | ------------------------------------------ |
+| **Username**           | Login name for the member                  |
+| **Admin**              | Toggle to grant or revoke admin privileges |
+| **Base discount**      | Discount % applied to trips ≤ 500 km       |
+| **Long-trip discount** | Discount % applied to trips > 500 km       |
+
+### Generating an invite link
+
+Click **Copy invite link** inside an expanded member row to copy a one-time invite URL to your clipboard. Send it to the member — they use it to set their password and log in for the first time.
+
+![Admin copying an invite link from the members page](screenshots/01-invite-link.png)
+
+The link is valid for 7 days. Generate a new one if it expires.
+
+### View as member
+
+Click **View as** next to any member to log in as them. Useful for troubleshooting what a member sees. Switch back by logging out and logging in as yourself.
+
+---
+
+## 2. Payments
 
 The Payments page (`Admin → Payments`) is where you record money that members have actually transferred to the cooperative's bank account.
 

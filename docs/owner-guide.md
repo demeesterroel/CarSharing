@@ -69,15 +69,7 @@ Use this page to audit usage and verify that the price/km is set correctly befor
 
 ---
 
-## 4. Members
-
-The **Members** page lists all registered members and lets you log in as any member (view-as) for troubleshooting.
-
-![Members page with all members listed](screenshots/107-car-overview-members.png)
-
----
-
-## 5. Settlements page
+## 4. Settlements page
 
 The Settlements page calculates who owes what and generates the payment instructions for all members.
 

@@ -160,12 +160,37 @@ async function main() {
 
   console.log("\n[user guide]");
 
-  // ── 02. First login page (unauthenticated) ─────────────────────────────────
+  // ── 02. Invite page — set-password screen seen by new members ────────────
   if (shouldRun(2)) {
-    await context.clearCookies();
-    await page.goto(`${BASE_URL}/login`, { waitUntil: "domcontentloaded" });
-    await ensureEnglish(page);
-    await shot(page, "02-first-login.png");
+    // Generate a real invite token for alice so the page renders correctly
+    await login(page, "admin", "admin");
+    const inviteUrl = await page.evaluate(async () => {
+      const csrf =
+        document.cookie
+          .split(";")
+          .find((c) => c.trim().startsWith("csrf-token="))
+          ?.split("=")?.[1] ?? "";
+      const people: { id: number; username: string }[] = await fetch("/api/people").then((r) =>
+        r.json()
+      );
+      const alice = people.find((p) => p.username === "alice");
+      if (!alice) return null;
+      const res = await fetch(`/api/people/${alice.id}/invite`, {
+        method: "POST",
+        headers: { "x-csrf-token": csrf },
+      });
+      const data = (await res.json()) as { url: string };
+      return data.url;
+    });
+    if (!inviteUrl) throw new Error("Could not generate invite URL for alice");
+    const invitePath = new URL(inviteUrl).pathname;
+    // Keep admin session so the EN locale set during login persists on this page
+    await page.goto(`${BASE_URL}${invitePath}`, { waitUntil: "networkidle" });
+    await page.waitForFunction(() => document.body.textContent?.includes("Welcome to Autodelen"), {
+      timeout: 10000,
+      polling: 200,
+    });
+    await shot(page, "02-invite-page.png");
   }
 
   // ── 01. Invite link — expand first member card ─────────────────────────────

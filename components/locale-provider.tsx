@@ -15,18 +15,16 @@ const LocaleContext = createContext<LocaleContextValue>({
 });
 
 export function LocaleProvider({ children }: { children: React.ReactNode }) {
-  // useState initializer runs once at mount. On the client, reset the module-level
-  // activeLocale to "nl" so the initial render always matches the server HTML.
-  // Without this, stale HMR state can leave activeLocale as "en" before effects run.
   const [locale, setLocaleState] = useState<Locale>(() => {
     if (typeof window === "undefined") return "nl";
     const stored = localStorage.getItem(STORAGE_KEY) as Locale | null;
-    return stored === "en" || stored === "nl" ? stored : "nl";
+    const l = stored === "en" || stored === "nl" ? stored : "nl";
+    // Sync module locale immediately so t() returns the correct language on first render.
+    // Without this, t() uses the default "nl" until useEffect fires, which never triggers
+    // a re-render — leaving hard-navigated pages permanently in Dutch.
+    setModuleLocale(l);
+    return l;
   });
-
-  useEffect(() => {
-    setModuleLocale(locale);
-  }, [locale]);
 
   const handleSetLocale = (l: Locale) => {
     localStorage.setItem(STORAGE_KEY, l);

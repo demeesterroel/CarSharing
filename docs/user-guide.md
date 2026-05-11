@@ -8,15 +8,17 @@ This guide walks you through using the car sharing app as a member — from acce
 
 ## 1. Accepting your invite
 
-The owner sends you a personal invite link by email or message. Click the link to open the app.
+The car owner sends you a personal invite link by email or message. The link looks like:
 
-The owner generates this link from the **Members** page in the admin panel — you will receive it directly.
+```
+/invite/a3f2c1d4e5b6...
+```
 
-![Admin copying an invite link from the members page](screenshots/01-invite-link.png)
+Click the link to open the app. You will land on a **Set password** screen.
 
-You will land on a login page pre-filled for your account. Set a password and log in.
+![Invite page — set your password to get started](screenshots/02-invite-page.png)
 
-![First login / set password screen](screenshots/02-first-login.png)
+Choose a password (minimum 8 characters), confirm it, and click **Set password**. You are logged in immediately and land on your profile page to fill in your details.
 
 ---
 

@@ -65,6 +65,8 @@ export const en: Messages = {
   "action.copied": "Copied!",
   "action.cancel": "Cancel",
   "action.close": "Close",
+  "action.show_password": "Show password",
+  "action.hide_password": "Hide password",
   "action.delete": "Delete",
   "action.see_all": "All →",
   "action.clear_gps": "Clear GPS pin",

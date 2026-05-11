@@ -33,10 +33,10 @@ The Cars page lists all vehicles in the group.
 
 Click **Add car** and fill in:
 
-| Field | Description |
-|---|---|
+| Field            | Description                         |
+| ---------------- | ----------------------------------- |
 | **Name / plate** | Identifier shown throughout the app |
-| **Owner** | Which member owns this car |
+| **Owner**        | Which member owns this car          |
 
 ![Add car form](screenshots/103-car-add-form.png)
 
@@ -101,9 +101,9 @@ The green summary box at the bottom confirms that inflows and outflows balance t
 
 ### Transfers
 
-The red box shows the number of transfers still outstanding. The app calculates the minimal set of payments needed to settle all balances.
+The red box shows the number of transfers still outstanding. The app calculates the minimal set of payments needed to settle all balances. Open settlements show a **Finalize settlement** button at the bottom.
 
-![Settlement page — balance summary and outstanding transfers](screenshots/110-settlement-transfers.png)
+![Settlement page — open settlement with outstanding transfers](screenshots/110-settlement-transfers.png)
 
 ### Sending settlement messages
 
@@ -113,6 +113,6 @@ Click **Send message** next to a member row to copy a pre-filled payment message
 
 ### Locking a settlement
 
-Once all transfers are confirmed, click **Lock settlement** to close the period. Locked settlements are archived and excluded from future calculations. A locked settlement can be reopened with **Reopen settlement** if corrections are needed.
+Once all transfers are confirmed, click **Finalize settlement** to close the period. Finalized settlements are archived and excluded from future calculations. A finalized settlement can be reopened with **Reopen settlement** if corrections are needed.
 
-![Settlement locked — Reopen settlement button visible](screenshots/112-settlement-lock.png)
+![Settlement — Finalize settlement button](screenshots/112-settlement-lock.png)

@@ -75,8 +75,8 @@ export function ReservationForm({ defaultValues, onSubmit, onCancel }: Props) {
   >({
     resolver: zodResolver(schema),
     defaultValues: {
-      start_date: defaultValues?.start_date ?? today,
-      end_date: defaultValues?.end_date ?? today,
+      start_date: defaultValues?.start_date ?? "",
+      end_date: defaultValues?.end_date ?? "",
       person_id: defaultValues?.person_id,
       car_id: defaultValues?.car_id,
       note: defaultValues?.note ?? null,
@@ -285,7 +285,7 @@ export function ReservationForm({ defaultValues, onSubmit, onCancel }: Props) {
             <span
               style={{ fontFamily: fontSerif, fontSize: 17, fontWeight: 600, color: paper.ink }}
             >
-              {person ? fullNameOf(person) : me?.shortName ?? "—"}
+              {person ? fullNameOf(person) : (me?.shortName ?? "—")}
             </span>
             <span style={{ fontSize: 13 }}>🔒</span>
           </div>

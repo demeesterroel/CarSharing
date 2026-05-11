@@ -1,16 +1,41 @@
 import { test, expect } from "@playwright/test";
+import { sealData } from "iron-session";
 
-async function loginViaApi(page: import("@playwright/test").Page) {
-  await page.request.post("/api/auth/login", {
-    data: {
-      username: process.env.TEST_EMAIL ?? "test@example.com",
-      password: process.env.TEST_PASSWORD ?? "changeme",
+const SESSION_PASSWORD = "autodelen-dev-session-password-32-chars-xyz";
+
+const EMPTY_ADMIN_SUMMARY = {
+  carPnL: [],
+  settlement: [],
+  kmGaps: [],
+  zeroKmTrips: [],
+  monthlyCarKm: [],
+  personContributions: [],
+  historicalCarKm: [],
+  priceHistory: [],
+  rollingFuelPerKm: [],
+  historicalOwnerSplit: [],
+  historicalExpenses: [],
+};
+
+async function setAdminSession(page: import("@playwright/test").Page) {
+  const sealed = await sealData(
+    { authenticated: true, isAdmin: true, personId: 1, shortName: "Test" },
+    { password: SESSION_PASSWORD, ttl: 86400 }
+  );
+  await page.context().addCookies([
+    {
+      name: "carsharing_session",
+      value: sealed,
+      domain: "localhost",
+      path: "/",
+      httpOnly: true,
+      sameSite: "Strict",
     },
-  });
+  ]);
 }
 
 test("admin inbox shows skeleton while reservations API is blocked", async ({ page }) => {
-  await loginViaApi(page);
+  await setAdminSession(page);
 
   let resolveReservations!: () => void;
   const blocker = new Promise<void>((resolve) => {
@@ -19,7 +44,7 @@ test("admin inbox shows skeleton while reservations API is blocked", async ({ pa
 
   await page.route("**/api/reservations", async (route) => {
     await blocker;
-    await route.continue();
+    await route.fulfill({ status: 200, contentType: "application/json", body: "[]" });
   });
 
   await page.goto("/admin");
@@ -32,7 +57,7 @@ test("admin inbox shows skeleton while reservations API is blocked", async ({ pa
 });
 
 test("admin gaps section shows skeleton while admin-summary API is blocked", async ({ page }) => {
-  await loginViaApi(page);
+  await setAdminSession(page);
 
   let resolveAdminSummary!: () => void;
   const blocker = new Promise<void>((resolve) => {
@@ -41,7 +66,11 @@ test("admin gaps section shows skeleton while admin-summary API is blocked", asy
 
   await page.route("**/api/admin/summary**", async (route) => {
     await blocker;
-    await route.continue();
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify(EMPTY_ADMIN_SUMMARY),
+    });
   });
 
   await page.goto("/admin");
@@ -54,7 +83,7 @@ test("admin gaps section shows skeleton while admin-summary API is blocked", asy
 });
 
 test("admin page has no spinner", async ({ page }) => {
-  await loginViaApi(page);
+  await setAdminSession(page);
   await page.goto("/admin");
   await page.waitForLoadState("networkidle");
   await expect(page.getByRole("progressbar")).toHaveCount(0);

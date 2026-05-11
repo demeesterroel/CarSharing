@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, Suspense } from "react";
 import Link from "next/link";
 import { useDashboard, useEarliestDashboardYear } from "@/hooks/use-dashboard";
 import { useQueryParam } from "@/hooks/use-query-param";
@@ -1209,7 +1209,9 @@ function DashboardContent() {
       />
 
       {/* Balance */}
-      <BalanceReceipt fullName={me?.shortName ?? ""} personId={me?.personId ?? null} />
+      <Suspense>
+        <BalanceReceipt fullName={me?.shortName ?? ""} personId={me?.personId ?? null} />
+      </Suspense>
 
       {/* Car locations */}
       <CarLocations trips={trips} onTripClick={setEditTrip} />

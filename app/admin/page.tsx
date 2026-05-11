@@ -162,7 +162,7 @@ export default function AdminInboxPage() {
             textAlign: "center",
             fontFamily: fontMono,
             fontSize: 10,
-            color: paper.inkMute,
+            color: paper.inkDim,
             letterSpacing: 1,
           }}
         >
@@ -289,7 +289,7 @@ export default function AdminInboxPage() {
             textAlign: "center",
             fontFamily: fontMono,
             fontSize: 10,
-            color: paper.inkMute,
+            color: paper.inkDim,
             letterSpacing: 1,
           }}
         >

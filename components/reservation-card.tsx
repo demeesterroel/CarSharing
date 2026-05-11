@@ -72,7 +72,7 @@ export function ReservationCard({ reservation, onClick }: ReservationCardProps) 
             : ""}
         </div>
         {reservation.note && (
-          <div style={{ fontFamily: fontMono, fontSize: 10, color: paper.inkMute, marginTop: 2 }}>
+          <div style={{ fontFamily: fontMono, fontSize: 10, color: paper.inkDim, marginTop: 2 }}>
             {reservation.note}
           </div>
         )}

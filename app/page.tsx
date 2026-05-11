@@ -50,6 +50,7 @@ import {
 import { useCars } from "@/hooks/use-vehicles";
 import { CarBadge } from "@/components/car-badge";
 import { ErrorBoundary } from "@/components/error-boundary";
+import { ShimmerBar, shimmerKeyframes } from "@/components/shimmer";
 
 // ── Primitives ────────────────────────────────────────────────────
 function NameEditLink({ name, personId }: { name: string; personId: number }) {
@@ -384,36 +385,6 @@ function CarBreakdownSection({ bd, year }: { bd: CarDashboardBreakdown; year: nu
 }
 
 // ── Balance Card Skeleton ─────────────────────────────────────────
-const shimmerKeyframes = `
-@keyframes shimmer {
-  0%, 100% { opacity: 0.4; }
-  50% { opacity: 0.8; }
-}
-`;
-
-function ShimmerBar({
-  width = "100%",
-  height = 14,
-  marginBottom = 0,
-}: {
-  width?: string | number;
-  height?: number;
-  marginBottom?: number;
-}) {
-  return (
-    <div
-      style={{
-        width,
-        height,
-        borderRadius: 2,
-        background: paper.paperDark,
-        animation: "shimmer 1.4s ease-in-out infinite",
-        marginBottom,
-      }}
-    />
-  );
-}
-
 function SkeletonRow({
   leftWidth = "45%",
   rightWidth = "20%",
@@ -582,7 +553,9 @@ function BalanceReceipt({ fullName, personId }: { fullName: string; personId: nu
   const [year, setYear] = useState(currentYear);
   const { data: earliestYear = currentYear } = useEarliestDashboardYear();
   const { data: rows = [], isLoading: isDashboardLoading } = useDashboard(year);
-  const myRow = personId ? rows.find((r) => r.person_id === personId) : rows.find((r) => r.person_name === fullName);
+  const myRow = personId
+    ? rows.find((r) => r.person_id === personId)
+    : rows.find((r) => r.person_name === fullName);
   const { data: settlement } = useSettlement(year);
   const myStatement = personId
     ? settlement?.members.find((m) => m.person_id === personId)

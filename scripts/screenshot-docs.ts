@@ -30,7 +30,7 @@ function shouldRun(num: number): boolean {
 
 async function shot(page: Page, filename: string) {
   await page.waitForTimeout(300);
-  const num = parseInt(filename.replace(/^0+/, "").match(/^\d+/)?.[0] ?? "0", 10);
+  const num = parseInt(filename.match(/\d+/)?.[0] ?? "0", 10);
   if (!shouldRun(num)) {
     console.log(`  ↷ ${filename} (skipped)`);
     return;
@@ -160,12 +160,37 @@ async function main() {
 
   console.log("\n[user guide]");
 
-  // ── 02. First login page (unauthenticated) ─────────────────────────────────
+  // ── 02. Invite page — set-password screen seen by new members ────────────
   if (shouldRun(2)) {
-    await context.clearCookies();
-    await page.goto(`${BASE_URL}/login`, { waitUntil: "domcontentloaded" });
-    await ensureEnglish(page);
-    await shot(page, "02-first-login.png");
+    // Generate a real invite token for alice so the page renders correctly
+    await login(page, "admin", "admin");
+    const inviteUrl = await page.evaluate(async () => {
+      const csrf =
+        document.cookie
+          .split(";")
+          .find((c) => c.trim().startsWith("csrf-token="))
+          ?.split("=")?.[1] ?? "";
+      const people: { id: number; username: string }[] = await fetch("/api/people").then((r) =>
+        r.json()
+      );
+      const alice = people.find((p) => p.username === "alice");
+      if (!alice) return null;
+      const res = await fetch(`/api/people/${alice.id}/invite`, {
+        method: "POST",
+        headers: { "x-csrf-token": csrf },
+      });
+      const data = (await res.json()) as { url: string };
+      return data.url;
+    });
+    if (!inviteUrl) throw new Error("Could not generate invite URL for alice");
+    const invitePath = new URL(inviteUrl).pathname;
+    // Keep admin session so the EN locale set during login persists on this page
+    await page.goto(`${BASE_URL}${invitePath}`, { waitUntil: "networkidle" });
+    await page.waitForFunction(() => document.body.textContent?.includes("Welcome to Autodelen"), {
+      timeout: 10000,
+      polling: 200,
+    });
+    await shot(page, "member-02-invite-page.png");
   }
 
   // ── 01. Invite link — expand first member card ─────────────────────────────
@@ -176,7 +201,7 @@ async function main() {
     const firstMemberRow = page.locator('div[role="button"]').first();
     await firstMemberRow.click();
     await page.waitForTimeout(800);
-    await shot(page, "01-invite-link.png");
+    await shot(page, "admin-01-invite-link.png");
   }
 
   // Switch to alice for shots 03-22
@@ -193,21 +218,21 @@ async function main() {
     const pencilSpan = helloLink.locator("span").last();
     await pencilSpan.waitFor({ state: "visible" }).catch(() => page.waitForTimeout(500));
     await page.waitForTimeout(200);
-    await shot(page, "03-profile-menu.png");
+    await shot(page, "member-03-profile-menu.png");
   }
 
   // ── 04. Profile edit form ──────────────────────────────────────────────────
   if (shouldRun(4)) {
     await page.goto(`${BASE_URL}/user/3/edit`);
     await idle(page);
-    await shot(page, "04-profile-edit.png");
+    await shot(page, "member-04-profile-edit.png");
   }
 
   // ── 05. Dashboard ──────────────────────────────────────────────────────────
   if (shouldRun(5)) {
     await page.goto(`${BASE_URL}/`);
     await idle(page);
-    await shot(page, "05-dashboard.png");
+    await shot(page, "member-05-dashboard.png");
   }
 
   // ── 06. Dashboard scrolled to year summary ─────────────────────────────────
@@ -218,14 +243,14 @@ async function main() {
     }
     await page.evaluate(() => window.scrollTo(0, 180));
     await page.waitForTimeout(200);
-    await shot(page, "06-dashboard-filters.png");
+    await shot(page, "member-06-dashboard-filters.png");
   }
 
   // ── 07. Trips page ─────────────────────────────────────────────────────────
   if (shouldRun(7)) {
     await page.goto(`${BASE_URL}/trips`);
     await idle(page);
-    await shot(page, "07-trips.png");
+    await shot(page, "member-07-trips.png");
   }
 
   // ── 08. Trips filters — click AA car filter ────────────────────────────────
@@ -239,7 +264,7 @@ async function main() {
       await tripFilterAA.click();
       await page.waitForTimeout(500);
     }
-    await shot(page, "08-trips-filters.png");
+    await shot(page, "member-08-trips-filters.png");
   }
 
   // ── 09. Single trip card ───────────────────────────────────────────────────
@@ -250,14 +275,14 @@ async function main() {
     }
     await page.evaluate(() => window.scrollTo(0, 100));
     await page.waitForTimeout(300);
-    await shot(page, "09-trip-card.png");
+    await shot(page, "member-09-trip-card.png");
   }
 
   // ── 10. Fuel page ──────────────────────────────────────────────────────────
   if (shouldRun(10)) {
     await page.goto(`${BASE_URL}/fuel`);
     await idle(page);
-    await shot(page, "10-fuel.png");
+    await shot(page, "member-10-fuel.png");
   }
 
   // ── 11. Fuel filters — click AA car filter ─────────────────────────────────
@@ -271,7 +296,7 @@ async function main() {
       await fuelFilterAA.click();
       await page.waitForTimeout(500);
     }
-    await shot(page, "11-fuel-filters.png");
+    await shot(page, "member-11-fuel-filters.png");
   }
 
   // ── 12. Single fuel card ───────────────────────────────────────────────────
@@ -282,14 +307,14 @@ async function main() {
     }
     await page.evaluate(() => window.scrollTo(0, 100));
     await page.waitForTimeout(300);
-    await shot(page, "12-fuel-card.png");
+    await shot(page, "member-12-fuel-card.png");
   }
 
   // ── 13. Expenses/cost page ─────────────────────────────────────────────────
   if (shouldRun(13)) {
     await page.goto(`${BASE_URL}/expenses`);
     await idle(page);
-    await shot(page, "13-cost.png");
+    await shot(page, "member-13-cost.png");
   }
 
   // ── 14. Expense filters — click MINE filter ────────────────────────────────
@@ -306,14 +331,14 @@ async function main() {
       await expFilterMine.click();
       await page.waitForTimeout(500);
     }
-    await shot(page, "14-cost-filters.png");
+    await shot(page, "member-14-cost-filters.png");
   }
 
   // ── 15. FAB closed ─────────────────────────────────────────────────────────
   if (shouldRun(15)) {
     await page.goto(`${BASE_URL}/`);
     await idle(page);
-    await shot(page, "15-fab-closed.png");
+    await shot(page, "member-15-fab-closed.png");
   }
 
   // ── 16. FAB expanded ───────────────────────────────────────────────────────
@@ -323,7 +348,7 @@ async function main() {
       await idle(page);
     }
     await openFab(page);
-    await shot(page, "16-fab-expanded.png");
+    await shot(page, "member-16-fab-expanded.png");
   }
 
   // ── 17. FAB → trip option highlighted ─────────────────────────────────────
@@ -346,7 +371,7 @@ async function main() {
       });
       await page.waitForTimeout(300);
     }
-    await shot(page, "17-fab-add-trip.png");
+    await shot(page, "member-17-fab-add-trip.png");
   }
 
   // ── 18. New trip form ──────────────────────────────────────────────────────
@@ -400,7 +425,7 @@ async function main() {
       if (box) await page.mouse.click(box.x + box.width * 0.5, box.y + box.height * 0.5);
       await page.waitForTimeout(2000);
     }
-    await shot(page, "18-trip-form.png");
+    await shot(page, "member-18-trip-form.png");
     const saveTripBtn = page
       .locator("button")
       .filter({ hasText: /save trip|sla rit op/i })
@@ -417,7 +442,7 @@ async function main() {
       await page.goto(`${BASE_URL}/trips`);
       await idle(page);
     }
-    await shot(page, "19-trips-after-add.png");
+    await shot(page, "member-19-trips-after-add.png");
     // Clean up trips added by this script: date 2026-12-31 with +100km delta, or legacy start=0/end=100
     await page.evaluate(async () => {
       const csrf =
@@ -457,7 +482,7 @@ async function main() {
         el.style.color = "#f5f0e8";
       });
     }
-    await shot(page, "20-fab-add-fuel.png");
+    await shot(page, "member-20-fab-add-fuel.png");
   }
 
   // ── 21. New fuel form ──────────────────────────────────────────────────────
@@ -505,7 +530,7 @@ async function main() {
       if (box) await page.mouse.click(box.x + box.width * 0.6, box.y + box.height * 0.35);
       await page.waitForTimeout(2000);
     }
-    await shot(page, "21-fuel-form.png");
+    await shot(page, "member-21-fuel-form.png");
     const saveFuelBtn = page
       .locator("button")
       .filter({ hasText: /save|sla op|opslaan|fill.up/i })
@@ -520,7 +545,7 @@ async function main() {
   if (shouldRun(22)) {
     await page.goto(`${BASE_URL}/fuel`);
     await idle(page);
-    await shot(page, "22-fuel-after-add.png");
+    await shot(page, "member-22-fuel-after-add.png");
     // Clean up fill-ups added by this script (30L / €50)
     await page.evaluate(async () => {
       const csrf =
@@ -548,14 +573,14 @@ async function main() {
   console.log("\n[owner guide]");
 
   if (START_FROM <= 112 && END_AT >= 100) {
-    await login(page, "admin", "admin");
+    await login(page, "owner", "owner");
   }
 
   // ── 100. Inbox — pending reservations ─────────────────────────────────────
   if (shouldRun(100)) {
     await page.goto(`${BASE_URL}/admin`);
     await idle(page);
-    await shot(page, "100-inbox.png");
+    await shot(page, "owner-100-inbox.png");
   }
 
   // ── 101. Single inbox item ─────────────────────────────────────────────────
@@ -566,7 +591,7 @@ async function main() {
     }
     await page.evaluate(() => window.scrollTo(0, 200));
     await page.waitForTimeout(300);
-    await shot(page, "101-inbox-item.png");
+    await shot(page, "owner-101-inbox-item.png");
   }
 
   // ── 102. Cars list ─────────────────────────────────────────────────────────
@@ -575,7 +600,7 @@ async function main() {
     await idle(page);
     await page.reload({ waitUntil: "networkidle" });
     await page.waitForTimeout(3000);
-    await shot(page, "102-cars-list.png");
+    await shot(page, "owner-102-cars-list.png");
   }
 
   // ── 103. Add car form — filled with example data ──────────────────────────
@@ -599,7 +624,7 @@ async function main() {
     await priceInput.click({ clickCount: 3 });
     await priceInput.fill("0.28");
     await page.waitForTimeout(300);
-    await shot(page, "103-car-add-form.png");
+    await shot(page, "owner-103-car-add-form.png");
     await page.keyboard.press("Escape");
     await page.waitForTimeout(300);
   }
@@ -613,7 +638,7 @@ async function main() {
     const firstCarToggle = page.locator('div[role="button"]').first();
     await firstCarToggle.click();
     await page.waitForTimeout(800);
-    await shot(page, "104-car-edit-form.png");
+    await shot(page, "owner-104-car-edit-form.png");
   }
 
   // ── 105. Car detail view — cost/coverage stats ────────────────────────────
@@ -629,7 +654,7 @@ async function main() {
       { timeout: 20000, polling: 300 }
     );
     await page.waitForTimeout(300);
-    await shot(page, "105-car-overview.png");
+    await shot(page, "owner-105-car-overview.png");
   }
 
   // ── 107. Members page ──────────────────────────────────────────────────────
@@ -638,7 +663,7 @@ async function main() {
     await page.waitForTimeout(200);
     await page.goto(`${BASE_URL}/admin/members`);
     await idle(page);
-    await shot(page, "107-car-overview-members.png");
+    await shot(page, "admin-107-car-overview-members.png");
   }
 
   // ── 108. Settlements page ──────────────────────────────────────────────────
@@ -646,7 +671,7 @@ async function main() {
     await page.goto(`${BASE_URL}/admin/settlement?year=2025`);
     await idle(page);
     await page.waitForTimeout(2000);
-    await shot(page, "108-settlements.png");
+    await shot(page, "owner-108-settlements.png");
   }
 
   // ── 109. Settlement table — finalized year ────────────────────────────────
@@ -655,7 +680,7 @@ async function main() {
     await page.goto(`${BASE_URL}/admin/settlement?year=2024`, { waitUntil: "domcontentloaded" });
     await idle(page);
     await page.waitForTimeout(2000);
-    await shot(page, "109-settlement-table.png");
+    await shot(page, "owner-109-settlement-table.png");
   }
 
   // ── 110. Open settlement — ready to lock ──────────────────────────────────
@@ -664,7 +689,7 @@ async function main() {
     await page.goto(`${BASE_URL}/admin/settlement?year=2025`, { waitUntil: "domcontentloaded" });
     await idle(page);
     await page.waitForTimeout(2000);
-    await shot(page, "110-settlement-transfers.png");
+    await shot(page, "owner-110-settlement-transfers.png");
   }
 
   // ── 111. Settlement message dialog ────────────────────────────────────────
@@ -683,10 +708,10 @@ async function main() {
     if ((await msgBtn.count()) > 0) {
       await msgBtn.click();
       await page.waitForTimeout(500);
-      await shot(page, "111-settlement-message.png");
+      await shot(page, "owner-111-settlement-message.png");
       await page.keyboard.press("Escape");
     } else {
-      await shot(page, "111-settlement-message.png");
+      await shot(page, "owner-111-settlement-message.png");
     }
   }
 
@@ -699,7 +724,64 @@ async function main() {
     }
     await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
     await page.waitForTimeout(300);
-    await shot(page, "112-settlement-lock.png");
+    await shot(page, "owner-112-settlement-lock.png");
+  }
+
+  // ── Admin guide ──────────────────────────────────────────────────────────────
+  console.log("\n[admin guide]");
+
+  if (START_FROM <= 204 && END_AT >= 200) {
+    await login(page, "admin", "admin");
+  }
+
+  // ── 200. Members list (all rows collapsed) ────────────────────────────────
+  if (shouldRun(200)) {
+    await page.goto(`${BASE_URL}/admin/members`);
+    await idle(page);
+    await shot(page, "admin-200-members.png");
+  }
+
+  // ── 201. Member row expanded — edit form ─────────────────────────────────
+  if (shouldRun(201)) {
+    if (!shouldRun(200)) {
+      await page.goto(`${BASE_URL}/admin/members`);
+      await idle(page);
+    }
+    const firstRow = page.locator('div[role="button"]').first();
+    await firstRow.click();
+    await page.waitForTimeout(600);
+    await shot(page, "admin-201-member-expanded.png");
+  }
+
+  // ── 202. Payments list ────────────────────────────────────────────────────
+  if (shouldRun(202)) {
+    await page.goto(`${BASE_URL}/admin/payments`);
+    await idle(page);
+    await shot(page, "admin-202-payments.png");
+  }
+
+  // ── 203. Add payment form ─────────────────────────────────────────────────
+  if (shouldRun(203)) {
+    if (!shouldRun(202)) {
+      await page.goto(`${BASE_URL}/admin/payments`);
+      await idle(page);
+    }
+    const addBtn = page
+      .locator("button")
+      .filter({ hasText: /\+\s*add/i })
+      .first();
+    if ((await addBtn.count()) > 0) {
+      await addBtn.click();
+      await page.waitForTimeout(500);
+    }
+    await shot(page, "admin-203-payment-form.png");
+  }
+
+  // ── 204. Settings page ────────────────────────────────────────────────────
+  if (shouldRun(204)) {
+    await page.goto(`${BASE_URL}/admin/settings`);
+    await idle(page);
+    await shot(page, "admin-204-settings.png");
   }
 
   // ── Done ────────────────────────────────────────────────────────────────────

@@ -21,13 +21,13 @@ Open [http://localhost:3000](http://localhost:3000).
 
 **Demo accounts** (username = password):
 
-| Account | Role |
-|---------|------|
+| Account | Role                                     |
+| ------- | ---------------------------------------- |
 | `admin` | Admin — manages cars, people, settlement |
-| `owner` | Car owner (Car BB) |
-| `alice` | Member — pays balance in full each year |
-| `bob`   | Member — partial payments |
-| `carol` | Member — partial payments |
+| `owner` | Car owner (Car BB)                       |
+| `alice` | Member — pays balance in full each year  |
+| `bob`   | Member — partial payments                |
+| `carol` | Member — partial payments                |
 
 **What's populated:** dashboard with 5-year balances, trips/fuel/expenses across 3 cars, settlement 2021–2024 locked (2025 open).
 
@@ -49,8 +49,9 @@ Note : The `data/` directory is gitignored.
 
 ## Documentation
 
-- [User Guide](docs/user-guide.md) — for members: logging trips, fuel, and reading your costs
-- [Owner Guide](docs/owner-guide.md) — for admins: managing cars, members, and settlements
+- [End-user Guide](docs/user-guide.md) — for members: logging trips, fuel, and reading your costs
+- [Owner Guide](docs/owner-guide.md) — for car owners: inbox, cars, members, and settlements
+- [Admin Guide](docs/admin-guide.md) — for admins: payments and settings
 
 ## Tech Stack
 
@@ -137,7 +138,7 @@ When configured, reservations are automatically pushed to a shared Google Calend
 2. Choose user type: **Internal** (Google Workspace org) or **External** (personal accounts).
 3. Fill in app name and contact email. Click Save.
 4. Under **Scopes**, add `https://www.googleapis.com/auth/calendar`.
-5. If you chose *External*, go to **Test users** and add the Google account that owns the shared calendar.
+5. If you chose _External_, go to **Test users** and add the Google account that owns the shared calendar.
 
 ### Step 3 — Create an OAuth 2.0 Client ID
 
@@ -156,6 +157,7 @@ NEXT_PUBLIC_BASE_URL=https://your-domain
 ```
 
 **Note on accounts:**
+
 - **Client ID + Client Secret** — tied to the Google Cloud project, not a personal account.
 - **Refresh token** — tied to the Google account that went through OAuth. This account must have editor access to the shared calendar.
 - **Calendar ID** — any Google calendar. Share it with the OAuth account if it's not owned by it.
@@ -200,8 +202,8 @@ In **Admin → Wagens**, set the owner for each car. In **Admin → Leden**, mak
 ### How it works
 
 - **Reservation created** → event pushed to Google Calendar; owner receives an invite.
-- **Owner RSVPs accepted** → reservation status → *confirmed*.
-- **Owner RSVPs declined** → reservation status → *rejected*.
+- **Owner RSVPs accepted** → reservation status → _confirmed_.
+- **Owner RSVPs declined** → reservation status → _rejected_.
 - **Reservation updated/deleted** → calendar event updated or removed.
 
 ## License

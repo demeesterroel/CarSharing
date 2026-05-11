@@ -2,6 +2,7 @@
 import { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import { useDashboard, useEarliestDashboardYear } from "@/hooks/use-dashboard";
+import { useQueryParam } from "@/hooks/use-query-param";
 import { useTrips } from "@/hooks/use-trips";
 import { useFuelFillups } from "@/hooks/use-fuel-fillups";
 import { useReservations } from "@/hooks/use-reservations";
@@ -550,7 +551,9 @@ function SectionSkeleton({ rows = 3 }: { rows?: number }) {
 function BalanceReceipt({ fullName, personId }: { fullName: string; personId: number | null }) {
   const t = useT();
   const currentYear = new Date().getFullYear();
-  const [year, setYear] = useState(currentYear);
+  const [yearParam, setYearParam] = useQueryParam("year", "");
+  const year = yearParam ? parseInt(yearParam, 10) : currentYear;
+  const setYear = (y: number) => setYearParam(y === currentYear ? "" : String(y));
   const { data: earliestYear = currentYear } = useEarliestDashboardYear();
   const { data: rows = [], isLoading: isDashboardLoading } = useDashboard(year);
   const myRow = personId
@@ -596,7 +599,7 @@ function BalanceReceipt({ fullName, personId }: { fullName: string; personId: nu
           }}
         >
           <button
-            onClick={() => setYear((y) => y - 1)}
+            onClick={() => setYear(year - 1)}
             disabled={year <= earliestYear}
             style={{
               padding: "6px 14px",
@@ -628,7 +631,7 @@ function BalanceReceipt({ fullName, personId }: { fullName: string; personId: nu
             {year}
           </div>
           <button
-            onClick={() => setYear((y) => y + 1)}
+            onClick={() => setYear(year + 1)}
             disabled={year >= currentYear}
             style={{
               padding: "6px 14px",

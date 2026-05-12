@@ -4,7 +4,13 @@ import { toast } from "sonner";
 import { apiFetch } from "@/lib/api/client";
 import { newUuid } from "@/lib/offline/uuid";
 import { enqueue } from "@/lib/offline/outbox";
-import { applyCreate, replaceCreate, rollbackCreate, applyUpdate, applyDelete } from "@/lib/offline/optimistic";
+import {
+  applyCreate,
+  replaceCreate,
+  rollbackCreate,
+  applyUpdate,
+  applyDelete,
+} from "@/lib/offline/optimistic";
 import type { Trip, TripInput } from "@/types";
 
 const QUERY_KEY = "trips";
@@ -98,7 +104,7 @@ export function useUpdateTrip() {
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         invalidateAll(qc);
         return res.json();
-      } catch {
+      } catch (e) {
         if (typeof navigator !== "undefined" && !navigator.onLine) {
           await enqueue({
             url: `${PATH}/${id}`,
@@ -112,6 +118,8 @@ export function useUpdateTrip() {
         }
         // rollback: re-apply the old values
         if (existing) applyUpdate<Trip>(qc, [QUERY_KEY], id, existing);
+        if (e instanceof Error && e.message === "HTTP 403")
+          throw new Error("No permission to update this record");
         throw new Error("Failed to update trip");
       }
     },
@@ -134,7 +142,7 @@ export function useDeleteTrip() {
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         invalidateAll(qc);
         return res.json();
-      } catch {
+      } catch (e) {
         if (typeof navigator !== "undefined" && !navigator.onLine) {
           await enqueue({
             url: `${PATH}/${id}`,
@@ -146,6 +154,8 @@ export function useDeleteTrip() {
           return {};
         }
         invalidateAll(qc); // re-fetch to restore
+        if (e instanceof Error && e.message === "HTTP 403")
+          throw new Error("No permission to delete this record");
         throw new Error("Failed to delete trip");
       }
     },

@@ -103,7 +103,7 @@ export function useUpdateReservation() {
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         invalidateAll(qc);
         return res.json();
-      } catch {
+      } catch (e) {
         if (typeof navigator !== "undefined" && !navigator.onLine) {
           await enqueue({
             url: `${PATH}/${id}`,
@@ -116,6 +116,8 @@ export function useUpdateReservation() {
           return {};
         }
         if (existing) applyUpdate<Reservation>(qc, [QUERY_KEY], id, existing);
+        if (e instanceof Error && e.message === "HTTP 403")
+          throw new Error("No permission to update this record");
         throw new Error("Failed to update reservation");
       }
     },
@@ -136,7 +138,7 @@ export function useDeleteReservation() {
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         invalidateAll(qc);
         return res.json();
-      } catch {
+      } catch (e) {
         if (typeof navigator !== "undefined" && !navigator.onLine) {
           await enqueue({
             url: `${PATH}/${id}`,
@@ -148,6 +150,8 @@ export function useDeleteReservation() {
           return {};
         }
         invalidateAll(qc);
+        if (e instanceof Error && e.message === "HTTP 403")
+          throw new Error("No permission to delete this record");
         throw new Error("Failed to delete reservation");
       }
     },

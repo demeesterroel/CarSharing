@@ -2,7 +2,7 @@
 // Tests for the pure/synchronous helpers in lib/api.ts
 import { describe, it, expect } from "vitest";
 import { z } from "zod";
-import { HttpError, notFound, badRequest, forbidden, readBody, readId } from "../api";
+import { HttpError, notFound, badRequest, forbidden, readBody, readId, canEdit } from "../api";
 
 describe("HttpError", () => {
   it("creates an error with the given status and message", () => {
@@ -120,5 +120,32 @@ describe("readId", () => {
   it("throws badRequest for float id", async () => {
     const ctx = { params: Promise.resolve({ id: "3.14" }) };
     await expect(readId(ctx)).rejects.toThrow(HttpError);
+  });
+});
+
+describe("canEdit", () => {
+  const record = { person_id: 2, car_id: 10 };
+  const carOwner = 5;
+
+  it("allows admin regardless of person_id", () => {
+    expect(canEdit(99, true, record, carOwner)).toBe(true);
+  });
+  it("allows admin even when car has no owner", () => {
+    expect(canEdit(99, true, record, null)).toBe(true);
+  });
+  it("allows the creator of the record", () => {
+    expect(canEdit(2, false, record, carOwner)).toBe(true);
+  });
+  it("allows the car owner", () => {
+    expect(canEdit(5, false, record, carOwner)).toBe(true);
+  });
+  it("rejects a third party", () => {
+    expect(canEdit(99, false, record, carOwner)).toBe(false);
+  });
+  it("rejects third party when car has no owner", () => {
+    expect(canEdit(99, false, record, null)).toBe(false);
+  });
+  it("still allows creator when car has no owner", () => {
+    expect(canEdit(2, false, record, null)).toBe(true);
   });
 });

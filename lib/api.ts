@@ -57,6 +57,46 @@ export async function requireAdminOrOwner(req: Request) {
   return session;
 }
 
+/** Pure function. Returns true if the person may edit/delete the given record. */
+export function canEdit(
+  personId: number,
+  isAdmin: boolean,
+  record: { person_id: number; car_id: number },
+  carOwnerPersonId: number | null
+): boolean {
+  if (isAdmin) return true;
+  if (record.person_id === personId) return true;
+  if (carOwnerPersonId !== null && carOwnerPersonId === personId) return true;
+  return false;
+}
+
+/** Reads session from request; throws 403 if not authenticated (no personId). */
+export async function requireSession(req: Request) {
+  const { getIronSession } = await import("iron-session");
+  const { sessionOptions } = await import("./session");
+  const session = await getIronSession<SessionData>(req, NextResponse.next(), sessionOptions);
+  if (!session.personId) forbidden("Not authenticated");
+  return session;
+}
+
+/**
+ * Throws 403 if the session user may not edit/delete the record.
+ * Allowed: admin, record creator (person_id), or car owner (owner_person_id).
+ */
+export async function requireCanEdit(
+  req: Request,
+  record: { person_id: number; car_id: number },
+  db: import("better-sqlite3").Database
+): Promise<void> {
+  const session = await requireSession(req);
+  if (session.isAdmin) return;
+  const { getCarById } = await import("./queries/cars");
+  const car = getCarById(db, record.car_id);
+  if (!canEdit(session.personId!, false, record, car?.owner_person_id ?? null)) {
+    forbidden("Not allowed to edit this record");
+  }
+}
+
 type Handler<T> = (
   req: Request,
   ctx: { params: Promise<Record<string, string>> }

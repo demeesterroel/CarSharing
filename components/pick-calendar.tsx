@@ -60,14 +60,14 @@ export function PickCalendar({
   const today = new Date().toISOString().slice(0, 10);
   const stripStart = addDays(mondayOf(today), weekOffset * 7);
   const days = Array.from({ length: 14 }, (_, i) => addDays(stripStart, i));
-  // Derive short weekday labels from Intl — no hardcoded arrays needed.
-  const dayNames = days
-    .slice(0, 7)
-    .map((d) =>
-      new Date(`${d}T00:00:00Z`)
-        .toLocaleDateString(locale, { weekday: "short", timeZone: "UTC" })
-        .replace(/\.$/, "")
-    );
+  // Build weekday labels indexed by getUTCDay() (Sun=0..Sat=6) so render needs no index math.
+  const dayNames: string[] = Array(7);
+  days.slice(0, 7).forEach((d) => {
+    const date = new Date(`${d}T00:00:00Z`);
+    dayNames[date.getUTCDay()] = date
+      .toLocaleDateString(locale, { weekday: "short", timeZone: "UTC" })
+      .replace(/\.$/, "");
+  });
 
   function getReservation(day: string): Reservation | undefined {
     return reservations.find(

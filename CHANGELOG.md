@@ -1,5 +1,38 @@
 # Changelog
 
+## [1.9.0](https://github.com/demeesterroel/CarSharing/compare/v1.8.0...v1.9.0) (2026-05-12)
+
+
+### ✨ New features
+
+* ACL — enforce creator/car-owner/admin permissions on edit & delete ([#174](https://github.com/demeesterroel/CarSharing/issues/174)) ([0d5cf57](https://github.com/demeesterroel/CarSharing/commit/0d5cf57e4f360cca330e1f283fb5030c7aaca5d9))
+* add first_name/last_name to people, retire cars.owner_name ([#130](https://github.com/demeesterroel/CarSharing/issues/130)) ([#139](https://github.com/demeesterroel/CarSharing/issues/139)) ([4485251](https://github.com/demeesterroel/CarSharing/commit/448525144fc1fa63b8fe0ccb17fa269be336f287))
+* **admin:** add skeleton & shimmer loading states for /admin page ([#170](https://github.com/demeesterroel/CarSharing/issues/170)) ([bd43d46](https://github.com/demeesterroel/CarSharing/commit/bd43d462695509e1acb047bf090e852e4a94b7ec))
+* **calendar:** add FAB to reservations page ([#143](https://github.com/demeesterroel/CarSharing/issues/143)) ([#147](https://github.com/demeesterroel/CarSharing/issues/147)) ([02bdc51](https://github.com/demeesterroel/CarSharing/commit/02bdc51a3781ff3594d0595b001fb91623222340))
+* **dashboard:** add balance card skeleton during loading ([#132](https://github.com/demeesterroel/CarSharing/issues/132)) ([#138](https://github.com/demeesterroel/CarSharing/issues/138)) ([cae7d1a](https://github.com/demeesterroel/CarSharing/commit/cae7d1a601180d576cce0f9e6415705976ff9c3a))
+* **fuel:** rearrange FuelCard layout ([#146](https://github.com/demeesterroel/CarSharing/issues/146)) ([#148](https://github.com/demeesterroel/CarSharing/issues/148)) ([9cb1f4f](https://github.com/demeesterroel/CarSharing/commit/9cb1f4f536e9e52a1344131186cc0f4fbb5166aa))
+* **settlement+dashboard:** settled-outside asterisk indicators, car ordering, Own Car label ([#168](https://github.com/demeesterroel/CarSharing/issues/168)) ([5234bfa](https://github.com/demeesterroel/CarSharing/commit/5234bfac7b9abd6f756d9ff74d3deee8cbc89a52))
+* user guide overhaul, permission enforcement, calendar & dashboard fixes ([#169](https://github.com/demeesterroel/CarSharing/issues/169)) ([112ca05](https://github.com/demeesterroel/CarSharing/commit/112ca0558ae26f8f00e1f2a718a90f58978752d8))
+
+
+### 🐛 Bug fixes
+
+* **a11y:** WCAG AA compliance audit — all routes, all roles ([#166](https://github.com/demeesterroel/CarSharing/issues/166)) ([c05af3a](https://github.com/demeesterroel/CarSharing/commit/c05af3a25bf9ad8b8558db10379029df848f4745))
+* **auth:** restore first_name/last_name schema in login route ([e652c0d](https://github.com/demeesterroel/CarSharing/commit/e652c0dc655eb099ac075f921f4cc18e1f849ed9))
+* **auth:** use owner_person_id FK for isOwner check ([#131](https://github.com/demeesterroel/CarSharing/issues/131)) ([#145](https://github.com/demeesterroel/CarSharing/issues/145)) ([575d790](https://github.com/demeesterroel/CarSharing/commit/575d7900c3a8324d9370d1cb5f7a0db5a7020c0f))
+* **auth:** use owner_person_id FK for isOwner check instead of name string ([#131](https://github.com/demeesterroel/CarSharing/issues/131)) ([#137](https://github.com/demeesterroel/CarSharing/issues/137)) ([4823aae](https://github.com/demeesterroel/CarSharing/commit/4823aae779beb546ece4308b88dc41ea5a996d6f))
+* **dashboard:** exclude settled_outside=1 fuel and expense from top-level aggregates ([#165](https://github.com/demeesterroel/CarSharing/issues/165)) ([ae4e594](https://github.com/demeesterroel/CarSharing/commit/ae4e5945e1d04dbf22b1f43a98a5e862ae68838b)), closes [#149](https://github.com/demeesterroel/CarSharing/issues/149)
+* **seed-demo:** Alice pending, Bob+Carol confirmed reservations ([836d120](https://github.com/demeesterroel/CarSharing/commit/836d120862aa75234a68061d946cb94252d2bf2a))
+* **vehicles:** hoist inputStyle/labelStyle to module scope ([#156](https://github.com/demeesterroel/CarSharing/issues/156)) ([ecce5e5](https://github.com/demeesterroel/CarSharing/commit/ecce5e5b62fd49f28b217045a4072ddc4a23bf2d))
+
+
+### 📖 Documentation
+
+* **#153:** add user & owner guides with 35 demo screenshots ([#157](https://github.com/demeesterroel/CarSharing/issues/157)) ([8893a3e](https://github.com/demeesterroel/CarSharing/commit/8893a3eb627c29bec250bc2776bc69e05112c214))
+* fix screenshots + add admin guide with full coverage ([#161](https://github.com/demeesterroel/CarSharing/issues/161)) ([d0f0b73](https://github.com/demeesterroel/CarSharing/commit/d0f0b73993ec8a516b5ce20425e946f3d712e784))
+* **owner-guide:** add settlement card detail + expand-all/download screenshots ([#119](https://github.com/demeesterroel/CarSharing/issues/119)) ([#163](https://github.com/demeesterroel/CarSharing/issues/163)) ([66e8404](https://github.com/demeesterroel/CarSharing/commit/66e8404cd86e032ada2db14541f81b43538a1fea))
+* **screenshots:** fix shots 105, 109-112 ([#160](https://github.com/demeesterroel/CarSharing/issues/160)) ([56e77af](https://github.com/demeesterroel/CarSharing/commit/56e77af5ab1a71bc69c42215b8d11ae36a1f53bf))
+
 ## [1.8.0](https://github.com/demeesterroel/CarSharing/compare/v1.7.0...v1.8.0) (2026-05-09)
 
 

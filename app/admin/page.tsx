@@ -31,11 +31,14 @@ function groupByYear<T extends { date?: string; after_date?: string }>(
   return Array.from(map.entries()).sort((a, b) => b[0].localeCompare(a[0]));
 }
 
-function YearGroup({ year, children }: { year: string; children: React.ReactNode }) {
+function YearGroup({ year, count, children }: { year: string; count: number; children: React.ReactNode }) {
   return (
     <div style={{ marginBottom: 4 }}>
       <div
         style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "baseline",
           fontFamily: fontMono,
           fontSize: 9,
           fontWeight: 700,
@@ -47,7 +50,8 @@ function YearGroup({ year, children }: { year: string; children: React.ReactNode
           marginBottom: 6,
         }}
       >
-        {year}
+        <span>{year}</span>
+        <span>{count}</span>
       </div>
       {children}
     </div>
@@ -366,7 +370,7 @@ export default function AdminInboxPage() {
         </div>
       ) : (
         gapsByYear.map(([yr, items]) => (
-          <YearGroup key={yr} year={yr}>
+          <YearGroup key={yr} year={yr} count={items.length}>
             {items.map((gap) => {
               const key = gapKey(gap);
               const expanded = expandedGap === key;

@@ -1,5 +1,24 @@
 # Changelog
 
+## [1.10.0](https://github.com/demeesterroel/CarSharing/compare/v1.9.0...v1.10.0) (2026-05-12)
+
+
+### ✨ New features
+
+* **admin:** show gap subtotals per year and in section header ([#196](https://github.com/demeesterroel/CarSharing/issues/196)) ([a8cdbc6](https://github.com/demeesterroel/CarSharing/commit/a8cdbc6bd936583e805851d211c5bb98a6efb1d1)), closes [#194](https://github.com/demeesterroel/CarSharing/issues/194)
+
+
+### 🐛 Bug fixes
+
+* **admin:** sort odometer gaps descending (most recent first) ([#198](https://github.com/demeesterroel/CarSharing/issues/198)) ([ee2792f](https://github.com/demeesterroel/CarSharing/commit/ee2792fb635deb43b53960e8845792f3e15a3531)), closes [#192](https://github.com/demeesterroel/CarSharing/issues/192)
+* **api:** POST routes return full record to fix replaceCreate crash ([#197](https://github.com/demeesterroel/CarSharing/issues/197)) ([9d32ef5](https://github.com/demeesterroel/CarSharing/commit/9d32ef5a291f6cc7dac7488c7f0f7222f9666e35)), closes [#185](https://github.com/demeesterroel/CarSharing/issues/185)
+* **calendar:** correct weekday label index — getUTCDay is Sun=0, dayNames is Mon=0 ([#195](https://github.com/demeesterroel/CarSharing/issues/195)) ([2080fd9](https://github.com/demeesterroel/CarSharing/commit/2080fd91c1942383f2e707b5f7eb76ecc6b32efb)), closes [#189](https://github.com/demeesterroel/CarSharing/issues/189)
+
+
+### 📖 Documentation
+
+* **owner-guide:** reduce first inbox screenshot to 50% width ([5d151cc](https://github.com/demeesterroel/CarSharing/commit/5d151cc39688c0c5bb02067b241dcd1dc9cc5bbe))
+
 ## [1.9.0](https://github.com/demeesterroel/CarSharing/compare/v1.8.0...v1.9.0) (2026-05-12)
 
 

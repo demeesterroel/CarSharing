@@ -204,19 +204,23 @@ async function main() {
     await shot(page, "admin-01-invite-link.png");
   }
 
-  // Switch to alice for shots 03-22
-  if (START_FROM <= 22 && END_AT >= 3) {
+  // Switch to alice for shots 03-37
+  if (START_FROM <= 37 && END_AT >= 3) {
     await login(page, "alice", "alice");
   }
 
-  // ── 03. Profile — hover "Hello Alice" heading ──────────────────────────────
+  // ── 03. Username in navbar — hover to reveal pencil ──────────────────────
   if (shouldRun(3)) {
     await page.goto(`${BASE_URL}/`);
     await idle(page);
-    const helloLink = page.locator('a[href*="/user/"]').first();
-    await helloLink.hover().catch(() => {});
-    const pencilSpan = helloLink.locator("span").last();
-    await pencilSpan.waitFor({ state: "visible" }).catch(() => page.waitForTimeout(500));
+    // Hover over the name link to reveal pencil icon (React synthetic event — use evaluate)
+    const nameLink = page.locator('a[href*="/user/"]').first();
+    await nameLink.waitFor({ state: "visible" });
+    await nameLink.evaluate((el: HTMLElement) => {
+      el.style.textDecoration = "underline";
+      const pencil = el.querySelector("span");
+      if (pencil) (pencil as HTMLElement).style.opacity = "0.6";
+    });
     await page.waitForTimeout(200);
     await shot(page, "member-03-profile-menu.png");
   }
@@ -253,24 +257,17 @@ async function main() {
     await shot(page, "member-07-trips.png");
   }
 
-  // ── 08. Trips filters — click AA car filter ────────────────────────────────
+  // ── 08. Trips filters — year 2024, mine, car CC ───────────────────────────
   if (shouldRun(8)) {
-    if (!shouldRun(7)) {
-      await page.goto(`${BASE_URL}/trips`);
-      await idle(page);
-    }
-    const tripFilterAA = page.locator("button").filter({ hasText: /^AA$/ }).first();
-    if ((await tripFilterAA.count()) > 0) {
-      await tripFilterAA.click();
-      await page.waitForTimeout(500);
-    }
+    await page.goto(`${BASE_URL}/trips?year=2024&mine=true&car=CC`);
+    await idle(page);
     await shot(page, "member-08-trips-filters.png");
   }
 
   // ── 09. Single trip card ───────────────────────────────────────────────────
   if (shouldRun(9)) {
-    if (!shouldRun(7) && !shouldRun(8)) {
-      await page.goto(`${BASE_URL}/trips`);
+    if (!shouldRun(8)) {
+      await page.goto(`${BASE_URL}/trips?year=2024&mine=true&car=CC`);
       await idle(page);
     }
     await page.evaluate(() => window.scrollTo(0, 100));
@@ -285,24 +282,17 @@ async function main() {
     await shot(page, "member-10-fuel.png");
   }
 
-  // ── 11. Fuel filters — click AA car filter ─────────────────────────────────
+  // ── 11. Fuel filters — year 2024, mine, car CC ────────────────────────────
   if (shouldRun(11)) {
-    if (!shouldRun(10)) {
-      await page.goto(`${BASE_URL}/fuel`);
-      await idle(page);
-    }
-    const fuelFilterAA = page.locator("button").filter({ hasText: /^AA$/ }).first();
-    if ((await fuelFilterAA.count()) > 0) {
-      await fuelFilterAA.click();
-      await page.waitForTimeout(500);
-    }
+    await page.goto(`${BASE_URL}/fuel?year=2024&mine=true&car=CC`);
+    await idle(page);
     await shot(page, "member-11-fuel-filters.png");
   }
 
   // ── 12. Single fuel card ───────────────────────────────────────────────────
   if (shouldRun(12)) {
-    if (!shouldRun(10) && !shouldRun(11)) {
-      await page.goto(`${BASE_URL}/fuel`);
+    if (!shouldRun(11)) {
+      await page.goto(`${BASE_URL}/fuel?year=2024&mine=true&car=CC`);
       await idle(page);
     }
     await page.evaluate(() => window.scrollTo(0, 100));
@@ -317,20 +307,10 @@ async function main() {
     await shot(page, "member-13-cost.png");
   }
 
-  // ── 14. Expense filters — click MINE filter ────────────────────────────────
+  // ── 14. Expense filters — year 2024, mine, car CC ─────────────────────────
   if (shouldRun(14)) {
-    if (!shouldRun(13)) {
-      await page.goto(`${BASE_URL}/expenses`);
-      await idle(page);
-    }
-    const expFilterMine = page
-      .locator("button")
-      .filter({ hasText: /^MINE$|^MIJN$/i })
-      .first();
-    if ((await expFilterMine.count()) > 0) {
-      await expFilterMine.click();
-      await page.waitForTimeout(500);
-    }
+    await page.goto(`${BASE_URL}/expenses?year=2024&mine=true&car=CC`);
+    await idle(page);
     await shot(page, "member-14-cost-filters.png");
   }
 
@@ -569,6 +549,233 @@ async function main() {
     });
   }
 
+  // ── 23. Single expense card ────────────────────────────────────────────────
+  if (shouldRun(23)) {
+    await page.goto(`${BASE_URL}/expenses`);
+    await idle(page);
+    await page.evaluate(() => window.scrollTo(0, 100));
+    await page.waitForTimeout(300);
+    await shot(page, "member-23-expense-card.png");
+  }
+
+  // ── 24. Reservations page (calendar + upcoming list) ──────────────────────
+  if (shouldRun(24)) {
+    await page.goto(`${BASE_URL}/calendar`);
+    await idle(page);
+    await shot(page, "member-24-reservation-list.png");
+  }
+
+  // ── 25. Reservation form via FAB — no dates pre-filled ────────────────────
+  if (shouldRun(25)) {
+    if (!shouldRun(24)) {
+      await page.goto(`${BASE_URL}/calendar`);
+      await idle(page);
+    }
+    await openFab(page);
+    const reservationFabOption = page
+      .locator("button.animate-pop-in")
+      .filter({ hasText: /reservat/i })
+      .first();
+    if ((await reservationFabOption.count()) > 0) {
+      await reservationFabOption.click({ force: true });
+      await page.waitForTimeout(600);
+    }
+    await shot(page, "member-25-reservation-form-empty.png");
+  }
+
+  // ── 26. Reservation form via calendar pick — dates pre-filled ─────────────
+  if (shouldRun(26)) {
+    await page.goto(`${BASE_URL}/calendar`);
+    await idle(page);
+    // Advance first car's calendar 2 weeks (past seeded reservations ending May 25)
+    // PickCalendar week grids use div[style*="grid-template-columns"] — one div per week row
+    const nextBtn26 = page.locator("button").filter({ hasText: "›" }).first();
+    await nextBtn26.waitFor({ state: "visible", timeout: 5000 });
+    await nextBtn26.click();
+    await page.waitForTimeout(300);
+    await nextBtn26.click();
+    await page.waitForTimeout(300);
+    // First grid row is now the first week of car 1's advanced calendar (May 25+)
+    // Cell layout (Mon-start): cell 0=Mon, 1=Tue, 2=Wed, 3=Thu, 4=Fri, 5=Sat, 6=Sun
+    const firstRow26 = page.locator('div[style*="grid-template-columns"]').first();
+    const cells26 = firstRow26.locator("> div");
+    if ((await cells26.count()) >= 5) {
+      await cells26.nth(1).click({ force: true }); // Tue
+      await page.waitForTimeout(300);
+      await cells26.nth(3).click({ force: true }); // Thu — form opens with car + dates
+      await page.waitForURL(/[?&]action=add/, { timeout: 5000 });
+      await page.waitForTimeout(600);
+    }
+    await shot(page, "member-26-reservation-form-calendar.png");
+    await page.goto(`${BASE_URL}/calendar`);
+  }
+
+  // ── 27. Reservation form showing conflict warning ─────────────────────────
+  if (shouldRun(27)) {
+    await page.goto(`${BASE_URL}/calendar`);
+    await idle(page);
+    // Click cells overlapping Alice's pending reservation on Car AA (May 15-17)
+    // Week 1: Mon May 11=cell 0, ..., Fri May 15=cell 4, Sun May 17=cell 6
+    const firstRow27 = page.locator('div[style*="grid-template-columns"]').first();
+    const cells27 = firstRow27.locator("> div");
+    if ((await cells27.count()) >= 7) {
+      await cells27.nth(4).click({ force: true }); // May 15 = start
+      await page.waitForTimeout(300);
+      await cells27.nth(6).click({ force: true }); // May 17 = end → conflict shown
+      await page.waitForURL(/[?&]action=add/, { timeout: 5000 });
+      await page.waitForTimeout(600);
+    }
+    await shot(page, "member-27-reservation-conflict.png");
+  }
+
+  // ── 28. Pending + confirmed reservation cards in upcoming list ────────────
+  if (shouldRun(28)) {
+    await page.goto(`${BASE_URL}/calendar`);
+    await idle(page);
+    await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+    await page.waitForTimeout(400);
+    await shot(page, "member-28-reservation-cards.png");
+  }
+
+  // ── 30. FAB → expense option highlighted ──────────────────────────────────
+  if (shouldRun(30)) {
+    await page.goto(`${BASE_URL}/`);
+    await idle(page);
+    await openFab(page);
+    const expenseOption30 = page
+      .locator("button.animate-pop-in")
+      .filter({ hasText: /expense|uitgave/i })
+      .first();
+    if ((await expenseOption30.count()) > 0) {
+      await expenseOption30.hover();
+      await page.waitForTimeout(200);
+    }
+    await shot(page, "member-30-fab-add-expense.png");
+  }
+
+  // ── 31. Expense form filled ────────────────────────────────────────────────
+  if (shouldRun(31)) {
+    if (!shouldRun(30)) {
+      await page.goto(`${BASE_URL}/`);
+      await idle(page);
+      await openFab(page);
+    }
+    const expenseOption31 = page
+      .locator("button.animate-pop-in")
+      .filter({ hasText: /expense|uitgave/i })
+      .first();
+    if ((await expenseOption31.count()) > 0) {
+      await expenseOption31.click({ force: true });
+      await page.waitForTimeout(600);
+    }
+    const amountInput31 = page.locator('input[name="amount"]').first();
+    if ((await amountInput31.count()) > 0) {
+      await amountInput31.fill("28.50");
+    }
+    const descInput31 = page.locator('input[name="description"]').first();
+    if ((await descInput31.count()) > 0) {
+      await descInput31.fill("Parking garage");
+    }
+    await page.waitForTimeout(300);
+    await shot(page, "member-31-expense-form.png");
+  }
+
+  // ── 32. Expenses list — after navigating back ─────────────────────────────
+  if (shouldRun(32)) {
+    await page.goto(`${BASE_URL}/expenses`);
+    await idle(page);
+    await shot(page, "member-32-expense-after-add.png");
+  }
+
+  // ── 33. FAB → reservation option highlighted ──────────────────────────────
+  if (shouldRun(33)) {
+    await page.goto(`${BASE_URL}/`);
+    await idle(page);
+    await openFab(page);
+    const resOption33 = page
+      .locator("button.animate-pop-in")
+      .filter({ hasText: /reservat/i })
+      .first();
+    if ((await resOption33.count()) > 0) {
+      await resOption33.hover();
+      await page.waitForTimeout(200);
+    }
+    await shot(page, "member-33-fab-add-reservation.png");
+  }
+
+  // ── 34. Trip detail — first trip card opened ──────────────────────────────
+  if (shouldRun(34)) {
+    await page.goto(`${BASE_URL}/trips`);
+    await idle(page);
+    const tripCard = page
+      .locator("button")
+      .filter({ hasText: /\d+ km/i })
+      .first();
+    await tripCard.waitFor({ state: "visible", timeout: 5000 });
+    await tripCard.click();
+    await page.waitForSelector('[role="dialog"]', { state: "visible", timeout: 5000 });
+    await page.waitForTimeout(400);
+    await shot(page, "member-34-trip-detail.png");
+    await page.keyboard.press("Escape");
+    await page.waitForTimeout(300);
+  }
+
+  // ── 35. Fuel detail — first fuel card opened ──────────────────────────────
+  if (shouldRun(35)) {
+    await page.goto(`${BASE_URL}/fuel`);
+    await idle(page);
+    const fuelCard = page
+      .locator("button")
+      .filter({ hasText: /\d+\.\d+L/i })
+      .first();
+    await fuelCard.waitFor({ state: "visible", timeout: 5000 });
+    await fuelCard.click();
+    await page.waitForSelector('[role="dialog"]', { state: "visible", timeout: 5000 });
+    await page.waitForTimeout(400);
+    await shot(page, "member-35-fuel-detail.png");
+    await page.keyboard.press("Escape");
+    await page.waitForTimeout(300);
+  }
+
+  // ── 36. Expense detail — first expense card opened ────────────────────────
+  if (shouldRun(36)) {
+    await page.goto(`${BASE_URL}/expenses`);
+    await idle(page);
+    // Expense cards are buttons with € amounts (fmtMoney uses € ); filter buttons show car names
+    const expenseCard = page.locator("button").filter({ hasText: /€/ }).first();
+    await expenseCard.waitFor({ state: "visible", timeout: 5000 });
+    await expenseCard.click();
+    await page.waitForSelector('[role="dialog"]', { state: "visible", timeout: 5000 });
+    await page.waitForTimeout(400);
+    await shot(page, "member-36-expense-detail.png");
+    await page.keyboard.press("Escape");
+    await page.waitForTimeout(300);
+  }
+
+  // ── 37. Reservation detail — first upcoming reservation opened ────────────
+  if (shouldRun(37)) {
+    await page.goto(`${BASE_URL}/calendar`);
+    await idle(page);
+    // Scroll to upcoming list at bottom
+    await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+    await page.waitForTimeout(400);
+    // Reservation cards show Nd day count (e.g. "3d"); filter buttons do not
+    const resCard = page.locator("button").filter({ hasText: /\d+d/ }).first();
+    if ((await resCard.count()) > 0) {
+      await resCard.click();
+      // Edit opens via URL ?edit=<id> — wait for URL to update
+      await page.waitForURL(/[?&]edit=/, { timeout: 5000 });
+      await page.waitForTimeout(600);
+      await shot(page, "member-37-reservation-detail.png");
+      // Close by clicking the X button inside the form
+      const closeBtn = page.locator("button[aria-label]").first();
+      await closeBtn.click({ force: true }).catch(() => {});
+      await page.waitForTimeout(300);
+    } else {
+      await shot(page, "member-37-reservation-detail.png");
+    }
+  }
+
   // ── Owner guide ─────────────────────────────────────────────────────────────
   console.log("\n[owner guide]");
 
@@ -730,13 +937,19 @@ async function main() {
 
   // ── 113. Expand-all view — all member cards open ──────────────────────────
   if (shouldRun(113)) {
-    await page.goto(`${BASE_URL}/admin/settlement?year=2024`, { waitUntil: "networkidle", timeout: 60000 });
+    await page.goto(`${BASE_URL}/admin/settlement?year=2024`, {
+      waitUntil: "networkidle",
+      timeout: 60000,
+    });
     await page.waitForTimeout(1500);
     const expandBtn113 = page.locator("[data-testid='settlement-expand-all']");
     await expandBtn113.waitFor({ state: "visible", timeout: 20000 });
     // Only click if showAll is currently OFF (title = "Show all" / "Toon alles")
     const title113 = await expandBtn113.getAttribute("title");
-    if (!title113?.toLowerCase().includes("problem") && !title113?.toLowerCase().includes("problemen")) {
+    if (
+      !title113?.toLowerCase().includes("problem") &&
+      !title113?.toLowerCase().includes("problemen")
+    ) {
       await expandBtn113.click({ force: true });
       await page.waitForTimeout(1000);
     }
@@ -746,13 +959,19 @@ async function main() {
   // ── 114. Member card detail — Alice (non-owner) ───────────────────────────
   if (shouldRun(114)) {
     // Alice is fully-paid (isSlim=true) so we need expand-all active before clicking her card
-    await page.goto(`${BASE_URL}/admin/settlement?year=2024`, { waitUntil: "networkidle", timeout: 60000 });
+    await page.goto(`${BASE_URL}/admin/settlement?year=2024`, {
+      waitUntil: "networkidle",
+      timeout: 60000,
+    });
     await page.waitForTimeout(1500);
     const expandBtn114 = page.locator("[data-testid='settlement-expand-all']");
     await expandBtn114.waitFor({ state: "visible", timeout: 20000 });
     // Enable showAll via force-click (bypass any overlay/actionability checks)
     const title114 = await expandBtn114.getAttribute("title");
-    if (!title114?.toLowerCase().includes("problem") && !title114?.toLowerCase().includes("problemen")) {
+    if (
+      !title114?.toLowerCase().includes("problem") &&
+      !title114?.toLowerCase().includes("problemen")
+    ) {
       await expandBtn114.click({ force: true });
       await page.waitForTimeout(1000);
     }
@@ -766,10 +985,16 @@ async function main() {
 
   // ── 115. Owner card detail — Owner (outstanding balance) ─────────────────
   if (shouldRun(115)) {
-    await page.goto(`${BASE_URL}/admin/settlement?year=2024`, { waitUntil: "networkidle", timeout: 60000 });
+    await page.goto(`${BASE_URL}/admin/settlement?year=2024`, {
+      waitUntil: "networkidle",
+      timeout: 60000,
+    });
     await page.waitForTimeout(1500);
     // Owner is always non-slim (outstanding balance); click directly
-    const ownerBtn = page.locator("button").filter({ hasText: /^Owner$/ }).first();
+    const ownerBtn = page
+      .locator("button")
+      .filter({ hasText: /^Owner$/ })
+      .first();
     await ownerBtn.waitFor({ state: "visible", timeout: 20000 });
     await ownerBtn.click({ force: true });
     await page.waitForTimeout(800);

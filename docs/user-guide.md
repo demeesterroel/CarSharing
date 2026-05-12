@@ -1,6 +1,6 @@
 # End-user Guide
 
-This guide walks you through using the car sharing app as a member — from accepting your invite to logging trips and reading your costs.
+This guide walks you through using the car sharing app as a member — from accepting your invite to logging trips and managing reservations.
 
 > Looking for the car owner documentation? See the [Owner Guide](owner-guide.md).
 
@@ -24,9 +24,9 @@ Choose a password (minimum 8 characters), confirm it, and click **Set password**
 
 ## 2. Setting up your profile
 
-After logging in, open your profile via the menu (top-right corner).
+After logging in, hover over your **name** in the top-right corner of any page to reveal the pencil icon, then click it.
 
-![Profile menu entry](screenshots/member-03-profile-menu.png)
+![Hover over your name to reveal the edit pencil](screenshots/member-03-profile-menu.png)
 
 Fill in two required fields:
 
@@ -43,24 +43,22 @@ Save your changes. You can update these at any time.
 
 ## 3. Dashboard
 
-The dashboard is your home page. It shows a summary of recent activity across all cars you have access to.
+The dashboard is your home page. It shows an overview of all cars you have access to.
 
 ![Full dashboard view](screenshots/member-05-dashboard.png)
 
-### What you see
+The dashboard contains:
 
-- **Recent trips** — your latest recorded drives
-- **Fuel entries** — recent fill-ups
-- **Cost summary** — your current balance at a glance
+- **Balance** — your running cost balance across all cars
+- **Car locations** — where each car is currently parked
 
-### Filters
+### Latest info
 
-Use the filter bar at the top to narrow the view by:
+Scroll down to see a overview of latest info.
+- **Recent trips, fuel, and expenses** — the latest entries with an **All** link to the full page
+- **Upcoming reservations** — your next confirmed and pending reservations
 
-- **Car** — show data for one specific car
-- **Date range** — limit to a specific period
-
-![Dashboard filter bar open](screenshots/member-06-dashboard-filters.png)
+![Dashboard year summary section](screenshots/member-06-dashboard-filters.png)
 
 ---
 
@@ -68,21 +66,23 @@ Use the filter bar at the top to narrow the view by:
 
 The trips page lists all recorded drives.
 
+Each trip card shows: parking location, driver, date, odometer range, and cost. Click a trip to view and edit its details.
+
 ![Trips page full view](screenshots/member-07-trips.png)
 
 ### Filters
 
-| Filter         | Description                     |
-| -------------- | ------------------------------- |
-| **Car**        | Show trips for one car only     |
-| **Driver**     | Show trips by a specific member |
-| **Date range** | Limit to a start and end date   |
+| Filter   | Description                 |
+| -------- | --------------------------- |
+| **Car**  | Show trips for one car only |
+| **Year** | Limit to a specific year    |
+| **Mine** | Show only your own trips    |
 
 ![Trips filter panel open](screenshots/member-08-trips-filters.png)
 
-Each trip card shows: date, driver, car, distance (km), and any notes.
+### Trip Details
 
-![Single trip card](screenshots/member-09-trip-card.png)
+![Trip detail view](screenshots/member-34-trip-detail.png)
 
 ---
 
@@ -90,55 +90,125 @@ Each trip card shows: date, driver, car, distance (km), and any notes.
 
 The fuel page lists all recorded fill-ups.
 
+Each fuel entry shows: date, car, litres, price per litre, total cost, and who paid. Click an entry to view and edit its details.
+
 ![Fuel page full view](screenshots/member-10-fuel.png)
 
 ### Filters
 
-| Filter         | Description                        |
-| -------------- | ---------------------------------- |
-| **Car**        | Show fuel entries for one car only |
-| **Date range** | Limit to a start and end date      |
+| Filter   | Description                        |
+| -------- | ---------------------------------- |
+| **Car**  | Show fuel entries for one car only |
+| **Year** | Limit to a specific year           |
+| **Mine** | Show only fill-ups you paid for    |
 
 ![Fuel filter panel open](screenshots/member-11-fuel-filters.png)
 
-Each fuel entry shows: date, car, litres, price per litre, total cost, and who paid.
+### Fill-up Details
 
-![Single fuel card](screenshots/member-12-fuel-card.png)
+When editing a fill-up, you can optionally 
+- mark if this was a FULL tank fill (usefull to be able to better calculate average consumption)
+- the location where you filled up
+- a receipt 
+
+![Fuel detail view](screenshots/member-35-fuel-detail.png)
 
 ---
 
-## 6. Cost page
+## 6. Expenses page
 
-The cost page breaks down what you owe or are owed.
+The expenses page lists all one-off costs — parking fees, maintenance contributions, accessories, and other shared costs
 
-![Cost page full view](screenshots/member-13-cost.png)
+Each expense card shows: date, car, amount, description, and category. Click an expense to view and edit its details.
 
-Costs are split by category (trips, fuel, expenses) and show your share versus the group total.
+![Expenses page full view](screenshots/member-13-cost.png)
 
 ### Filters
 
-| Filter            | Description                  |
-| ----------------- | ---------------------------- |
-| **Car**           | Costs for one car only       |
-| **Period / year** | Limit to a settlement period |
+| Filter   | Description                        |
+| -------- | ---------------------------------- |
+| **Car**  | Show expenses for one car only     |
+| **Mine** | Show only your own expense entries |
+| **Year** | Limit to a specific year           |
 
-![Cost filter panel open](screenshots/member-14-cost-filters.png)
+![Expenses filter panel open](screenshots/member-14-cost-filters.png)
+
+### Expense Details
+
+![Expense detail view](screenshots/member-36-expense-detail.png)
+
+
+### Note : Mark Costs that have been Settled outside the app
+When editing an Expense or Fill-up, you can enabled the check box "settled outside" in case you have already received the reimbursment of this cost, either directly or through a another setllment app like Splitser etc..
 
 ---
 
-## 7. Adding data with the FAB
+## 7. Reservations
+
+The reservations page lets you request dates for a car in advance. The car owner confirms or rejects requests.
+
+![Reservations page — timeline and upcoming list](screenshots/member-24-reservation-list.png)
+
+The timeline uses these indicators:
+
+| Symbol | Meaning               |
+| ------ | --------------------- |
+| □      | Day is available      |
+| ▦      | Pending reservation   |
+| ■      | Confirmed reservation |
+
+### Viewing and editing a reservation
+
+Tap any reservation card in the Upcoming list to open it. You can change the dates, car, or note — or cancel the reservation.
+
+![Reservation detail view](screenshots/member-37-reservation-detail.png)
+
+### Creating a reservation
+
+There are three ways to open the reservation form:
+
+**1. FAB button** — tap the **+** button at the bottom-right of any page and choose **Add reservation**. The form opens with no dates selected.
+
+![Reservation form opened via FAB — no dates pre-filled](screenshots/member-25-reservation-form-empty.png)
+
+**2. "+ Add reservation" button** — tap the button in the Upcoming list header. Same as the FAB: no dates pre-filled.
+
+**3. Calendar pick** — tap a day in the per-car timeline to start a range; tap the end day. The form opens with those dates and the selected car already filled in.
+
+![Reservation form with dates from calendar pick](screenshots/member-26-reservation-form-calendar.png)
+
+### Overlapping reservations
+
+If you select dates that overlap an existing reservation for the same car, a warning appears. You can still submit — the owner sees the overlap and decides.
+
+![Reservation form showing conflict warning](screenshots/member-27-reservation-conflict.png)
+
+### Reservation status
+
+| Status        | Meaning                                          |
+| ------------- | ------------------------------------------------ |
+| **Pending**   | Submitted, waiting for owner to confirm          |
+| **Confirmed** | Owner approved — the car is yours on those dates |
+
+Pending reservations appear with an amber indicator; confirmed ones appear in black.
+
+![Pending and confirmed reservation cards in the upcoming list](screenshots/member-28-reservation-cards.png)
+
+---
+
+## 8. Adding data with the FAB
 
 The **FAB** (Floating Action Button) is the **+** button at the bottom-right of the screen. It is the fastest way to log new information.
 
 ![FAB button collapsed](screenshots/member-15-fab-closed.png)
 
-Tap the FAB to expand it. On the dashboard it shows all options; on individual pages it shows the relevant action for that page.
+Tap the FAB to expand it. On the dashboard it shows all options; on individual pages it shows the action relevant to that page.
 
-![FAB expanded showing options (trip, fuel, expense)](screenshots/member-16-fab-expanded.png)
+![FAB expanded showing options (trip, fuel, expense, reservation)](screenshots/member-16-fab-expanded.png)
 
 ---
 
-## 8. Adding a new trip
+### 8.1 Adding a new trip
 
 Tap the FAB → **Add trip** (or use the button on the Trips page).
 
@@ -163,7 +233,7 @@ Tap **Save**. The trip appears immediately in the list.
 
 ---
 
-## 9. Adding a fuel entry
+### 8.2 Adding a fuel entry
 
 Tap the FAB → **Add fuel** (or use the button on the Fuel page).
 
@@ -184,3 +254,41 @@ Fill in the form:
 Tap **Save**. The entry appears on the Fuel page and is included in cost calculations.
 
 ![Fuel list with new entry at top](screenshots/member-22-fuel-after-add.png)
+
+---
+
+### 8.3 Adding an expense
+
+Tap the FAB → **Add expense** (or use the button on the Expenses page).
+
+![FAB expanded with Add expense highlighted](screenshots/member-30-fab-add-expense.png)
+
+Fill in the form:
+
+| Field           | Description                                  |
+| --------------- | -------------------------------------------- |
+| **Car**         | Which car the expense relates to             |
+| **Date**        | Date of the expense                          |
+| **Amount (€)**  | Total amount paid                            |
+| **Description** | What the expense was for                     |
+| **Category**    | Type of expense (parking, maintenance, etc.) |
+
+![New expense form filled in](screenshots/member-31-expense-form.png)
+
+Tap **Save**. The entry appears on the Expenses page and is included in settlement calculations.
+
+![Expenses list with new entry at top](screenshots/member-32-expense-after-add.png)
+
+---
+
+### 8.4 Adding a reservation
+
+Tap the FAB → **Add reservation** (or use the button on the Reservations page).
+
+![FAB expanded with Add reservation highlighted](screenshots/member-33-fab-add-reservation.png)
+
+The reservation form opens with no dates selected. Select a date range using the calendar grid, choose the car, add an optional note, and tap **Request** (or **Confirm** if you are an admin).
+
+The car owner will be notified and can confirm or reject the request.
+
+> See [Section 7](#7-reservations) for a full description of the form, calendar pick flow, and reservation statuses.

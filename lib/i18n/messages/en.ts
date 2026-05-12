@@ -326,6 +326,7 @@ export const en: Messages = {
   "admin.km_missing": "{km} km missing",
   "admin.km_missing_suffix": "km missing",
   "admin.gaps_count": "missing",
+  "admin.gaps_noun": "gaps",
   "admin.after_trip": "After trip {date}: end {odometer}",
   "admin.before_trip": "Before trip {date}: start {odometer}",
   "admin.trip_ref": "Trip ID #{a} → #{b}",

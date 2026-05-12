@@ -324,6 +324,7 @@ export const nl = {
   "admin.km_missing": "{km} km ontbreekt",
   "admin.km_missing_suffix": "km ontbreekt",
   "admin.gaps_count": "ontbreekt",
+  "admin.gaps_noun": "gaten",
   "admin.after_trip": "Na rit {date}: eind {odometer}",
   "admin.before_trip": "Voor rit {date}: start {odometer}",
   "admin.trip_ref": "Rit-ID #{a} → #{b}",

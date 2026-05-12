@@ -31,7 +31,8 @@ function groupByYear<T extends { date?: string; after_date?: string }>(
   return Array.from(map.entries()).sort((a, b) => b[0].localeCompare(a[0]));
 }
 
-function YearGroup({ year, count, children }: { year: string; count: number; children: React.ReactNode }) {
+function YearGroup({ year, count, totalKm, children }: { year: string; count: number; totalKm: number; children: React.ReactNode }) {
+  const t = useT();
   return (
     <div style={{ marginBottom: 4 }}>
       <div
@@ -51,7 +52,7 @@ function YearGroup({ year, count, children }: { year: string; count: number; chi
         }}
       >
         <span>{year}</span>
-        <span>{count}</span>
+        <span>{count} {t("admin.gaps_noun")} · {totalKm.toLocaleString("nl-BE")} km</span>
       </div>
       {children}
     </div>
@@ -62,11 +63,13 @@ function SectionHeader({
   label,
   count,
   countSuffix,
+  totalKm,
   isLoading,
 }: {
   label: string;
   count: number;
   countSuffix: string;
+  totalKm?: number;
   isLoading?: boolean;
 }) {
   return (
@@ -91,7 +94,7 @@ function SectionHeader({
       ) : (
         count > 0 && (
           <span style={{ color: paper.accent }}>
-            {count} {countSuffix}
+            {count} {countSuffix}{totalKm != null ? ` · ${totalKm.toLocaleString("nl-BE")} km` : ""}
           </span>
         )
       )}
@@ -345,7 +348,8 @@ export default function AdminInboxPage() {
       <SectionHeader
         label={t("admin.km_gaps_title")}
         count={gaps.length}
-        countSuffix={t("admin.gaps_count")}
+        countSuffix={t("admin.gaps_noun")}
+        totalKm={gaps.reduce((s, g) => s + g.missing_km, 0)}
         isLoading={isAdminLoading}
       />
 
@@ -370,7 +374,7 @@ export default function AdminInboxPage() {
         </div>
       ) : (
         gapsByYear.map(([yr, items]) => (
-          <YearGroup key={yr} year={yr} count={items.length}>
+          <YearGroup key={yr} year={yr} count={items.length} totalKm={items.reduce((s, g) => s + g.missing_km, 0)}>
             {items.map((gap) => {
               const key = gapKey(gap);
               const expanded = expandedGap === key;

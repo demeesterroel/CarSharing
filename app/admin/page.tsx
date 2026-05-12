@@ -28,7 +28,14 @@ function groupByYear<T extends { date?: string; after_date?: string }>(
     if (!map.has(year)) map.set(year, []);
     map.get(year)!.push(item);
   }
-  return Array.from(map.entries()).sort((a, b) => b[0].localeCompare(a[0]));
+  return Array.from(map.entries())
+    .sort((a, b) => b[0].localeCompare(a[0]))
+    .map(([yr, bucket]) => [
+      yr,
+      [...bucket].sort((a, b) =>
+        (b.after_date ?? b.date ?? "").localeCompare(a.after_date ?? a.date ?? "")
+      ),
+    ] as [string, T[]]);
 }
 
 function YearGroup({ year, count, totalKm, children }: { year: string; count: number; totalKm: number; children: React.ReactNode }) {

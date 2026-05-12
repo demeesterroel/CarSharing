@@ -9,7 +9,9 @@ This guide covers the admin-only pages available to car sharing owners.
 
 ## 1. Inbox
 
-The Inbox collects items that require your attention — primarily **reservation requests** from members, and **odometer gap warnings** where trip odometer readings don't line up.
+The Inbox collects items that require your attention — primarily :
+- **reservation requests** from members for your car(s), only you and admin can confirm these
+- and **odometer gap warnings** for your car(s)  _note: gap = when trip odometer readings don't line up previous and next_
 
 ![Inbox page full view](screenshots/owner-100-inbox.png)
 

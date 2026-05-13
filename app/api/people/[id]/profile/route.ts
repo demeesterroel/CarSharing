@@ -16,7 +16,7 @@ const profileSchema = z.object({
     .nullable()
     .optional()
     .transform((v) => v ?? null),
-  theme_preference: z.enum(["paper", "mono"]).optional().default("paper"),
+  theme_preference: z.enum(["paper", "mono"]).optional(),
 });
 
 export const PATCH = json(async (req, ctx) => {
@@ -34,7 +34,7 @@ export const PATCH = json(async (req, ctx) => {
     last_name: data.last_name,
     bank_account: data.bank_account,
     email: data.email ?? null,
-    theme_preference: data.theme_preference,
+    theme_preference: data.theme_preference ?? existing.theme_preference,
   });
   return { ok: true };
 });

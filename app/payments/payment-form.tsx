@@ -10,7 +10,7 @@ import { t } from "@/lib/i18n";
 const schema = z.object({
   person_id: z.number({ error: t("validation.person_required") }),
   date: z.string().min(1),
-  amount: z.coerce.number().positive(),
+  amount: z.coerce.number().refine((n) => n !== 0),
   note: z
     .string()
     .nullable()

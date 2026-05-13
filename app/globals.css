@@ -336,10 +336,10 @@ body {
   --ink: #0a0a0a;
   --ink-dim: #525252;
   --ink-mute: #a3a3a3;
-  --accent: #0a0a0a;
-  --green: #0a0a0a;
-  --blue: #525252;
-  --amber: #525252;
+  --accent: #b91c1c;
+  --green: #15803d;
+  --blue: #1d4ed8;
+  --amber: #b45309;
 
   /* Typography — Inter throughout */
   --font-mono: var(--font-inter, "Inter", system-ui, sans-serif);

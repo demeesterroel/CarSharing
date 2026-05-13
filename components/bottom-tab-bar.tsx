@@ -1,19 +1,24 @@
 "use client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { House, ArrowRight, Fuel, CalendarDays, Receipt, Settings, type LucideIcon } from "lucide-react";
 import { paper, fontMono } from "@/lib/paper-theme";
 import { useT } from "@/components/locale-provider";
 import { useMe } from "@/hooks/use-me";
 
-const BASE_TABS = [
-  { href: "/", labelKey: "nav.dashboard" as const, icon: "◉" },
-  { href: "/trips", labelKey: "nav.trips" as const, icon: "↦" },
-  { href: "/fuel", labelKey: "nav.fuel" as const, icon: "⛽" },
-  { href: "/calendar", labelKey: "nav.tab.reservations" as const, icon: "▦" },
-  { href: "/expenses", labelKey: "nav.tab.expenses" as const, icon: "₪" },
+const BASE_TABS: { href: string; labelKey: "nav.dashboard" | "nav.trips" | "nav.fuel" | "nav.tab.reservations" | "nav.tab.expenses"; Icon: LucideIcon }[] = [
+  { href: "/", labelKey: "nav.dashboard", Icon: House },
+  { href: "/trips", labelKey: "nav.trips", Icon: ArrowRight },
+  { href: "/fuel", labelKey: "nav.fuel", Icon: Fuel },
+  { href: "/calendar", labelKey: "nav.tab.reservations", Icon: CalendarDays },
+  { href: "/expenses", labelKey: "nav.tab.expenses", Icon: Receipt },
 ];
 
-const ADMIN_TAB = { href: "/admin", labelKey: "nav.admin" as const, icon: "✎" };
+const ADMIN_TAB: { href: string; labelKey: "nav.admin"; Icon: LucideIcon } = {
+  href: "/admin",
+  labelKey: "nav.admin",
+  Icon: Settings,
+};
 
 const tabStyle = (active: boolean): React.CSSProperties => ({
   flex: 1,
@@ -55,14 +60,13 @@ export function BottomTabBar() {
   return (
     <nav
       aria-label={t("nav.primary")}
+      className="bottom-nav-paper"
       style={{
         position: "fixed",
         bottom: 0,
         left: 0,
         right: 0,
         zIndex: 30,
-        background: paper.paper,
-        borderTop: `1.5px dashed ${paper.ink}`,
         display: "flex",
         paddingBottom: "env(safe-area-inset-bottom, 0px)",
         maxWidth: 480,
@@ -73,7 +77,7 @@ export function BottomTabBar() {
         transform: "translateZ(0)",
       }}
     >
-      {tabs.map(({ href, labelKey, icon }) => {
+      {tabs.map(({ href, labelKey, Icon }) => {
         const active = href === "/" ? pathname === "/" : pathname.startsWith(href);
         return (
           <Link
@@ -82,7 +86,7 @@ export function BottomTabBar() {
             aria-current={active ? "page" : undefined}
             style={tabStyle(active)}
           >
-            <span style={{ fontSize: 15, lineHeight: 1 }}>{icon}</span>
+            <Icon size={17} strokeWidth={1.75} />
             <span style={labelStyle}>{t(labelKey)}</span>
           </Link>
         );

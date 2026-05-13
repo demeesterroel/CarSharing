@@ -7,6 +7,7 @@ import { useT } from "@/components/locale-provider";
 import { PageHeader } from "@/components/page-header";
 import { paper, fontMono, fontSerif } from "@/lib/paper-theme";
 import { apiFetch } from "@/lib/api/client";
+import { useTheme, type Theme } from "@/lib/theme-context";
 import type { Person } from "@/types";
 import { fullNameOf } from "@/lib/person-utils";
 
@@ -25,6 +26,9 @@ export default function EditProfilePage({ params }: { params: Promise<{ id: stri
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
+  const { theme: _theme, setTheme } = useTheme();
+  const [themePreference, setThemePreference] = useState<Theme>("paper");
+  const [themeSaved, setThemeSaved] = useState(false);
 
   useEffect(() => {
     params.then(({ id: rawId }) => {
@@ -50,6 +54,12 @@ export default function EditProfilePage({ params }: { params: Promise<{ id: stri
       })
       .catch(() => setLoading(false));
   }, [id]);
+
+  useEffect(() => {
+    if (person) {
+      setThemePreference((person.theme_preference as Theme) ?? "paper");
+    }
+  }, [person]);
 
   const canEdit = me != null && id != null && (me.personId === id || me.isAdmin);
 
@@ -97,6 +107,32 @@ export default function EditProfilePage({ params }: { params: Promise<{ id: stri
       setError(err instanceof Error ? err.message : "Fout bij opslaan");
     } finally {
       setSaving(false);
+    }
+  }
+
+  async function handleThemeToggle(newTheme: Theme) {
+    setThemePreference(newTheme);
+    setTheme(newTheme);
+    setThemeSaved(false);
+    try {
+      await apiFetch(`/api/people/${id}/profile`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          first_name: firstName,
+          last_name: lastName,
+          bank_account: bankAccount,
+          email: email || null,
+          theme_preference: newTheme,
+        }),
+      });
+      setThemeSaved(true);
+      setTimeout(() => setThemeSaved(false), 1500);
+      await queryClient.invalidateQueries({ queryKey: ["me"] });
+    } catch {
+      // revert local
+      setThemePreference(themePreference);
+      setTheme(themePreference);
     }
   }
 
@@ -330,6 +366,58 @@ export default function EditProfilePage({ params }: { params: Promise<{ id: stri
               {saved ? t("action.saved") : saving ? t("action.saving") : t("action.save")}
             </button>
           </form>
+
+          <div style={{ marginTop: 20, paddingTop: 16, borderTop: `1px solid ${paper.paperDark}` }}>
+            <div
+              style={{
+                fontFamily: fontMono,
+                fontSize: 9,
+                color: paper.inkMute,
+                letterSpacing: 1,
+                marginBottom: 8,
+                textTransform: "uppercase",
+              }}
+            >
+              {t("form.theme")}
+            </div>
+            <div style={{ display: "flex", gap: 8 }}>
+              {(["paper", "mono"] as Theme[]).map((t2) => (
+                <button
+                  key={t2}
+                  type="button"
+                  onClick={() => handleThemeToggle(t2)}
+                  style={{
+                    flex: 1,
+                    padding: "8px",
+                    fontFamily: fontMono,
+                    fontSize: 9,
+                    fontWeight: 700,
+                    letterSpacing: 2,
+                    textTransform: "uppercase",
+                    background: themePreference === t2 ? paper.ink : paper.paperDark,
+                    color: themePreference === t2 ? paper.paper : paper.inkMute,
+                    border: "none",
+                    cursor: "pointer",
+                  }}
+                >
+                  {t2 === "paper" ? "Papier" : "Mono"}
+                </button>
+              ))}
+            </div>
+            {themeSaved && (
+              <div
+                style={{
+                  fontFamily: fontMono,
+                  fontSize: 9,
+                  color: paper.green,
+                  marginTop: 6,
+                  letterSpacing: 1,
+                }}
+              >
+                {t("action.saved")}
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>

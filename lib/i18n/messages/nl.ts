@@ -85,6 +85,7 @@ export const nl = {
   "form.bank_account": "Bankrekeningnummer (IBAN)",
   "form.email": "E-mailadres",
   "form.username": "Gebruikersnaam",
+  "form.theme": "Thema",
   "form.password": "Wachtwoord",
   "form.discount": "Korting (0–1)",
   "form.discount_long": "Korting lang (0–1)",

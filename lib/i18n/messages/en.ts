@@ -87,6 +87,7 @@ export const en: Messages = {
   "form.bank_account": "Bank account (IBAN)",
   "form.email": "Email address",
   "form.username": "Username",
+  "form.theme": "Theme",
   "form.password": "Password",
   "form.discount": "Discount (0–1)",
   "form.discount_long": "Long-trip discount (0–1)",

@@ -19,7 +19,9 @@ function makeDb() {
 }
 
 function seed(db: Database.Database) {
-  db.exec(`INSERT INTO people (id, first_name, last_name, active) VALUES (1, 'Alice', '', 1), (2, 'Bob', '', 1)`);
+  db.exec(
+    `INSERT INTO people (id, first_name, last_name, active) VALUES (1, 'Alice', '', 1), (2, 'Bob', '', 1)`
+  );
 }
 
 describe("getPayments", () => {
@@ -116,6 +118,20 @@ describe("insertPayment", () => {
     insertPayment(db, { person_id: 1, date: "2027-03-01", amount: 100, note: null });
     insertPayment(db, { person_id: 2, date: "2027-03-02", amount: 200, note: null });
     expect(getPayments(db)).toHaveLength(2);
+  });
+
+  it("stores and retrieves a negative amount (refund)", () => {
+    const db = makeDb();
+    seed(db);
+    const id = insertPayment(db, {
+      person_id: 1,
+      date: "2027-03-01",
+      amount: -8.55,
+      note: "payout via personal account",
+    });
+    const payment = getPaymentById(db, id);
+    expect(payment?.amount).toBeCloseTo(-8.55, 2);
+    expect(payment?.note).toBe("payout via personal account");
   });
 });
 

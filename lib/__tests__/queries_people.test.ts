@@ -34,6 +34,7 @@ const basePerson = {
   is_admin: 0 as const,
   bank_account: "",
   email: null,
+  theme_preference: "paper" as const,
 };
 
 describe("getPeople", () => {
@@ -211,6 +212,23 @@ describe("isOwner", () => {
       `INSERT INTO cars (short,name,price_per_km,owner_person_id,owner_from,active) VALUES ('CA','Car A',0.2,${aliceId},'2020-01-01',0)`
     );
     expect(isOwner(db, aliceId)).toBe(true);
+  });
+});
+
+describe("theme_preference", () => {
+  it("defaults to 'paper' on insert", () => {
+    const db = makeDb();
+    const id = insertPerson(db, { ...basePerson, first_name: "Alice" });
+    const p = getPersonById(db, id)!;
+    expect(p.theme_preference).toBe("paper");
+  });
+
+  it("updatePerson persists theme_preference", () => {
+    const db = makeDb();
+    const id = insertPerson(db, { ...basePerson, first_name: "Alice" });
+    const p = getPersonById(db, id)!;
+    updatePerson(db, id, { ...p, theme_preference: "mono" });
+    expect(getPersonById(db, id)!.theme_preference).toBe("mono");
   });
 });
 

@@ -7,6 +7,7 @@ export interface Me {
   isAdmin: boolean;
   isOwner: boolean;
   isCloaked: boolean;
+  themePreference: 'paper' | 'mono' | null;
 }
 
 export function useMe() {

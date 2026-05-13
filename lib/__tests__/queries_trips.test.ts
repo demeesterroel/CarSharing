@@ -31,6 +31,7 @@ const basePerson = {
   is_admin: 0 as const,
   bank_account: "",
   email: null,
+  theme_preference: "paper" as const,
 };
 
 describe("getTripById", () => {

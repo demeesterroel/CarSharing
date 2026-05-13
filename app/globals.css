@@ -74,12 +74,16 @@ body {
 /* Dashed perforation line */
 .perf {
   height: 0;
-  border-top: 1.5px dashed var(--ink);
+  border-top-width: 1.5px;
+  border-top-style: var(--border-style, dashed);
+  border-top-color: var(--ink);
   margin: 12px 0;
 }
 .perf-light {
   height: 0;
-  border-top: 1.5px dashed var(--ink-dim);
+  border-top-width: 1.5px;
+  border-top-style: var(--border-style, dashed);
+  border-top-color: var(--ink-dim);
   margin: 8px 0;
 }
 
@@ -179,7 +183,9 @@ body {
 /* Bottom nav paper style */
 .bottom-nav-paper {
   background: var(--paper);
-  border-top: 1.5px dashed var(--ink);
+  border-top-width: 1.5px;
+  border-top-style: var(--border-style, dashed);
+  border-top-color: var(--ink);
 }
 .bottom-nav-item {
   display: flex;
@@ -318,5 +324,45 @@ body {
     align-items: flex-start;
     justify-content: center;
     padding: 20px;
+  }
+}
+
+/* ── Mono theme overrides ──────────────────────────────────── */
+[data-theme="mono"] {
+  /* Palette — strict black & white */
+  --paper: #ffffff;
+  --paper-deep: #f5f5f5;
+  --paper-dark: #e5e5e5;
+  --ink: #0a0a0a;
+  --ink-dim: #525252;
+  --ink-mute: #a3a3a3;
+  --accent: #0a0a0a;
+  --green: #0a0a0a;
+  --blue: #525252;
+  --amber: #525252;
+
+  /* Typography — Inter throughout */
+  --font-mono: var(--font-inter, "Inter", system-ui, sans-serif);
+  --font-serif: var(--font-inter, "Inter", system-ui, sans-serif);
+
+  /* Borders — solid lines */
+  --border-style: solid;
+}
+
+/* Mono: solid dashed-inactive car stamps */
+[data-theme="mono"] .car-stamp-inactive {
+  border-style: solid;
+}
+
+/* Mono: remove stamp rotation + add radius */
+[data-theme="mono"] .stamp {
+  transform: none;
+  border-radius: 4px;
+}
+
+/* Mono: clean desktop background (no lined texture) */
+@media (min-width: 900px) {
+  [data-theme="mono"] body {
+    background: #f0f0f0;
   }
 }

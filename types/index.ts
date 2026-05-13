@@ -10,6 +10,7 @@ export interface Person {
   is_admin: 0 | 1;
   bank_account: string;
   email: string | null;
+  theme_preference: 'paper' | 'mono';
   updated_at: string;
 }
 

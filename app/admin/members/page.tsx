@@ -132,7 +132,11 @@ function PersonRow({
       }}
     >
       {/* Collapsed header */}
-      <div style={{ display: "flex", alignItems: "center" }}>
+      <div
+        style={{ display: "flex", alignItems: "center" }}
+        onMouseEnter={() => setHovered(true)}
+        onMouseLeave={() => setHovered(false)}
+      >
         {/* Toggle area — no nested interactive elements */}
         <div
           role="button"
@@ -195,12 +199,18 @@ function PersonRow({
         </div>
 
         {/* Actions — outside role="button" to avoid nested-interactive */}
-        <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "12px 14px 12px 4px", flexShrink: 0 }}>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 8,
+            padding: "12px 14px 12px 4px",
+            flexShrink: 0,
+          }}
+        >
           <Link
             href={`/user/${person.id}/edit`}
             aria-label={t("admin.edit_member").replace("{name}", fullNameOf(person))}
-            onMouseEnter={() => setHovered(true)}
-            onMouseLeave={() => setHovered(false)}
             style={{
               display: "flex",
               alignItems: "center",

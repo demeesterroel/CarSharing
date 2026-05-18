@@ -186,6 +186,8 @@ body {
   border-top-width: 1.5px;
   border-top-style: var(--border-style, dashed);
   border-top-color: var(--ink);
+  transform: translateZ(0);
+  will-change: transform;
 }
 .bottom-nav-item {
   display: flex;
@@ -329,24 +331,34 @@ body {
 
 /* ── Mono theme overrides ──────────────────────────────────── */
 [data-theme="mono"] {
-  /* Palette — strict black & white */
-  --paper: #ffffff;
-  --paper-deep: #f5f5f5;
-  --paper-dark: #e5e5e5;
-  --ink: #0a0a0a;
-  --ink-dim: #525252;
-  --ink-mute: #a3a3a3;
+  /* Palette — refined: warm whites + warm darks */
+  --paper: #fafaf9;
+  --paper-deep: #f5f5f4;
+  --paper-dark: #e7e5e4;
+  --paper-border-soft: #f0eeec;
+  --ink: #1c1917;
+  --ink-dim: #57534e;
+  --ink-mute: #a8a29e;
   --accent: #b91c1c;
   --green: #15803d;
   --blue: #1d4ed8;
   --amber: #b45309;
 
-  /* Typography — Inter throughout */
+  /* Typography — Inter Tight for display, Inter for body */
   --font-mono: var(--font-inter, "Inter", system-ui, sans-serif);
-  --font-serif: var(--font-inter, "Inter", system-ui, sans-serif);
+  --font-serif: var(--font-inter-tight, "Inter Tight", "Inter", system-ui, sans-serif);
 
-  /* Borders — solid lines */
+  /* Borders — solid hairlines */
   --border-style: solid;
+
+  /* Typography — display tracking */
+  --title-tracking: -0.022em;
+
+  /* Shape — rounded corners */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-pill: 999px;
 }
 
 /* Mono: solid dashed-inactive car stamps */
@@ -357,12 +369,38 @@ body {
 /* Mono: remove stamp rotation + add radius */
 [data-theme="mono"] .stamp {
   transform: none;
-  border-radius: 4px;
+  border-radius: var(--radius-sm, 6px);
+}
+
+/* Mono: bottom nav — thin warm border */
+[data-theme="mono"] .bottom-nav-paper {
+  border-top-width: 1px;
+  border-top-color: var(--paper-dark);
+}
+
+/* Mono: bottom nav labels — sentence-case body font */
+[data-theme="mono"] .bottom-nav-label {
+  font-family: var(--font-inter, "Inter", system-ui, sans-serif);
+  font-size: 9.5px;
+  letter-spacing: 0.02em;
+  text-transform: none;
+  font-weight: 600;
+}
+
+/* Mono: page header — solid thin border */
+[data-theme="mono"] .page-header-border {
+  border-bottom-width: 1px;
+  border-bottom-color: var(--paper-dark);
+}
+
+/* Mono: month group header — no background */
+[data-theme="mono"] .group-month-header {
+  background: transparent !important;
 }
 
 /* Mono: clean desktop background (no lined texture) */
 @media (min-width: 900px) {
   [data-theme="mono"] body {
-    background: #f0f0f0;
+    background: #f0eeec;
   }
 }

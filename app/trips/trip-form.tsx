@@ -4,6 +4,7 @@ import { useForm, useWatch, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { toast } from "sonner";
+import { Lock } from "lucide-react";
 import { CarToggle } from "@/components/car-toggle";
 import { LocationPicker } from "@/components/location-picker";
 import { calcTripAmount } from "@/lib/formulas";
@@ -15,7 +16,9 @@ import { useOnlineState } from "@/lib/offline/online-state";
 import type { Trip } from "@/types";
 import { t, buildMissingLabel } from "@/lib/i18n";
 import { fullNameOf } from "@/lib/person-utils";
-import { paper, fontMono, fontSerif, fmtMoney } from "@/lib/paper-theme";
+import { paper, fontMono, fontSerif, fmtMoney, fmtDate } from "@/lib/paper-theme";
+import { useTheme } from "@/lib/theme-context";
+import { useLocale } from "@/components/locale-provider";
 
 const schema = z
   .object({
@@ -54,12 +57,19 @@ interface Props {
   onDelete?: () => void;
 }
 
-const label: React.CSSProperties = {
+const paperLabel: React.CSSProperties = {
   fontFamily: fontMono,
   fontSize: 9,
   fontWeight: 700,
   letterSpacing: 2,
   textTransform: "uppercase",
+  color: paper.inkMute,
+  display: "block",
+  marginBottom: 4,
+};
+const monoLabel: React.CSSProperties = {
+  fontFamily: fontMono,
+  fontSize: 11,
   color: paper.inkMute,
   display: "block",
   marginBottom: 4,
@@ -86,6 +96,9 @@ export function TripForm({ defaultValues, onSubmit, onCancel, onDelete }: Props)
   const { data: me } = useMe();
   const isAddMode = !defaultValues?.id;
   const isAdmin = me?.isAdmin ?? false;
+  const { theme } = useTheme();
+  const mono = theme === "mono";
+  const { locale } = useLocale();
 
   const {
     register,
@@ -153,6 +166,9 @@ export function TripForm({ defaultValues, onSubmit, onCancel, onDelete }: Props)
   const startReg = register("start_odometer");
   const pctShort = Math.round(disc * 100);
   const pctLong = Math.round(discLong * 100);
+  const lbl = mono ? monoLabel : paperLabel;
+
+  const rowBorder = mono ? `1px solid ${paper.paperDark}` : `1.5px dashed ${paper.paperDark}`;
 
   return (
     <form
@@ -174,7 +190,7 @@ export function TripForm({ defaultValues, onSubmit, onCancel, onDelete }: Props)
           justifyContent: "space-between",
           padding: "0 16px",
           height: 52,
-          borderBottom: `1.5px solid ${paper.paperDark}`,
+          borderBottom: rowBorder,
           background: paper.paper,
           position: "sticky",
           top: 0,
@@ -201,36 +217,47 @@ export function TripForm({ defaultValues, onSubmit, onCancel, onDelete }: Props)
           ×
         </button>
         <div
-          style={{
-            fontFamily: fontMono,
-            fontSize: 10,
-            fontWeight: 700,
-            letterSpacing: 3,
-            color: paper.inkDim,
-            textTransform: "uppercase",
-          }}
+          style={
+            mono
+              ? {
+                  fontFamily: fontSerif,
+                  fontSize: 17,
+                  fontWeight: 700,
+                  color: paper.ink,
+                }
+              : {
+                  fontFamily: fontMono,
+                  fontSize: 10,
+                  fontWeight: 700,
+                  letterSpacing: 3,
+                  color: paper.inkDim,
+                  textTransform: "uppercase",
+                }
+          }
         >
-          ↦ {t("form.log_trip")}
+          {!mono && "↦ "}
+          {t("form.log_trip")}
         </div>
         <div style={{ position: "relative" }} className="submit-wrap">
           <button
             type="submit"
             disabled={!canSubmit}
             style={{
-              fontFamily: fontMono,
-              fontSize: 9,
+              fontFamily: mono ? fontSerif : fontMono,
+              fontSize: mono ? 13 : 9,
               fontWeight: 700,
-              letterSpacing: 2,
-              textTransform: "uppercase",
+              letterSpacing: mono ? 0 : 2,
+              textTransform: mono ? "none" : "uppercase",
               background: paper.accent,
               color: "#fff",
               border: "none",
-              padding: "8px 14px",
+              borderRadius: mono ? "var(--radius-pill, 999px)" : 0,
+              padding: mono ? "8px 18px" : "8px 14px",
               cursor: canSubmit && online ? "pointer" : "default",
               opacity: canSubmit && online ? 1 : 0.35,
             }}
           >
-            {t("action.save_trip")}
+            {mono ? t("action.save") : t("action.save_trip")}
           </button>
           {!canSubmit && (
             <div
@@ -269,39 +296,47 @@ export function TripForm({ defaultValues, onSubmit, onCancel, onDelete }: Props)
       />
 
       {/* Driver + Date row */}
-      <div style={{ display: "flex", borderBottom: `1.5px dashed ${paper.paperDark}` }}>
-        <div
-          style={{ flex: 1, padding: "10px 14px", borderRight: `1.5px dashed ${paper.paperDark}` }}
-        >
-          <span style={label}>{t("form.driver")}</span>
+      <div style={{ display: "flex", borderBottom: rowBorder }}>
+        <div style={{ flex: 1, padding: "10px 14px", borderRight: rowBorder }}>
+          {!mono && <span style={lbl}>{t("form.driver")}</span>}
           {isAdmin ? (
-            <select
-              value={personId ?? ""}
-              onChange={(e) => setValue("person_id", Number(e.target.value))}
-              style={{
-                fontFamily: fontSerif,
-                fontSize: 17,
-                fontWeight: 600,
-                color: paper.ink,
-                background: "transparent",
-                border: "none",
-                outline: "none",
-                width: "100%",
-                padding: 0,
-                cursor: "pointer",
-              }}
-            >
-              <option value="" disabled>
-                {t("form.select_person_placeholder")}
-              </option>
-              {people
-                .filter((p) => p.active)
-                .map((p) => (
-                  <option key={p.id} value={p.id}>
-                    {fullNameOf(p)}
-                  </option>
-                ))}
-            </select>
+            <>
+              {mono && <span style={lbl}>{t("form.driver")}</span>}
+              <select
+                value={personId ?? ""}
+                onChange={(e) => setValue("person_id", Number(e.target.value))}
+                style={{
+                  fontFamily: fontSerif,
+                  fontSize: mono ? 19 : 17,
+                  fontWeight: mono ? 700 : 600,
+                  color: paper.ink,
+                  background: "transparent",
+                  border: "none",
+                  outline: "none",
+                  width: "100%",
+                  padding: 0,
+                  cursor: "pointer",
+                }}
+              >
+                <option value="" disabled>
+                  {t("form.select_person_placeholder")}
+                </option>
+                {people
+                  .filter((p) => p.active)
+                  .map((p) => (
+                    <option key={p.id} value={p.id}>
+                      {fullNameOf(p)}
+                    </option>
+                  ))}
+              </select>
+            </>
+          ) : mono ? (
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <span style={{ fontFamily: fontSerif, fontSize: 19, fontWeight: 700, color: paper.ink, lineHeight: 1.15 }}>
+                {person ? fullNameOf(person) : me?.shortName ?? "—"}
+              </span>
+              <Lock size={14} color={paper.inkMute} strokeWidth={1.75} style={{ flexShrink: 0 }} />
+            </div>
           ) : (
             <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
               <span
@@ -317,26 +352,42 @@ export function TripForm({ defaultValues, onSubmit, onCancel, onDelete }: Props)
           )}
         </div>
         <div style={{ flex: 1, padding: "10px 14px" }}>
-          <span style={label}>{t("form.date")}</span>
-          <input
-            {...register("date")}
-            type="date"
-            style={{
-              fontFamily: fontSerif,
-              fontSize: 17,
-              fontWeight: 600,
-              color: paper.ink,
-              background: "transparent",
-              border: "none",
-              outline: "none",
-              width: "100%",
-              padding: 0,
-              cursor: "pointer",
-            }}
-          />
+          {mono ? (
+            <div style={{ position: "relative" }}>
+              <span style={{ ...monoLabel, marginBottom: 2 }}>{t("form.date")}</span>
+              <div style={{ fontFamily: fontSerif, fontSize: 17, fontWeight: 700, color: paper.ink, pointerEvents: "none" }}>
+                {date ? fmtDate(date, locale) : "—"}
+              </div>
+              <input
+                {...register("date")}
+                type="date"
+                style={{ position: "absolute", inset: 0, opacity: 0.001, cursor: "pointer", width: "100%", height: "100%" }}
+              />
+            </div>
+          ) : (
+            <>
+              <span style={lbl}>{t("form.date")}</span>
+              <input
+                {...register("date")}
+                type="date"
+                style={{
+                  fontFamily: fontSerif,
+                  fontSize: 17,
+                  fontWeight: 600,
+                  color: paper.ink,
+                  background: "transparent",
+                  border: "none",
+                  outline: "none",
+                  width: "100%",
+                  padding: 0,
+                  cursor: "pointer",
+                }}
+              />
+            </>
+          )}
         </div>
       </div>
-      {!isAdmin && (
+      {!isAdmin && !mono && (
         <div
           style={{
             padding: "6px 14px",
@@ -351,98 +402,147 @@ export function TripForm({ defaultValues, onSubmit, onCancel, onDelete }: Props)
       )}
 
       {/* Odometer block */}
-      <div
-        style={{
-          margin: "12px 14px",
-          background: paper.paper,
-          border: `1.5px solid ${paper.paperDark}`,
-        }}
-      >
+      {mono ? (
+        <div style={{ padding: "12px 14px 8px" }}>
+          <span style={{ fontFamily: fontSerif, fontSize: 13, fontWeight: 600, color: paper.inkMute, display: "block", marginBottom: 8 }}>
+            {t("form.odometer_section")}
+          </span>
+          <div style={{ display: "flex", alignItems: "flex-end", gap: 8 }}>
+            <div style={{ flex: 1 }}>
+              <span style={{ ...monoLabel, marginBottom: 2 }}>{t("form.start_km")}</span>
+              <input
+                {...startReg}
+                type="number"
+                style={{ ...bigInput, fontSize: 26 }}
+                onBlur={(e) => {
+                  startReg.onBlur(e);
+                  const startVal = Number(e.target.value);
+                  const current = getValues("end_odometer");
+                  if (!current || Number(current) === 0) setValue("end_odometer", startVal);
+                }}
+              />
+            </div>
+            <div style={{ textAlign: "center", flexShrink: 0, padding: "0 6px 8px" }}>
+              <div style={{ fontFamily: fontMono, fontSize: 11.5, color: paper.inkMute }}>
+                {km > 0 ? `+${km} km` : "—"}
+              </div>
+            </div>
+            <div style={{ flex: 1, textAlign: "right" }}>
+              <span style={{ ...monoLabel, marginBottom: 2, textAlign: "right", display: "block" }}>{t("form.end_km")}</span>
+              <input
+                {...register("end_odometer")}
+                type="number"
+                style={{ ...bigInput, fontSize: 26, textAlign: "right" }}
+              />
+            </div>
+          </div>
+          {errors.end_odometer && (
+            <div style={{ fontFamily: fontMono, fontSize: 11, color: paper.accent, marginTop: 4 }}>
+              {errors.end_odometer.message}
+            </div>
+          )}
+          {!online && isAddMode && (
+            <div style={{ fontFamily: fontMono, fontSize: 10, color: paper.amber, marginTop: 4 }}>
+              {t("form.offline_start_km_hint")}
+            </div>
+          )}
+        </div>
+      ) : (
         <div
           style={{
-            textAlign: "center",
-            padding: "8px 0 4px",
-            fontFamily: fontMono,
-            fontSize: 9,
-            fontWeight: 700,
-            letterSpacing: 3,
-            color: paper.inkMute,
-            textTransform: "uppercase",
-            borderBottom: `1px dashed ${paper.paperDark}`,
+            margin: "12px 14px",
+            background: paper.paper,
+            border: `1.5px solid ${paper.paperDark}`,
           }}
         >
-          @ {t("form.odometer_section")}
-        </div>
-        <div style={{ display: "flex", alignItems: "center", padding: "12px 14px", gap: 8 }}>
-          <div style={{ flex: 1 }}>
-            <span style={{ ...label, fontSize: 8 }}>{t("form.start_km")}</span>
-            <input
-              {...startReg}
-              type="number"
-              style={{ ...bigInput, fontSize: 26 }}
-              onBlur={(e) => {
-                startReg.onBlur(e);
-                const startVal = Number(e.target.value);
-                const current = getValues("end_odometer");
-                if (!current || Number(current) === 0) setValue("end_odometer", startVal);
-              }}
-            />
-            {!online && isAddMode && (
+          <div
+            style={{
+              textAlign: "center",
+              padding: "8px 0 4px",
+              fontFamily: fontMono,
+              fontSize: 9,
+              fontWeight: 700,
+              letterSpacing: 3,
+              color: paper.inkMute,
+              textTransform: "uppercase",
+              borderBottom: `1px dashed ${paper.paperDark}`,
+            }}
+          >
+            @ {t("form.odometer_section")}
+          </div>
+          <div style={{ display: "flex", alignItems: "center", padding: "12px 14px", gap: 8 }}>
+            <div style={{ flex: 1 }}>
+              <span style={{ ...paperLabel, fontSize: 8 }}>{t("form.start_km")}</span>
+              <input
+                {...startReg}
+                type="number"
+                style={{ ...bigInput, fontSize: 20 }}
+                onBlur={(e) => {
+                  startReg.onBlur(e);
+                  const startVal = Number(e.target.value);
+                  const current = getValues("end_odometer");
+                  if (!current || Number(current) === 0) setValue("end_odometer", startVal);
+                }}
+              />
+              {!online && isAddMode && (
+                <div
+                  style={{
+                    fontFamily: fontMono,
+                    fontSize: 8,
+                    color: paper.amber,
+                    letterSpacing: 1,
+                    marginTop: 2,
+                    textTransform: "uppercase",
+                  }}
+                >
+                  {t("form.offline_start_km_hint")}
+                </div>
+              )}
+            </div>
+            <div style={{ textAlign: "center", flexShrink: 0, padding: "0 8px" }}>
               <div
                 style={{
                   fontFamily: fontMono,
-                  fontSize: 8,
-                  color: paper.amber,
+                  fontSize: 10,
+                  color: paper.inkMute,
                   letterSpacing: 1,
-                  marginTop: 2,
-                  textTransform: "uppercase",
+                  marginBottom: 2,
                 }}
               >
-                {t("form.offline_start_km_hint")}
+                {km > 0 ? `${km} KM` : "—"}
               </div>
-            )}
-          </div>
-          <div style={{ textAlign: "center", flexShrink: 0, padding: "0 8px" }}>
-            <div
-              style={{
-                fontFamily: fontMono,
-                fontSize: 10,
-                color: paper.inkMute,
-                letterSpacing: 1,
-                marginBottom: 2,
-              }}
-            >
-              {km > 0 ? `${km} KM` : "—"}
-            </div>
-            <div
-              style={{ fontSize: 16, color: errors.end_odometer ? paper.accent : paper.inkMute }}
-            >
-              →
-            </div>
-          </div>
-          <div style={{ flex: 1, textAlign: "right" }}>
-            <span style={{ ...label, fontSize: 8, textAlign: "right", display: "block" }}>
-              {t("form.end_km")}
-            </span>
-            <input
-              {...register("end_odometer")}
-              type="number"
-              style={{ ...bigInput, fontSize: 26, textAlign: "right" }}
-            />
-            {errors.end_odometer && (
               <div
-                style={{ fontFamily: fontMono, fontSize: 8, color: paper.accent, letterSpacing: 1 }}
+                style={{ fontSize: 16, color: errors.end_odometer ? paper.accent : paper.inkMute }}
               >
-                {errors.end_odometer.message}
+                →
               </div>
-            )}
+            </div>
+            <div style={{ flex: 1, textAlign: "right" }}>
+              <span style={{ ...paperLabel, fontSize: 8, textAlign: "right", display: "block" }}>
+                {t("form.end_km")}
+              </span>
+              <input
+                {...register("end_odometer")}
+                type="number"
+                style={{ ...bigInput, fontSize: 20, textAlign: "right" }}
+              />
+              {errors.end_odometer && (
+                <div
+                  style={{ fontFamily: fontMono, fontSize: 8, color: paper.accent, letterSpacing: 1 }}
+                >
+                  {errors.end_odometer.message}
+                </div>
+              )}
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
       {/* Location (GPS + map) */}
       <div style={{ padding: "4px 14px 4px" }}>
-        <span style={{ ...label, marginBottom: 6 }}>{t("form.where_parked")}</span>
+        <span style={{ ...lbl, marginBottom: 6 }}>
+          {mono ? t("form.parking_short") : t("form.where_parked")}
+        </span>
         <Controller
           name="location"
           control={control}
@@ -466,8 +566,14 @@ export function TripForm({ defaultValues, onSubmit, onCancel, onDelete }: Props)
 
       {/* Parking note */}
       <div style={{ padding: "8px 14px 4px" }}>
-        <span style={{ ...label, marginBottom: 6 }}>{t("form.parking_note")}</span>
-        <div style={{ ...dashedBox, padding: "10px 14px" }}>
+        <span style={{ ...lbl, marginBottom: 6 }}>{t("form.parking_note")}</span>
+        <div
+          style={
+            mono
+              ? { border: `1px solid ${paper.paperDark}`, borderRadius: "var(--radius-sm, 6px)", padding: "10px 14px" }
+              : { ...dashedBox, padding: "10px 14px" }
+          }
+        >
           <input
             {...register("parking")}
             type="text"
@@ -487,59 +593,79 @@ export function TripForm({ defaultValues, onSubmit, onCancel, onDelete }: Props)
         </div>
       </div>
 
-      {/* Breakdown */}
-      {km > 0 && car && person && (
-        <div style={{ margin: "12px 14px", ...dashedBox }}>
+      {/* Breakdown / overzicht — always visible to prevent layout jump */}
+      <div
+        style={
+          mono
+            ? { margin: "12px 14px", border: `1px solid ${paper.paperDark}`, borderRadius: "var(--radius-md, 10px)", padding: "12px 14px" }
+            : { margin: "12px 14px", ...dashedBox }
+        }
+      >
+        <div
+          style={
+            mono
+              ? {
+                  fontFamily: fontSerif,
+                  fontSize: 13,
+                  fontWeight: 600,
+                  color: paper.inkMute,
+                  marginBottom: 10,
+                }
+              : {
+                  textAlign: "center",
+                  fontFamily: fontMono,
+                  fontSize: 9,
+                  fontWeight: 700,
+                  letterSpacing: 3,
+                  color: paper.inkDim,
+                  textTransform: "uppercase",
+                  marginBottom: 10,
+                }
+          }
+        >
+          {mono ? t("form.breakdown") : `— ${t("form.breakdown")} —`}
+        </div>
+        <BreakdownRow
+          label={t("form.rate")}
+          value={car ? `€ ${car.price_per_km.toFixed(2).replace(".", ",")} / km` : "—"}
+          mono={mono}
+          muted={!car}
+        />
+        <BreakdownRow
+          label={t("form.tier_short", { km: String(shortKm), pct: String(pctShort) })}
+          value={shortKm > 0 ? fmtMoney(shortAmount) : "—"}
+          mono={mono}
+          muted={shortKm === 0}
+        />
+        {longKm > 0 && (
+          <BreakdownRow
+            label={t("form.tier_long", { km: String(longKm), pct: String(pctLong) })}
+            value={fmtMoney(longAmount)}
+            mono={mono}
+          />
+        )}
+        <div style={{ borderTop: mono ? `1px solid ${paper.paperDark}` : `1px dashed ${paper.paperDark}`, margin: "8px 0" }} />
+        <BreakdownRow
+          label={`${mono ? "Totaal" : "TOTAL"} (${km} km)`}
+          value={fmtMoney(amount)}
+          valueStyle={{ color: paper.accent, fontSize: mono ? 16 : 15, fontWeight: 700 }}
+          mono={mono}
+        />
+        {car && shortAmount + longAmount < car.price_per_km * km && km > 0 && (
           <div
             style={{
-              textAlign: "center",
+              textAlign: "right",
               fontFamily: fontMono,
-              fontSize: 9,
-              fontWeight: 700,
-              letterSpacing: 3,
-              color: paper.inkDim,
-              textTransform: "uppercase",
-              marginBottom: 10,
+              fontSize: mono ? 11 : 9,
+              color: paper.inkMute,
+              letterSpacing: mono ? 0 : 1,
+              marginTop: 2,
             }}
           >
-            — {t("form.breakdown")} —
+            − {fmtMoney(car.price_per_km * km - amount)} {t("form.total_discount").toLowerCase()}
           </div>
-          <BreakdownRow
-            label={t("form.rate")}
-            value={`€ ${car.price_per_km.toFixed(2).replace(".", ",")} / km`}
-          />
-          <BreakdownRow
-            label={t("form.tier_short", { km: String(shortKm), pct: String(pctShort) })}
-            value={fmtMoney(shortAmount)}
-          />
-          {longKm > 0 && (
-            <BreakdownRow
-              label={t("form.tier_long", { km: String(longKm), pct: String(pctLong) })}
-              value={fmtMoney(longAmount)}
-            />
-          )}
-          <div style={{ borderTop: `1px dashed ${paper.paperDark}`, margin: "8px 0" }} />
-          <BreakdownRow
-            label={`TOTAL (${km} km)`}
-            value={fmtMoney(amount)}
-            valueStyle={{ color: paper.accent, fontSize: 15, fontWeight: 700 }}
-          />
-          {shortAmount + longAmount < car.price_per_km * km && (
-            <div
-              style={{
-                textAlign: "right",
-                fontFamily: fontMono,
-                fontSize: 9,
-                color: paper.inkMute,
-                letterSpacing: 1,
-                marginTop: 2,
-              }}
-            >
-              − {fmtMoney(car.price_per_km * km - amount)} {t("form.total_discount").toLowerCase()}
-            </div>
-          )}
-        </div>
-      )}
+        )}
+      </div>
 
       {onDelete && (
         <div style={{ padding: "0 14px 24px" }}>
@@ -550,13 +676,14 @@ export function TripForm({ defaultValues, onSubmit, onCancel, onDelete }: Props)
               width: "100%",
               padding: "10px",
               background: "transparent",
-              border: `1.5px solid ${paper.accent}`,
+              border: mono ? `1px solid ${paper.accent}` : `1.5px solid ${paper.accent}`,
+              borderRadius: mono ? "var(--radius-pill, 999px)" : 0,
               color: paper.accent,
-              fontFamily: fontMono,
-              fontSize: 10,
+              fontFamily: mono ? fontSerif : fontMono,
+              fontSize: mono ? 13 : 10,
               fontWeight: 700,
-              letterSpacing: 2,
-              textTransform: "uppercase",
+              letterSpacing: mono ? 0 : 2,
+              textTransform: mono ? "none" : "uppercase",
               cursor: "pointer",
             }}
           >
@@ -573,10 +700,14 @@ function BreakdownRow({
   label: lbl,
   value,
   valueStyle,
+  mono,
+  muted,
 }: {
   label: string;
   value: string;
   valueStyle?: React.CSSProperties;
+  mono: boolean;
+  muted?: boolean;
 }) {
   return (
     <div
@@ -588,22 +719,20 @@ function BreakdownRow({
       }}
     >
       <span
-        style={{
-          fontFamily: fontMono,
-          fontSize: 9,
-          color: paper.inkDim,
-          letterSpacing: 1.5,
-          textTransform: "uppercase",
-        }}
+        style={
+          mono
+            ? { fontFamily: fontMono, fontSize: 11, color: paper.inkMute }
+            : { fontFamily: fontMono, fontSize: 9, color: paper.inkDim, letterSpacing: 1.5, textTransform: "uppercase" }
+        }
       >
         {lbl}
       </span>
       <span
         style={{
           fontFamily: fontMono,
-          fontSize: 12,
+          fontSize: mono ? 13 : 12,
           fontWeight: 700,
-          color: paper.ink,
+          color: muted ? paper.inkMute : paper.ink,
           ...valueStyle,
         }}
       >

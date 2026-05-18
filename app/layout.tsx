@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Fraunces, Inter, Courier_Prime } from "next/font/google";
+import { Fraunces, Inter, Inter_Tight, JetBrains_Mono, Courier_Prime } from "next/font/google";
 import "./globals.css";
 import { Providers } from "./providers";
 import { BottomTabBar } from "@/components/bottom-tab-bar";
@@ -23,6 +23,18 @@ const courierPrime = Courier_Prime({
   subsets: ["latin"],
   variable: "--font-courier-prime",
   weight: ["400", "700"],
+  display: "swap",
+});
+
+const interTight = Inter_Tight({
+  subsets: ["latin"],
+  variable: "--font-inter-tight",
+  display: "swap",
+});
+
+const jetbrainsMono = JetBrains_Mono({
+  subsets: ["latin"],
+  variable: "--font-jetbrains-mono",
   display: "swap",
 });
 
@@ -54,7 +66,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="nl" className={`${fraunces.variable} ${inter.variable} ${courierPrime.variable}`}>
+    <html lang="nl" className={`${fraunces.variable} ${inter.variable} ${courierPrime.variable} ${interTight.variable} ${jetbrainsMono.variable}`}>
       <head></head>
       <body>
         <LocaleProvider>

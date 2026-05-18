@@ -4,23 +4,30 @@ import { toast } from "sonner";
 import { useForm, useWatch, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { Lock, Wrench, Search, FileText, Shield, MoreHorizontal } from "lucide-react";
 import { CarToggle } from "@/components/car-toggle";
 import { usePeople } from "@/hooks/use-people";
 import { useCars } from "@/hooks/use-vehicles";
 import { useMe } from "@/hooks/use-me";
 import { useOnlineState } from "@/lib/offline/online-state";
 import type { Expense, ExpenseCategory, ExpenseInput } from "@/types";
-import { useT } from "@/components/locale-provider";
+import { useT, useLocale } from "@/components/locale-provider";
 import { buildMissingLabel } from "@/lib/i18n";
 import { fullNameOf } from "@/lib/person-utils";
-import { paper, fontMono, fontSerif } from "@/lib/paper-theme";
+import { paper, fontMono, fontSerif, fmtDate } from "@/lib/paper-theme";
+import { useTheme } from "@/lib/theme-context";
 
-const EXPENSE_CATEGORIES: { key: ExpenseCategory; icon: string; labelKey: string }[] = [
-  { key: "onderhoud", icon: "🔧", labelKey: "form.cat_onderhoud" },
-  { key: "keuring", icon: "🔍", labelKey: "form.cat_keuring" },
-  { key: "belasting", icon: "📜", labelKey: "form.cat_belasting" },
-  { key: "verzekering", icon: "🛡️", labelKey: "form.cat_verzekering" },
-  { key: "diversen", icon: "📎", labelKey: "form.cat_diversen" },
+const EXPENSE_CATEGORIES: {
+  key: ExpenseCategory;
+  icon: string;
+  Icon: React.ComponentType<{ size?: number; strokeWidth?: number; color?: string }>;
+  labelKey: string;
+}[] = [
+  { key: "onderhoud", icon: "🔧", Icon: Wrench, labelKey: "form.cat_onderhoud" },
+  { key: "keuring", icon: "🔍", Icon: Search, labelKey: "form.cat_keuring" },
+  { key: "belasting", icon: "📜", Icon: FileText, labelKey: "form.cat_belasting" },
+  { key: "verzekering", icon: "🛡️", Icon: Shield, labelKey: "form.cat_verzekering" },
+  { key: "diversen", icon: "📎", Icon: MoreHorizontal, labelKey: "form.cat_diversen" },
 ];
 
 const schema = z.object({
@@ -50,12 +57,36 @@ interface Props {
   onDelete?: () => void;
 }
 
+const paperLabel: React.CSSProperties = {
+  fontFamily: fontMono,
+  fontSize: 9,
+  fontWeight: 700,
+  letterSpacing: 2,
+  textTransform: "uppercase",
+  color: paper.inkMute,
+  display: "block",
+  marginBottom: 4,
+};
+
+const monoLabel: React.CSSProperties = {
+  fontFamily: fontMono,
+  fontSize: 11,
+  color: paper.inkMute,
+  display: "block",
+  marginBottom: 4,
+};
+
 const dashedBox: React.CSSProperties = {
   border: `1.5px dashed ${paper.paperDark}`,
 };
 
 export function ExpenseForm({ defaultValues, onSubmit, onCancel, onDelete }: Props) {
   const t = useT();
+  const { locale } = useLocale();
+  const { theme } = useTheme();
+  const mono = theme === "mono";
+  const lbl = mono ? monoLabel : paperLabel;
+
   const { data: people = [] } = usePeople();
   const { data: cars = [] } = useCars();
   const { data: me } = useMe();
@@ -131,7 +162,7 @@ export function ExpenseForm({ defaultValues, onSubmit, onCancel, onDelete }: Pro
           justifyContent: "space-between",
           padding: "0 16px",
           height: 52,
-          borderBottom: `1.5px solid ${paper.paperDark}`,
+          borderBottom: mono ? `1px solid ${paper.paperDark}` : `1.5px solid ${paper.paperDark}`,
           background: paper.paper,
           position: "sticky",
           top: 0,
@@ -158,36 +189,61 @@ export function ExpenseForm({ defaultValues, onSubmit, onCancel, onDelete }: Pro
           ×
         </button>
         <div
-          style={{
-            fontFamily: fontMono,
-            fontSize: 10,
-            fontWeight: 700,
-            letterSpacing: 3,
-            color: paper.inkDim,
-            textTransform: "uppercase",
-          }}
+          style={
+            mono
+              ? {
+                  fontFamily: "var(--font-inter-tight, 'Inter Tight', 'Inter', system-ui, sans-serif)",
+                  fontSize: 16,
+                  fontWeight: 700,
+                  color: paper.ink,
+                }
+              : {
+                  fontFamily: fontMono,
+                  fontSize: 10,
+                  fontWeight: 700,
+                  letterSpacing: 3,
+                  color: paper.inkDim,
+                  textTransform: "uppercase" as const,
+                }
+          }
         >
-          📋 {t("form.extra_cost")}
+          {mono ? t("form.extra_cost") : `📋 ${t("form.extra_cost")}`}
         </div>
         <div style={{ position: "relative" }} className="submit-wrap">
           <button
             type="submit"
             disabled={!canSubmit}
-            style={{
-              fontFamily: fontMono,
-              fontSize: 9,
-              fontWeight: 700,
-              letterSpacing: 2,
-              textTransform: "uppercase",
-              background: paper.inkDim,
-              color: "#fff",
-              border: "none",
-              padding: "8px 14px",
-              cursor: canSubmit && online ? "pointer" : "default",
-              opacity: canSubmit && online ? 1 : 0.35,
-            }}
+            style={
+              mono
+                ? {
+                    fontFamily: "var(--font-inter, 'Inter', system-ui, sans-serif)",
+                    fontSize: 14,
+                    fontWeight: 600,
+                    background: paper.accent,
+                    color: "#fff",
+                    border: "none",
+                    padding: "8px 18px",
+                    borderRadius: "var(--radius-pill, 999px)",
+                    cursor: canSubmit && online ? "pointer" : "default",
+                    opacity: canSubmit && online ? 1 : 0.5,
+                    transition: "opacity 0.15s",
+                  }
+                : {
+                    fontFamily: fontMono,
+                    fontSize: 9,
+                    fontWeight: 700,
+                    letterSpacing: 2,
+                    textTransform: "uppercase" as const,
+                    background: paper.inkDim,
+                    color: "#fff",
+                    border: "none",
+                    padding: "8px 14px",
+                    cursor: canSubmit && online ? "pointer" : "default",
+                    opacity: canSubmit && online ? 1 : 0.35,
+                  }
+            }
           >
-            {t("action.save_cost")}
+            {mono ? t("action.save") : t("action.save_cost")}
           </button>
           {!canSubmit && (
             <div
@@ -226,100 +282,169 @@ export function ExpenseForm({ defaultValues, onSubmit, onCancel, onDelete }: Pro
       />
 
       {/* Driver + Date row */}
-      <div style={{ display: "flex", borderBottom: `1.5px dashed ${paper.paperDark}` }}>
+      <div
+        style={{
+          display: "flex",
+          borderBottom: mono ? `1px solid ${paper.paperDark}` : `1.5px dashed ${paper.paperDark}`,
+        }}
+      >
         <div
-          style={{ flex: 1, padding: "10px 14px", borderRight: `1.5px dashed ${paper.paperDark}` }}
+          style={{
+            flex: 1,
+            padding: "10px 14px",
+            borderRight: mono
+              ? `1px solid ${paper.paperDark}`
+              : `1.5px dashed ${paper.paperDark}`,
+          }}
         >
-          <span
-            style={{
-              fontFamily: fontMono,
-              fontSize: 9,
-              fontWeight: 700,
-              letterSpacing: 2,
-              textTransform: "uppercase",
-              color: paper.inkMute,
-              display: "block",
-              marginBottom: 4,
-            }}
-          >
-            {t("form.driver")}
-          </span>
-          {isAdmin ? (
-            <select
-              value={personId ?? ""}
-              onChange={(e) => setValue("person_id", Number(e.target.value))}
-              style={{
-                fontFamily: fontSerif,
-                fontSize: 17,
-                fontWeight: 600,
-                color: paper.ink,
-                background: "transparent",
-                border: "none",
-                outline: "none",
-                width: "100%",
-                padding: 0,
-                cursor: "pointer",
-              }}
-            >
-              <option value="" disabled>
-                {t("form.select_person_placeholder")}
-              </option>
-              {people
-                .filter((p) => p.active)
-                .map((p) => (
-                  <option key={p.id} value={p.id}>
-                    {fullNameOf(p)}
-                  </option>
-                ))}
-            </select>
-          ) : (
-            <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-              <span
-                style={{ fontFamily: fontSerif, fontSize: 17, fontWeight: 600, color: paper.ink }}
-              >
-                {person ? fullNameOf(person) : me?.shortName ?? "—"}
-              </span>
-              {(person?.discount ?? 0) > 0 && (
-                <span style={{ color: paper.accent, fontSize: 13 }}>★</span>
+          {mono ? (
+            <>
+              {isAdmin ? (
+                <>
+                  <span style={lbl}>{t("form.driver")}</span>
+                  <select
+                    value={personId ?? ""}
+                    onChange={(e) => setValue("person_id", Number(e.target.value))}
+                    style={{
+                      fontFamily: fontSerif,
+                      fontSize: 17,
+                      fontWeight: 600,
+                      color: paper.ink,
+                      background: "transparent",
+                      border: "none",
+                      outline: "none",
+                      width: "100%",
+                      padding: 0,
+                      cursor: "pointer",
+                    }}
+                  >
+                    <option value="" disabled>
+                      {t("form.select_person_placeholder")}
+                    </option>
+                    {people
+                      .filter((p) => p.active)
+                      .map((p) => (
+                        <option key={p.id} value={p.id}>
+                          {fullNameOf(p)}
+                        </option>
+                      ))}
+                  </select>
+                </>
+              ) : (
+                <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                  <span
+                    style={{
+                      fontFamily: "var(--font-inter-tight, 'Inter Tight', 'Inter', system-ui, sans-serif)",
+                      fontSize: 19,
+                      fontWeight: 700,
+                      color: paper.ink,
+                    }}
+                  >
+                    {person ? fullNameOf(person) : me?.shortName ?? "—"}
+                  </span>
+                  <Lock size={14} color={paper.inkMute} strokeWidth={1.75} />
+                </div>
               )}
-              <span style={{ fontSize: 13 }}>🔒</span>
-            </div>
+            </>
+          ) : (
+            <>
+              <span style={lbl}>{t("form.driver")}</span>
+              {isAdmin ? (
+                <select
+                  value={personId ?? ""}
+                  onChange={(e) => setValue("person_id", Number(e.target.value))}
+                  style={{
+                    fontFamily: fontSerif,
+                    fontSize: 17,
+                    fontWeight: 600,
+                    color: paper.ink,
+                    background: "transparent",
+                    border: "none",
+                    outline: "none",
+                    width: "100%",
+                    padding: 0,
+                    cursor: "pointer",
+                  }}
+                >
+                  <option value="" disabled>
+                    {t("form.select_person_placeholder")}
+                  </option>
+                  {people
+                    .filter((p) => p.active)
+                    .map((p) => (
+                      <option key={p.id} value={p.id}>
+                        {fullNameOf(p)}
+                      </option>
+                    ))}
+                </select>
+              ) : (
+                <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                  <span
+                    style={{ fontFamily: fontSerif, fontSize: 17, fontWeight: 600, color: paper.ink }}
+                  >
+                    {person ? fullNameOf(person) : me?.shortName ?? "—"}
+                  </span>
+                  {(person?.discount ?? 0) > 0 && (
+                    <span style={{ color: paper.accent, fontSize: 13 }}>★</span>
+                  )}
+                  <span style={{ fontSize: 13 }}>🔒</span>
+                </div>
+              )}
+            </>
           )}
         </div>
         <div style={{ flex: 1, padding: "10px 14px" }}>
-          <span
-            style={{
-              fontFamily: fontMono,
-              fontSize: 9,
-              fontWeight: 700,
-              letterSpacing: 2,
-              textTransform: "uppercase",
-              color: paper.inkMute,
-              display: "block",
-              marginBottom: 4,
-            }}
-          >
-            {t("form.date")}
-          </span>
-          <input
-            {...register("date")}
-            type="date"
-            style={{
-              fontFamily: fontSerif,
-              fontSize: 17,
-              fontWeight: 600,
-              color: paper.ink,
-              background: "transparent",
-              border: "none",
-              outline: "none",
-              width: "100%",
-              padding: 0,
-              cursor: "pointer",
-            }}
-          />
+          {mono ? (
+            <div style={{ position: "relative" }}>
+              <span style={{ ...monoLabel, marginBottom: 2 }}>{t("form.date")}</span>
+              <div
+                style={{
+                  fontFamily: "var(--font-inter-tight, 'Inter Tight', 'Inter', system-ui, sans-serif)",
+                  fontSize: 17,
+                  fontWeight: 700,
+                  color: paper.ink,
+                  pointerEvents: "none",
+                }}
+              >
+                {dateW ? fmtDate(dateW, locale) : "—"}
+              </div>
+              <input
+                {...register("date")}
+                type="date"
+                style={{
+                  position: "absolute",
+                  inset: 0,
+                  opacity: 0.001,
+                  cursor: "pointer",
+                  width: "100%",
+                  height: "100%",
+                }}
+              />
+            </div>
+          ) : (
+            <>
+              <span style={lbl}>{t("form.date")}</span>
+              <input
+                {...register("date")}
+                type="date"
+                style={{
+                  fontFamily: fontSerif,
+                  fontSize: 17,
+                  fontWeight: 600,
+                  color: paper.ink,
+                  background: "transparent",
+                  border: "none",
+                  outline: "none",
+                  width: "100%",
+                  padding: 0,
+                  cursor: "pointer",
+                }}
+              />
+            </>
+          )}
         </div>
       </div>
-      {!isAdmin && (
+      {!isAdmin && !mono && (
         <div
           style={{
             padding: "6px 14px",
@@ -336,20 +461,37 @@ export function ExpenseForm({ defaultValues, onSubmit, onCancel, onDelete }: Pro
       {/* Category */}
       <div style={{ padding: "12px 14px 4px" }}>
         <span
-          style={{
-            fontFamily: fontMono,
-            fontSize: 9,
-            fontWeight: 700,
-            letterSpacing: 2,
-            textTransform: "uppercase",
-            color: paper.inkMute,
-            display: "block",
-            marginBottom: 8,
-          }}
+          style={
+            mono
+              ? {
+                  fontFamily: "var(--font-inter-tight, 'Inter Tight', 'Inter', system-ui, sans-serif)",
+                  fontSize: 13,
+                  fontWeight: 600,
+                  color: paper.inkDim,
+                  display: "block",
+                  marginBottom: 8,
+                }
+              : {
+                  fontFamily: fontMono,
+                  fontSize: 9,
+                  fontWeight: 700,
+                  letterSpacing: 2,
+                  textTransform: "uppercase" as const,
+                  color: paper.inkMute,
+                  display: "block",
+                  marginBottom: 8,
+                }
+          }
         >
-          — {t("form.category")} —
+          {mono ? t("form.category") : `— ${t("form.category").toUpperCase()} —`}
         </span>
-        <div style={{ display: "flex", width: "100%", border: `1.5px solid ${paper.paperDark}` }}>
+        <div
+          style={
+            mono
+              ? { display: "flex", width: "100%", gap: 6 }
+              : { display: "flex", width: "100%", border: `1.5px solid ${paper.paperDark}` }
+          }
+        >
           {EXPENSE_CATEGORIES.map((cat, i, arr) => {
             const selected = category === cat.key;
             return (
@@ -357,31 +499,67 @@ export function ExpenseForm({ defaultValues, onSubmit, onCancel, onDelete }: Pro
                 key={cat.key}
                 type="button"
                 onClick={() => setValue("category", cat.key)}
-                style={{
-                  flex: 1,
-                  padding: "12px 4px",
-                  background: selected ? paper.ink : "transparent",
-                  borderTop: "none",
-                  borderLeft: "none",
-                  borderBottom: "none",
-                  borderRight: i < arr.length - 1 ? `1px solid ${paper.paperDark}` : "none",
-                  cursor: "pointer",
-                  textAlign: "center",
-                }}
+                style={
+                  mono
+                    ? {
+                        flex: 1,
+                        padding: "10px 4px",
+                        background: selected ? paper.ink : "transparent",
+                        border: selected ? "none" : `1px solid ${paper.paperDark}`,
+                        borderRadius: "var(--radius-sm, 6px)",
+                        cursor: "pointer",
+                        textAlign: "center" as const,
+                        transition: "background 0.15s",
+                      }
+                    : {
+                        flex: 1,
+                        padding: "12px 4px",
+                        background: selected ? paper.ink : "transparent",
+                        borderTop: "none",
+                        borderLeft: "none",
+                        borderBottom: "none",
+                        borderRight: i < arr.length - 1 ? `1px solid ${paper.paperDark}` : "none",
+                        cursor: "pointer",
+                        textAlign: "center" as const,
+                      }
+                }
               >
-                <div style={{ fontSize: 18, marginBottom: 4 }}>{cat.icon}</div>
-                <div
-                  style={{
-                    fontFamily: fontMono,
-                    fontSize: 8,
-                    fontWeight: 700,
-                    letterSpacing: 1,
-                    textTransform: "uppercase",
-                    color: selected ? paper.paper : paper.inkDim,
-                  }}
-                >
-                  {t(cat.labelKey as any)}
-                </div>
+                {mono ? (
+                  <>
+                    <cat.Icon
+                      size={18}
+                      strokeWidth={1.75}
+                      color={selected ? paper.paper : paper.inkDim}
+                    />
+                    <div
+                      style={{
+                        fontFamily: "var(--font-inter, 'Inter', system-ui, sans-serif)",
+                        fontSize: 9,
+                        fontWeight: 500,
+                        color: selected ? paper.paper : paper.inkDim,
+                        marginTop: 4,
+                      }}
+                    >
+                      {t(cat.labelKey as any)}
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div style={{ fontSize: 18, marginBottom: 4 }}>{cat.icon}</div>
+                    <div
+                      style={{
+                        fontFamily: fontMono,
+                        fontSize: 8,
+                        fontWeight: 700,
+                        letterSpacing: 1,
+                        textTransform: "uppercase" as const,
+                        color: selected ? paper.paper : paper.inkDim,
+                      }}
+                    >
+                      {t(cat.labelKey as any)}
+                    </div>
+                  </>
+                )}
               </button>
             );
           })}
@@ -389,21 +567,19 @@ export function ExpenseForm({ defaultValues, onSubmit, onCancel, onDelete }: Pro
       </div>
 
       {/* Amount */}
-      <div style={{ margin: "12px 14px", ...dashedBox, padding: "12px 14px" }}>
-        <span
-          style={{
-            fontFamily: fontMono,
-            fontSize: 9,
-            fontWeight: 700,
-            letterSpacing: 2,
-            textTransform: "uppercase",
-            color: paper.inkMute,
-            display: "block",
-            marginBottom: 8,
-          }}
-        >
-          {t("form.amount")}
-        </span>
+      <div
+        style={
+          mono
+            ? {
+                margin: "12px 14px",
+                border: `1px solid ${paper.paperDark}`,
+                borderRadius: "var(--radius-md, 10px)",
+                padding: "12px 14px",
+              }
+            : { margin: "12px 14px", ...dashedBox, padding: "12px 14px" }
+        }
+      >
+        <span style={lbl}>{t("form.amount")}</span>
         <div style={{ display: "flex", alignItems: "baseline", gap: 4 }}>
           <span
             style={{ fontFamily: fontSerif, fontSize: 32, fontWeight: 700, color: paper.inkDim }}
@@ -432,21 +608,18 @@ export function ExpenseForm({ defaultValues, onSubmit, onCancel, onDelete }: Pro
 
       {/* Description */}
       <div style={{ padding: "0 14px" }}>
-        <span
-          style={{
-            fontFamily: fontMono,
-            fontSize: 9,
-            fontWeight: 700,
-            letterSpacing: 2,
-            textTransform: "uppercase",
-            color: paper.inkMute,
-            display: "block",
-            marginBottom: 6,
-          }}
+        <span style={lbl}>{mono ? t("form.description") : t("form.note")}</span>
+        <div
+          style={
+            mono
+              ? {
+                  border: `1px solid ${paper.paperDark}`,
+                  borderRadius: "var(--radius-md, 10px)",
+                  padding: "10px 14px",
+                }
+              : { ...dashedBox, padding: "10px 14px" }
+          }
         >
-          {t("form.note")}
-        </span>
-        <div style={{ ...dashedBox, padding: "10px 14px" }}>
           <input
             {...register("description")}
             type="text"
@@ -466,33 +639,85 @@ export function ExpenseForm({ defaultValues, onSubmit, onCancel, onDelete }: Pro
         </div>
       </div>
 
-      {/* Settled outside checkbox */}
-      <div style={{ padding: "8px 14px 4px", display: "flex", alignItems: "center", gap: 10 }}>
-        <input
-          type="checkbox"
-          id="expense_settled_outside"
-          checked={!!settledOutside}
-          onChange={(e) => setValue("settled_outside", e.target.checked)}
-          style={{ width: 16, height: 16, cursor: "pointer", accentColor: paper.inkMute }}
-        />
-        <label
-          htmlFor="expense_settled_outside"
-          style={{
-            fontFamily: fontMono,
-            fontSize: 10,
-            fontWeight: 700,
-            letterSpacing: 2,
-            textTransform: "uppercase",
-            color: paper.inkDim,
-            cursor: "pointer",
-          }}
-        >
-          {t("form.settled_outside")}
-        </label>
-        <span style={{ fontFamily: fontMono, fontSize: 9, color: paper.inkMute, letterSpacing: 1 }}>
-          — {t("form.settled_outside_hint")}
-        </span>
-      </div>
+      {/* Settled outside */}
+      {mono ? (
+        <div style={{ padding: "12px 14px 4px", display: "flex", alignItems: "flex-start", gap: 10 }}>
+          <div
+            onClick={() => setValue("settled_outside", !settledOutside)}
+            style={{
+              width: 22,
+              height: 22,
+              borderRadius: "50%",
+              border: `2px solid ${settledOutside ? paper.ink : paper.paperDark}`,
+              background: settledOutside ? paper.ink : "transparent",
+              cursor: "pointer",
+              flexShrink: 0,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              transition: "all 0.15s",
+              marginTop: 2,
+            }}
+          >
+            {settledOutside && (
+              <div
+                style={{ width: 8, height: 8, borderRadius: "50%", background: paper.paper }}
+              />
+            )}
+          </div>
+          <div>
+            <div
+              style={{
+                fontFamily: "var(--font-inter, 'Inter', system-ui, sans-serif)",
+                fontSize: 15,
+                fontWeight: 600,
+                color: paper.ink,
+              }}
+            >
+              {t("form.settled_outside")}
+            </div>
+            <div
+              style={{
+                fontFamily: "var(--font-inter, 'Inter', system-ui, sans-serif)",
+                fontSize: 12,
+                color: paper.inkMute,
+                marginTop: 2,
+              }}
+            >
+              {t("form.settled_outside_hint")}
+            </div>
+          </div>
+        </div>
+      ) : (
+        <div style={{ padding: "8px 14px 4px", display: "flex", alignItems: "center", gap: 10 }}>
+          <input
+            type="checkbox"
+            id="expense_settled_outside"
+            checked={!!settledOutside}
+            onChange={(e) => setValue("settled_outside", e.target.checked)}
+            style={{ width: 16, height: 16, cursor: "pointer", accentColor: paper.inkMute }}
+          />
+          <label
+            htmlFor="expense_settled_outside"
+            style={{
+              fontFamily: fontMono,
+              fontSize: 10,
+              fontWeight: 700,
+              letterSpacing: 2,
+              textTransform: "uppercase",
+              color: paper.inkDim,
+              cursor: "pointer",
+            }}
+          >
+            {t("form.settled_outside")}
+          </label>
+          <span
+            style={{ fontFamily: fontMono, fontSize: 9, color: paper.inkMute, letterSpacing: 1 }}
+          >
+            — {t("form.settled_outside_hint")}
+          </span>
+        </div>
+      )}
 
       {onDelete && (
         <div style={{ padding: "8px 14px 24px" }}>

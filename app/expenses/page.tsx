@@ -18,6 +18,7 @@ import { useQueryParam } from "@/hooks/use-query-param";
 import { YearSelect } from "@/components/year-select";
 import type { Expense } from "@/types";
 import { paper, fontMono, fmtYearMonth } from "@/lib/paper-theme";
+import { useTheme } from "@/lib/theme-context";
 import { useT } from "@/components/locale-provider";
 import { ExpenseCard } from "@/components/expense-card";
 import { ErrorBoundary } from "@/components/error-boundary";
@@ -43,6 +44,8 @@ const sheetStyle: React.CSSProperties = {
 
 function ExpensesContent() {
   const t = useT();
+  const { theme } = useTheme();
+  const mono = theme === "mono";
   const { data: expenses = [], isLoading } = useExpenses();
   const { data: me } = useMe();
   const createE = useCreateExpense();
@@ -98,18 +101,33 @@ function ExpensesContent() {
 
   const closeModal = () => router.back();
 
-  const filterBtnStyle = (active: boolean): React.CSSProperties => ({
-    padding: "5px 12px",
-    background: active ? paper.ink : "transparent",
-    color: active ? paper.paper : paper.inkDim,
-    border: `1.5px solid ${paper.ink}`,
-    fontFamily: fontMono,
-    fontSize: 9,
-    fontWeight: 700,
-    letterSpacing: 2,
-    textTransform: "uppercase",
-    cursor: "pointer",
-  });
+  const filterBtnStyle = (active: boolean): React.CSSProperties =>
+    mono
+      ? {
+          padding: "5px 11px",
+          background: active ? paper.ink : "transparent",
+          color: active ? paper.paper : paper.inkDim,
+          border: "none",
+          borderRadius: "var(--radius-pill, 999px)",
+          fontFamily: "var(--font-inter, 'Inter', system-ui, sans-serif)",
+          fontSize: 11.5,
+          fontWeight: 500,
+          letterSpacing: 0,
+          cursor: "pointer",
+          transition: "background 0.15s",
+        }
+      : {
+          padding: "5px 12px",
+          background: active ? paper.ink : "transparent",
+          color: active ? paper.paper : paper.inkDim,
+          border: `1.5px solid ${paper.ink}`,
+          fontFamily: fontMono,
+          fontSize: 9,
+          fontWeight: 700,
+          letterSpacing: 2,
+          textTransform: "uppercase",
+          cursor: "pointer",
+        };
 
   if (isLoading)
     return (
@@ -136,7 +154,7 @@ function ExpensesContent() {
       <div
         style={{
           padding: "10px 16px 8px",
-          borderBottom: `1px solid ${paper.paperDark}`,
+          borderBottom: mono ? "none" : `1px solid ${paper.paperDark}`,
           display: "flex",
           flexDirection: "column",
           gap: 6,
@@ -145,14 +163,14 @@ function ExpensesContent() {
         {(canFilter || years.length > 1) && (
           <div style={{ display: "flex", alignItems: "center" }}>
             {canFilter && (
-              <div style={{ display: "flex", gap: 0 }}>
+              <div style={mono ? { display: "inline-flex", alignSelf: "flex-start", border: `1px solid ${paper.paperDark}`, borderRadius: "var(--radius-pill, 999px)", padding: 2, gap: 1 } : { display: "flex", gap: 0 }}>
                 {(["all", "mine"] as const).map((v, i, arr) => (
                   <button
                     key={v}
                     onClick={() => setMineParam(v === "mine" ? "true" : "")}
                     style={{
                       ...filterBtnStyle(v === "mine" ? isMine : !isMine),
-                      borderRight: i < arr.length - 1 ? "none" : `1.5px solid ${paper.ink}`,
+                      ...(mono ? {} : { borderRight: i < arr.length - 1 ? "none" : `1.5px solid ${paper.ink}` }),
                     }}
                   >
                     {v === "all" ? t("filter.all") : t("filter.mine")}
@@ -173,14 +191,14 @@ function ExpensesContent() {
           </div>
         )}
         {cars.length > 1 && (
-          <div style={{ display: "flex", gap: 0 }}>
+          <div style={mono ? { display: "inline-flex", alignSelf: "flex-start", border: `1px solid ${paper.paperDark}`, borderRadius: "var(--radius-pill, 999px)", padding: 2, gap: 1 } : { display: "flex", gap: 0 }}>
             {[null, ...cars].map((car, i, arr) => (
               <button
                 key={car ?? "__all"}
                 onClick={() => setCarFilter(car ?? "")}
                 style={{
                   ...filterBtnStyle(carFilter === (car ?? "")),
-                  borderRight: i < arr.length - 1 ? "none" : `1.5px solid ${paper.ink}`,
+                  ...(mono ? {} : { borderRight: i < arr.length - 1 ? "none" : `1.5px solid ${paper.ink}` }),
                 }}
               >
                 {car ?? t("filter.all")}

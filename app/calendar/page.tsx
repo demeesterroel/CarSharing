@@ -308,17 +308,6 @@ function CalendarContent() {
 
       {/* Add sheet */}
       <BottomSheet open={sheet === "add"} onClose={() => closeSheet()}>
-        <div
-          style={{
-            padding: "16px 20px 0",
-            fontFamily: fontSerif,
-            fontSize: 20,
-            fontWeight: 700,
-            color: paper.ink,
-          }}
-        >
-          {t("page.reservation_add")}
-        </div>
         <ReservationForm
           defaultValues={
             prefillCarId !== undefined
@@ -344,17 +333,6 @@ function CalendarContent() {
 
       {/* Edit sheet */}
       <BottomSheet open={sheet === "edit" && !!editing} onClose={() => closeSheet()}>
-        <div
-          style={{
-            padding: "16px 20px 0",
-            fontFamily: fontSerif,
-            fontSize: 20,
-            fontWeight: 700,
-            color: paper.ink,
-          }}
-        >
-          {t("page.reservation_edit")}
-        </div>
         {editing && (
           <>
             <ReservationForm

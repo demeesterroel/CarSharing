@@ -1,16 +1,16 @@
 "use client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { House, ArrowRight, Fuel, CalendarDays, Receipt, Settings, type LucideIcon } from "lucide-react";
+import { House, Navigation, Fuel, CalendarPlus, Receipt, Settings, type LucideIcon } from "lucide-react";
 import { paper, fontMono } from "@/lib/paper-theme";
 import { useT } from "@/components/locale-provider";
 import { useMe } from "@/hooks/use-me";
 
 const BASE_TABS: { href: string; labelKey: "nav.dashboard" | "nav.trips" | "nav.fuel" | "nav.tab.reservations" | "nav.tab.expenses"; Icon: LucideIcon }[] = [
   { href: "/", labelKey: "nav.dashboard", Icon: House },
-  { href: "/trips", labelKey: "nav.trips", Icon: ArrowRight },
+  { href: "/trips", labelKey: "nav.trips", Icon: Navigation },
   { href: "/fuel", labelKey: "nav.fuel", Icon: Fuel },
-  { href: "/calendar", labelKey: "nav.tab.reservations", Icon: CalendarDays },
+  { href: "/calendar", labelKey: "nav.tab.reservations", Icon: CalendarPlus },
   { href: "/expenses", labelKey: "nav.tab.expenses", Icon: Receipt },
 ];
 
@@ -36,16 +36,7 @@ const tabStyle = (active: boolean): React.CSSProperties => ({
   border: "none",
 });
 
-const labelStyle: React.CSSProperties = {
-  fontSize: 8,
-  letterSpacing: "1.2px",
-  textTransform: "uppercase",
-  fontWeight: 700,
-  whiteSpace: "nowrap",
-  overflow: "hidden",
-  textOverflow: "ellipsis",
-  maxWidth: "100%",
-};
+
 
 export function BottomTabBar() {
   const t = useT();
@@ -87,7 +78,7 @@ export function BottomTabBar() {
             style={tabStyle(active)}
           >
             <Icon size={17} strokeWidth={1.75} />
-            <span style={labelStyle}>{t(labelKey)}</span>
+            <span className="bottom-nav-label">{t(labelKey)}</span>
           </Link>
         );
       })}

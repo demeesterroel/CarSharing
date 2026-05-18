@@ -2,6 +2,7 @@
 import type { Expense } from "@/types";
 import { paper, fontMono, fontSerif, fmtMoney, fmtDate } from "@/lib/paper-theme";
 import { useT, useLocale } from "@/components/locale-provider";
+import { useTheme } from "@/lib/theme-context";
 import { CarBadge } from "@/components/car-badge";
 import { PendingBadge } from "@/components/pending-badge";
 
@@ -13,6 +14,8 @@ export interface ExpenseCardProps {
 export function ExpenseCard({ expense, onClick }: ExpenseCardProps) {
   const t = useT();
   const { locale } = useLocale();
+  const { theme } = useTheme();
+  const mono = theme === "mono";
   return (
     <button
       onClick={onClick}
@@ -20,17 +23,17 @@ export function ExpenseCard({ expense, onClick }: ExpenseCardProps) {
         width: "100%",
         textAlign: "left",
         appearance: "none",
-        background: paper.paper,
+        background: mono ? "transparent" : paper.paper,
         padding: "12px 14px",
-        marginBottom: 8,
+        marginBottom: mono ? 0 : 8,
         display: "flex",
         alignItems: "center",
         gap: 12,
         borderTop: "none",
         borderRight: "none",
-        borderBottom: "none",
-        borderLeft: `3px solid ${paper.green}`,
-        boxShadow: "0 1px 2px rgba(0,0,0,0.04)",
+        borderBottom: mono ? `1px solid ${paper.paperDark}` : "none",
+        borderLeft: mono ? "none" : `3px solid ${paper.green}`,
+        boxShadow: mono ? "none" : "0 1px 2px rgba(0,0,0,0.04)",
         cursor: onClick ? "pointer" : "default",
       }}
     >
@@ -54,9 +57,9 @@ export function ExpenseCard({ expense, onClick }: ExpenseCardProps) {
         <div
           style={{
             fontFamily: fontMono,
-            fontSize: 10,
-            color: paper.inkDim,
-            letterSpacing: 1,
+            fontSize: mono ? 11.5 : 10,
+            color: mono ? paper.inkMute : paper.inkDim,
+            letterSpacing: mono ? 0 : 1,
             marginTop: 2,
           }}
         >

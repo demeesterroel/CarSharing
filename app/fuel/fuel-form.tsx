@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { useForm, useWatch, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { Lock } from "lucide-react";
 import { CarToggle } from "@/components/car-toggle";
 import { ReceiptUpload } from "@/components/receipt-upload";
 import { LocationPicker } from "@/components/location-picker";
@@ -16,7 +17,9 @@ import { useOnlineState } from "@/lib/offline/online-state";
 import type { FuelFillup, FuelFillupInput } from "@/types";
 import { t, buildMissingLabel } from "@/lib/i18n";
 import { fullNameOf } from "@/lib/person-utils";
-import { paper, fontMono, fontSerif } from "@/lib/paper-theme";
+import { paper, fontMono, fontSerif, fmtDate } from "@/lib/paper-theme";
+import { useTheme } from "@/lib/theme-context";
+import { useLocale } from "@/components/locale-provider";
 
 const schema = z.object({
   person_id: z.number({ error: t("validation.person_required") }),
@@ -58,12 +61,19 @@ interface Props {
   onDelete?: () => void;
 }
 
-const label: React.CSSProperties = {
+const paperLabel: React.CSSProperties = {
   fontFamily: fontMono,
   fontSize: 9,
   fontWeight: 700,
   letterSpacing: 2,
   textTransform: "uppercase",
+  color: paper.inkMute,
+  display: "block",
+  marginBottom: 4,
+};
+const monoLabel: React.CSSProperties = {
+  fontFamily: fontMono,
+  fontSize: 11,
   color: paper.inkMute,
   display: "block",
   marginBottom: 4,
@@ -80,6 +90,9 @@ export function FuelForm({ defaultValues, onSubmit, onCancel, onDelete }: Props)
   const { online } = useOnlineState();
   const isAddMode = !defaultValues?.id;
   const isAdmin = me?.isAdmin ?? false;
+  const { theme } = useTheme();
+  const mono = theme === "mono";
+  const { locale } = useLocale();
 
   const { register, handleSubmit, control, setValue, getValues } = useForm<
     FormInput,
@@ -120,8 +133,7 @@ export function FuelForm({ defaultValues, onSubmit, onCancel, onDelete }: Props)
   const { data: lastState } = useLastCarState(carId);
   useEffect(() => {
     if (!isAddMode || !carId || !lastState) return;
-    const current = getValues("odometer");
-    if ((!current || Number(current) === 0) && lastState.odometer != null) {
+    if (lastState.odometer != null) {
       setValue("odometer", lastState.odometer);
     }
   }, [lastState, carId, isAddMode, setValue, getValues]);
@@ -133,6 +145,8 @@ export function FuelForm({ defaultValues, onSubmit, onCancel, onDelete }: Props)
   }, [me, isAddMode, setValue, getValues]);
 
   const displayDate = date ? date.slice(5).replace("-", "/") : "";
+  const lbl = mono ? monoLabel : paperLabel;
+  const rowBorder = mono ? `1px solid ${paper.paperDark}` : `1.5px dashed ${paper.paperDark}`;
 
   function handleSubmitForm(data: FormData) {
     onSubmit({
@@ -170,7 +184,7 @@ export function FuelForm({ defaultValues, onSubmit, onCancel, onDelete }: Props)
           justifyContent: "space-between",
           padding: "0 16px",
           height: 52,
-          borderBottom: `1.5px solid ${paper.paperDark}`,
+          borderBottom: rowBorder,
           background: paper.paper,
           position: "sticky",
           top: 0,
@@ -197,36 +211,42 @@ export function FuelForm({ defaultValues, onSubmit, onCancel, onDelete }: Props)
           ×
         </button>
         <div
-          style={{
-            fontFamily: fontMono,
-            fontSize: 10,
-            fontWeight: 700,
-            letterSpacing: 3,
-            color: paper.inkDim,
-            textTransform: "uppercase",
-          }}
+          style={
+            mono
+              ? { fontFamily: fontSerif, fontSize: 17, fontWeight: 700, color: paper.ink }
+              : {
+                  fontFamily: fontMono,
+                  fontSize: 10,
+                  fontWeight: 700,
+                  letterSpacing: 3,
+                  color: paper.inkDim,
+                  textTransform: "uppercase",
+                }
+          }
         >
-          ⛽ {t("form.fuel_receipt")}
+          {!mono && "⛽ "}
+          {t("form.fuel_receipt")}
         </div>
         <div style={{ position: "relative" }} className="submit-wrap">
           <button
             type="submit"
             disabled={!canSubmit}
             style={{
-              fontFamily: fontMono,
-              fontSize: 9,
+              fontFamily: mono ? fontSerif : fontMono,
+              fontSize: mono ? 13 : 9,
               fontWeight: 700,
-              letterSpacing: 2,
-              textTransform: "uppercase",
-              background: paper.green,
+              letterSpacing: mono ? 0 : 2,
+              textTransform: mono ? "none" : "uppercase",
+              background: mono ? paper.accent : paper.green,
               color: "#fff",
               border: "none",
-              padding: "8px 14px",
+              borderRadius: mono ? "var(--radius-pill, 999px)" : 0,
+              padding: mono ? "8px 18px" : "8px 14px",
               cursor: canSubmit && online ? "pointer" : "default",
               opacity: canSubmit && online ? 1 : 0.35,
             }}
           >
-            {t("action.save_receipt")}
+            {mono ? t("action.save") : t("action.save_receipt")}
           </button>
           {!canSubmit && (
             <div
@@ -265,44 +285,50 @@ export function FuelForm({ defaultValues, onSubmit, onCancel, onDelete }: Props)
       />
 
       {/* Driver + Date row */}
-      <div style={{ display: "flex", borderBottom: `1.5px dashed ${paper.paperDark}` }}>
-        <div
-          style={{ flex: 1, padding: "10px 14px", borderRight: `1.5px dashed ${paper.paperDark}` }}
-        >
-          <span style={label}>{t("form.driver")}</span>
+      <div style={{ display: "flex", borderBottom: rowBorder }}>
+        <div style={{ flex: 1, padding: "10px 14px", borderRight: rowBorder }}>
+          {!mono && <span style={lbl}>{t("form.driver")}</span>}
           {isAdmin ? (
-            <select
-              value={personId ?? ""}
-              onChange={(e) => setValue("person_id", Number(e.target.value))}
-              style={{
-                fontFamily: fontSerif,
-                fontSize: 17,
-                fontWeight: 600,
-                color: paper.ink,
-                background: "transparent",
-                border: "none",
-                outline: "none",
-                width: "100%",
-                padding: 0,
-                cursor: "pointer",
-              }}
-            >
-              <option value="" disabled>
-                {t("form.select_person_placeholder")}
-              </option>
-              {people
-                .filter((p) => p.active)
-                .map((p) => (
-                  <option key={p.id} value={p.id}>
-                    {fullNameOf(p)}
-                  </option>
-                ))}
-            </select>
+            <>
+              {mono && <span style={lbl}>{t("form.driver")}</span>}
+              <select
+                value={personId ?? ""}
+                onChange={(e) => setValue("person_id", Number(e.target.value))}
+                style={{
+                  fontFamily: fontSerif,
+                  fontSize: mono ? 19 : 17,
+                  fontWeight: mono ? 700 : 600,
+                  color: paper.ink,
+                  background: "transparent",
+                  border: "none",
+                  outline: "none",
+                  width: "100%",
+                  padding: 0,
+                  cursor: "pointer",
+                }}
+              >
+                <option value="" disabled>
+                  {t("form.select_person_placeholder")}
+                </option>
+                {people
+                  .filter((p) => p.active)
+                  .map((p) => (
+                    <option key={p.id} value={p.id}>
+                      {fullNameOf(p)}
+                    </option>
+                  ))}
+              </select>
+            </>
+          ) : mono ? (
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <span style={{ fontFamily: fontSerif, fontSize: 19, fontWeight: 700, color: paper.ink, lineHeight: 1.15 }}>
+                {person ? fullNameOf(person) : me?.shortName ?? "—"}
+              </span>
+              <Lock size={14} color={paper.inkMute} strokeWidth={1.75} style={{ flexShrink: 0 }} />
+            </div>
           ) : (
             <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-              <span
-                style={{ fontFamily: fontSerif, fontSize: 17, fontWeight: 600, color: paper.ink }}
-              >
+              <span style={{ fontFamily: fontSerif, fontSize: 17, fontWeight: 600, color: paper.ink }}>
                 {person ? fullNameOf(person) : me?.shortName ?? "—"}
               </span>
               <span style={{ fontSize: 13 }}>🔒</span>
@@ -310,233 +336,326 @@ export function FuelForm({ defaultValues, onSubmit, onCancel, onDelete }: Props)
           )}
         </div>
         <div style={{ flex: 1, padding: "10px 14px" }}>
-          <span style={label}>{t("form.date")}</span>
-          <input
-            {...register("date")}
-            type="date"
-            style={{
-              fontFamily: fontSerif,
-              fontSize: 17,
-              fontWeight: 600,
-              color: paper.ink,
-              background: "transparent",
-              border: "none",
-              outline: "none",
-              width: "100%",
-              padding: 0,
-              cursor: "pointer",
-            }}
-          />
+          {mono ? (
+            <div style={{ position: "relative" }}>
+              <span style={{ ...monoLabel, marginBottom: 2 }}>{t("form.date")}</span>
+              <div style={{ fontFamily: fontSerif, fontSize: 17, fontWeight: 700, color: paper.ink, pointerEvents: "none" }}>
+                {date ? fmtDate(date, locale) : "—"}
+              </div>
+              <input
+                {...register("date")}
+                type="date"
+                style={{ position: "absolute", inset: 0, opacity: 0.001, cursor: "pointer", width: "100%", height: "100%" }}
+              />
+            </div>
+          ) : (
+            <>
+              <span style={lbl}>{t("form.date")}</span>
+              <input
+                {...register("date")}
+                type="date"
+                style={{
+                  fontFamily: fontSerif,
+                  fontSize: 17,
+                  fontWeight: 600,
+                  color: paper.ink,
+                  background: "transparent",
+                  border: "none",
+                  outline: "none",
+                  width: "100%",
+                  padding: 0,
+                  cursor: "pointer",
+                }}
+              />
+            </>
+          )}
         </div>
       </div>
-      {!isAdmin && (
-        <div
-          style={{
-            padding: "6px 14px",
-            fontFamily: fontMono,
-            fontSize: 9,
-            color: paper.amber,
-            letterSpacing: 1,
-          }}
-        >
+      {!isAdmin && !mono && (
+        <div style={{ padding: "6px 14px", fontFamily: fontMono, fontSize: 9, color: paper.amber, letterSpacing: 1 }}>
           🔒 {t("form.driver_locked_hint")}
         </div>
       )}
 
-      {/* Pump block — light theme */}
-      <div
-        style={{
-          margin: "12px 14px",
-          background: paper.paper,
-          border: `1.5px solid ${paper.paperDark}`,
-        }}
-      >
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            padding: "10px 14px 6px",
-            borderBottom: `1px dashed ${paper.paperDark}`,
-          }}
-        >
-          <span
-            style={{
-              fontFamily: fontMono,
-              fontSize: 10,
-              fontWeight: 700,
-              letterSpacing: 2,
-              color: paper.amber,
-            }}
-          >
-            ● {t("form.pump")}
-          </span>
-          <span
-            style={{ fontFamily: fontMono, fontSize: 10, color: paper.inkMute, letterSpacing: 1 }}
-          >
-            {displayDate}
-          </span>
-        </div>
-
-        {/* Amount + Liters */}
-        <div style={{ display: "flex", alignItems: "flex-end", padding: "10px 14px 6px", gap: 0 }}>
-          <div style={{ flex: 1 }}>
-            <span style={{ ...label, fontSize: 8 }}>{t("form.amount")}</span>
-            <div style={{ display: "flex", alignItems: "baseline", gap: 4 }}>
-              <input
-                {...register("amount")}
-                type="number"
-                step="0.01"
-                style={{
-                  fontFamily: fontMono,
-                  fontSize: 32,
-                  fontWeight: 700,
-                  color: paper.ink,
-                  background: "transparent",
-                  border: "none",
-                  outline: "none",
-                  borderBottom: `1px dashed ${paper.paperDark}`,
-                  width: "100%",
-                  padding: "2px 0",
-                }}
-              />
+      {/* Pump / fuel section */}
+      {mono ? (
+        <div style={{ padding: "12px 14px 8px" }}>
+          {/* Amount + price/L + Liters row */}
+          <div style={{ display: "flex", alignItems: "flex-end", gap: 8 }}>
+            <div style={{ flex: 1 }}>
+              <span style={{ ...monoLabel, marginBottom: 2 }}>{t("form.amount")}</span>
+              <div style={{ display: "flex", alignItems: "baseline", gap: 4 }}>
+                <span style={{ fontFamily: fontMono, fontSize: 20, color: paper.inkMute }}>€</span>
+                <input
+                  {...register("amount")}
+                  type="number"
+                  step="0.01"
+                  style={{
+                    fontFamily: fontMono,
+                    fontSize: 28,
+                    fontWeight: 700,
+                    color: paper.ink,
+                    background: "transparent",
+                    border: "none",
+                    outline: "none",
+                    borderBottom: `1px solid ${paper.paperDark}`,
+                    width: "100%",
+                    padding: "2px 0",
+                  }}
+                />
+              </div>
+            </div>
+            <div style={{ textAlign: "center", flexShrink: 0, padding: "0 6px 8px" }}>
+              <div style={{ fontFamily: fontMono, fontSize: 11.5, color: paper.inkMute }}>
+                {Number(liters) > 0 ? `€ ${pricePerLiter.toFixed(3).replace(".", ",")}/L` : "€/L"}
+              </div>
+            </div>
+            <div style={{ flex: 1 }}>
+              <span style={{ ...monoLabel, marginBottom: 2, textAlign: "right", display: "block" }}>{t("form.liters")}</span>
+              <div style={{ display: "flex", alignItems: "baseline", gap: 4, justifyContent: "flex-end" }}>
+                <input
+                  {...register("liters")}
+                  type="number"
+                  step="0.01"
+                  style={{
+                    fontFamily: fontMono,
+                    fontSize: 28,
+                    fontWeight: 700,
+                    color: paper.ink,
+                    background: "transparent",
+                    border: "none",
+                    outline: "none",
+                    borderBottom: `1px solid ${paper.paperDark}`,
+                    width: "100%",
+                    padding: "2px 0",
+                    textAlign: "right",
+                  }}
+                />
+                <span style={{ fontFamily: fontMono, fontSize: 14, color: paper.inkMute, flexShrink: 0 }}>L</span>
+              </div>
             </div>
           </div>
+        </div>
+      ) : (
+        <div style={{ margin: "12px 14px", background: paper.paper, border: `1.5px solid ${paper.paperDark}` }}>
           <div
             style={{
-              padding: "0 12px 6px",
-              fontFamily: fontMono,
-              fontSize: 14,
-              color: paper.inkMute,
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              padding: "10px 14px 6px",
+              borderBottom: `1px dashed ${paper.paperDark}`,
             }}
           >
-            €
+            <span style={{ fontFamily: fontMono, fontSize: 10, fontWeight: 700, letterSpacing: 2, color: paper.amber, textTransform: "uppercase" }}>
+              ● {t("form.pump")}
+            </span>
+            <span style={{ fontFamily: fontMono, fontSize: 10, color: paper.inkMute, letterSpacing: 1 }}>
+              {displayDate}
+            </span>
           </div>
-          <div style={{ flex: 1 }}>
-            <span style={{ ...label, fontSize: 8 }}>{t("form.liters")}</span>
-            <div style={{ display: "flex", alignItems: "baseline", gap: 4 }}>
+
+          {/* Amount + Liters */}
+          <div style={{ display: "flex", alignItems: "flex-end", padding: "10px 14px 6px", gap: 0 }}>
+            <div style={{ flex: 1 }}>
+              <span style={{ ...paperLabel, fontSize: 8 }}>{t("form.amount")}</span>
+              <div style={{ display: "flex", alignItems: "baseline", gap: 4 }}>
+                <input
+                  {...register("amount")}
+                  type="number"
+                  step="0.01"
+                  style={{
+                    fontFamily: fontMono,
+                    fontSize: 32,
+                    fontWeight: 700,
+                    color: paper.ink,
+                    background: "transparent",
+                    border: "none",
+                    outline: "none",
+                    borderBottom: `1px dashed ${paper.paperDark}`,
+                    width: "100%",
+                    padding: "2px 0",
+                  }}
+                />
+              </div>
+            </div>
+            <div style={{ padding: "0 12px 6px", fontFamily: fontMono, fontSize: 14, color: paper.inkMute }}>€</div>
+            <div style={{ flex: 1 }}>
+              <span style={{ ...paperLabel, fontSize: 8 }}>{t("form.liters")}</span>
+              <div style={{ display: "flex", alignItems: "baseline", gap: 4 }}>
+                <input
+                  {...register("liters")}
+                  type="number"
+                  step="0.01"
+                  style={{
+                    fontFamily: fontMono,
+                    fontSize: 32,
+                    fontWeight: 700,
+                    color: paper.ink,
+                    background: "transparent",
+                    border: "none",
+                    outline: "none",
+                    borderBottom: `1px dashed ${paper.paperDark}`,
+                    width: "100%",
+                    padding: "2px 0",
+                  }}
+                />
+                <span style={{ fontFamily: fontMono, fontSize: 14, color: paper.inkMute, flexShrink: 0 }}>L</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Price per liter */}
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              padding: "8px 14px 12px",
+              borderTop: `1px dashed ${paper.paperDark}`,
+            }}
+          >
+            <span style={{ fontFamily: fontMono, fontSize: 9, letterSpacing: 2, textTransform: "uppercase", color: paper.inkMute }}>
+              {t("form.price_per_liter")}
+            </span>
+            <span style={{ fontFamily: fontMono, fontSize: 12, fontWeight: 700, color: paper.inkDim, letterSpacing: 1 }}>
+              € {pricePerLiter.toFixed(3).replace(".", ",")}
+            </span>
+          </div>
+        </div>
+      )}
+
+      {/* Full tank toggle */}
+      {mono ? (
+        <div style={{ padding: "8px 14px", display: "flex", alignItems: "flex-start", gap: 12 }}>
+          <div
+            onClick={() => setValue("full_tank", !fullTank)}
+            style={{
+              width: 22,
+              height: 22,
+              borderRadius: "50%",
+              border: `2px solid ${fullTank ? paper.green : paper.paperDark}`,
+              background: fullTank ? paper.green : "transparent",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              flexShrink: 0,
+              marginTop: 2,
+              cursor: "pointer",
+              transition: "all 0.15s",
+            }}
+          >
+            {fullTank && <div style={{ width: 8, height: 8, borderRadius: "50%", background: "#fff" }} />}
+          </div>
+          <div style={{ flex: 1, cursor: "pointer" }} onClick={() => setValue("full_tank", !fullTank)}>
+            <div style={{ fontFamily: fontSerif, fontSize: 15, fontWeight: 600, color: paper.ink }}>{t("form.full_tank")}</div>
+            <div style={{ fontFamily: fontMono, fontSize: 11, color: paper.inkMute, marginTop: 2 }}>{t("form.full_tank_hint")}</div>
+          </div>
+          {fullTank && (
+            <div style={{ textAlign: "right", flexShrink: 0, width: 88, overflow: "hidden" }}>
+              <span style={{ ...monoLabel, textAlign: "right", display: "block", marginBottom: 2 }}>{t("form.odometer")}</span>
               <input
-                {...register("liters")}
+                {...register("odometer")}
                 type="number"
-                step="0.01"
+                placeholder="—"
                 style={{
-                  fontFamily: fontMono,
-                  fontSize: 32,
+                  fontFamily: fontSerif,
+                  fontSize: 18,
                   fontWeight: 700,
                   color: paper.ink,
                   background: "transparent",
                   border: "none",
+                  borderBottom: `1px solid ${paper.paperDark}`,
                   outline: "none",
-                  borderBottom: `1px dashed ${paper.paperDark}`,
                   width: "100%",
                   padding: "2px 0",
+                  textAlign: "right",
                 }}
               />
-              <span
-                style={{ fontFamily: fontMono, fontSize: 14, color: paper.inkMute, flexShrink: 0 }}
-              >
-                L
-              </span>
             </div>
+          )}
+        </div>
+      ) : (
+        <div style={{ padding: "0 14px 8px", display: "flex", alignItems: "center", gap: 10 }}>
+          <input
+            type="checkbox"
+            id="full_tank"
+            checked={!!fullTank}
+            onChange={(e) => setValue("full_tank", e.target.checked)}
+            style={{ width: 16, height: 16, cursor: "pointer", accentColor: paper.green }}
+          />
+          <label
+            htmlFor="full_tank"
+            style={{ fontFamily: fontMono, fontSize: 10, fontWeight: 700, letterSpacing: 2, textTransform: "uppercase", color: paper.inkDim, cursor: "pointer" }}
+          >
+            {t("form.full_tank")}
+          </label>
+          <span style={{ fontFamily: fontMono, fontSize: 9, color: paper.inkMute, letterSpacing: 1 }}>
+            — {t("form.full_tank_hint")}
+          </span>
+        </div>
+      )}
+
+      {/* Settled outside toggle */}
+      {mono ? (
+        <div
+          style={{ padding: "8px 14px 12px", display: "flex", alignItems: "flex-start", gap: 12, cursor: "pointer" }}
+          onClick={() => setValue("settled_outside", !settledOutside)}
+        >
+          <div
+            style={{
+              width: 22,
+              height: 22,
+              borderRadius: "50%",
+              border: `2px solid ${settledOutside ? paper.inkMute : paper.paperDark}`,
+              background: settledOutside ? paper.inkMute : "transparent",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              flexShrink: 0,
+              marginTop: 2,
+              transition: "all 0.15s",
+            }}
+          >
+            {settledOutside && <div style={{ width: 8, height: 8, borderRadius: "50%", background: "#fff" }} />}
+          </div>
+          <div>
+            <div style={{ fontFamily: fontSerif, fontSize: 15, fontWeight: 600, color: paper.ink }}>{t("form.settled_outside")}</div>
+            <div style={{ fontFamily: fontMono, fontSize: 11, color: paper.inkMute, marginTop: 2 }}>{t("form.settled_outside_hint")}</div>
           </div>
         </div>
-
-        {/* Price per liter */}
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            padding: "8px 14px 12px",
-            borderTop: `1px dashed ${paper.paperDark}`,
-          }}
-        >
-          <span
-            style={{
-              fontFamily: fontMono,
-              fontSize: 9,
-              letterSpacing: 2,
-              textTransform: "uppercase",
-              color: paper.inkMute,
-            }}
+      ) : (
+        <div style={{ padding: "0 14px 8px", display: "flex", alignItems: "center", gap: 10 }}>
+          <input
+            type="checkbox"
+            id="fuel_settled_outside"
+            checked={!!settledOutside}
+            onChange={(e) => setValue("settled_outside", e.target.checked)}
+            style={{ width: 16, height: 16, cursor: "pointer", accentColor: paper.inkMute }}
+          />
+          <label
+            htmlFor="fuel_settled_outside"
+            style={{ fontFamily: fontMono, fontSize: 10, fontWeight: 700, letterSpacing: 2, textTransform: "uppercase", color: paper.inkDim, cursor: "pointer" }}
           >
-            {t("form.price_per_liter")}
-          </span>
-          <span
-            style={{
-              fontFamily: fontMono,
-              fontSize: 12,
-              fontWeight: 700,
-              color: paper.inkDim,
-              letterSpacing: 1,
-            }}
-          >
-            € {pricePerLiter.toFixed(3).replace(".", ",")}
+            {t("form.settled_outside")}
+          </label>
+          <span style={{ fontFamily: fontMono, fontSize: 9, color: paper.inkMute, letterSpacing: 1 }}>
+            — {t("form.settled_outside_hint")}
           </span>
         </div>
-      </div>
+      )}
 
-      {/* Full tank checkbox */}
-      <div style={{ padding: "0 14px 8px", display: "flex", alignItems: "center", gap: 10 }}>
-        <input
-          type="checkbox"
-          id="full_tank"
-          checked={!!fullTank}
-          onChange={(e) => setValue("full_tank", e.target.checked)}
-          style={{ width: 16, height: 16, cursor: "pointer", accentColor: paper.green }}
-        />
-        <label
-          htmlFor="full_tank"
-          style={{
-            fontFamily: fontMono,
-            fontSize: 10,
-            fontWeight: 700,
-            letterSpacing: 2,
-            textTransform: "uppercase",
-            color: paper.inkDim,
-            cursor: "pointer",
-          }}
-        >
-          {t("form.full_tank")}
-        </label>
-        <span style={{ fontFamily: fontMono, fontSize: 9, color: paper.inkMute, letterSpacing: 1 }}>
-          — {t("form.full_tank_hint")}
-        </span>
-      </div>
-
-      {/* Settled outside checkbox */}
-      <div style={{ padding: "0 14px 8px", display: "flex", alignItems: "center", gap: 10 }}>
-        <input
-          type="checkbox"
-          id="fuel_settled_outside"
-          checked={!!settledOutside}
-          onChange={(e) => setValue("settled_outside", e.target.checked)}
-          style={{ width: 16, height: 16, cursor: "pointer", accentColor: paper.inkMute }}
-        />
-        <label
-          htmlFor="fuel_settled_outside"
-          style={{
-            fontFamily: fontMono,
-            fontSize: 10,
-            fontWeight: 700,
-            letterSpacing: 2,
-            textTransform: "uppercase",
-            color: paper.inkDim,
-            cursor: "pointer",
-          }}
-        >
-          {t("form.settled_outside")}
-        </label>
-        <span style={{ fontFamily: fontMono, fontSize: 9, color: paper.inkMute, letterSpacing: 1 }}>
-          — {t("form.settled_outside_hint")}
-        </span>
-      </div>
-
-      {/* Odometer — only shown for full tank */}
-      {fullTank && (
+      {/* Odometer — only shown for full tank (paper only; mono shows inline with toggle) */}
+      {fullTank && !mono && (
         <div style={{ padding: "0 14px 8px" }}>
-          <span style={label}>{t("form.odometer")}</span>
-          <div style={{ ...dashedBox, padding: "8px 14px" }}>
+          <span style={lbl}>{t("form.odometer")}</span>
+          <div
+            style={
+              mono
+                ? { border: `1px solid ${paper.paperDark}`, borderRadius: "var(--radius-sm, 6px)", padding: "8px 14px" }
+                : { ...dashedBox, padding: "8px 14px" }
+            }
+          >
             <input
               {...register("odometer")}
               type="number"
@@ -559,7 +678,7 @@ export function FuelForm({ defaultValues, onSubmit, onCancel, onDelete }: Props)
 
       {/* Fuel station location */}
       <div style={{ padding: "4px 14px 4px" }}>
-        <span style={{ ...label, marginBottom: 6 }}>{t("form.fuel_station")}</span>
+        <span style={{ ...lbl, marginBottom: 6 }}>{t("form.fuel_station")}</span>
         <Controller
           name="location"
           control={control}
@@ -583,7 +702,7 @@ export function FuelForm({ defaultValues, onSubmit, onCancel, onDelete }: Props)
 
       {/* Receipt */}
       <div style={{ padding: "8px 14px" }}>
-        <span style={label}>{t("form.receipt")}</span>
+        {!mono && <span style={lbl}>{t("form.receipt")}</span>}
         <Controller
           name="receipt"
           control={control}
@@ -602,13 +721,14 @@ export function FuelForm({ defaultValues, onSubmit, onCancel, onDelete }: Props)
               width: "100%",
               padding: "10px",
               background: "transparent",
-              border: `1.5px solid ${paper.accent}`,
+              border: mono ? `1px solid ${paper.accent}` : `1.5px solid ${paper.accent}`,
+              borderRadius: mono ? "var(--radius-pill, 999px)" : 0,
               color: paper.accent,
-              fontFamily: fontMono,
-              fontSize: 10,
+              fontFamily: mono ? fontSerif : fontMono,
+              fontSize: mono ? 13 : 10,
               fontWeight: 700,
-              letterSpacing: 2,
-              textTransform: "uppercase",
+              letterSpacing: mono ? 0 : 2,
+              textTransform: mono ? "none" : "uppercase",
               cursor: "pointer",
             }}
           >

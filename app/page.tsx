@@ -18,6 +18,8 @@ import {
   amtColor,
   signPrefix,
 } from "@/lib/paper-theme";
+import { useTheme } from "@/lib/theme-context";
+import { Navigation, Fuel as FuelIcon, Receipt as ReceiptIcon } from "lucide-react";
 import type { Trip, FuelFillup, Reservation, Expense } from "@/types";
 import * as Dialog from "@radix-ui/react-dialog";
 import { TripForm } from "@/app/trips/trip-form";
@@ -87,7 +89,19 @@ function NameEditLink({ name, personId }: { name: string; personId: number }) {
 }
 
 function Perf({ margin = "12px 0" }: { margin?: string }) {
-  return <div style={{ height: 0, borderTop: `1.5px dashed ${paper.ink}`, margin }} />;
+  const { theme } = useTheme();
+  return (
+    <div
+      style={{
+        height: 0,
+        borderTop:
+          theme === "mono"
+            ? `1px solid ${paper.paperDark}`
+            : `1.5px dashed ${paper.ink}`,
+        margin,
+      }}
+    />
+  );
 }
 
 function ReceiptRow({
@@ -96,21 +110,25 @@ function ReceiptRow({
   big,
   color,
   href,
+  icon,
 }: {
   label: string;
   value?: string;
   big?: boolean;
   color?: string;
   href?: string;
+  icon?: React.ReactNode;
 }) {
   const [hovered, setHovered] = useState(false);
+  const { theme } = useTheme();
+  const mono = theme === "mono";
   const c = color ?? paper.ink;
   const inner = (
     <div
       style={{
         display: "flex",
         justifyContent: "space-between",
-        alignItems: "baseline",
+        alignItems: mono ? "center" : "baseline",
         fontFamily: fontMono,
         padding: "4px 0",
         ...(href
@@ -126,17 +144,28 @@ function ReceiptRow({
     >
       <span
         style={{
-          textTransform: "uppercase",
-          letterSpacing: 1,
+          display: "flex",
+          alignItems: "center",
+          gap: 5,
+          textTransform: mono ? "none" : ("uppercase" as const),
+          letterSpacing: mono ? 0 : 1,
           fontSize: big ? 11 : 10,
-          color: paper.inkDim,
+          color: mono ? paper.ink : paper.inkDim,
           whiteSpace: "nowrap",
           marginRight: 12,
           ...(href && hovered
-            ? { textDecoration: "underline", textDecorationColor: paper.inkDim }
+            ? {
+                textDecoration: "underline",
+                textDecorationColor: mono ? paper.ink : paper.inkDim,
+              }
             : {}),
         }}
       >
+        {mono && icon && (
+          <span style={{ display: "flex", alignItems: "center", opacity: 0.5, flexShrink: 0 }}>
+            {icon}
+          </span>
+        )}
         {label}
       </span>
       <span
@@ -210,11 +239,28 @@ function DashboardSettledNote({
 
 // ── Car Breakdown Section ─────────────────────────────────────────
 function CarBreakdownSection({ bd, year }: { bd: CarDashboardBreakdown; year: number }) {
+  const { theme } = useTheme();
+  const mono = theme === "mono";
   const fmtL = (l: number) => l.toFixed(0);
   const headerLabel = bd.is_own_car
     ? `${bd.car_short} — ${bd.car_name} (Eigen wagen)`
     : `${bd.car_short} — ${bd.car_name}`;
   const headerNet = bd.net_car;
+
+  const subLabel = (label: string) => (
+    <div
+      style={{
+        fontFamily: fontMono,
+        fontSize: 9,
+        letterSpacing: mono ? 0 : 1,
+        color: paper.inkDim,
+        textTransform: mono ? "none" : ("uppercase" as const),
+        marginBottom: 2,
+      }}
+    >
+      {label}
+    </div>
+  );
 
   if (bd.is_own_car) {
     const othersHasData = bd.trip_count > 0 || bd.fuel_count > 0 || bd.expense_count > 0;
@@ -227,38 +273,28 @@ function CarBreakdownSection({ bd, year }: { bd: CarDashboardBreakdown; year: nu
             display: "flex",
             justifyContent: "space-between",
             fontFamily: fontMono,
-            fontSize: 11,
+            fontSize: mono ? 13 : 11,
             fontWeight: 700,
             color: paper.ink,
             padding: "4px 0 2px",
           }}
         >
           <span>{headerLabel}</span>
-          <span style={{ color: amtColor(headerNet) }}>
+          <span style={{ color: amtColor(headerNet), fontSize: mono ? 15 : 15 }}>
             {headerNet >= 0 ? `+ ${fmtMoney(headerNet)}` : `− ${fmtMoney(Math.abs(headerNet))}`}
           </span>
         </div>
 
         {othersHasData && (
           <div style={{ paddingLeft: 8, marginTop: 2 }}>
-            <div
-              style={{
-                fontFamily: fontMono,
-                fontSize: 9,
-                letterSpacing: 1,
-                color: paper.inkDim,
-                textTransform: "uppercase",
-                marginBottom: 2,
-              }}
-            >
-              Anderen
-            </div>
+            {subLabel("Anderen")}
             {bd.trip_count > 0 && (
               <ReceiptRow
                 href={`/trips?mine=false&car=${bd.car_short}&year=${year}`}
                 label={`${bd.trip_count} ritten · ${bd.trip_km.toLocaleString("nl-BE")} km`}
                 value={`+ ${fmtMoney(bd.trip_amount)}`}
                 color={paper.green}
+                icon={<Navigation size={11} />}
               />
             )}
             {bd.fuel_count > 0 && (
@@ -267,6 +303,7 @@ function CarBreakdownSection({ bd, year }: { bd: CarDashboardBreakdown; year: nu
                 label={`${bd.fuel_count} tankbeurten, ${fmtL(bd.fuel_liters)} L${(bd.fuel_settled_liters ?? 0) > 0.05 ? " (*)" : ""}`}
                 value={`− ${fmtMoney(bd.fuel_amount)}`}
                 color={paper.accent}
+                icon={<FuelIcon size={11} />}
               />
             )}
             {bd.expense_count > 0 && (
@@ -275,6 +312,7 @@ function CarBreakdownSection({ bd, year }: { bd: CarDashboardBreakdown; year: nu
                 label={`${bd.expense_count} kosten${(bd.expense_settled_amount ?? 0) > 0.005 ? ((bd.fuel_settled_liters ?? 0) > 0.05 ? " (**)" : " (*)") : ""}`}
                 value={`− ${fmtMoney(bd.expense_amount)}`}
                 color={paper.accent}
+                icon={<ReceiptIcon size={11} />}
               />
             )}
             <DashboardSettledNote
@@ -288,23 +326,13 @@ function CarBreakdownSection({ bd, year }: { bd: CarDashboardBreakdown; year: nu
 
         {ownHasData && (
           <div style={{ paddingLeft: 8, marginTop: 4 }}>
-            <div
-              style={{
-                fontFamily: fontMono,
-                fontSize: 9,
-                letterSpacing: 1,
-                color: paper.inkDim,
-                textTransform: "uppercase",
-                marginBottom: 2,
-              }}
-            >
-              Eigen
-            </div>
+            {subLabel("Eigen")}
             {bd.own_trip_count > 0 && (
               <ReceiptRow
                 href={`/trips?mine=true&car=${bd.car_short}&year=${year}`}
                 label={`${bd.own_trip_count} ritten · ${bd.own_trip_km.toLocaleString("nl-BE")} km`}
                 color={paper.inkDim}
+                icon={<Navigation size={11} />}
               />
             )}
             {bd.own_fuel_count > 0 && (
@@ -312,6 +340,7 @@ function CarBreakdownSection({ bd, year }: { bd: CarDashboardBreakdown; year: nu
                 href={`/fuel?mine=true&car=${bd.car_short}&year=${year}`}
                 label={`${bd.own_fuel_count} tankbeurten, ${fmtL(bd.own_fuel_liters)} L`}
                 color={paper.inkDim}
+                icon={<FuelIcon size={11} />}
               />
             )}
             {bd.own_expense_count > 0 && (
@@ -319,6 +348,7 @@ function CarBreakdownSection({ bd, year }: { bd: CarDashboardBreakdown; year: nu
                 href={`/expenses?mine=true&car=${bd.car_short}&year=${year}`}
                 label={`${bd.own_expense_count} kosten`}
                 color={paper.inkDim}
+                icon={<ReceiptIcon size={11} />}
               />
             )}
           </div>
@@ -338,14 +368,14 @@ function CarBreakdownSection({ bd, year }: { bd: CarDashboardBreakdown; year: nu
           display: "flex",
           justifyContent: "space-between",
           fontFamily: fontMono,
-          fontSize: 11,
+          fontSize: mono ? 13 : 11,
           fontWeight: 700,
           color: paper.ink,
           padding: "4px 0 2px",
         }}
       >
         <span>{headerLabel}</span>
-        <span style={{ color: amtColor(headerNet) }}>
+        <span style={{ color: amtColor(headerNet), fontSize: 15 }}>
           {headerNet >= 0 ? `+ ${fmtMoney(headerNet)}` : `− ${fmtMoney(Math.abs(headerNet))}`}
         </span>
       </div>
@@ -356,6 +386,7 @@ function CarBreakdownSection({ bd, year }: { bd: CarDashboardBreakdown; year: nu
             label={`${bd.trip_count} ritten · ${bd.trip_km.toLocaleString("nl-BE")} km`}
             value={`− ${fmtMoney(bd.trip_amount)}`}
             color={paper.accent}
+            icon={<Navigation size={11} />}
           />
         )}
         {bd.fuel_count > 0 && (
@@ -364,6 +395,7 @@ function CarBreakdownSection({ bd, year }: { bd: CarDashboardBreakdown; year: nu
             label={`${bd.fuel_count} tankbeurten, ${fmtL(bd.fuel_liters)} L${(bd.fuel_settled_liters ?? 0) > 0.05 ? " (*)" : ""}`}
             value={`+ ${fmtMoney(bd.fuel_amount)}`}
             color={paper.green}
+            icon={<FuelIcon size={11} />}
           />
         )}
         {bd.expense_count > 0 && (
@@ -372,6 +404,7 @@ function CarBreakdownSection({ bd, year }: { bd: CarDashboardBreakdown; year: nu
             label={`${bd.expense_count} kosten${(bd.expense_settled_amount ?? 0) > 0.005 ? ((bd.fuel_settled_liters ?? 0) > 0.05 ? " (**)" : " (*)") : ""}`}
             value={`+ ${fmtMoney(bd.expense_amount)}`}
             color={paper.green}
+            icon={<ReceiptIcon size={11} />}
           />
         )}
         <DashboardSettledNote
@@ -419,66 +452,19 @@ function BalanceCardSkeleton() {
           }}
         >
           {/* Year browser */}
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              gap: 0,
-              marginBottom: 14,
-              pointerEvents: "none",
-            }}
-          >
-            <div
-              style={{
-                padding: "6px 14px",
-                border: `1.5px solid ${paper.paperDark}`,
-                borderRight: "none",
-                fontFamily: fontMono,
-                fontSize: 10,
-                fontWeight: 700,
-                color: paper.inkDim,
-                letterSpacing: 1,
-              }}
-            >
-              ← {currentYear - 1}
-            </div>
-            <div
-              style={{
-                padding: "6px 18px",
-                background: paper.paperDark,
-                color: paper.inkDim,
-                fontFamily: fontMono,
-                fontSize: 10,
-                fontWeight: 700,
-                letterSpacing: 2,
-                border: `1.5px solid ${paper.paperDark}`,
-              }}
-            >
-              {currentYear}
-            </div>
-            <div
-              style={{
-                padding: "6px 14px",
-                border: `1.5px solid ${paper.paperDark}`,
-                borderLeft: "none",
-                fontFamily: fontMono,
-                fontSize: 10,
-                fontWeight: 700,
-                color: paper.inkDim,
-                letterSpacing: 1,
-              }}
-            >
-              {currentYear + 1} →
+          <div style={{ display: "flex", justifyContent: "center", marginBottom: 14, pointerEvents: "none" }}>
+            <div style={{ display: "flex", border: `1.5px solid ${paper.paperDark}`, borderRadius: "var(--radius-pill, 999px)", padding: 2, gap: 1 }}>
+              <div style={{ padding: "4px 12px", fontFamily: fontMono, fontSize: 10, fontWeight: 700, color: paper.inkMute, borderRadius: "var(--radius-pill, 999px)" }}>
+                ← {currentYear - 1}
+              </div>
+              <div style={{ padding: "4px 16px", fontFamily: fontMono, fontSize: 10, fontWeight: 700, background: paper.paperDark, color: paper.inkDim, borderRadius: "var(--radius-pill, 999px)" }}>
+                {currentYear}
+              </div>
+              <div style={{ padding: "4px 12px", fontFamily: fontMono, fontSize: 10, fontWeight: 700, color: paper.inkMute, borderRadius: "var(--radius-pill, 999px)" }}>
+                {currentYear + 1} →
+              </div>
             </div>
           </div>
-
-          {/* Title */}
-          <div style={{ display: "flex", justifyContent: "center", marginBottom: 12 }}>
-            <ShimmerBar width="55%" height={11} />
-          </div>
-
-          <Dashed />
 
           {/* Breakdown rows: trips, fuel, expenses */}
           <div style={{ display: "flex", flexDirection: "column", gap: 11, margin: "14px 0 14px" }}>
@@ -550,6 +536,8 @@ function SectionSkeleton({ rows = 3 }: { rows?: number }) {
 // ── Balance Receipt ───────────────────────────────────────────────
 function BalanceReceipt({ fullName, personId }: { fullName: string; personId: number | null }) {
   const t = useT();
+  const { theme } = useTheme();
+  const mono = theme === "mono";
   const currentYear = new Date().getFullYear();
   const [yearParam, setYearParam] = useQueryParam("year", "");
   const year = yearParam ? parseInt(yearParam, 10) : currentYear;
@@ -582,110 +570,91 @@ function BalanceReceipt({ fullName, personId }: { fullName: string; personId: nu
       {/* Receipt card */}
       <div
         style={{
-          position: "relative",
           background: paper.paper,
           padding: "16px 18px 22px",
-          boxShadow: "0 1px 2px rgba(0,0,0,0.05), 0 8px 24px rgba(0,0,0,0.07)",
+          borderRadius: mono ? "var(--radius-lg, 14px)" : 0,
+          boxShadow: mono
+            ? "none"
+            : "0 1px 2px rgba(0,0,0,0.05), 0 8px 24px rgba(0,0,0,0.07)",
+          border: mono ? `1px solid ${paper.paperDark}` : "none",
         }}
       >
-        {/* Year navigation */}
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            gap: 0,
-            marginBottom: 14,
-          }}
-        >
-          <button
-            onClick={() => setYear(year - 1)}
-            disabled={year <= earliestYear}
-            style={{
-              padding: "6px 14px",
-              background: "transparent",
-              border: `1.5px solid ${paper.ink}`,
-              borderRight: "none",
-              fontFamily: fontMono,
-              fontSize: 10,
-              fontWeight: 700,
-              color: year <= earliestYear ? paper.inkDim : paper.ink,
-              cursor: year <= earliestYear ? "default" : "pointer",
-              letterSpacing: 1,
-            }}
-          >
-            ← {year - 1}
-          </button>
-          <div
-            style={{
-              padding: "6px 18px",
-              background: paper.ink,
-              color: paper.paper,
-              fontFamily: fontMono,
-              fontSize: 10,
-              fontWeight: 700,
-              letterSpacing: 2,
-              border: `1.5px solid ${paper.ink}`,
-            }}
-          >
-            {year}
+        {/* Year navigation + owner badge */}
+        <div style={{ display: "flex", alignItems: "center", marginBottom: 14 }}>
+          <div style={{ flex: 1 }} />
+          <div style={{ display: "flex", border: mono ? `1px solid ${paper.paperDark}` : `1.5px solid ${paper.ink}`, borderRadius: "var(--radius-pill, 999px)", padding: 2, gap: 1 }}>
+            <button
+              onClick={() => setYear(year - 1)}
+              disabled={year <= earliestYear}
+              style={{
+                padding: "4px 12px",
+                fontFamily: fontMono,
+                fontSize: 10,
+                fontWeight: 700,
+                letterSpacing: mono ? 0 : 1,
+                background: "transparent",
+                color: year <= earliestYear ? paper.inkMute : (mono ? paper.inkDim : paper.ink),
+                border: "none",
+                borderRadius: "var(--radius-pill, 999px)",
+                cursor: year <= earliestYear ? "default" : "pointer",
+              }}
+            >
+              ← {year - 1}
+            </button>
+            <div
+              style={{
+                padding: "4px 16px",
+                fontFamily: fontMono,
+                fontSize: 10,
+                fontWeight: 700,
+                letterSpacing: mono ? 0 : 2,
+                background: paper.ink,
+                color: paper.paper,
+                borderRadius: "var(--radius-pill, 999px)",
+              }}
+            >
+              {year}
+            </div>
+            <button
+              onClick={() => setYear(year + 1)}
+              disabled={year >= currentYear}
+              style={{
+                padding: "4px 12px",
+                fontFamily: fontMono,
+                fontSize: 10,
+                fontWeight: 700,
+                letterSpacing: mono ? 0 : 1,
+                background: "transparent",
+                color: year >= currentYear ? paper.inkMute : (mono ? paper.inkDim : paper.ink),
+                border: "none",
+                borderRadius: "var(--radius-pill, 999px)",
+                cursor: year >= currentYear ? "default" : "pointer",
+              }}
+            >
+              {year + 1} →
+            </button>
           </div>
-          <button
-            onClick={() => setYear(year + 1)}
-            disabled={year >= currentYear}
-            style={{
-              padding: "6px 14px",
-              background: "transparent",
-              border: `1.5px solid ${paper.ink}`,
-              borderLeft: "none",
-              fontFamily: fontMono,
-              fontSize: 10,
-              fontWeight: 700,
-              color: year >= currentYear ? paper.inkDim : paper.ink,
-              cursor: year >= currentYear ? "default" : "pointer",
-              letterSpacing: 1,
-            }}
-          >
-            {year + 1} →
-          </button>
+          <div style={{ flex: 1, display: "flex", justifyContent: "flex-end" }}>
+            {myRow.is_owner && (
+              <span
+                style={{
+                  fontFamily: fontMono,
+                  fontSize: 8,
+                  fontWeight: 700,
+                  letterSpacing: mono ? 0.5 : 1.5,
+                  textTransform: "uppercase",
+                  color: mono ? paper.green : paper.paper,
+                  background: mono ? "transparent" : paper.green,
+                  border: mono ? `1px solid ${paper.green}` : "none",
+                  borderRadius: mono ? 999 : 0,
+                  padding: mono ? "2px 9px" : "2px 7px",
+                }}
+              >
+                eigenaar
+              </span>
+            )}
+          </div>
         </div>
-
-        {/* Owner badge */}
-        {myRow.is_owner && (
-          <span
-            style={{
-              position: "absolute",
-              top: 16,
-              right: 16,
-              fontFamily: fontMono,
-              fontSize: 8,
-              fontWeight: 700,
-              letterSpacing: 1.5,
-              textTransform: "uppercase",
-              color: paper.paper,
-              background: paper.green,
-              padding: "2px 7px",
-            }}
-          >
-            eigenaar
-          </span>
-        )}
-
-        {/* Title */}
-        <div
-          style={{
-            fontFamily: fontMono,
-            fontSize: 11,
-            color: paper.ink,
-            letterSpacing: 3,
-            textTransform: "uppercase",
-            textAlign: "center",
-            fontWeight: 700,
-          }}
-        >
-          — {t("dashboard.receipt_title", { year })} —
-        </div>
-        <Perf margin="10px 0 12px" />
 
         {myRow.is_owner ? (
           <>
@@ -744,8 +713,8 @@ function BalanceReceipt({ fullName, personId }: { fullName: string; personId: nu
                         style={{
                           fontFamily: fontMono,
                           fontSize: 10,
-                          letterSpacing: 2,
-                          textTransform: "uppercase",
+                          letterSpacing: mono ? 0 : 2,
+                          textTransform: mono ? "none" : ("uppercase" as const),
                           color: paper.inkDim,
                           whiteSpace: "nowrap",
                           marginRight: 12,
@@ -784,18 +753,21 @@ function BalanceReceipt({ fullName, personId }: { fullName: string; personId: nu
               label={tripLabel}
               value={`− ${fmtMoney(Math.abs(myRow.trip_amount))}`}
               color={paper.accent}
+              icon={<Navigation size={11} />}
             />
             <ReceiptRow
               href={`/fuel?mine=true&year=${year}`}
               label={fuelLabel}
               value={`+ ${fmtMoney(myRow.fuel_amount)}`}
               color={paper.green}
+              icon={<FuelIcon size={11} />}
             />
             <ReceiptRow
               href={`/expenses?mine=true&year=${year}`}
               label={expenseLabel}
               value={`+ ${fmtMoney(myRow.expense_amount)}`}
               color={paper.green}
+              icon={<ReceiptIcon size={11} />}
             />
 
             {/* Total */}
@@ -871,6 +843,8 @@ function BalanceReceipt({ fullName, personId }: { fullName: string; personId: nu
 // ── Section header ─────────────────────────────────────────────
 function SectionHeader({ title, href }: { title: string; href: string }) {
   const t = useT();
+  const { theme } = useTheme();
+  const mono = theme === "mono";
   return (
     <div
       style={{
@@ -895,12 +869,13 @@ function SectionHeader({ title, href }: { title: string; href: string }) {
         href={href}
         style={{
           fontFamily: fontMono,
-          fontSize: 10,
+          fontSize: mono ? 11 : 10,
           color: paper.inkDim,
-          letterSpacing: 1.5,
-          textTransform: "uppercase",
-          borderBottom: `1px solid ${paper.inkDim}`,
+          letterSpacing: mono ? 0 : 1.5,
+          textTransform: mono ? "none" : ("uppercase" as const),
+          borderBottom: mono ? "none" : `1px solid ${paper.inkDim}`,
           textDecoration: "none",
+          opacity: mono ? 0.7 : 1,
         }}
       >
         {t("action.see_all")}
@@ -918,6 +893,8 @@ function CarLocations({
   onTripClick: (trip: Trip) => void;
 }) {
   const t = useT();
+  const { theme } = useTheme();
+  const mono = theme === "mono";
   const { data: cars = [] } = useCars();
   const activeShortsSet = new Set(cars.filter((c) => c.active === 1).map((c) => c.short));
 
@@ -936,22 +913,26 @@ function CarLocations({
         style={{
           background: paper.paper,
           padding: "16px 18px",
-          boxShadow: "0 1px 2px rgba(0,0,0,0.05), 0 8px 24px rgba(0,0,0,0.07)",
+          borderRadius: mono ? "var(--radius-lg, 14px)" : 0,
+          boxShadow: mono
+            ? "none"
+            : "0 1px 2px rgba(0,0,0,0.05), 0 8px 24px rgba(0,0,0,0.07)",
+          border: mono ? `1px solid ${paper.paperDark}` : "none",
         }}
       >
         <div
           style={{
-            fontFamily: fontMono,
-            fontSize: 11,
-            color: paper.ink,
-            letterSpacing: 3,
-            textTransform: "uppercase",
-            textAlign: "center",
-            fontWeight: 700,
+            fontFamily: mono ? fontSerif : fontMono,
+            fontSize: mono ? 13 : 11,
+            color: mono ? paper.inkDim : paper.ink,
+            letterSpacing: mono ? 0 : 3,
+            textTransform: mono ? "none" : ("uppercase" as const),
+            textAlign: mono ? "left" : "center",
+            fontWeight: 600,
             marginBottom: 14,
           }}
         >
-          — {t("dashboard.car_locations")} —
+          {mono ? t("dashboard.car_locations") : `— ${t("dashboard.car_locations")} —`}
         </div>
         {entries.map(([short, trip]) => {
           const isParkingOnly = !trip.location && !trip.gps_coords && trip.parking;
@@ -972,7 +953,9 @@ function CarLocations({
                 gap: 12,
                 paddingTop: 10,
                 paddingBottom: 10,
-                borderTop: `1px dashed ${paper.paperDark}`,
+                borderTop: mono
+                  ? `1px solid ${paper.paperDark}`
+                  : `1px dashed ${paper.paperDark}`,
                 cursor: "pointer",
               }}
             >
@@ -998,7 +981,7 @@ function CarLocations({
                     fontFamily: fontMono,
                     fontSize: 9,
                     color: paper.inkDim,
-                    letterSpacing: 1,
+                    letterSpacing: mono ? 0 : 1,
                     marginTop: 2,
                   }}
                 >
@@ -1134,6 +1117,8 @@ function Sheets({ sheet, setSheet }: { sheet: SheetType; setSheet: (s: SheetType
 // ── Main Dashboard ────────────────────────────────────────────
 function DashboardContent() {
   const t = useT();
+  const { theme } = useTheme();
+  const mono = theme === "mono";
   const { data: me } = useMe();
   const [sheet, setSheet] = useState<SheetType>(null);
 
@@ -1204,7 +1189,7 @@ function DashboardContent() {
             ) : null}
           </>
         }
-        subtitle={`${t("dashboard.today")} · ${todayFmt}`}
+        subtitle={mono ? undefined : `${t("dashboard.today")} · ${todayFmt}`}
         titleSize={32}
       />
 
@@ -1221,15 +1206,27 @@ function DashboardContent() {
       {isTripsLoading ? (
         <SectionSkeleton rows={3} />
       ) : (
-        <div style={{ padding: "0 16px" }}>
+        <div
+          style={
+            mono
+              ? {
+                  margin: "0 16px",
+                  background: paper.paper,
+                  borderRadius: "var(--radius-lg, 14px)",
+                  border: `1px solid ${paper.paperDark}`,
+                  overflow: "hidden",
+                }
+              : { padding: "0 16px" }
+          }
+        >
           {recentTrips.length === 0 ? (
             <div
               style={{
                 fontFamily: fontMono,
                 fontSize: 11,
                 color: paper.inkDim,
-                padding: "8px 0",
-                letterSpacing: 1,
+                padding: "12px 16px",
+                letterSpacing: mono ? 0 : 1,
               }}
             >
               {t("state.empty_trips")}
@@ -1247,15 +1244,27 @@ function DashboardContent() {
       {isFuelLoading ? (
         <SectionSkeleton rows={2} />
       ) : (
-        <div style={{ padding: "0 16px" }}>
+        <div
+          style={
+            mono
+              ? {
+                  margin: "0 16px",
+                  background: paper.paper,
+                  borderRadius: "var(--radius-lg, 14px)",
+                  border: `1px solid ${paper.paperDark}`,
+                  overflow: "hidden",
+                }
+              : { padding: "0 16px" }
+          }
+        >
           {recentFuel.length === 0 ? (
             <div
               style={{
                 fontFamily: fontMono,
                 fontSize: 11,
                 color: paper.inkDim,
-                padding: "8px 0",
-                letterSpacing: 1,
+                padding: "12px 16px",
+                letterSpacing: mono ? 0 : 1,
               }}
             >
               {t("state.empty_fuel")}
@@ -1271,15 +1280,27 @@ function DashboardContent() {
       {isExpensesLoading ? (
         <SectionSkeleton rows={2} />
       ) : (
-        <div style={{ padding: "0 16px" }}>
+        <div
+          style={
+            mono
+              ? {
+                  margin: "0 16px",
+                  background: paper.paper,
+                  borderRadius: "var(--radius-lg, 14px)",
+                  border: `1px solid ${paper.paperDark}`,
+                  overflow: "hidden",
+                }
+              : { padding: "0 16px" }
+          }
+        >
           {recentExpenses.length === 0 ? (
             <div
               style={{
                 fontFamily: fontMono,
                 fontSize: 11,
                 color: paper.inkDim,
-                padding: "8px 0",
-                letterSpacing: 1,
+                padding: "12px 16px",
+                letterSpacing: mono ? 0 : 1,
               }}
             >
               {t("state.empty_expenses")}
@@ -1297,7 +1318,19 @@ function DashboardContent() {
       {isResLoading ? (
         <SectionSkeleton rows={2} />
       ) : upcoming.length > 0 ? (
-        <div style={{ padding: "0 16px" }}>
+        <div
+          style={
+            mono
+              ? {
+                  margin: "0 16px",
+                  background: paper.paper,
+                  borderRadius: "var(--radius-lg, 14px)",
+                  border: `1px solid ${paper.paperDark}`,
+                  overflow: "hidden",
+                }
+              : { padding: "0 16px" }
+          }
+        >
           {upcoming.map((r) => (
             <ReservationCard key={r.id} reservation={r} onClick={() => setEditReservation(r)} />
           ))}
@@ -1307,10 +1340,10 @@ function DashboardContent() {
       {/* Footer */}
       <div
         style={{
-          fontFamily: fontSerif,
+          fontFamily: mono ? fontMono : fontSerif,
           fontSize: 12,
-          fontStyle: "italic",
-          color: paper.inkDim,
+          fontStyle: mono ? "normal" : "italic",
+          color: paper.inkMute,
           textAlign: "center",
           padding: "32px 32px 20px",
           lineHeight: 1.5,

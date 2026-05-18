@@ -68,7 +68,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 background: "var(--paper-deep)",
                 position: "relative",
                 boxShadow: "0 0 0 1px rgba(0,0,0,0.05)",
-                paddingBottom: 72,
+                paddingBottom: "calc(72px + env(safe-area-inset-bottom, 0px))",
               }}
             >
               <CloakBanner />

@@ -64,9 +64,13 @@ export function BottomTabBar() {
         background: paper.paper,
         borderTop: `1.5px dashed ${paper.ink}`,
         display: "flex",
-        paddingBottom: "env(safe-area-inset-bottom, 0)",
+        paddingBottom: "env(safe-area-inset-bottom, 0px)",
         maxWidth: 480,
         margin: "0 auto",
+        // Force GPU compositing layer — prevents iOS Safari from dropping
+        // position:fixed during scroll (known WebKit compositing bug).
+        WebkitTransform: "translateZ(0)",
+        transform: "translateZ(0)",
       }}
     >
       {tabs.map(({ href, labelKey, icon }) => {

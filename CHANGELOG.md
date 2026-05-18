@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.11.0](https://github.com/demeesterroel/CarSharing/compare/v1.10.3...v1.11.0) (2026-05-18)
+
+
+### ✨ New features
+
+* **ui:** mono theme — full UI polish ([#210](https://github.com/demeesterroel/CarSharing/issues/210)) ([6276933](https://github.com/demeesterroel/CarSharing/commit/627693391876de0621d5b9dfcad3164426e1ef09))
+
 ## [1.10.3](https://github.com/demeesterroel/CarSharing/compare/v1.10.2...v1.10.3) (2026-05-18)
 
 

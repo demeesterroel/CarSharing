@@ -1,6 +1,24 @@
 // lib/__tests__/paper_theme.test.ts
 import { describe, it, expect } from "vitest";
-import { fmtMoney, fmtKm, fmtDate, fmtYearMonth } from "../paper-theme";
+import { fmtMoney, fmtKm, fmtDate, fmtYearMonth, paper, fontMono, fontSerif } from "../paper-theme";
+
+describe("paper CSS variable refs", () => {
+  it("paper.ink is a CSS var reference, not a hex", () => {
+    expect(paper.ink).toBe("var(--ink)");
+  });
+
+  it("paper.paper references --paper", () => {
+    expect(paper.paper).toBe("var(--paper)");
+  });
+
+  it("fontMono references --font-mono CSS variable", () => {
+    expect(fontMono).toBe("var(--font-mono)");
+  });
+
+  it("fontSerif references --font-serif CSS variable", () => {
+    expect(fontSerif).toBe("var(--font-serif)");
+  });
+});
 
 describe("fmtMoney", () => {
   it("formats a positive euro amount", () => {

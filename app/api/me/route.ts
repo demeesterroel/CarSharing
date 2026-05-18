@@ -5,12 +5,15 @@ import { getDb } from "@/lib/db";
 import { isOwner, shortNameOf } from "@/lib/queries/people";
 import { generateCsrfToken } from "@/lib/csrf";
 
-function getPersonFields(personId: number): { shortName: string | null } {
+function getPersonFields(personId: number): { shortName: string | null; themePreference: 'paper' | 'mono' | null } {
   const row = getDb()
-    .prepare("SELECT first_name, last_name, username FROM people WHERE id = ?")
-    .get(personId) as { first_name: string; last_name: string; username: string | null } | undefined;
-  if (!row) return { shortName: null };
-  return { shortName: shortNameOf(row) || null };
+    .prepare("SELECT first_name, last_name, username, theme_preference FROM people WHERE id = ?")
+    .get(personId) as { first_name: string; last_name: string; username: string | null; theme_preference: string | null } | undefined;
+  if (!row) return { shortName: null, themePreference: null };
+  return {
+    shortName: shortNameOf(row) || null,
+    themePreference: (row.theme_preference === 'mono' ? 'mono' : 'paper') as 'paper' | 'mono',
+  };
 }
 
 function withCsrfCookie(response: NextResponse): NextResponse {
@@ -36,13 +39,15 @@ export async function GET(req: Request) {
     // While cloaked, return the cloaked person's identity.
     // isOwner is computed from their personId; isAdmin reflects their actual role.
     const cloakedOwner = isOwner(getDb(), cloaked.personId);
+    const { shortName: cloakedShortName, themePreference } = getPersonFields(cloaked.personId);
     return withCsrfCookie(
       NextResponse.json({
         personId: cloaked.personId,
-        shortName: getPersonFields(cloaked.personId).shortName ?? cloaked.shortName,
+        shortName: cloakedShortName ?? cloaked.shortName,
         isAdmin: cloaked.isAdmin,
         isOwner: cloakedOwner,
         isCloaked: true,
+        themePreference,
       })
     );
   }
@@ -52,13 +57,15 @@ export async function GET(req: Request) {
     owner = isOwner(getDb(), session.personId);
   }
 
+  const fields = session.personId ? getPersonFields(session.personId) : { shortName: session.shortName ?? null, themePreference: null };
   return withCsrfCookie(
     NextResponse.json({
       personId: session.personId ?? null,
-      ...(session.personId ? getPersonFields(session.personId) : { shortName: session.shortName ?? null }),
+      shortName: fields.shortName,
       isAdmin: session.isAdmin ?? false,
       isOwner: owner,
       isCloaked: false,
+      themePreference: fields.themePreference,
     })
   );
 }

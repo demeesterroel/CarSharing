@@ -3,6 +3,7 @@ import { useState } from "react";
 import type { Reservation } from "@/types";
 import { paper, fontMono, fmtDate } from "@/lib/paper-theme";
 import { useT, useLocale } from "@/components/locale-provider";
+import { useTheme } from "@/lib/theme-context";
 
 function shortMonth(iso: string, locale: string): string {
   return new Date(`${iso}T00:00:00Z`)
@@ -54,13 +55,14 @@ export function PickCalendar({
 }: Props) {
   const t = useT();
   const { locale } = useLocale();
+  const { theme } = useTheme();
+  const mono = theme === "mono";
   const [pickFrom, setPickFrom] = useState<string | null>(null);
   const [weekOffset, setWeekOffset] = useState(initialOffset);
 
   const today = new Date().toISOString().slice(0, 10);
   const stripStart = addDays(mondayOf(today), weekOffset * 7);
   const days = Array.from({ length: 14 }, (_, i) => addDays(stripStart, i));
-  // Build weekday labels indexed by getUTCDay() (Sun=0..Sat=6) so render needs no index math.
   const dayNames: string[] = Array(7);
   days.slice(0, 7).forEach((d) => {
     const date = new Date(`${d}T00:00:00Z`);
@@ -94,43 +96,75 @@ export function PickCalendar({
   const rows: string[][] = [];
   for (let i = 0; i < days.length; i += 7) rows.push(days.slice(i, i + 7));
 
-  const navBtn: React.CSSProperties = {
-    fontFamily: fontMono,
-    fontSize: 14,
-    fontWeight: 700,
-    background: "transparent",
-    border: `1px solid ${paper.paperDark}`,
-    color: paper.inkDim,
-    cursor: "pointer",
-    padding: "0 8px",
-    lineHeight: "28px",
-    flexShrink: 0,
-  };
+  const navBtn: React.CSSProperties = mono
+    ? {
+        fontFamily: fontMono,
+        fontSize: 14,
+        fontWeight: 700,
+        background: "transparent",
+        border: `1px solid ${paper.paperDark}`,
+        borderRadius: "var(--radius-pill, 999px)",
+        color: paper.inkDim,
+        cursor: "pointer",
+        padding: "0 10px",
+        lineHeight: "28px",
+        flexShrink: 0,
+      }
+    : {
+        fontFamily: fontMono,
+        fontSize: 14,
+        fontWeight: 700,
+        background: "transparent",
+        border: `1px solid ${paper.paperDark}`,
+        color: paper.inkDim,
+        cursor: "pointer",
+        padding: "0 8px",
+        lineHeight: "28px",
+        flexShrink: 0,
+      };
 
   return (
     <div>
-      {/* Nav bar: status message left, ‹ › right — always same height */}
+      {/* Nav bar */}
       <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 8 }}>
         <div
-          style={{
-            flex: 1,
-            padding: "4px 10px",
-            border: `1.5px dashed ${pickFrom ? paper.accent : paper.inkMute}`,
-            background: paper.paperDeep,
-            fontFamily: fontMono,
-            fontSize: 10,
-            letterSpacing: 1,
-            color: paper.ink,
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            minHeight: 28,
-          }}
+          style={
+            mono
+              ? {
+                  flex: 1,
+                  padding: "4px 10px",
+                  border: `1px solid ${pickFrom ? paper.accent : paper.paperDark}`,
+                  borderRadius: "var(--radius-sm, 6px)",
+                  background: "transparent",
+                  fontFamily: "var(--font-inter, 'Inter', system-ui, sans-serif)",
+                  fontSize: 13,
+                  color: paper.ink,
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  minHeight: 28,
+                }
+              : {
+                  flex: 1,
+                  padding: "4px 10px",
+                  border: `1.5px dashed ${pickFrom ? paper.accent : paper.inkMute}`,
+                  background: paper.paperDeep,
+                  fontFamily: fontMono,
+                  fontSize: 10,
+                  letterSpacing: 1,
+                  color: paper.ink,
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  minHeight: 28,
+                }
+          }
         >
           {pickFrom ? (
             <>
               <span>
-                ● {t("calendar.pick_start", { date: fmtDate(pickFrom, locale as "nl" | "en") })}
+                {mono ? "● " : "● "}
+                {t("calendar.pick_start", { date: fmtDate(pickFrom, locale as "nl" | "en") })}
               </span>
               <button
                 type="button"
@@ -151,7 +185,9 @@ export function PickCalendar({
               </button>
             </>
           ) : (
-            <span style={{ color: paper.inkDim }}>{monthRange(days[0], days[13], locale)}</span>
+            <span style={{ color: mono ? paper.ink : paper.inkDim }}>
+              {monthRange(days[0], days[13], locale)}
+            </span>
           )}
         </div>
         <button
@@ -196,20 +232,31 @@ export function PickCalendar({
             if (isPickStart) {
               bg = paper.accent;
               fg = paper.paper;
-              border = `1.5px solid ${paper.ink}`;
+              border = mono ? `2px solid ${paper.accent}` : `2px solid ${paper.ink}`;
             } else if (res) {
               if (isPending) {
                 bg = `repeating-linear-gradient(45deg, ${paper.paper} 0 4px, ${paper.paperDark} 4px 6px)`;
-                border = `1.5px dashed ${paper.amber}`;
                 fg = paper.inkDim;
               } else {
                 bg = paper.ink;
                 fg = paper.paper;
               }
+              // Show selection on top of any reservation
+              border = inRange
+                ? `2px solid ${paper.accent}`
+                : isPending
+                  ? `1.5px dashed ${paper.amber}`
+                  : `1px solid ${paper.paperDark}`;
             } else if (inRange) {
-              bg = `repeating-linear-gradient(45deg, ${paper.paperDeep} 0 4px, ${paper.paperDark} 4px 6px)`;
-              border = `1.5px dashed ${paper.blue}`;
-              fg = paper.ink;
+              if (mono) {
+                bg = "rgba(185, 28, 28, 0.08)";
+                border = `2px solid ${paper.accent}`;
+                fg = paper.ink;
+              } else {
+                bg = `repeating-linear-gradient(45deg, ${paper.paperDeep} 0 4px, ${paper.paperDark} 4px 6px)`;
+                border = `2px dashed ${paper.accent}`;
+                fg = paper.ink;
+              }
             }
 
             const d = new Date(`${day}T00:00:00Z`);
@@ -225,6 +272,7 @@ export function PickCalendar({
                   background: bg,
                   color: fg,
                   border,
+                  borderRadius: mono ? "var(--radius-xs, 4px)" : 0,
                   fontFamily: fontMono,
                   fontSize: 9,
                   minHeight: 44,
@@ -234,11 +282,9 @@ export function PickCalendar({
               >
                 <div style={{ fontSize: 8, opacity: 0.75 }}>{dayNames[d.getUTCDay()]}</div>
                 <div style={{ fontSize: 13, fontWeight: 700, marginTop: 1 }}>{d.getUTCDate()}</div>
-                {isFirst && res && (
-                  <div style={{ fontSize: 7, marginTop: 1, opacity: 0.85 }}>
-                    {res.person_name?.slice(0, 4)}
-                  </div>
-                )}
+                <div style={{ fontSize: 7, marginTop: 1, opacity: isFirst && res ? 0.85 : 0 }}>
+                  {isFirst && res ? res.person_name?.slice(0, 4) : "·"}
+                </div>
                 {isFirst && isPending && (
                   <div
                     style={{

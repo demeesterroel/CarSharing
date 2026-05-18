@@ -1,5 +1,6 @@
 "use client";
 import { useState, useRef, useEffect } from "react";
+import { useTheme } from "@/lib/theme-context";
 import { paper, fontMono } from "@/lib/paper-theme";
 
 interface YearSelectProps {
@@ -12,6 +13,8 @@ interface YearSelectProps {
 export function YearSelect({ value, onChange, years, allLabel }: YearSelectProps) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
+  const { theme } = useTheme();
+  const mono = theme === "mono";
 
   useEffect(() => {
     if (!open) return;
@@ -28,21 +31,40 @@ export function YearSelect({ value, onChange, years, allLabel }: YearSelectProps
     <div ref={ref} style={{ position: "relative" }}>
       <button
         onClick={() => setOpen((o) => !o)}
-        style={{
-          fontFamily: fontMono,
-          fontSize: 9,
-          fontWeight: 700,
-          letterSpacing: 2,
-          textTransform: "uppercase",
-          background: active ? paper.ink : "transparent",
-          color: active ? paper.paper : paper.inkDim,
-          border: `1.5px solid ${paper.ink}`,
-          padding: "5px 24px 5px 12px",
-          cursor: "pointer",
-          position: "relative",
-          display: "block",
-          whiteSpace: "nowrap",
-        }}
+        style={
+          mono
+            ? {
+                fontFamily: fontMono,
+                fontSize: 11,
+                fontWeight: 500,
+                letterSpacing: 0,
+                textTransform: "none" as const,
+                background: active ? paper.ink : "transparent",
+                color: active ? paper.paper : paper.inkDim,
+                border: `1px solid ${paper.paperDark}`,
+                borderRadius: "var(--radius-pill, 999px)",
+                padding: "4px 28px 4px 12px",
+                cursor: "pointer",
+                position: "relative",
+                display: "block",
+                whiteSpace: "nowrap",
+              }
+            : {
+                fontFamily: fontMono,
+                fontSize: 9,
+                fontWeight: 700,
+                letterSpacing: 2,
+                textTransform: "uppercase" as const,
+                background: active ? paper.ink : "transparent",
+                color: active ? paper.paper : paper.inkDim,
+                border: `1.5px solid ${paper.ink}`,
+                padding: "5px 24px 5px 12px",
+                cursor: "pointer",
+                position: "relative",
+                display: "block",
+                whiteSpace: "nowrap",
+              }
+        }
       >
         {value || allLabel}
         <span
@@ -52,6 +74,7 @@ export function YearSelect({ value, onChange, years, allLabel }: YearSelectProps
             top: "50%",
             transform: "translateY(-50%)",
             lineHeight: 1,
+            fontSize: mono ? 10 : undefined,
           }}
         >
           {open ? "▴" : "▾"}
@@ -63,12 +86,14 @@ export function YearSelect({ value, onChange, years, allLabel }: YearSelectProps
           style={{
             position: "absolute",
             right: 0,
-            top: "100%",
+            top: "calc(100% + 4px)",
             zIndex: 100,
             background: paper.paper,
-            border: `1.5px solid ${paper.ink}`,
-            boxShadow: "0 4px 16px rgba(0,0,0,0.18)",
+            border: mono ? `1px solid ${paper.paperDark}` : `1.5px solid ${paper.ink}`,
+            borderRadius: mono ? "var(--radius-md, 10px)" : 0,
+            boxShadow: "0 4px 16px rgba(0,0,0,0.12)",
             minWidth: "100%",
+            overflow: "hidden",
           }}
         >
           {["", ...years].map((y) => (
@@ -83,10 +108,10 @@ export function YearSelect({ value, onChange, years, allLabel }: YearSelectProps
                 width: "100%",
                 textAlign: "left",
                 fontFamily: fontMono,
-                fontSize: 9,
-                fontWeight: 700,
-                letterSpacing: 2,
-                textTransform: "uppercase",
+                fontSize: mono ? 12 : 9,
+                fontWeight: mono ? 500 : 700,
+                letterSpacing: mono ? 0 : 2,
+                textTransform: mono ? "none" : ("uppercase" as const),
                 background: value === y ? paper.ink : paper.paper,
                 color: value === y ? paper.paper : paper.ink,
                 border: "none",

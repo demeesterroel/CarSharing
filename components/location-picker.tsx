@@ -1,7 +1,9 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
+import { MapPin } from "lucide-react";
 import { paper, fontMono, fontSerif } from "@/lib/paper-theme";
 import { t } from "@/lib/i18n";
+import { useTheme } from "@/lib/theme-context";
 
 interface Props {
   address: string | null; // human-readable; stored in location column
@@ -54,6 +56,8 @@ export function LocationPicker({ address, coords, onAddressChange, onCoordsChang
   const mapInstance = useRef<any>(null);
   const markerRef = useRef<any>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const { theme } = useTheme();
+  const mono = theme === "mono";
 
   const [displayText, setDisplayText] = useState(address ?? "");
   const [geocoding, setGeocoding] = useState(false);
@@ -220,17 +224,32 @@ export function LocationPicker({ address, coords, onAddressChange, onCoordsChang
   return (
     <div>
       <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: 8,
-          border: `1.5px dashed ${paper.paperDark}`,
-          padding: "10px 14px",
-          marginBottom: 8,
-        }}
+        style={
+          mono
+            ? {
+                display: "flex",
+                alignItems: "center",
+                gap: 8,
+                border: `1px solid ${paper.paperDark}`,
+                borderRadius: "var(--radius-md, 10px)",
+                padding: "10px 14px",
+                marginBottom: 8,
+                background: paper.paper,
+              }
+            : {
+                display: "flex",
+                alignItems: "center",
+                gap: 8,
+                border: `1.5px dashed ${paper.paperDark}`,
+                padding: "10px 14px",
+                marginBottom: 8,
+              }
+        }
       >
+        {mono && (
+          <MapPin size={16} color={paper.inkMute} strokeWidth={1.75} style={{ flexShrink: 0, alignSelf: "flex-start", marginTop: 2 }} />
+        )}
         <div style={{ flex: 1, minWidth: 0 }}>
-          {/* Always editable — shows geocoded address or free-text */}
           <input
             type="text"
             value={geocoding ? "Adres ophalen…" : displayText}
@@ -263,7 +282,7 @@ export function LocationPicker({ address, coords, onAddressChange, onCoordsChang
               width: "100%",
               fontFamily: fontSerif,
               fontSize: 17,
-              fontWeight: 600,
+              fontWeight: mono ? 700 : 600,
               color: geocoding ? paper.inkMute : paper.ink,
               background: "transparent",
               border: "none",
@@ -275,13 +294,14 @@ export function LocationPicker({ address, coords, onAddressChange, onCoordsChang
             <div
               style={{
                 fontFamily: fontMono,
-                fontSize: 8,
+                fontSize: mono ? 11 : 8,
                 color: paper.inkMute,
-                letterSpacing: 1,
+                letterSpacing: mono ? 0 : 1,
                 marginTop: 2,
               }}
             >
-              📍 {coords}
+              {!mono && "📍 "}
+              {coords}
             </div>
           )}
         </div>
@@ -292,12 +312,13 @@ export function LocationPicker({ address, coords, onAddressChange, onCoordsChang
           style={{
             fontFamily: fontMono,
             fontSize: 9,
-            letterSpacing: 1.5,
-            textTransform: "uppercase",
+            letterSpacing: mono ? 0 : 1.5,
+            textTransform: mono ? "none" : "uppercase",
             background: "transparent",
             border: `1px solid ${paper.paperDark}`,
+            borderRadius: mono ? "var(--radius-pill, 999px)" : 0,
             color: paper.inkDim,
-            padding: "4px 8px",
+            padding: mono ? "5px 12px" : "4px 8px",
             cursor: "pointer",
             flexShrink: 0,
             opacity: gpsStatus === "loading" ? 0.5 : 1,
@@ -333,9 +354,9 @@ export function LocationPicker({ address, coords, onAddressChange, onCoordsChang
         <div
           style={{
             fontFamily: fontMono,
-            fontSize: 9,
+            fontSize: mono ? 11 : 9,
             color: paper.accent,
-            letterSpacing: 1,
+            letterSpacing: mono ? 0 : 1,
             marginBottom: 6,
           }}
         >
@@ -343,13 +364,21 @@ export function LocationPicker({ address, coords, onAddressChange, onCoordsChang
         </div>
       )}
 
-      <div ref={mapRef} style={{ height: 200, border: `1.5px solid ${paper.paperDark}` }} />
+      <div
+        ref={mapRef}
+        style={{
+          height: 200,
+          border: mono ? `1px solid ${paper.paperDark}` : `1.5px solid ${paper.paperDark}`,
+          borderRadius: mono ? "var(--radius-md, 10px)" : 0,
+          overflow: "hidden",
+        }}
+      />
       <div
         style={{
           fontFamily: fontMono,
-          fontSize: 8,
+          fontSize: mono ? 11 : 8,
           color: paper.inkMute,
-          letterSpacing: 1,
+          letterSpacing: mono ? 0 : 1,
           marginTop: 4,
         }}
       >

@@ -1,6 +1,7 @@
 "use client";
 import type { Car } from "@/types";
 import { paper, fontMono, fontSerif } from "@/lib/paper-theme";
+import { useTheme } from "@/lib/theme-context";
 
 interface Props {
   cars: Car[];
@@ -9,7 +10,51 @@ interface Props {
 }
 
 export function CarToggle({ cars, value, onChange }: Props) {
+  const { theme } = useTheme();
   const visible = cars.filter((c) => c.active === 1 || c.id === value);
+
+  if (theme === "mono") {
+    return (
+      <div
+        style={{
+          display: "flex",
+          margin: "8px 14px 4px",
+          border: `1px solid ${paper.paperDark}`,
+          borderRadius: "var(--radius-pill, 999px)",
+          padding: 2,
+          gap: 1,
+        }}
+      >
+        {visible.map((car) => {
+          const selected = value === car.id;
+          return (
+            <button
+              key={car.id}
+              type="button"
+              onClick={() => onChange(car.id)}
+              style={{
+                flex: 1,
+                padding: "8px 12px",
+                background: selected ? paper.ink : "transparent",
+                color: selected ? paper.paper : paper.inkDim,
+                border: "none",
+                borderRadius: "var(--radius-pill, 999px)",
+                cursor: "pointer",
+                textAlign: "center",
+                fontFamily: "var(--font-inter, 'Inter', system-ui, sans-serif)",
+                fontSize: 13,
+                fontWeight: 500,
+                transition: "background 0.15s",
+              }}
+            >
+              {car.name}
+            </button>
+          );
+        })}
+      </div>
+    );
+  }
+
   return (
     <div style={{ display: "flex", width: "100%", borderBottom: `1.5px solid ${paper.ink}` }}>
       {visible.map((car, i) => {

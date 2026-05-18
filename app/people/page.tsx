@@ -147,7 +147,7 @@ function PeopleContent() {
             </Dialog.Title>
             <PersonForm
               onSubmit={(data) => {
-                createPerson.mutate({ ...data, last_name: data.last_name ?? "", username: null, password_hash: null, is_admin: 0, bank_account: "", email: null, updated_at: "" }, {
+                createPerson.mutate({ ...data, last_name: data.last_name ?? "", username: null, password_hash: null, is_admin: 0, bank_account: "", email: null, theme_preference: "paper", updated_at: "" }, {
                   onSuccess: () => {
                     setAdding(false);
                     toast.success(t("toast.person_added"));

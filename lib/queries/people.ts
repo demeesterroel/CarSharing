@@ -37,7 +37,7 @@ export function insertPerson(
 ): number {
   const result = db
     .prepare(
-      "INSERT INTO people (first_name,last_name,discount,discount_long,active,username,is_admin,bank_account,email) VALUES (?,?,?,?,?,?,?,?,?)"
+      "INSERT INTO people (first_name,last_name,discount,discount_long,active,username,is_admin,bank_account,email,theme_preference) VALUES (?,?,?,?,?,?,?,?,?,?)"
     )
     .run(
       data.first_name,
@@ -48,7 +48,8 @@ export function insertPerson(
       data.username ?? null,
       data.is_admin ?? 0,
       data.bank_account ?? "",
-      data.email ?? null
+      data.email ?? null,
+      data.theme_preference ?? "paper"
     );
   return result.lastInsertRowid as number;
 }
@@ -59,7 +60,7 @@ export function updatePerson(
   data: Omit<Person, "id" | "updated_at"> & { password_hash?: string | null }
 ): void {
   db.prepare(
-    "UPDATE people SET first_name=?,last_name=?,discount=?,discount_long=?,active=?,username=?,is_admin=?,bank_account=?,email=? WHERE id=?"
+    "UPDATE people SET first_name=?,last_name=?,discount=?,discount_long=?,active=?,username=?,is_admin=?,bank_account=?,email=?,theme_preference=?,updated_at=datetime('now') WHERE id=?"
   ).run(
     data.first_name,
     data.last_name,
@@ -70,6 +71,7 @@ export function updatePerson(
     data.is_admin ?? 0,
     data.bank_account ?? "",
     data.email ?? null,
+    data.theme_preference ?? "paper",
     id
   );
 }

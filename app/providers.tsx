@@ -7,6 +7,8 @@ import { OnlineStateProvider, useOnlineState } from "@/lib/offline/online-state"
 import { useBootPrewarm } from "@/lib/offline/prewarm";
 import { useSyncEngine } from "@/lib/offline/sync-engine";
 import { useT } from "@/components/locale-provider";
+import { ThemeProvider, useTheme } from "@/lib/theme-context";
+import { useMe } from "@/hooks/use-me";
 
 function BootPrewarm() {
   // useMe is the auth signal. Read it here so prewarm gates on auth.
@@ -22,6 +24,19 @@ function BootPrewarm() {
   useBootPrewarm(isFetched && data?.personId != null);
   const { setPendingCount } = useOnlineState();
   useSyncEngine({ setPendingCount });
+  return null;
+}
+
+function ThemeSync() {
+  const { data: me } = useMe();
+  const { setTheme } = useTheme();
+
+  useEffect(() => {
+    if (me?.themePreference) {
+      setTheme(me.themePreference);
+    }
+  }, [me?.themePreference, setTheme]);
+
   return null;
 }
 
@@ -42,10 +57,13 @@ export function Providers({ children }: { children: React.ReactNode }) {
   return (
     <QueryClientProvider client={client}>
       <OnlineStateProvider>
-        <BootPrewarm />
-        <ConflictListener />
-        {children}
-        <Toaster position="bottom-center" />
+        <ThemeProvider>
+          <BootPrewarm />
+          <ThemeSync />
+          <ConflictListener />
+          {children}
+          <Toaster position="bottom-center" />
+        </ThemeProvider>
       </OnlineStateProvider>
     </QueryClientProvider>
   );

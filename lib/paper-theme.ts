@@ -1,21 +1,21 @@
 // Shared paper-receipt theme constants — mirrors CSS custom properties in globals.css
 
 export const paper = {
-  paper: "#f5f0e6",
-  paperDeep: "#ebe3d2",
-  paperDark: "#d9ceb2",
-  ink: "#1a1a1a",
-  inkDim: "#555047",
-  inkMute: "#8a8273",
-  accent: "#a83929",
-  green: "#4d6e35",
-  blue: "#3d5a7a",
-  amber: "#8a5a00",
+  paper: "var(--paper)",
+  paperDeep: "var(--paper-deep)",
+  paperDark: "var(--paper-dark)",
+  ink: "var(--ink)",
+  inkDim: "var(--ink-dim)",
+  inkMute: "var(--ink-mute)",
+  accent: "var(--accent)",
+  green: "var(--green)",
+  blue: "var(--blue)",
+  amber: "var(--amber)",
 } as const;
 
-export const fontMono = "var(--font-courier-prime, 'Courier Prime', ui-monospace, monospace)";
-export const fontSerif = "var(--font-fraunces, 'Fraunces', Georgia, serif)";
-export const fontSans = "var(--font-inter, system-ui, sans-serif)";
+export const fontMono = "var(--font-mono)";
+export const fontSerif = "var(--font-serif)";
+export const fontSans = "var(--font-sans)";
 
 /** Signed color: positive → green, negative → accent, zero → inkMute */
 export const amtColor = (n: number) =>

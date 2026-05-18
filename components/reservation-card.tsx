@@ -2,6 +2,7 @@
 import type { Reservation } from "@/types";
 import { paper, fontMono, fontSerif, fmtDate } from "@/lib/paper-theme";
 import { useLocale } from "@/components/locale-provider";
+import { useTheme } from "@/lib/theme-context";
 import { CarBadge } from "@/components/car-badge";
 import { PendingBadge } from "@/components/pending-badge";
 
@@ -12,6 +13,8 @@ export interface ReservationCardProps {
 
 export function ReservationCard({ reservation, onClick }: ReservationCardProps) {
   const { locale } = useLocale();
+  const { theme } = useTheme();
+  const mono = theme === "mono";
   const isPending = reservation.status === "pending";
   const days =
     Math.round(
@@ -28,16 +31,18 @@ export function ReservationCard({ reservation, onClick }: ReservationCardProps) 
         alignItems: "center",
         gap: 12,
         padding: "12px 14px",
-        marginBottom: 8,
+        marginBottom: mono ? 0 : 8,
         background: isPending
-          ? `repeating-linear-gradient(-45deg, ${paper.paperDeep}, ${paper.paperDeep} 4px, ${paper.paper} 4px, ${paper.paper} 10px)`
-          : paper.paper,
+          ? `repeating-linear-gradient(45deg, ${paper.paper} 0 4px, ${paper.paperDark} 4px 6px)`
+          : mono
+            ? "transparent"
+            : paper.paper,
         border: "none",
         borderTop: "none",
         borderRight: "none",
-        borderBottom: "none",
-        borderLeft: `3px ${isPending ? "dashed" : "solid"} ${isPending ? paper.amber : paper.green}`,
-        boxShadow: "0 1px 2px rgba(0,0,0,0.04)",
+        borderBottom: mono ? `1px solid ${paper.paperDark}` : "none",
+        borderLeft: mono ? "none" : `3px ${isPending ? "dashed" : "solid"} ${isPending ? paper.amber : paper.green}`,
+        boxShadow: mono ? "none" : "0 1px 2px rgba(0,0,0,0.04)",
         cursor: onClick ? "pointer" : "default",
         textAlign: "left",
         appearance: "none",
@@ -60,9 +65,9 @@ export function ReservationCard({ reservation, onClick }: ReservationCardProps) 
         <div
           style={{
             fontFamily: fontMono,
-            fontSize: 10,
-            color: paper.inkDim,
-            letterSpacing: 1,
+            fontSize: mono ? 11.5 : 10,
+            color: mono ? paper.inkMute : paper.inkDim,
+            letterSpacing: mono ? 0 : 1,
             marginTop: 2,
           }}
         >
@@ -92,7 +97,7 @@ export function ReservationCard({ reservation, onClick }: ReservationCardProps) 
         <div
           style={{
             fontFamily: fontMono,
-            fontSize: 10,
+            fontSize: mono ? 11.5 : 10,
             fontWeight: 700,
             color: isPending ? paper.amber : paper.green,
           }}

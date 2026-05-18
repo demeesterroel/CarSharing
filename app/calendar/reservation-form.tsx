@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { useForm, useWatch, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { Lock } from "lucide-react";
 import { CarToggle } from "@/components/car-toggle";
 import { usePeople } from "@/hooks/use-people";
 import { useCars } from "@/hooks/use-vehicles";
@@ -14,6 +15,7 @@ import type { Reservation, ReservationInput } from "@/types";
 import { useT, useLocale } from "@/components/locale-provider";
 import { buildMissingLabel } from "@/lib/i18n";
 import { paper, fontMono, fontSerif, fmtDate } from "@/lib/paper-theme";
+import { useTheme } from "@/lib/theme-context";
 import { PickCalendar } from "@/components/pick-calendar";
 import { fullNameOf } from "@/lib/person-utils";
 
@@ -46,7 +48,7 @@ function diffDays(start: string, end: string): number {
   return Math.round((new Date(end).getTime() - new Date(start).getTime()) / 86400000) + 1;
 }
 
-const label: React.CSSProperties = {
+const paperLabel: React.CSSProperties = {
   fontFamily: fontMono,
   fontSize: 9,
   fontWeight: 700,
@@ -57,9 +59,21 @@ const label: React.CSSProperties = {
   marginBottom: 4,
 };
 
+const monoLabel: React.CSSProperties = {
+  fontFamily: fontMono,
+  fontSize: 11,
+  color: paper.inkMute,
+  display: "block",
+  marginBottom: 4,
+};
+
 export function ReservationForm({ defaultValues, onSubmit, onCancel }: Props) {
   const t = useT();
   const { locale } = useLocale();
+  const { theme } = useTheme();
+  const mono = theme === "mono";
+  const lbl = mono ? monoLabel : paperLabel;
+
   const { data: people = [] } = usePeople();
   const { data: cars = [] } = useCars();
   const { data: me } = useMe();
@@ -111,7 +125,6 @@ export function ReservationForm({ defaultValues, onSubmit, onCancel }: Props) {
   ]);
   const dayCount = datesSelected ? diffDays(startDate, endDate) : 1;
 
-  // Conflict detection
   const conflicts = reservations.filter((r) => {
     if (r.status === "rejected") return false;
     if (r.car_id !== carId) return false;
@@ -149,7 +162,7 @@ export function ReservationForm({ defaultValues, onSubmit, onCancel }: Props) {
           justifyContent: "space-between",
           padding: "0 16px",
           height: 52,
-          borderBottom: `1.5px solid ${paper.paperDark}`,
+          borderBottom: mono ? `1px solid ${paper.paperDark}` : `1.5px solid ${paper.paperDark}`,
           background: paper.paper,
           position: "sticky",
           top: 0,
@@ -176,36 +189,66 @@ export function ReservationForm({ defaultValues, onSubmit, onCancel }: Props) {
           ×
         </button>
         <div
-          style={{
-            fontFamily: fontMono,
-            fontSize: 10,
-            fontWeight: 700,
-            letterSpacing: 3,
-            color: paper.inkDim,
-            textTransform: "uppercase",
-          }}
+          style={
+            mono
+              ? {
+                  fontFamily:
+                    "var(--font-inter-tight, 'Inter Tight', 'Inter', system-ui, sans-serif)",
+                  fontSize: 16,
+                  fontWeight: 700,
+                  color: paper.ink,
+                }
+              : {
+                  fontFamily: fontMono,
+                  fontSize: 10,
+                  fontWeight: 700,
+                  letterSpacing: 3,
+                  color: paper.inkDim,
+                  textTransform: "uppercase" as const,
+                }
+          }
         >
-          ▦ {t("form.reservation")}
+          {mono ? t("form.reservation") : `▦ ${t("form.reservation").toUpperCase()}`}
         </div>
         <div style={{ position: "relative" }} className="submit-wrap">
           <button
             type="submit"
             disabled={!canSubmit}
-            style={{
-              fontFamily: fontMono,
-              fontSize: 9,
-              fontWeight: 700,
-              letterSpacing: 2,
-              textTransform: "uppercase",
-              background: isAdmin ? paper.blue : paper.accent,
-              color: "#fff",
-              border: "none",
-              padding: "8px 14px",
-              cursor: canSubmit && online ? "pointer" : "default",
-              opacity: canSubmit && online ? 1 : 0.35,
-            }}
+            style={
+              mono
+                ? {
+                    fontFamily: "var(--font-inter, 'Inter', system-ui, sans-serif)",
+                    fontSize: 14,
+                    fontWeight: 600,
+                    background: paper.accent,
+                    color: "#fff",
+                    border: "none",
+                    padding: "8px 18px",
+                    borderRadius: "var(--radius-pill, 999px)",
+                    cursor: canSubmit && online ? "pointer" : "default",
+                    opacity: canSubmit && online ? 1 : 0.5,
+                    transition: "opacity 0.15s",
+                  }
+                : {
+                    fontFamily: fontMono,
+                    fontSize: 9,
+                    fontWeight: 700,
+                    letterSpacing: 2,
+                    textTransform: "uppercase" as const,
+                    background: isAdmin ? paper.blue : paper.accent,
+                    color: "#fff",
+                    border: "none",
+                    padding: "8px 14px",
+                    cursor: canSubmit && online ? "pointer" : "default",
+                    opacity: canSubmit && online ? 1 : 0.35,
+                  }
+            }
           >
-            {isAdmin ? t("action.confirm_reservation") : t("action.request_reservation")}
+            {mono
+              ? t("action.save")
+              : isAdmin
+                ? t("action.confirm_reservation").toUpperCase()
+                : t("action.request_reservation").toUpperCase()}
           </button>
           {!canSubmit && (
             <div
@@ -247,51 +290,103 @@ export function ReservationForm({ defaultValues, onSubmit, onCancel }: Props) {
       <div
         style={{
           padding: "10px 14px",
-          borderBottom: `1.5px dashed ${paper.paperDark}`,
+          borderBottom: mono ? `1px solid ${paper.paperDark}` : `1.5px dashed ${paper.paperDark}`,
           background: paper.paper,
         }}
       >
-        <span style={label}>{t("form.driver")}</span>
-        {isAdmin ? (
-          <select
-            value={personId ?? ""}
-            onChange={(e) => setValue("person_id", Number(e.target.value))}
-            style={{
-              fontFamily: fontSerif,
-              fontSize: 17,
-              fontWeight: 600,
-              color: paper.ink,
-              background: "transparent",
-              border: "none",
-              outline: "none",
-              width: "100%",
-              padding: 0,
-              cursor: "pointer",
-            }}
-          >
-            <option value="" disabled>
-              {t("form.select_person_placeholder")}
-            </option>
-            {people
-              .filter((p) => p.active)
-              .map((p) => (
-                <option key={p.id} value={p.id}>
-                  {fullNameOf(p)}
+        {mono ? (
+          isAdmin ? (
+            <>
+              <span style={lbl}>{t("form.driver")}</span>
+              <select
+                value={personId ?? ""}
+                onChange={(e) => setValue("person_id", Number(e.target.value))}
+                style={{
+                  fontFamily: fontSerif,
+                  fontSize: 17,
+                  fontWeight: 600,
+                  color: paper.ink,
+                  background: "transparent",
+                  border: "none",
+                  outline: "none",
+                  width: "100%",
+                  padding: 0,
+                  cursor: "pointer",
+                }}
+              >
+                <option value="" disabled>
+                  {t("form.select_person_placeholder")}
                 </option>
-              ))}
-          </select>
+                {people
+                  .filter((p) => p.active)
+                  .map((p) => (
+                    <option key={p.id} value={p.id}>
+                      {fullNameOf(p)}
+                    </option>
+                  ))}
+              </select>
+            </>
+          ) : (
+            <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+              <span
+                style={{
+                  fontFamily:
+                    "var(--font-inter-tight, 'Inter Tight', 'Inter', system-ui, sans-serif)",
+                  fontSize: 19,
+                  fontWeight: 700,
+                  color: paper.ink,
+                }}
+              >
+                {person ? fullNameOf(person) : (me?.shortName ?? "—")}
+              </span>
+              <Lock size={14} color={paper.inkMute} strokeWidth={1.75} />
+            </div>
+          )
         ) : (
-          <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-            <span
-              style={{ fontFamily: fontSerif, fontSize: 17, fontWeight: 600, color: paper.ink }}
-            >
-              {person ? fullNameOf(person) : (me?.shortName ?? "—")}
-            </span>
-            <span style={{ fontSize: 13 }}>🔒</span>
-          </div>
+          <>
+            <span style={lbl}>{t("form.driver")}</span>
+            {isAdmin ? (
+              <select
+                value={personId ?? ""}
+                onChange={(e) => setValue("person_id", Number(e.target.value))}
+                style={{
+                  fontFamily: fontSerif,
+                  fontSize: 17,
+                  fontWeight: 600,
+                  color: paper.ink,
+                  background: "transparent",
+                  border: "none",
+                  outline: "none",
+                  width: "100%",
+                  padding: 0,
+                  cursor: "pointer",
+                }}
+              >
+                <option value="" disabled>
+                  {t("form.select_person_placeholder")}
+                </option>
+                {people
+                  .filter((p) => p.active)
+                  .map((p) => (
+                    <option key={p.id} value={p.id}>
+                      {fullNameOf(p)}
+                    </option>
+                  ))}
+              </select>
+            ) : (
+              <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                <span
+                  style={{ fontFamily: fontSerif, fontSize: 17, fontWeight: 600, color: paper.ink }}
+                >
+                  {person ? fullNameOf(person) : (me?.shortName ?? "—")}
+                </span>
+                <span style={{ fontSize: 13 }}>🔒</span>
+              </div>
+            )}
+          </>
         )}
       </div>
-      {!isAdmin && (
+      {!isAdmin && !mono && (
         <div
           style={{
             padding: "6px 14px",
@@ -305,66 +400,111 @@ export function ReservationForm({ defaultValues, onSubmit, onCancel }: Props) {
         </div>
       )}
 
-      {/* Hidden fields so RHF keeps start_date / end_date in form state */}
+      {/* Hidden RHF fields */}
       <input type="hidden" {...register("start_date")} />
       <input type="hidden" {...register("end_date")} />
 
       {/* Calendar date picker */}
       <div
-        style={{
-          margin: "12px 14px",
-          background: paper.paper,
-          border: `1.5px solid ${paper.paperDark}`,
-        }}
+        style={
+          mono
+            ? {
+                margin: "12px 14px",
+                background: paper.paper,
+                border: `1px solid ${paper.paperDark}`,
+                borderRadius: "var(--radius-md, 10px)",
+                overflow: "hidden",
+              }
+            : {
+                margin: "12px 14px",
+                background: paper.paper,
+                border: `1.5px solid ${paper.paperDark}`,
+              }
+        }
       >
-        {/* Header: label + days count + selected range */}
+        {/* Header: date range + day count */}
         <div
           style={{
             display: "flex",
             justifyContent: "space-between",
             alignItems: "center",
             padding: "8px 14px",
-            borderBottom: `1px dashed ${paper.paperDark}`,
+            borderBottom: mono ? `1px solid ${paper.paperDark}` : `1px dashed ${paper.paperDark}`,
           }}
         >
           <div>
-            <div
-              style={{
-                fontFamily: fontMono,
-                fontSize: 10,
-                fontWeight: 700,
-                letterSpacing: 2,
-                color: paper.blue,
-              }}
-            >
-              ● {t("page.reservation_request")}
-            </div>
-            {startDate && endDate && startDate !== endDate ? (
+            {!mono && (
               <div
                 style={{
-                  fontFamily: fontSerif,
-                  fontSize: 13,
-                  fontWeight: 600,
-                  color: paper.inkDim,
-                  marginTop: 2,
+                  fontFamily: fontMono,
+                  fontSize: 10,
+                  fontWeight: 700,
+                  letterSpacing: 2,
+                  color: paper.blue,
                 }}
               >
-                {fmtDate(startDate, locale as "nl" | "en")} →{" "}
+                ● {t("page.reservation_request")}
+              </div>
+            )}
+            {startDate && endDate && startDate !== endDate ? (
+              <div
+                style={
+                  mono
+                    ? {
+                        fontFamily:
+                          "var(--font-inter-tight, 'Inter Tight', 'Inter', system-ui, sans-serif)",
+                        fontSize: 15,
+                        fontWeight: 700,
+                        color: paper.ink,
+                      }
+                    : {
+                        fontFamily: fontSerif,
+                        fontSize: 13,
+                        fontWeight: 600,
+                        color: paper.inkDim,
+                        marginTop: 2,
+                      }
+                }
+              >
+                {fmtDate(startDate, locale as "nl" | "en")}
+                {mono ? " – " : " → "}
                 {fmtDate(endDate, locale as "nl" | "en")}
               </div>
             ) : startDate ? (
               <div
-                style={{
-                  fontFamily: fontSerif,
-                  fontSize: 13,
-                  fontWeight: 600,
-                  color: paper.inkDim,
-                  marginTop: 2,
-                }}
+                style={
+                  mono
+                    ? {
+                        fontFamily:
+                          "var(--font-inter-tight, 'Inter Tight', 'Inter', system-ui, sans-serif)",
+                        fontSize: 15,
+                        fontWeight: 700,
+                        color: paper.ink,
+                      }
+                    : {
+                        fontFamily: fontSerif,
+                        fontSize: 13,
+                        fontWeight: 600,
+                        color: paper.inkDim,
+                        marginTop: 2,
+                      }
+                }
               >
                 {fmtDate(startDate, locale as "nl" | "en")}
               </div>
-            ) : null}
+            ) : (
+              mono && (
+                <div
+                  style={{
+                    fontFamily: fontMono,
+                    fontSize: 12,
+                    color: paper.inkMute,
+                  }}
+                >
+                  {t("field.dates")}
+                </div>
+              )
+            )}
           </div>
           <div style={{ textAlign: "center" }}>
             <div
@@ -372,27 +512,35 @@ export function ReservationForm({ defaultValues, onSubmit, onCancel }: Props) {
                 fontFamily: fontSerif,
                 fontSize: 24,
                 fontWeight: 700,
-                color: paper.ink,
+                color: datesSelected ? paper.ink : paper.inkMute,
                 lineHeight: 1,
               }}
             >
               {dayCount}
             </div>
             <div
-              style={{
-                fontFamily: fontMono,
-                fontSize: 7,
-                color: paper.inkMute,
-                letterSpacing: 1.5,
-                textTransform: "uppercase",
-              }}
+              style={
+                mono
+                  ? {
+                      fontFamily: fontMono,
+                      fontSize: 9,
+                      color: paper.inkMute,
+                    }
+                  : {
+                      fontFamily: fontMono,
+                      fontSize: 7,
+                      color: paper.inkMute,
+                      letterSpacing: 1.5,
+                      textTransform: "uppercase" as const,
+                    }
+              }
             >
               {t("form.days")}
             </div>
           </div>
         </div>
 
-        {/* Calendar grid + navigation */}
+        {/* Calendar grid */}
         <div style={{ padding: "10px 14px 12px" }}>
           <PickCalendar
             initialOffset={calendarInitOffset}
@@ -412,35 +560,77 @@ export function ReservationForm({ defaultValues, onSubmit, onCancel }: Props) {
       {/* Conflict warning */}
       {conflicts.length > 0 && (
         <div
-          style={{
-            margin: "0 14px 12px",
-            background: "transparent",
-            border: `1.5px solid ${paper.accent}`,
-            padding: "10px 14px",
-          }}
+          style={
+            mono
+              ? {
+                  margin: "0 14px 12px",
+                  border: `1px solid ${paper.amber}`,
+                  borderRadius: "var(--radius-md, 10px)",
+                  padding: "10px 14px",
+                  background: "rgba(180, 83, 9, 0.05)",
+                }
+              : {
+                  margin: "0 14px 12px",
+                  background: "transparent",
+                  border: `1.5px solid ${paper.accent}`,
+                  padding: "10px 14px",
+                }
+          }
         >
           <div
-            style={{
-              fontFamily: fontMono,
-              fontSize: 9,
-              fontWeight: 700,
-              color: paper.accent,
-              letterSpacing: 1.5,
-              textTransform: "uppercase",
-              marginBottom: 6,
-            }}
+            style={
+              mono
+                ? {
+                    fontFamily:
+                      "var(--font-inter-tight, 'Inter Tight', 'Inter', system-ui, sans-serif)",
+                    fontSize: 13,
+                    fontWeight: 600,
+                    color: paper.amber,
+                    marginBottom: 6,
+                  }
+                : {
+                    fontFamily: fontMono,
+                    fontSize: 9,
+                    fontWeight: 700,
+                    color: paper.accent,
+                    letterSpacing: 1.5,
+                    textTransform: "uppercase" as const,
+                    marginBottom: 6,
+                  }
+            }
           >
-            ▲ {t("form.conflict_warning")}
+            {mono ? "⚠ " : "▲ "}
+            {t("form.conflict_warning")}
           </div>
           {conflicts.map((r) => (
             <div key={r.id} style={{ marginBottom: 4 }}>
               <div
-                style={{ fontFamily: fontSerif, fontSize: 13, fontWeight: 600, color: paper.ink }}
+                style={
+                  mono
+                    ? {
+                        fontFamily:
+                          "var(--font-inter, 'Inter', system-ui, sans-serif)",
+                        fontSize: 13,
+                        fontWeight: 600,
+                        color: paper.ink,
+                      }
+                    : {
+                        fontFamily: fontSerif,
+                        fontSize: 13,
+                        fontWeight: 600,
+                        color: paper.ink,
+                      }
+                }
               >
                 {r.person_name} — {r.car_short}
               </div>
               <div
-                style={{ fontFamily: fontMono, fontSize: 9, color: paper.inkDim, letterSpacing: 1 }}
+                style={{
+                  fontFamily: fontMono,
+                  fontSize: 9,
+                  color: paper.inkDim,
+                  letterSpacing: mono ? 0 : 1,
+                }}
               >
                 {r.start_date} · {r.status}
               </div>
@@ -448,10 +638,12 @@ export function ReservationForm({ defaultValues, onSubmit, onCancel }: Props) {
           ))}
           <div
             style={{
-              fontFamily: fontMono,
-              fontSize: 9,
+              fontFamily: mono
+                ? "var(--font-inter, 'Inter', system-ui, sans-serif)"
+                : fontMono,
+              fontSize: mono ? 11 : 9,
               color: paper.inkMute,
-              letterSpacing: 1,
+              letterSpacing: mono ? 0 : 1,
               marginTop: 6,
               fontStyle: "italic",
             }}
@@ -463,8 +655,38 @@ export function ReservationForm({ defaultValues, onSubmit, onCancel }: Props) {
 
       {/* Note */}
       <div style={{ padding: "4px 14px 16px" }}>
-        <span style={label}>{t("form.reservation_reason")}</span>
-        <div style={{ border: `1.5px dashed ${paper.paperDark}`, padding: "8px 14px" }}>
+        <span
+          style={
+            mono
+              ? { ...monoLabel }
+              : {
+                  fontFamily: fontMono,
+                  fontSize: 9,
+                  fontWeight: 700,
+                  letterSpacing: 2,
+                  textTransform: "uppercase" as const,
+                  color: paper.inkMute,
+                  display: "block",
+                  marginBottom: 4,
+                }
+          }
+        >
+          {t("form.reservation_reason")}
+        </span>
+        <div
+          style={
+            mono
+              ? {
+                  border: `1px solid ${paper.paperDark}`,
+                  borderRadius: "var(--radius-md, 10px)",
+                  padding: "8px 14px",
+                }
+              : {
+                  border: `1.5px dashed ${paper.paperDark}`,
+                  padding: "8px 14px",
+                }
+          }
+        >
           <input
             {...register("note")}
             type="text"

@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.10.3](https://github.com/demeesterroel/CarSharing/compare/v1.10.2...v1.10.3) (2026-05-18)
+
+
+### 🐛 Bug fixes
+
+* **location:** auto-capture GPS on form open; reverse-geocode pasted coords ([#209](https://github.com/demeesterroel/CarSharing/issues/209)) ([3e0a71e](https://github.com/demeesterroel/CarSharing/commit/3e0a71edbf580a4f8fb565414221f62fd4cbb89e)), closes [#206](https://github.com/demeesterroel/CarSharing/issues/206)
+
 ## [1.10.2](https://github.com/demeesterroel/CarSharing/compare/v1.10.1...v1.10.2) (2026-05-18)
 
 ### 🐛 Bug fixes

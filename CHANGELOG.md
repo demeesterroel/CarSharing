@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.10.1](https://github.com/demeesterroel/CarSharing/compare/v1.10.0...v1.10.1) (2026-05-18)
+
+
+### 🐛 Bug fixes
+
+* **admin:** pencil on member name visible on row hover ([#175](https://github.com/demeesterroel/CarSharing/issues/175)) ([#202](https://github.com/demeesterroel/CarSharing/issues/202)) ([f6c76ae](https://github.com/demeesterroel/CarSharing/commit/f6c76ae0f53fff291b8c973c4b6c59d0b9f5f46b))
+* **pwa:** switch API cache from StaleWhileRevalidate to NetworkFirst ([#205](https://github.com/demeesterroel/CarSharing/issues/205)) ([c742117](https://github.com/demeesterroel/CarSharing/commit/c742117a9ef6e5b9e5fd2ba52cd7330d33860e31))
+
 ## [1.10.0](https://github.com/demeesterroel/CarSharing/compare/v1.9.0...v1.10.0) (2026-05-12)
 
 

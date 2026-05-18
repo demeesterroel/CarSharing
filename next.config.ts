@@ -31,13 +31,14 @@ const withPWA = withPWAInit({
         urlPattern: ({ url }) => url.pathname === "/api/health",
         handler: "NetworkOnly",
       },
-      // Data APIs — serve cache instantly, refresh in background.
+      // Data APIs — network first so mutations are immediately visible; falls back to cache when offline.
       {
         urlPattern: ({ url, request, sameOrigin }) =>
           sameOrigin && request.method === "GET" && url.pathname.startsWith("/api/"),
-        handler: "StaleWhileRevalidate",
+        handler: "NetworkFirst",
         options: {
           cacheName: "api-data",
+          networkTimeoutSeconds: 5,
           expiration: { maxEntries: 64, maxAgeSeconds: ONE_WEEK },
         },
       },

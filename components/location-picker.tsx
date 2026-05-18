@@ -8,6 +8,7 @@ interface Props {
   coords: string | null; // "lat, lng"; stored in gps_coords column
   onAddressChange: (v: string | null) => void;
   onCoordsChange: (v: string | null) => void;
+  autoGps?: boolean; // fire GPS capture on mount when no coords present
 }
 
 function parseCoords(val: string | null): [number, number] | null {
@@ -48,10 +49,11 @@ function makeIcon(L: any) {
   });
 }
 
-export function LocationPicker({ address, coords, onAddressChange, onCoordsChange }: Props) {
+export function LocationPicker({ address, coords, onAddressChange, onCoordsChange, autoGps }: Props) {
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstance = useRef<any>(null);
   const markerRef = useRef<any>(null);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const [displayText, setDisplayText] = useState(address ?? "");
   const [geocoding, setGeocoding] = useState(false);
@@ -177,6 +179,42 @@ export function LocationPicker({ address, coords, onAddressChange, onCoordsChang
     );
   };
 
+  const applyParsedCoords = async (lat: number, lng: number) => {
+    const coordStr = `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
+    onCoordsChange(coordStr);
+    if (mapInstance.current) {
+      const L = await import("leaflet");
+      const icon = makeIcon(L);
+      mapInstance.current.setView([lat, lng], 15);
+      if (markerRef.current) {
+        markerRef.current.setLatLng([lat, lng]);
+      } else {
+        markerRef.current = L.marker([lat, lng], { icon, draggable: true }).addTo(
+          mapInstance.current
+        );
+        markerRef.current.on("dragend", async () => {
+          const { lat: la, lng: ln } = markerRef.current.getLatLng();
+          const cs = `${la.toFixed(6)}, ${ln.toFixed(6)}`;
+          onCoordsChange(cs);
+          setGeocoding(true);
+          const a = await reverseGeocode(la, ln);
+          setGeocoding(false);
+          setDisplayText(a);
+          onAddressChange(a);
+        });
+      }
+    }
+    setGeocoding(true);
+    const addr = await reverseGeocode(lat, lng);
+    setGeocoding(false);
+    setDisplayText(addr);
+    onAddressChange(addr);
+  };
+
+  useEffect(() => {
+    if (autoGps && !coords) captureGPS();
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
   const hasGps = !!coords;
 
   return (
@@ -196,11 +234,28 @@ export function LocationPicker({ address, coords, onAddressChange, onCoordsChang
           <input
             type="text"
             value={geocoding ? "Adres ophalen…" : displayText}
+            onPaste={(e) => {
+              const pasted = e.clipboardData.getData("text").trim();
+              const parsed = parseCoords(pasted);
+              if (parsed) {
+                e.preventDefault();
+                applyParsedCoords(parsed[0], parsed[1]);
+              }
+            }}
             onChange={(e) => {
-              setDisplayText(e.target.value);
-              onAddressChange(e.target.value || null);
-              // Typing free text clears the GPS pin
-              if (hasGps) onCoordsChange(null);
+              const val = e.target.value;
+              setDisplayText(val);
+              if (debounceRef.current) clearTimeout(debounceRef.current);
+              const parsed = parseCoords(val.trim());
+              if (parsed) {
+                debounceRef.current = setTimeout(
+                  () => applyParsedCoords(parsed[0], parsed[1]),
+                  600
+                );
+              } else {
+                onAddressChange(val || null);
+                if (hasGps) onCoordsChange(null);
+              }
             }}
             placeholder={t("form.location_placeholder")}
             readOnly={geocoding}

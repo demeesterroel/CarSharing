@@ -573,6 +573,7 @@ export function FuelForm({ defaultValues, onSubmit, onCancel, onDelete }: Props)
                   coords={coordsField.value ?? null}
                   onAddressChange={(v) => addrField.onChange(v ?? null)}
                   onCoordsChange={(v) => coordsField.onChange(v ?? null)}
+                  autoGps={isAddMode}
                 />
               )}
             />

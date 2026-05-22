@@ -1,6 +1,16 @@
 // lib/__tests__/paper_theme.test.ts
 import { describe, it, expect } from "vitest";
-import { fmtMoney, fmtKm, fmtDate, fmtYearMonth, paper, fontMono, fontSerif } from "../paper-theme";
+import {
+  fmtMoney,
+  fmtKm,
+  fmtDate,
+  fmtYearMonth,
+  paper,
+  fontMono,
+  fontSerif,
+  amtColor,
+  signPrefix,
+} from "../paper-theme";
 
 describe("paper CSS variable refs", () => {
   it("paper.ink is a CSS var reference, not a hex", () => {
@@ -95,5 +105,35 @@ describe("fmtYearMonth", () => {
   it("uses Dutch as default locale", () => {
     const result = fmtYearMonth("2026-05");
     expect(result).toContain("mei");
+  });
+});
+
+describe("amtColor", () => {
+  it("returns green for positive amounts", () => {
+    expect(amtColor(10)).toBe(paper.green);
+    expect(amtColor(0.01)).toBe(paper.green);
+  });
+
+  it("returns accent (red) for negative amounts", () => {
+    expect(amtColor(-10)).toBe(paper.accent);
+    expect(amtColor(-0.01)).toBe(paper.accent);
+  });
+
+  it("returns inkMute for zero", () => {
+    expect(amtColor(0)).toBe(paper.inkMute);
+  });
+});
+
+describe("signPrefix", () => {
+  it("returns + for positive amounts", () => {
+    expect(signPrefix(10)).toBe("+");
+  });
+
+  it("returns − (U+2212) for negative amounts", () => {
+    expect(signPrefix(-10)).toBe("−");
+  });
+
+  it("returns empty string for zero", () => {
+    expect(signPrefix(0)).toBe("");
   });
 });

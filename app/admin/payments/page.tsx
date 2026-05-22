@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import { paper, fontMono, fontSerif, fmtMoney, fmtDate } from "@/lib/paper-theme";
+import { paper, fontMono, fontSerif, fmtMoney, fmtDate, amtColor, signPrefix } from "@/lib/paper-theme";
 import { useT } from "@/components/locale-provider";
 import {
   usePayments,
@@ -529,10 +529,11 @@ export default function AdminPaymentsPage() {
                         style={{
                           fontFamily: fontMono,
                           fontSize: 12,
-                          color: paper.green,
+                          color: amtColor(p.amount),
                           whiteSpace: "nowrap",
                         }}
                       >
+                        {signPrefix(p.amount)}
                         {fmtMoney(p.amount)}
                       </div>
                       <button

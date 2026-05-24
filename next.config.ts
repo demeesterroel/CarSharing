@@ -188,6 +188,10 @@ const nextConfig: NextConfig = {
   output: "standalone",
   outputFileTracingRoot: __dirname,
   serverExternalPackages: ["better-sqlite3"],
+  allowedDevOrigins: (process.env.ALLOWED_DEV_ORIGINS ?? "")
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean),
   async rewrites() {
     return [{ source: "/uploads/:path*", destination: "/api/static/:path*" }];
   },

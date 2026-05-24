@@ -21,6 +21,10 @@ export const sessionOptions: SessionOptions = {
   password: env.SESSION_PASSWORD,
   cookieOptions: {
     httpOnly: true,
+    // Must stay true in production: this cookie carries the auth session.
+    // If reaching the dev server from a non-localhost device breaks login,
+    // put a TLS terminator in front (reverse proxy, tunnel, etc.) — do not
+    // weaken this flag.
     secure: env.NODE_ENV === "production",
     sameSite: "strict",
     maxAge: 60 * 60 * 24 * 7, // 7 days

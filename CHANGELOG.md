@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.12.0](https://github.com/demeesterroel/CarSharing/compare/v1.11.0...v1.12.0) (2026-05-24)
+
+
+### ✨ New features
+
+* **dev:** make allowedDevOrigins env-driven + harden cookie invariant ([#213](https://github.com/demeesterroel/CarSharing/issues/213)) ([#214](https://github.com/demeesterroel/CarSharing/issues/214)) ([20fb379](https://github.com/demeesterroel/CarSharing/commit/20fb379cc4e4801b46bc866b8fb029b1fa85bcd5))
+
+
+### 🐛 Bug fixes
+
+* **payments:** color negative payments red (closes [#212](https://github.com/demeesterroel/CarSharing/issues/212)) ([#216](https://github.com/demeesterroel/CarSharing/issues/216)) ([74ddb05](https://github.com/demeesterroel/CarSharing/commit/74ddb05526a3a77ec95cb0b2c7c0aa65ccb804ae))
+
 ## [1.11.0](https://github.com/demeesterroel/CarSharing/compare/v1.10.3...v1.11.0) (2026-05-18)
 
 

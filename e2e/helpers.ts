@@ -13,6 +13,14 @@ export async function loginAndGetCsrf(
   email = process.env.TEST_EMAIL ?? "test@example.com",
   password = process.env.TEST_PASSWORD ?? "changeme"
 ): Promise<string> {
+  return (await loginAndGetSession(request, email, password)).csrf;
+}
+
+export async function loginAndGetSession(
+  request: APIRequestContext,
+  email = process.env.TEST_EMAIL ?? "test@example.com",
+  password = process.env.TEST_PASSWORD ?? "changeme"
+): Promise<{ csrf: string; personId: number | null }> {
   const res = await request.post("/api/auth/login", {
     data: { username: email, password },
   });
@@ -20,16 +28,13 @@ export async function loginAndGetCsrf(
     throw new Error(`Login failed: ${res.status()} ${await res.text()}`);
   }
 
-  // Read the csrf-token cookie that is set by /api/me (GET) — the login
-  // response itself doesn't write it, but the GET call after login does.
-  // Trigger it now so the cookie is present.
   const meRes = await request.get("/api/me");
+  const meBody = await meRes.json() as { personId?: number | null };
   const cookies = await meRes.headersArray();
-  // The csrf-token is set as a cookie — extract it from Set-Cookie
   for (const h of cookies) {
     if (h.name.toLowerCase() === "set-cookie") {
       const m = h.value.match(/csrf-token=([^;]+)/);
-      if (m) return decodeURIComponent(m[1]);
+      if (m) return { csrf: decodeURIComponent(m[1]), personId: meBody.personId ?? null };
     }
   }
 

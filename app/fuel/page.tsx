@@ -1,5 +1,5 @@
 "use client";
-import { Suspense } from "react";
+import { Suspense, useState, useEffect } from "react";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import { toast } from "sonner";
 import * as Dialog from "@radix-ui/react-dialog";
@@ -68,6 +68,9 @@ function FuelContent() {
   const editing =
     !isLoading && editingId ? (fillups.find((f) => f.id === editingId) ?? null) : null;
 
+  const [modalClosed, setModalClosed] = useState(false);
+  useEffect(() => { setModalClosed(false); }, [editingId]);
+
   const isMine = mineParam === "true";
   const isOthers = mineParam === "false";
   const canFilter = me?.personId != null;
@@ -99,7 +102,10 @@ function FuelContent() {
     router.push(`${pathname}?${params.toString()}`, { scroll: false });
   };
 
-  const closeModal = () => router.back();
+  const closeModal = () => {
+    setModalClosed(true);
+    window.history.replaceState(null, "", pathname);
+  };
 
   const filterBtnStyle = (active: boolean): React.CSSProperties =>
     mono
@@ -269,7 +275,7 @@ function FuelContent() {
       </Dialog.Root>
 
       <Dialog.Root
-        open={!!editing}
+        open={!!editing && !modalClosed}
         onOpenChange={(open) => {
           if (!open) closeModal();
         }}

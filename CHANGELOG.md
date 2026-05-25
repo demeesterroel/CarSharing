@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.12.3](https://github.com/demeesterroel/CarSharing/compare/v1.12.2...v1.12.3) (2026-05-25)
+
+
+### 🐛 Bug fixes
+
+* **fuel:** accept comma as decimal separator on iOS ([#225](https://github.com/demeesterroel/CarSharing/issues/225)) ([acc0d43](https://github.com/demeesterroel/CarSharing/commit/acc0d4361244f972cb39262fcad6d2b012574f72)), closes [#223](https://github.com/demeesterroel/CarSharing/issues/223)
+* **modal:** close edit form opened via direct URL without navigating away ([#229](https://github.com/demeesterroel/CarSharing/issues/229)) ([93ec99b](https://github.com/demeesterroel/CarSharing/commit/93ec99bbb2990114e3e4eb961662685140c2dbc9))
+
 ## [1.12.2](https://github.com/demeesterroel/CarSharing/compare/v1.12.1...v1.12.2) (2026-05-25)
 
 

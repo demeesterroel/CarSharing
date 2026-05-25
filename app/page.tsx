@@ -213,7 +213,7 @@ function DashboardSettledNote({
   const noteStyle: React.CSSProperties = {
     fontFamily: fontMono,
     fontSize: 8,
-    color: paper.inkMute,
+    color: paper.inkDim,
     paddingLeft: 8,
     marginTop: 3,
     fontStyle: "italic",
@@ -454,13 +454,13 @@ function BalanceCardSkeleton() {
           {/* Year browser */}
           <div style={{ display: "flex", justifyContent: "center", marginBottom: 14, pointerEvents: "none" }}>
             <div style={{ display: "flex", border: `1.5px solid ${paper.paperDark}`, borderRadius: "var(--radius-pill, 999px)", padding: 2, gap: 1 }}>
-              <div style={{ padding: "4px 12px", fontFamily: fontMono, fontSize: 10, fontWeight: 700, color: paper.inkMute, borderRadius: "var(--radius-pill, 999px)" }}>
+              <div style={{ padding: "4px 12px", fontFamily: fontMono, fontSize: 10, fontWeight: 700, color: paper.inkDim, borderRadius: "var(--radius-pill, 999px)" }}>
                 ← {currentYear - 1}
               </div>
               <div style={{ padding: "4px 16px", fontFamily: fontMono, fontSize: 10, fontWeight: 700, background: paper.paperDark, color: paper.inkDim, borderRadius: "var(--radius-pill, 999px)" }}>
                 {currentYear}
               </div>
-              <div style={{ padding: "4px 12px", fontFamily: fontMono, fontSize: 10, fontWeight: 700, color: paper.inkMute, borderRadius: "var(--radius-pill, 999px)" }}>
+              <div style={{ padding: "4px 12px", fontFamily: fontMono, fontSize: 10, fontWeight: 700, color: paper.inkDim, borderRadius: "var(--radius-pill, 999px)" }}>
                 {currentYear + 1} →
               </div>
             </div>
@@ -593,7 +593,7 @@ function BalanceReceipt({ fullName, personId }: { fullName: string; personId: nu
                 fontWeight: 700,
                 letterSpacing: mono ? 0 : 1,
                 background: "transparent",
-                color: year <= earliestYear ? paper.inkMute : (mono ? paper.inkDim : paper.ink),
+                color: year <= earliestYear ? paper.inkDim : (mono ? paper.inkDim : paper.ink),
                 border: "none",
                 borderRadius: "var(--radius-pill, 999px)",
                 cursor: year <= earliestYear ? "default" : "pointer",
@@ -625,7 +625,7 @@ function BalanceReceipt({ fullName, personId }: { fullName: string; personId: nu
                 fontWeight: 700,
                 letterSpacing: mono ? 0 : 1,
                 background: "transparent",
-                color: year >= currentYear ? paper.inkMute : (mono ? paper.inkDim : paper.ink),
+                color: year >= currentYear ? paper.inkDim : (mono ? paper.inkDim : paper.ink),
                 border: "none",
                 borderRadius: "var(--radius-pill, 999px)",
                 cursor: year >= currentYear ? "default" : "pointer",
@@ -875,7 +875,7 @@ function SectionHeader({ title, href }: { title: string; href: string }) {
           textTransform: mono ? "none" : ("uppercase" as const),
           borderBottom: mono ? "none" : `1px solid ${paper.inkDim}`,
           textDecoration: "none",
-          opacity: mono ? 0.7 : 1,
+          opacity: 1,
         }}
       >
         {t("action.see_all")}
@@ -1343,7 +1343,7 @@ function DashboardContent() {
           fontFamily: mono ? fontMono : fontSerif,
           fontSize: 12,
           fontStyle: mono ? "normal" : "italic",
-          color: paper.inkMute,
+          color: paper.inkDim,
           textAlign: "center",
           padding: "32px 32px 20px",
           lineHeight: 1.5,

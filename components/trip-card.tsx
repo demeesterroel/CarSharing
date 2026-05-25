@@ -60,7 +60,7 @@ export function TripCard({ trip, onClick }: TripCardProps) {
           style={{
             fontFamily: fontMono,
             fontSize: mono ? 11.5 : 10,
-            color: mono ? paper.inkMute : paper.inkDim,
+            color: paper.inkDim,
             letterSpacing: mono ? 0 : 1,
             marginTop: 2,
           }}
@@ -83,7 +83,7 @@ export function TripCard({ trip, onClick }: TripCardProps) {
         >
           {fmtMoney(trip.amount)}
         </div>
-        <div style={{ fontFamily: fontMono, fontSize: mono ? 11.5 : 10, color: mono ? paper.inkMute : paper.inkDim }}>{trip.km} km</div>
+        <div style={{ fontFamily: fontMono, fontSize: mono ? 11.5 : 10, color: paper.inkDim }}>{trip.km} km</div>
       </div>
     </button>
   );

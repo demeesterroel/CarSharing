@@ -66,7 +66,7 @@ export function ReservationCard({ reservation, onClick }: ReservationCardProps) 
           style={{
             fontFamily: fontMono,
             fontSize: mono ? 11.5 : 10,
-            color: mono ? paper.inkMute : paper.inkDim,
+            color: paper.inkDim,
             letterSpacing: mono ? 0 : 1,
             marginTop: 2,
           }}

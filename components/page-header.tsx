@@ -113,7 +113,7 @@ export function PageHeader({ title, subtitle, right, titleSize = 26 }: Props) {
                 ? "var(--font-jetbrains-mono, 'JetBrains Mono', monospace)"
                 : fontMono,
               fontSize: 8,
-              color: paper.inkMute,
+              color: paper.inkDim,
               letterSpacing: mono ? 0 : 1,
               textDecoration: "none",
             }}

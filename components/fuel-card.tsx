@@ -60,7 +60,7 @@ export function FuelCard({ fuel, onClick }: FuelCardProps) {
           style={{
             fontFamily: fontMono,
             fontSize: mono ? 11.5 : 10,
-            color: mono ? paper.inkMute : paper.inkDim,
+            color: paper.inkDim,
             letterSpacing: mono ? 0 : 1,
             marginTop: 2,
           }}
@@ -99,7 +99,7 @@ export function FuelCard({ fuel, onClick }: FuelCardProps) {
           )}
         </div>
         {fuel.price_per_liter && (
-          <div style={{ fontFamily: fontMono, fontSize: mono ? 11.5 : 10, color: mono ? paper.inkMute : paper.inkDim }}>
+          <div style={{ fontFamily: fontMono, fontSize: mono ? 11.5 : 10, color: paper.inkDim }}>
             €{fuel.price_per_liter.toFixed(3)}/L
           </div>
         )}

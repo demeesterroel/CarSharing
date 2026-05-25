@@ -9,12 +9,19 @@ import { getOAuthClient } from "@/lib/google-calendar";
 function googleErrorCode(e: unknown): string {
   if (e && typeof e === "object") {
     const err = e as Record<string, unknown>;
-    const data = (err.response as Record<string, unknown> | undefined)?.data;
-    if (data && typeof data === "object" && "error" in data) {
-      return String((data as Record<string, unknown>).error);
-    }
-    const status = (err.response as Record<string, unknown> | undefined)?.status;
+    const response = err.response as Record<string, unknown> | undefined;
+    const status = response?.status;
     if (status === 404) return "calendar_not_found";
+    const data = response?.data;
+    if (data && typeof data === "object" && "error" in data) {
+      const errVal = (data as Record<string, unknown>).error;
+      if (typeof errVal === "string") return errVal;
+      // Google JSON error format: { error: { code, message, status } }
+      if (errVal && typeof errVal === "object") {
+        const errObj = errVal as Record<string, unknown>;
+        return `${errObj.status ?? errObj.code ?? "unknown"}`;
+      }
+    }
   }
   return "unknown";
 }

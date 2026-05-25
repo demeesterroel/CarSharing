@@ -17,7 +17,7 @@ export function getTrips(db: Database.Database): Trip[] {
     FROM trips t
     JOIN people p ON p.id = t.person_id
     JOIN cars c ON c.id = t.car_id
-    ORDER BY t.car_id ASC, t.start_odometer DESC, t.id DESC
+    ORDER BY t.date DESC, t.id DESC
   `
     )
     .all() as Trip[];
@@ -55,9 +55,9 @@ function compute(db: Database.Database, input: TripInput) {
 export function insertTrip(db: Database.Database, input: TripInput): number {
   // Idempotency: if a client_id is provided and already exists, return that row's id.
   if (input.client_id) {
-    const existing = db
-      .prepare("SELECT id FROM trips WHERE client_id = ?")
-      .get(input.client_id) as { id: number } | undefined;
+    const existing = db.prepare("SELECT id FROM trips WHERE client_id = ?").get(input.client_id) as
+      | { id: number }
+      | undefined;
     if (existing) return existing.id;
   }
   const { km, amount } = compute(db, input);

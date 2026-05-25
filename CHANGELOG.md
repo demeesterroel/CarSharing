@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.13.3](https://github.com/demeesterroel/CarSharing/compare/v1.13.2...v1.13.3) (2026-05-25)
+
+
+### 🐛 Bug fixes
+
+* **calendar:** handle paginated full sync in listEventsDelta ([18ed5b4](https://github.com/demeesterroel/CarSharing/commit/18ed5b4b2756f00530303c5c4c2f5d2ffc0f9bb4))
+
 ## [1.13.2](https://github.com/demeesterroel/CarSharing/compare/v1.13.1...v1.13.2) (2026-05-25)
 
 

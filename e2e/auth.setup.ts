@@ -15,12 +15,12 @@ setup("log in", async ({ page }) => {
   // The label text comes from t("form.name") → "Naam *" (nl) / "Name *" (en)
   await page
     .getByLabel(/naam|name/i)
-    .fill(process.env.TEST_EMAIL ?? "test@example.com");
+    .fill(process.env.TEST_EMAIL ?? "alice");
 
   // t("form.password") → "Wachtwoord" (nl) / "Password" (en)
   await page
     .getByLabel(/wachtwoord|password/i)
-    .fill(process.env.TEST_PASSWORD ?? "changeme");
+    .fill(process.env.TEST_PASSWORD ?? "alice");
 
   // t("action.login") → "Inloggen" (nl) / "Log in" (en)
   await page.getByRole("button", { name: /inloggen|log\s*in/i }).click();

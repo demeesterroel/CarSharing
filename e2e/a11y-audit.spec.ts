@@ -1,5 +1,14 @@
 import { test, expect, type Page } from "@playwright/test";
 
+/**
+ * Accessibility audit using axe-core.
+ *
+ * Theme: ALL tests run in MONO theme.
+ * All demo.db users (alice, bob, carol, owner, admin) have theme_preference='mono'.
+ * Contrast thresholds must pass against the mono palette (paperDeep background,
+ * inkDim minimum for body text — inkMute is intentionally excluded from small text).
+ */
+
 // axe-core 4.10.3 injected from CDN — no npm package needed
 const AXE_CDN =
   "https://cdnjs.cloudflare.com/ajax/libs/axe-core/4.10.3/axe.min.js";

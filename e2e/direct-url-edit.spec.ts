@@ -20,7 +20,7 @@ test.describe("direct URL edit — close stays on page", () => {
   let carId: number;
 
   test.beforeEach(async ({ request }) => {
-    const session = await loginAndGetSession(request);
+    const session = await loginAndGetSession(request, "alice", "alice");
     csrf = session.csrf;
     api = makeApi(request, csrf);
     const entities = await getTestEntities(api);
@@ -41,7 +41,7 @@ test.describe("direct URL edit — close stays on page", () => {
   test.afterEach(async ({ request }) => {
     if (!tripId) return;
     try {
-      const cleanupCsrf = await loginAndGetCsrf(request);
+      const cleanupCsrf = await loginAndGetCsrf(request, "alice", "alice");
       await makeApi(request, cleanupCsrf).delete(`/api/trips/${tripId}`);
     } catch {
       // already deleted
@@ -84,7 +84,7 @@ test.describe("direct URL edit — close stays on page", () => {
   });
 
   test("closing edit form opened via direct URL stays on /fuel", async ({ page, request }) => {
-    const fuelCsrf = await loginAndGetCsrf(request);
+    const fuelCsrf = await loginAndGetCsrf(request, "alice", "alice");
     const fuelApi = makeApi(request, fuelCsrf);
     const entities = await getTestEntities(fuelApi);
 
@@ -113,7 +113,7 @@ test.describe("direct URL edit — close stays on page", () => {
   });
 
   test("closing edit form opened via direct URL stays on /expenses", async ({ page, request }) => {
-    const expCsrf = await loginAndGetCsrf(request);
+    const expCsrf = await loginAndGetCsrf(request, "alice", "alice");
     const expApi = makeApi(request, expCsrf);
     const entities = await getTestEntities(expApi);
 

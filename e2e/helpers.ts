@@ -10,16 +10,16 @@ import type { APIRequestContext } from "@playwright/test";
  */
 export async function loginAndGetCsrf(
   request: APIRequestContext,
-  email = process.env.TEST_EMAIL ?? "test@example.com",
-  password = process.env.TEST_PASSWORD ?? "changeme"
+  email = process.env.TEST_EMAIL ?? "alice",
+  password = process.env.TEST_PASSWORD ?? "alice"
 ): Promise<string> {
   return (await loginAndGetSession(request, email, password)).csrf;
 }
 
 export async function loginAndGetSession(
   request: APIRequestContext,
-  email = process.env.TEST_EMAIL ?? "test@example.com",
-  password = process.env.TEST_PASSWORD ?? "changeme"
+  email = process.env.TEST_EMAIL ?? "alice",
+  password = process.env.TEST_PASSWORD ?? "alice"
 ): Promise<{ csrf: string; personId: number | null }> {
   const res = await request.post("/api/auth/login", {
     data: { username: email, password },

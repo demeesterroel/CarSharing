@@ -133,90 +133,94 @@ function PersonRow({
     >
       {/* Collapsed header */}
       <div
-        role="button"
-        tabIndex={0}
-        onClick={onToggle}
-        onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && onToggle()}
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
         style={{
           display: "flex",
           alignItems: "center",
-          gap: 6,
-          padding: "12px 14px 12px 14px",
-          cursor: "pointer",
-          userSelect: "none",
           minWidth: 0,
         }}
       >
-        <span
+        <button
+          onClick={onToggle}
           style={{
-            fontFamily: fontSerif,
-            fontSize: 15,
-            fontWeight: 700,
-            color: paper.ink,
-            whiteSpace: "nowrap",
+            flex: 1,
+            display: "flex",
+            alignItems: "center",
+            gap: 6,
+            padding: "12px 14px",
+            cursor: "pointer",
+            userSelect: "none",
+            minWidth: 0,
+            background: "none",
+            border: "none",
+            textAlign: "left",
           }}
         >
-          {fullNameOf(person)}
-        </span>
+          <span
+            style={{
+              fontFamily: fontSerif,
+              fontSize: 15,
+              fontWeight: 700,
+              color: paper.ink,
+              whiteSpace: "nowrap",
+            }}
+          >
+            {fullNameOf(person)}
+          </span>
+          {person.username && (
+            <span
+              style={{
+                fontFamily: fontMono,
+                fontSize: 10,
+                color: paper.inkDim,
+                whiteSpace: "nowrap",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+              }}
+            >
+              {person.username}
+            </span>
+          )}
+          {hasDiscount && (
+            <div
+              style={{
+                fontFamily: fontMono,
+                fontSize: 9,
+                color: paper.inkDim,
+                fontWeight: 700,
+                letterSpacing: 1,
+                border: `1px solid ${paper.amber}`,
+                padding: "2px 5px",
+                textTransform: "uppercase",
+                flexShrink: 0,
+              }}
+            >
+              {t("admin.discount_badge")}
+            </div>
+          )}
+        </button>
         <Link
           href={`/user/${person.id}/edit`}
           aria-label={t("admin.edit_member").replace("{name}", fullNameOf(person))}
-          onClick={(e) => e.stopPropagation()}
           style={{
             display: "inline-flex",
             alignItems: "center",
             color: paper.inkDim,
             opacity: hovered ? 1 : 0,
             transition: "opacity 0.15s",
-            marginRight: 10,
+            padding: "0 6px",
           }}
         >
           <Pencil size={11} />
         </Link>
-        {person.username && (
-          <span
-            style={{
-              fontFamily: fontMono,
-              fontSize: 10,
-              color: paper.inkDim,
-              whiteSpace: "nowrap",
-              overflow: "hidden",
-              textOverflow: "ellipsis",
-            }}
-          >
-            {person.username}
-          </span>
-        )}
-        {hasDiscount && (
-          <div
-            style={{
-              fontFamily: fontMono,
-              fontSize: 9,
-              color: paper.inkDim,
-              fontWeight: 700,
-              letterSpacing: 1,
-              border: `1px solid ${paper.amber}`,
-              padding: "2px 5px",
-              textTransform: "uppercase",
-              flexShrink: 0,
-            }}
-          >
-            {t("admin.discount_badge")}
-          </div>
-        )}
-        <div style={{ flex: 1 }} />
         {onCloak && (
           <button
-            onClick={(e) => {
-              e.stopPropagation();
-              onCloak(person.id);
-            }}
+            onClick={() => onCloak(person.id)}
             style={{
               background: "none",
               border: "none",
-              padding: 0,
+              padding: "0 14px 0 0",
               cursor: "pointer",
               fontFamily: fontMono,
               fontSize: 9,

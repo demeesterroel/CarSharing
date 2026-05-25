@@ -130,6 +130,9 @@ function CalendarContent() {
       ? (reservations.find((r) => r.id === Number(editIdParam)) ?? null)
       : null;
 
+  const [sheetClosed, setSheetClosed] = useState(false);
+  useEffect(() => { setSheetClosed(false); }, [editIdParam, actionParam]);
+
   // Refetch reservations whenever the new-reservation sheet opens online —
   // the conflict warning needs to see the freshest server state.
   const qc = useQueryClient();
@@ -165,7 +168,10 @@ function CalendarContent() {
     router.push(`${pathname}?${params.toString()}`, { scroll: false });
   };
 
-  const closeSheet = () => router.back();
+  const closeSheet = () => {
+    setSheetClosed(true);
+    window.history.replaceState(null, "", pathname);
+  };
 
   const openAdd = () => {
     setPrefillCarId(undefined);
@@ -307,7 +313,7 @@ function CalendarContent() {
       <Fab onClick={openAdd} label={t("page.reservation_add")} />
 
       {/* Add sheet */}
-      <BottomSheet open={sheet === "add"} onClose={() => closeSheet()}>
+      <BottomSheet open={sheet === "add" && !sheetClosed} onClose={() => closeSheet()}>
         <ReservationForm
           defaultValues={
             prefillCarId !== undefined
@@ -332,7 +338,7 @@ function CalendarContent() {
       </BottomSheet>
 
       {/* Edit sheet */}
-      <BottomSheet open={sheet === "edit" && !!editing} onClose={() => closeSheet()}>
+      <BottomSheet open={sheet === "edit" && !!editing && !sheetClosed} onClose={() => closeSheet()}>
         {editing && (
           <>
             <ReservationForm

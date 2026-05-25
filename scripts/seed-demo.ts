@@ -449,6 +449,35 @@ console.log(`  → ${expensesTotal} expenses`);
   }
 }
 
+// ── 5b. Out-of-date-order trips for BB (proves odometer sort) ────────────────
+// Two trips where date order ≠ odometer order.
+// Old sort (date DESC) would show Jan-15 first → start=X before end=X+120 of Jan-10 → broken.
+// New sort (start_odometer DESC) shows Jan-10 trip first → correct chain.
+{
+  const bbId = carIdByShort["BB"];
+  const aliceId = personIdByUsername["alice"];
+  const lastBB = db
+    .prepare("SELECT end_odometer FROM trips WHERE car_id = ? ORDER BY start_odometer DESC LIMIT 1")
+    .get(bbId) as { end_odometer: number } | undefined;
+  if (lastBB) {
+    const base = lastBB.end_odometer + 50;
+    const alreadyExists = db
+      .prepare("SELECT 1 FROM trips WHERE car_id = ? AND start_odometer = ?")
+      .get(bbId, base);
+    if (!alreadyExists) {
+      // Trip entered late: date=Jan-10 but odometer continues after Jan-15 trip
+      db.prepare(
+        `INSERT INTO trips (person_id, car_id, date, start_odometer, end_odometer, km, amount, location)
+         VALUES (?, ?, '2027-01-15', ?, ?, 120, 36.00, 'Leuven')`
+      ).run(aliceId, bbId, base, base + 120);
+      db.prepare(
+        `INSERT INTO trips (person_id, car_id, date, start_odometer, end_odometer, km, amount, location)
+         VALUES (?, ?, '2027-01-10', ?, ?, 200, 60.00, 'Mechelen')`
+      ).run(aliceId, bbId, base + 120, base + 320);
+    }
+  }
+}
+
 // ── 6. Payments ───────────────────────────────────────────────────────────────
 // 2023: all transfers fully paid (settlement will be finalized).
 // 2024: all transfers paid EXCEPT Owner — they still have an outstanding balance.

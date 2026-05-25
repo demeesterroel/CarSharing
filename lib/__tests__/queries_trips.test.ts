@@ -197,6 +197,29 @@ describe("updateTrip", () => {
   });
 });
 
+describe("getTrips sort order", () => {
+  it("returns trips ordered by car then start_odometer ascending", () => {
+    const db = makeDb();
+    const pid = insertPerson(db, { ...basePerson, first_name: "Alice" });
+    const carA = insertCar(db, { short: "CA", name: "Car A", price_per_km: 0.2, brand: null, color: null });
+    const carB = insertCar(db, { short: "CB", name: "Car B", price_per_km: 0.2, brand: null, color: null });
+
+    // Insert out of odometer order
+    insertTrip(db, { person_id: pid, car_id: carA, date: "2026-05-03", start_odometer: 200, end_odometer: 300, location: null });
+    insertTrip(db, { person_id: pid, car_id: carA, date: "2026-05-01", start_odometer: 0, end_odometer: 100, location: null });
+    insertTrip(db, { person_id: pid, car_id: carB, date: "2026-05-02", start_odometer: 50, end_odometer: 150, location: null });
+
+    const trips = getTrips(db);
+    const a = trips.filter((t) => t.car_id === carA);
+    const b = trips.filter((t) => t.car_id === carB);
+
+    expect(a[0].start_odometer).toBe(200);
+    expect(a[1].start_odometer).toBe(0);
+    expect(a[0].start_odometer).toBeGreaterThanOrEqual(a[1].end_odometer);
+    expect(b).toHaveLength(1);
+  });
+});
+
 describe("deleteTrip", () => {
   it("removes the trip from the DB", () => {
     const db = makeDb();

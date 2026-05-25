@@ -17,7 +17,7 @@ export function getTrips(db: Database.Database): Trip[] {
     FROM trips t
     JOIN people p ON p.id = t.person_id
     JOIN cars c ON c.id = t.car_id
-    ORDER BY t.date DESC, t.id DESC
+    ORDER BY t.date DESC, t.start_odometer DESC, t.id DESC
   `
     )
     .all() as Trip[];

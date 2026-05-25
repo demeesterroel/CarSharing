@@ -125,86 +125,9 @@ NEXT_PUBLIC_BASE_URL=https://your-domain
 
 ## Google Calendar Integration (optional)
 
-When configured, reservations are automatically pushed to a shared Google Calendar. Car owners receive an invite and can confirm or decline by RSVPing — the app updates the reservation status automatically.
+When configured, reservations are automatically pushed to a shared Google Calendar. Car owners receive a personal invite and can confirm or decline by RSVPing directly in their calendar app — the app updates the reservation status automatically.
 
-### Step 1 — Create a Google Cloud project and enable the Calendar API
-
-1. Go to [console.cloud.google.com](https://console.cloud.google.com) and create a project.
-2. Enable the **Google Calendar API** (APIs & Services → Library → search "Google Calendar API" → Enable).
-
-### Step 2 — Configure the OAuth consent screen
-
-1. Go to **APIs & Services → OAuth consent screen**.
-2. Choose user type: **Internal** (Google Workspace org) or **External** (personal accounts).
-3. Fill in app name and contact email. Click Save.
-4. Under **Scopes**, add `https://www.googleapis.com/auth/calendar`.
-5. If you chose _External_, go to **Test users** and add the Google account that owns the shared calendar.
-
-### Step 3 — Create an OAuth 2.0 Client ID
-
-1. Go to **APIs & Services → Credentials → Create Credentials → OAuth 2.0 Client ID**.
-2. Application type: **Web application**.
-3. Under **Authorized redirect URIs**, add: `https://developers.google.com/oauthplayground`
-4. Click **Create**. Copy the **Client ID** and **Client Secret**.
-
-### Step 4 — Add credentials to your environment
-
-```env
-GOOGLE_CLIENT_ID=your-client-id.apps.googleusercontent.com
-GOOGLE_CLIENT_SECRET=your-client-secret
-CRON_SECRET=a-random-secret-string
-NEXT_PUBLIC_BASE_URL=https://your-domain
-```
-
-**Note on accounts:**
-
-- **Client ID + Client Secret** — tied to the Google Cloud project, not a personal account.
-- **Refresh token** — tied to the Google account that went through OAuth. This account must have editor access to the shared calendar.
-- **Calendar ID** — any Google calendar. Share it with the OAuth account if it's not owned by it.
-
-`NEXT_PUBLIC_BASE_URL` must be a publicly reachable HTTPS URL (Google sends webhook events here). For local testing, use an ngrok or cloudflared tunnel.
-
-### Step 5 — Get a refresh token
-
-1. Go to [developers.google.com/oauthplayground](https://developers.google.com/oauthplayground).
-2. Click the gear icon → enable **Use your own OAuth credentials** → enter Client ID and Client Secret.
-3. Enter scope `https://www.googleapis.com/auth/calendar` → **Authorise APIs**.
-4. Sign in with the calendar owner account.
-5. Click **Exchange authorisation code for tokens** → copy the **Refresh token**.
-
-### Step 6 — Configure in the admin settings
-
-1. Open the app → **Admin → Instellingen**.
-2. Enter the **Google Calendar ID** (found in Google Calendar settings, looks like `abc123@group.calendar.google.com`).
-3. Enter the **OAuth Refresh Token** from Step 5.
-4. Click Save.
-
-### Step 7 — Register the watch channel
-
-```bash
-curl -X GET https://your-domain/api/admin/calendar-renew \
-  -H "Authorization: Bearer a-random-secret-string"
-```
-
-### Step 8 — Set up the cron job
-
-The watch channel expires every 7 days. Add a daily cron job to renew it:
-
-```cron
-0 3 * * * curl -s -X GET https://your-domain/api/admin/calendar-renew \
-  -H "Authorization: Bearer a-random-secret-string"
-```
-
-### Step 9 — Link cars to owners
-
-In **Admin → Wagens**, set the owner for each car. In **Admin → Leden**, make sure each owner has their email address filled in (used to send calendar invites).
-
-### How it works
-
-- **Reservation created** → event pushed to Google Calendar; owner receives an invite.
-- **Owner RSVPs accepted** → reservation status → _confirmed_.
-- **Owner RSVPs declined** → reservation status → _rejected_.
-- **Reservation updated/deleted** → calendar event updated or removed.
+For full setup instructions, see **[docs/google-calendar-setup.md](docs/google-calendar-setup.md)**.
 
 ## License
 

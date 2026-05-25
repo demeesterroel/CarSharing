@@ -21,6 +21,9 @@ import { PickCalendar } from "@/components/pick-calendar";
 import { CarBadge } from "@/components/car-badge";
 import { ErrorBoundary } from "@/components/error-boundary";
 import { Fab } from "@/components/fab";
+import { useQuery } from "@tanstack/react-query";
+import { apiFetch } from "@/lib/api/client";
+import { CalendarPlus } from "lucide-react";
 
 // ── Bottom Sheet ──────────────────────────────────────────────
 function BottomSheet({
@@ -111,6 +114,10 @@ function CalendarContent() {
 
   const { data: reservations = [], isLoading } = useReservations();
   const { data: cars = [] } = useCars();
+  const { data: calendarMeta } = useQuery<{ calendarId: string | null }>({
+    queryKey: ["calendar-id"],
+    queryFn: () => apiFetch("/api/calendar-id"),
+  });
   const createR = useCreateReservation();
   const updateR = useUpdateReservation();
   const deleteR = useDeleteReservation();
@@ -188,10 +195,22 @@ function CalendarContent() {
     router.push(`${pathname}?${params.toString()}`, { scroll: false });
   };
 
+  const subscribeButton = calendarMeta?.calendarId ? (
+    <a
+      href={`https://calendar.google.com/calendar/r?cid=${encodeURIComponent(calendarMeta.calendarId)}`}
+      target="_blank"
+      rel="noopener noreferrer"
+      title={t("calendar.subscribe")}
+      style={{ display: "flex", alignItems: "center", color: paper.inkDim, padding: 4 }}
+    >
+      <CalendarPlus size={18} />
+    </a>
+  ) : null;
+
   if (isLoading)
     return (
       <div style={{ background: paper.paperDeep, minHeight: "100dvh" }}>
-        <PageHeader title={t("page.reservations")} />
+        <PageHeader title={t("page.reservations")} right={subscribeButton} />
         <div
           style={{
             padding: "32px 20px",
@@ -208,7 +227,7 @@ function CalendarContent() {
 
   return (
     <div style={{ background: paper.paperDeep, minHeight: "100dvh", paddingBottom: 80 }}>
-      <PageHeader title={t("page.reservations")} />
+      <PageHeader title={t("page.reservations")} right={subscribeButton} />
 
       {/* Legend */}
       <div

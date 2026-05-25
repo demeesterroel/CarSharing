@@ -270,6 +270,7 @@ export const en: Messages = {
   "calendar.upcoming": "Upcoming",
   "calendar.all_filter": "All",
   "calendar.mine_filter": "Mine",
+  "calendar.subscribe": "Add to calendar app",
   "calendar.prev_weeks": "Previous weeks",
   "calendar.next_weeks": "Next weeks",
   "location.use_gps": "Use current location",

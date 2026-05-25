@@ -268,6 +268,7 @@ export const nl = {
   "calendar.upcoming": "Aankomend",
   "calendar.all_filter": "Alles",
   "calendar.mine_filter": "Mijn",
+  "calendar.subscribe": "Voeg toe aan kalender-app",
   "calendar.prev_weeks": "Vorige weken",
   "calendar.next_weeks": "Volgende weken",
   "location.use_gps": "Huidige locatie gebruiken",

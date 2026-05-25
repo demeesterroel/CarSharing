@@ -90,18 +90,20 @@ Enter the IBAN of the cooperative's bank account. This is inserted automatically
 
 ### Google Calendar integration
 
-If you want approved reservations to appear in a shared Google Calendar, configure the integration here:
+When configured, approved reservations are automatically pushed to a shared Google Calendar. Car owners receive a personal invite and can confirm or decline directly from their calendar app — no app login required.
 
 | Field                   | Description                                                |
 | ----------------------- | ---------------------------------------------------------- |
-| **Google Calendar ID**  | The calendar ID from Google Calendar settings              |
+| **Google Calendar ID**  | The calendar ID of the shared calendar                     |
 | **OAuth Refresh Token** | A long-lived token that lets the app write to the calendar |
 
-After saving, click **Test connection** to verify the credentials are working. If the token expires, paste a new one here without touching any other settings.
+After saving, click **Test connection** to verify credentials are working. If the token expires, paste a new one here without touching any other settings.
 
-Click **Sync upcoming reservations** to push all future confirmed reservations to the calendar immediately — useful after first-time setup or after a token refresh.
+Click **Sync upcoming reservations** to push all future confirmed reservations immediately — useful after first-time setup or after a token refresh.
 
-Leave both fields empty to disable the calendar integration.
+Leave both fields empty to disable the integration.
+
+For full setup instructions (Google Cloud project, OAuth token, cron job, per-owner setup), see **[google-calendar-setup.md](google-calendar-setup.md)**.
 
 ---
 

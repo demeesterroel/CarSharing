@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.12.1](https://github.com/demeesterroel/CarSharing/compare/v1.12.0...v1.12.1) (2026-05-25)
+
+
+### 🐛 Bug fixes
+
+* **trips:** sort by odometer DESC per car, not by date ([#219](https://github.com/demeesterroel/CarSharing/issues/219)) ([071c163](https://github.com/demeesterroel/CarSharing/commit/071c1637ca784b21d2253b7cf9c43d08d0df3d5d)), closes [#218](https://github.com/demeesterroel/CarSharing/issues/218)
+
 ## [1.12.0](https://github.com/demeesterroel/CarSharing/compare/v1.11.0...v1.12.0) (2026-05-24)
 
 

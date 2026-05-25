@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.14.2](https://github.com/demeesterroel/CarSharing/compare/v1.14.1...v1.14.2) (2026-05-25)
+
+
+### 🐛 Bug fixes
+
+* **settlement:** use net payments for step-1 paid/open annotation ([#245](https://github.com/demeesterroel/CarSharing/issues/245)) ([b664c36](https://github.com/demeesterroel/CarSharing/commit/b664c36f42f5ab06926c398cb1291b3e48822b03))
+
 ## [1.14.1](https://github.com/demeesterroel/CarSharing/compare/v1.14.0...v1.14.1) (2026-05-25)
 
 

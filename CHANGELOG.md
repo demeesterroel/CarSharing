@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.13.0](https://github.com/demeesterroel/CarSharing/compare/v1.12.5...v1.13.0) (2026-05-25)
+
+
+### ✨ New features
+
+* **calendar:** subscribe button + Google Calendar setup docs ([#180](https://github.com/demeesterroel/CarSharing/issues/180)) ([#236](https://github.com/demeesterroel/CarSharing/issues/236)) ([36f733e](https://github.com/demeesterroel/CarSharing/commit/36f733e3d7e943bbc2cf6625cfc54443ec6e6447))
+* **trips/fuel:** lazy-render GroupedList — show 3 months, auto-load on scroll ([#235](https://github.com/demeesterroel/CarSharing/issues/235)) ([5547fd3](https://github.com/demeesterroel/CarSharing/commit/5547fd30075dc73558fc5195555849d68a49bf9e))
+
+
+### 🐛 Bug fixes
+
+* **calendar:** show real Google error code instead of [object Object] ([87d24b5](https://github.com/demeesterroel/CarSharing/commit/87d24b5bdabf0d24626608272ab1aaf8601462c5))
+
 ## [1.12.5](https://github.com/demeesterroel/CarSharing/compare/v1.12.4...v1.12.5) (2026-05-25)
 
 ### 🐛 Bug fixes

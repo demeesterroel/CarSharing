@@ -90,11 +90,11 @@ Enter the IBAN of the cooperative's bank account. This is inserted automatically
 
 ### Google Calendar integration
 
-If you want approved reservations to appear in a shared Google Calendar, configure the integration here:
+When configured, approved reservations are automatically pushed to a shared Google Calendar. Car owners receive a personal invite for reservations on their car and can confirm or decline directly from their calendar app — no app login required.
 
 | Field                   | Description                                                |
 | ----------------------- | ---------------------------------------------------------- |
-| **Google Calendar ID**  | The calendar ID from Google Calendar settings              |
+| **Google Calendar ID**  | The calendar ID of the shared calendar                     |
 | **OAuth Refresh Token** | A long-lived token that lets the app write to the calendar |
 
 After saving, click **Test connection** to verify the credentials are working. If the token expires, paste a new one here without touching any other settings.
@@ -102,6 +102,60 @@ After saving, click **Test connection** to verify the credentials are working. I
 Click **Sync upcoming reservations** to push all future confirmed reservations to the calendar immediately — useful after first-time setup or after a token refresh.
 
 Leave both fields empty to disable the calendar integration.
+
+#### Step 1 — Create a Google Cloud project
+
+1. Go to [console.cloud.google.com](https://console.cloud.google.com)
+2. Create a new project (e.g. "autodelen")
+3. Enable the **Google Calendar API** (APIs & Services → Library → search "Google Calendar API")
+4. Go to **APIs & Services → Credentials → Create Credentials → OAuth 2.0 Client ID**
+   - Application type: **Web application**
+   - Add `https://developers.google.com/oauthplayground` as an authorized redirect URI
+5. Copy the **Client ID** and **Client Secret** → add to your `.env.local` and `docker-compose.yml`:
+   ```
+   GOOGLE_CLIENT_ID=your-client-id
+   GOOGLE_CLIENT_SECRET=your-client-secret
+   ```
+
+#### Step 2 — Get the shared calendar ID
+
+1. Open [Google Calendar](https://calendar.google.com) with the shared Gmail account
+2. In the left sidebar, click the three dots next to the shared calendar → **Settings and sharing**
+3. Scroll down to **Integrate calendar** → copy the **Calendar ID** (looks like `abc123@group.calendar.google.com` or a Gmail address for personal calendars)
+4. Paste it into the **Google Calendar ID** field in Admin → Settings
+
+#### Step 3 — Generate an OAuth refresh token
+
+1. Go to [OAuth 2.0 Playground](https://developers.google.com/oauthplayground)
+2. Click the gear icon (top right) → check **Use your own OAuth credentials** → enter your Client ID and Client Secret
+3. In the left panel, find **Google Calendar API v3** → select `https://www.googleapis.com/auth/calendar` → click **Authorize APIs**
+4. Sign in with the shared Gmail account that owns the calendar
+5. Click **Exchange authorization code for tokens**
+6. Copy the **Refresh token** value → paste it into the **OAuth Refresh Token** field in Admin → Settings
+
+#### Step 4 — Complete per-owner setup
+
+For each car owner to receive personal calendar invites:
+
+1. Go to **Admin → Members** → expand the owner's row → set their **email address**
+2. Go to **Admin → Cars** → edit each car → set the **Owner** to the correct person
+
+#### Step 5 — Register the webhook (one-time)
+
+The app uses a webhook to receive RSVP responses from owners in real time. Register it once:
+
+```bash
+curl -sf -H "Authorization: Bearer $CRON_SECRET" \
+  https://autodelen.bluette.be/api/admin/calendar-renew
+```
+
+The webhook registration expires every ~4 weeks. A daily cron job on the VPS renews it automatically (see deployment docs). Alternatively, call this endpoint manually after any credentials change.
+
+#### Step 6 — Verify
+
+1. Click **Test connection** in Admin → Settings — should return success
+2. Click **Sync upcoming reservations** to backfill existing confirmed reservations
+3. Create a test reservation and confirm it — it should appear in the shared Google Calendar within seconds
 
 ---
 

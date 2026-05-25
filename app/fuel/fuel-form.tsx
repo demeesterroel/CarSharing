@@ -9,6 +9,7 @@ import { CarToggle } from "@/components/car-toggle";
 import { ReceiptUpload } from "@/components/receipt-upload";
 import { LocationPicker } from "@/components/location-picker";
 import { calcPricePerLiter } from "@/lib/formulas";
+import { parseDecimalInput } from "@/lib/form-utils";
 import { usePeople } from "@/hooks/use-people";
 import { useCars } from "@/hooks/use-vehicles";
 import { useLastCarState } from "@/hooks/use-vehicle-state";
@@ -25,8 +26,8 @@ const schema = z.object({
   person_id: z.number({ error: t("validation.person_required") }),
   car_id: z.number({ error: t("validation.car_required") }),
   date: z.string().min(1),
-  amount: z.coerce.number().positive(),
-  liters: z.coerce.number().positive(),
+  amount: z.preprocess((v) => parseDecimalInput(v as string), z.number().positive()),
+  liters: z.preprocess((v) => parseDecimalInput(v as string), z.number().positive()),
   full_tank: z.boolean().default(false),
   settled_outside: z.boolean().default(false),
   odometer: z.coerce
@@ -119,15 +120,15 @@ export function FuelForm({ defaultValues, onSubmit, onCancel, onDelete }: Props)
     control,
     name: ["amount", "liters", "car_id", "person_id", "date", "full_tank", "settled_outside"],
   });
-  const canSubmit = !!(personId && carId && date && Number(amount) > 0 && Number(liters) > 0);
+  const canSubmit = !!(personId && carId && date && parseDecimalInput(amount as string) > 0 && parseDecimalInput(liters as string) > 0);
   const missingLabel = buildMissingLabel([
     !carId && t("field.car"),
     isAdmin && !personId && t("field.driver"),
     !date && t("field.date"),
-    !(Number(amount) > 0) && t("field.amount"),
-    !(Number(liters) > 0) && t("field.liters"),
+    !(parseDecimalInput(amount as string) > 0) && t("field.amount"),
+    !(parseDecimalInput(liters as string) > 0) && t("field.liters"),
   ]);
-  const pricePerLiter = calcPricePerLiter(Number(amount) || 0, Number(liters) || 0);
+  const pricePerLiter = calcPricePerLiter(parseDecimalInput(amount as string) || 0, parseDecimalInput(liters as string) || 0);
   const person = people.find((p) => p.id === personId);
 
   const { data: lastState } = useLastCarState(carId);
@@ -388,8 +389,8 @@ export function FuelForm({ defaultValues, onSubmit, onCancel, onDelete }: Props)
                 <span style={{ fontFamily: fontMono, fontSize: 20, color: paper.inkMute }}>€</span>
                 <input
                   {...register("amount")}
-                  type="number"
-                  step="0.01"
+                  type="text"
+                  inputMode="decimal"
                   style={{
                     fontFamily: fontMono,
                     fontSize: 28,
@@ -407,7 +408,7 @@ export function FuelForm({ defaultValues, onSubmit, onCancel, onDelete }: Props)
             </div>
             <div style={{ textAlign: "center", flexShrink: 0, padding: "0 6px 8px" }}>
               <div style={{ fontFamily: fontMono, fontSize: 11.5, color: paper.inkMute }}>
-                {Number(liters) > 0 ? `€ ${pricePerLiter.toFixed(3).replace(".", ",")}/L` : "€/L"}
+                {parseDecimalInput(liters as string) > 0 ? `€ ${pricePerLiter.toFixed(3).replace(".", ",")}/L` : "€/L"}
               </div>
             </div>
             <div style={{ flex: 1 }}>
@@ -415,8 +416,8 @@ export function FuelForm({ defaultValues, onSubmit, onCancel, onDelete }: Props)
               <div style={{ display: "flex", alignItems: "baseline", gap: 4, justifyContent: "flex-end" }}>
                 <input
                   {...register("liters")}
-                  type="number"
-                  step="0.01"
+                  type="text"
+                  inputMode="decimal"
                   style={{
                     fontFamily: fontMono,
                     fontSize: 28,
@@ -462,8 +463,8 @@ export function FuelForm({ defaultValues, onSubmit, onCancel, onDelete }: Props)
               <div style={{ display: "flex", alignItems: "baseline", gap: 4 }}>
                 <input
                   {...register("amount")}
-                  type="number"
-                  step="0.01"
+                  type="text"
+                  inputMode="decimal"
                   style={{
                     fontFamily: fontMono,
                     fontSize: 32,
@@ -485,8 +486,8 @@ export function FuelForm({ defaultValues, onSubmit, onCancel, onDelete }: Props)
               <div style={{ display: "flex", alignItems: "baseline", gap: 4 }}>
                 <input
                   {...register("liters")}
-                  type="number"
-                  step="0.01"
+                  type="text"
+                  inputMode="decimal"
                   style={{
                     fontFamily: fontMono,
                     fontSize: 32,

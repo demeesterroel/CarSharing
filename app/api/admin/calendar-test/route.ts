@@ -44,7 +44,7 @@ export const GET = json(async (req) => {
     const client = getOAuthClient(refreshToken);
     const cal = google.calendar({ version: "v3", auth: client });
     const res = await cal.calendars.get({ calendarId });
-    const role = res.data.accessRole;
+    const role = (res.data as Record<string, unknown>).accessRole as string | undefined;
     if (role === "reader" || role === "freeBusyReader" || role === "none") {
       return NextResponse.json({ ok: false, error: "no_write_access" });
     }

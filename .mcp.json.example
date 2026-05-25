@@ -1,0 +1,10 @@
+{
+  "mcpServers": {
+    "gh": {
+      "command": "/home/roeland/.npm-global/bin/mcp-server-github",
+      "env": {
+        "GITHUB_PERSONAL_ACCESS_TOKEN": "your_pat_here"
+      }
+    }
+  }
+}

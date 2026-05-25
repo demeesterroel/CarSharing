@@ -98,7 +98,12 @@ export default function EditProfilePage({ params }: { params: Promise<{ id: stri
       await apiFetch(`/api/people/${id}/profile`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ first_name: firstName, last_name: lastName, bank_account: bankAccount, email: email || null }),
+        body: JSON.stringify({
+          first_name: firstName,
+          last_name: lastName,
+          bank_account: bankAccount,
+          email: email || null,
+        }),
       });
       setSaved(true);
       await queryClient.invalidateQueries({ queryKey: ["me"] });
@@ -331,6 +336,18 @@ export default function EditProfilePage({ params }: { params: Promise<{ id: stri
                   letterSpacing: 1,
                 }}
               />
+              <p
+                style={{
+                  fontFamily: fontMono,
+                  fontSize: 9,
+                  color: paper.inkMute,
+                  marginTop: 4,
+                  marginBottom: 0,
+                  letterSpacing: 0.5,
+                }}
+              >
+                {t("form.email_hint")}
+              </p>
             </div>
 
             {error && (

@@ -84,6 +84,8 @@ export const nl = {
   "form.full_name": "Voornaam Achternaam",
   "form.bank_account": "Bankrekeningnummer (IBAN)",
   "form.email": "E-mailadres",
+  "form.email_hint":
+    "Gebruikt voor Google Agenda-uitnodigingen bij reserveringen (enkel voor wageneigenaars).",
   "form.username": "Gebruikersnaam",
   "form.theme": "Thema",
   "form.password": "Wachtwoord",

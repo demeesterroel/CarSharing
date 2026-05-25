@@ -86,6 +86,7 @@ export const en: Messages = {
   "form.full_name": "First Last Name",
   "form.bank_account": "Bank account (IBAN)",
   "form.email": "Email address",
+  "form.email_hint": "Used for Google Calendar invites on reservations (car owners only).",
   "form.username": "Username",
   "form.theme": "Theme",
   "form.password": "Password",

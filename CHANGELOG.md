@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.13.2](https://github.com/demeesterroel/CarSharing/compare/v1.13.1...v1.13.2) (2026-05-25)
+
+
+### 🐛 Bug fixes
+
+* **auth:** add calendar-renew and calendar-id to public paths ([d8b28b3](https://github.com/demeesterroel/CarSharing/commit/d8b28b36b515beb43b2fdc139b028fa4f03e5cee))
+
 ## [1.13.1](https://github.com/demeesterroel/CarSharing/compare/v1.13.0...v1.13.1) (2026-05-25)
 
 

@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.14.1](https://github.com/demeesterroel/CarSharing/compare/v1.14.0...v1.14.1) (2026-05-25)
+
+
+### 🐛 Bug fixes
+
+* **calendar:** remove duplicate '+ Reservering toevoegen' button from upcoming section ([5b3f5b4](https://github.com/demeesterroel/CarSharing/commit/5b3f5b4d9a01220cccffe31067e0105a86cc875e))
+
 ## [1.14.0](https://github.com/demeesterroel/CarSharing/compare/v1.13.3...v1.14.0) (2026-05-25)
 
 

@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.14.3](https://github.com/demeesterroel/CarSharing/compare/v1.14.2...v1.14.3) (2026-05-25)
+
+
+### 🐛 Bug fixes
+
+* **settlement:** show sign on individual payment amounts in list ([#247](https://github.com/demeesterroel/CarSharing/issues/247)) ([72245ad](https://github.com/demeesterroel/CarSharing/commit/72245adc7519753a9c53a55cf5082132f9b1cad5))
+
 ## [1.14.2](https://github.com/demeesterroel/CarSharing/compare/v1.14.1...v1.14.2) (2026-05-25)
 
 

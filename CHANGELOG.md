@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.12.2](https://github.com/demeesterroel/CarSharing/compare/v1.12.1...v1.12.2) (2026-05-25)
+
+
+### 🐛 Bug fixes
+
+* **theme:** make mono the default theme for all users ([#221](https://github.com/demeesterroel/CarSharing/issues/221)) ([f384935](https://github.com/demeesterroel/CarSharing/commit/f3849351288a4a9539582144804605d1cbf5c00f)), closes [#183](https://github.com/demeesterroel/CarSharing/issues/183)
+
 ## [1.12.1](https://github.com/demeesterroel/CarSharing/compare/v1.12.0...v1.12.1) (2026-05-25)
 
 

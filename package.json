@@ -1,6 +1,6 @@
 {
   "name": "carsharing",
-  "version": "1.12.5",
+  "version": "1.13.0",
   "description": "A self-hosted Progressive Web App (PWA) for managing a car-sharing cooperative. Track mileage trips, fuel fill-ups, maintenance costs, car reservations, and per-member financial balances.",
   "scripts": {
     "dev": "next dev --webpack",

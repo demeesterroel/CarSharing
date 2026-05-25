@@ -303,6 +303,8 @@ export default function AdminSettingsPage() {
                         invalid_client: t("settings.test_invalid_client"),
                         invalid_grant: t("settings.test_invalid_grant"),
                         calendar_not_found: t("settings.test_not_found"),
+                        calendar_no_access: t("settings.test_no_access"),
+                        no_write_access: t("settings.test_no_write"),
                       };
                       const msg =
                         errorMap[body.error] ??

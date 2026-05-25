@@ -52,3 +52,4 @@ public/workbox-*.js.map
 data
 coverage/
 test-results/
+.mcp.json

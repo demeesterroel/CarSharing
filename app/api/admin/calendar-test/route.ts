@@ -12,6 +12,7 @@ function googleErrorCode(e: unknown): string {
     const response = err.response as Record<string, unknown> | undefined;
     const status = response?.status;
     if (status === 404) return "calendar_not_found";
+    if (status === 403) return "calendar_no_access";
     const data = response?.data;
     if (data && typeof data === "object" && "error" in data) {
       const errVal = (data as Record<string, unknown>).error;
@@ -43,6 +44,10 @@ export const GET = json(async (req) => {
     const client = getOAuthClient(refreshToken);
     const cal = google.calendar({ version: "v3", auth: client });
     const res = await cal.calendars.get({ calendarId });
+    const role = res.data.accessRole;
+    if (role === "reader" || role === "freeBusyReader" || role === "none") {
+      return NextResponse.json({ ok: false, error: "no_write_access" });
+    }
     return NextResponse.json({ ok: true, summary: res.data.summary ?? calendarId });
   } catch (e) {
     return NextResponse.json({ ok: false, error: googleErrorCode(e) });

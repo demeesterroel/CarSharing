@@ -542,8 +542,11 @@ export const en: Messages = {
     "✗ Invalid Client ID or Secret — check GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET in .env.local. The OAuth client may have been deleted in Google Cloud Console.",
   "settings.test_invalid_grant":
     "✗ Token expired or revoked. Get a new Refresh Token from OAuth Playground and save it again.",
-  "settings.test_not_found":
-    "✗ Calendar not found. Check the calendar ID and make sure the OAuth account has read access.",
+  "settings.test_not_found": "✗ Calendar not found. Check the calendar ID.",
+  "settings.test_no_access":
+    "✗ No access to this calendar. Share the calendar with the OAuth account and grant write access.",
+  "settings.test_no_write":
+    "✗ Read-only access — the app cannot create events. Change the sharing permission to 'Make changes to events'.",
   "settings.test_fail": "✗ Unexpected error: {error}",
   "settings.backfill": "Sync upcoming reservations",
 

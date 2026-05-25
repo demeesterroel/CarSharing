@@ -541,8 +541,11 @@ export const nl = {
     "✗ Ongeldige Client ID of Secret — controleer GOOGLE_CLIENT_ID en GOOGLE_CLIENT_SECRET in .env.local. De OAuth-client is mogelijk verwijderd in Google Cloud Console.",
   "settings.test_invalid_grant":
     "✗ Token verlopen of ingetrokken. Haal een nieuw Refresh Token op via OAuth Playground en sla het opnieuw op.",
-  "settings.test_not_found":
-    "✗ Kalender niet gevonden. Controleer het kalender-ID en zorg dat het OAuth-account leesrechten heeft.",
+  "settings.test_not_found": "✗ Kalender niet gevonden. Controleer of het kalender-ID correct is.",
+  "settings.test_no_access":
+    "✗ Geen toegang tot deze kalender. Deel de kalender met het OAuth-account en geef schrijfrechten.",
+  "settings.test_no_write":
+    "✗ Alleen leesrechten — de app kan geen afspraken aanmaken. Wijzig de deling naar 'Wijzigingen aanbrengen in evenementen'.",
   "settings.test_fail": "✗ Onverwachte fout: {error}",
   "settings.backfill": "Toekomstige reserveringen synchroniseren",
 

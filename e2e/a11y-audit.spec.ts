@@ -1,4 +1,5 @@
 import { test, expect, type Page } from "@playwright/test";
+import path from "path";
 
 /**
  * Accessibility audit using axe-core.
@@ -9,9 +10,11 @@ import { test, expect, type Page } from "@playwright/test";
  * inkDim minimum for body text — inkMute is intentionally excluded from small text).
  */
 
-// axe-core 4.10.3 injected from CDN — no npm package needed
-const AXE_CDN =
-  "https://cdnjs.cloudflare.com/ajax/libs/axe-core/4.10.3/axe.min.js";
+// axe-core loaded from local node_modules — no CDN dependency
+const AXE_PATH = path.resolve(
+  __dirname,
+  "../node_modules/axe-core/axe.js"
+);
 
 type AxeViolation = {
   id: string;
@@ -22,8 +25,7 @@ type AxeViolation = {
 };
 
 async function runAxe(page: Page): Promise<AxeViolation[]> {
-  await page.addScriptTag({ url: AXE_CDN });
-  // Wait for axe to be available
+  await page.addScriptTag({ path: AXE_PATH });
   await page.waitForFunction(() => typeof (window as any).axe !== "undefined");
   return page.evaluate(async () => {
     const results = await (window as any).axe.run();

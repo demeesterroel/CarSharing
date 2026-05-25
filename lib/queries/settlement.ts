@@ -77,9 +77,7 @@ function buildNameToId(people: PersonRow[]): Map<string, number> {
   for (const p of people) {
     const key = shortNameOf(p);
     if (map.has(key)) {
-      console.warn(
-        `[settlement] duplicate shortName "${key}" — payment annotation may be wrong`
-      );
+      console.warn(`[settlement] duplicate shortName "${key}" — payment annotation may be wrong`);
     }
     map.set(key, p.id);
   }
@@ -581,20 +579,26 @@ export function getSettlement(db: Database.Database, year: number): SettlementRe
     }
 
     if (tr.from === "co-op") {
-      // Step 1 credit (co-op → regular member): track negative payments.
+      // Step 1 credit (co-op → regular member): net of all payments (excess repaid by member reduces paid).
       const recipientId = nameToId.get(tr.to) ?? null;
       if (recipientId === null) return { ...tr, payment_status: null };
-      const personPayments = (paymentsByPerson.get(recipientId) ?? []).filter((p) => p.amount < 0);
-      const paid = round2(personPayments.reduce((s, p) => s + Math.abs(p.amount), 0));
+      const personPayments = paymentsByPerson.get(recipientId) ?? [];
+      const netPaid = round2(personPayments.reduce((s, p) => s + p.amount, 0));
+      const paid = round2(Math.abs(netPaid));
       const open = round2(Math.max(0, tr.amount - paid));
       return { ...tr, payment_status: { paid, open, payments: personPayments } };
     }
 
-    // Step 1 debit (regular member → co-op): track positive payments.
+    // Step 1 debit (regular member → co-op): net of all payments (refunds reduce paid amount).
     const payerId = nameToId.get(tr.from) ?? null;
     if (payerId === null) return { ...tr, payment_status: null };
-    const personPayments = (paymentsByPerson.get(payerId) ?? []).filter((p) => p.amount > 0);
-    const paid = round2(personPayments.reduce((s, p) => s + p.amount, 0));
+    const personPayments = paymentsByPerson.get(payerId) ?? [];
+    const paid = round2(
+      Math.max(
+        0,
+        personPayments.reduce((s, p) => s + p.amount, 0)
+      )
+    );
     const open = round2(Math.max(0, tr.amount - paid));
     return { ...tr, payment_status: { paid, open, payments: personPayments } };
   });

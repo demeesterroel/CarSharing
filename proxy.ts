@@ -12,6 +12,8 @@ const PUBLIC_PATHS = [
   "/docs",
   "/invite",
   "/api/invite",
+  "/api/admin/calendar-renew",
+  "/api/calendar-id",
 ];
 
 // Pages only admins can visit (non-admins get redirected to /).

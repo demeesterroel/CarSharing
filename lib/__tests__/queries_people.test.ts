@@ -152,6 +152,42 @@ describe("insertPerson", () => {
   });
 });
 
+describe("theme_preference default", () => {
+  it("new person without explicit theme gets mono", () => {
+    const db = makeDb();
+    const id = insertPerson(db, {
+      ...basePerson,
+      first_name: "Alice",
+      theme_preference: undefined as unknown as "mono",
+    });
+    const row = db.prepare("SELECT theme_preference FROM people WHERE id=?").get(id) as any;
+    expect(row.theme_preference).toBe("mono");
+  });
+
+  it("migration 0019 converts existing paper rows to mono", () => {
+    // Run only migrations up to 0018 so we can insert a 'paper' row before 0019 runs
+    const db = new Database(":memory:");
+    db.pragma("foreign_keys = ON");
+    const { readdirSync, readFileSync } = require("fs");
+    const path = require("path");
+    const migrationsDir = path.join(process.cwd(), "migrations");
+    db.exec(`CREATE TABLE IF NOT EXISTS _migrations (id INTEGER PRIMARY KEY AUTOINCREMENT, filename TEXT NOT NULL UNIQUE, applied_at TEXT NOT NULL DEFAULT (datetime('now')))`);
+    const files = readdirSync(migrationsDir).filter((f: string) => f.endsWith(".sql") && f <= "0018_people_theme_preference.sql").sort();
+    for (const f of files) {
+      db.pragma("foreign_keys = OFF");
+      db.exec(readFileSync(path.join(migrationsDir, f), "utf-8"));
+      db.pragma("foreign_keys = ON");
+      db.prepare("INSERT INTO _migrations (filename) VALUES (?)").run(f);
+    }
+    // Insert legacy 'paper' row before migration 0019
+    db.prepare("INSERT INTO people (first_name, last_name, discount, discount_long, active, bank_account, theme_preference) VALUES ('Legacy','User',0,0,1,'','paper')").run();
+    // Apply remaining migrations (0019)
+    runMigrations(db);
+    const row = db.prepare("SELECT theme_preference FROM people WHERE first_name='Legacy'").get() as any;
+    expect(row.theme_preference).toBe("mono");
+  });
+});
+
 describe("updatePerson", () => {
   it("updates person fields", () => {
     const db = makeDb();

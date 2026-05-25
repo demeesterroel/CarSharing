@@ -49,7 +49,7 @@ export function insertPerson(
       data.is_admin ?? 0,
       data.bank_account ?? "",
       data.email ?? null,
-      data.theme_preference ?? "paper"
+      data.theme_preference ?? "mono"
     );
   return result.lastInsertRowid as number;
 }
@@ -71,7 +71,7 @@ export function updatePerson(
     data.is_admin ?? 0,
     data.bank_account ?? "",
     data.email ?? null,
-    data.theme_preference ?? "paper",
+    data.theme_preference ?? "mono",
     id
   );
 }

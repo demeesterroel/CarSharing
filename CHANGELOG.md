@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.14.0](https://github.com/demeesterroel/CarSharing/compare/v1.13.3...v1.14.0) (2026-05-25)
+
+
+### ✨ New features
+
+* **user:** add hint below email field explaining calendar invite use ([7432343](https://github.com/demeesterroel/CarSharing/commit/743234366c6c83e3114e9e4fe417a3dea3710517))
+
 ## [1.13.3](https://github.com/demeesterroel/CarSharing/compare/v1.13.2...v1.13.3) (2026-05-25)
 
 

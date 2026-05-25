@@ -1,5 +1,9 @@
-import React from "react";
-import { paper, fontMono, fontSerif, fmtYearMonth } from "@/lib/paper-theme";
+"use client";
+import React, { useState, useEffect, useRef } from "react";
+import { paper, fontSerif } from "@/lib/paper-theme";
+
+const INITIAL_GROUPS = 3;
+const INCREMENT = 3;
 
 interface GroupedListProps<T> {
   items: T[];
@@ -26,14 +30,38 @@ export function GroupedList<T>({
   }
   const sortedKeys = Array.from(groups.keys()).sort().reverse();
 
+  const [visibleCount, setVisibleCount] = useState(INITIAL_GROUPS);
+  const sentinelRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    setVisibleCount(INITIAL_GROUPS);
+  }, [items]);
+
+  useEffect(() => {
+    const el = sentinelRef.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          setVisibleCount((prev) => Math.min(prev + INCREMENT, sortedKeys.length));
+        }
+      },
+      { rootMargin: "200px" }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [sortedKeys.length]);
+
+  const visibleKeys = sortedKeys.slice(0, visibleCount);
+  const hasMore = visibleCount < sortedKeys.length;
+
   return (
     <div>
-      {sortedKeys.map((key) => {
+      {visibleKeys.map((key) => {
         const groupItems = groups.get(key)!;
         const total = getGroupTotal(groupItems);
         return (
           <div key={key}>
-            {/* Month header */}
             <div
               className="group-month-header"
               style={{
@@ -57,14 +85,15 @@ export function GroupedList<T>({
               </span>
               <span
                 style={{
-                  fontFamily: "var(--font-sans, var(--font-inter, 'Inter', system-ui, sans-serif))",
+                  fontFamily:
+                    "var(--font-sans, var(--font-inter, 'Inter', system-ui, sans-serif))",
                   fontSize: 13,
                   color: paper.inkDim,
                   fontWeight: 500,
                 }}
               >
                 {totalSuffix === "€"
-                  ? `€\u00a0${total.toLocaleString("nl-BE", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+                  ? `€ ${total.toLocaleString("nl-BE", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
                   : `${total.toLocaleString("nl-BE")} ${totalSuffix}`}
               </span>
             </div>
@@ -76,6 +105,7 @@ export function GroupedList<T>({
           </div>
         );
       })}
+      {hasMore && <div ref={sentinelRef} style={{ height: "1px" }} />}
     </div>
   );
 }

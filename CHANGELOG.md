@@ -1,52 +1,51 @@
 # Changelog
 
-## [1.12.3](https://github.com/demeesterroel/CarSharing/compare/v1.12.2...v1.12.3) (2026-05-25)
-
+## [1.12.4](https://github.com/demeesterroel/CarSharing/compare/v1.12.3...v1.12.4) (2026-05-25)
 
 ### 🐛 Bug fixes
 
-* **fuel:** accept comma as decimal separator on iOS ([#225](https://github.com/demeesterroel/CarSharing/issues/225)) ([acc0d43](https://github.com/demeesterroel/CarSharing/commit/acc0d4361244f972cb39262fcad6d2b012574f72)), closes [#223](https://github.com/demeesterroel/CarSharing/issues/223)
-* **modal:** close edit form opened via direct URL without navigating away ([#229](https://github.com/demeesterroel/CarSharing/issues/229)) ([93ec99b](https://github.com/demeesterroel/CarSharing/commit/93ec99bbb2990114e3e4eb961662685140c2dbc9))
+- **trips:** sort by date DESC so overview shows most recent trips across all cars ([#231](https://github.com/demeesterroel/CarSharing/issues/231)) ([3b5dd07](https://github.com/demeesterroel/CarSharing/commit/3b5dd07)), closes [#230](https://github.com/demeesterroel/CarSharing/issues/230)
+
+## [1.12.3](https://github.com/demeesterroel/CarSharing/compare/v1.12.2...v1.12.3) (2026-05-25)
+
+### 🐛 Bug fixes
+
+- **fuel:** accept comma as decimal separator on iOS ([#225](https://github.com/demeesterroel/CarSharing/issues/225)) ([acc0d43](https://github.com/demeesterroel/CarSharing/commit/acc0d4361244f972cb39262fcad6d2b012574f72)), closes [#223](https://github.com/demeesterroel/CarSharing/issues/223)
+- **modal:** close edit form opened via direct URL without navigating away ([#229](https://github.com/demeesterroel/CarSharing/issues/229)) ([93ec99b](https://github.com/demeesterroel/CarSharing/commit/93ec99bbb2990114e3e4eb961662685140c2dbc9))
 
 ## [1.12.2](https://github.com/demeesterroel/CarSharing/compare/v1.12.1...v1.12.2) (2026-05-25)
 
-
 ### 🐛 Bug fixes
 
-* **theme:** make mono the default theme for all users ([#221](https://github.com/demeesterroel/CarSharing/issues/221)) ([f384935](https://github.com/demeesterroel/CarSharing/commit/f3849351288a4a9539582144804605d1cbf5c00f)), closes [#183](https://github.com/demeesterroel/CarSharing/issues/183)
+- **theme:** make mono the default theme for all users ([#221](https://github.com/demeesterroel/CarSharing/issues/221)) ([f384935](https://github.com/demeesterroel/CarSharing/commit/f3849351288a4a9539582144804605d1cbf5c00f)), closes [#183](https://github.com/demeesterroel/CarSharing/issues/183)
 
 ## [1.12.1](https://github.com/demeesterroel/CarSharing/compare/v1.12.0...v1.12.1) (2026-05-25)
 
-
 ### 🐛 Bug fixes
 
-* **trips:** sort by odometer DESC per car, not by date ([#219](https://github.com/demeesterroel/CarSharing/issues/219)) ([071c163](https://github.com/demeesterroel/CarSharing/commit/071c1637ca784b21d2253b7cf9c43d08d0df3d5d)), closes [#218](https://github.com/demeesterroel/CarSharing/issues/218)
+- **trips:** sort by odometer DESC per car, not by date ([#219](https://github.com/demeesterroel/CarSharing/issues/219)) ([071c163](https://github.com/demeesterroel/CarSharing/commit/071c1637ca784b21d2253b7cf9c43d08d0df3d5d)), closes [#218](https://github.com/demeesterroel/CarSharing/issues/218)
 
 ## [1.12.0](https://github.com/demeesterroel/CarSharing/compare/v1.11.0...v1.12.0) (2026-05-24)
 
-
 ### ✨ New features
 
-* **dev:** make allowedDevOrigins env-driven + harden cookie invariant ([#213](https://github.com/demeesterroel/CarSharing/issues/213)) ([#214](https://github.com/demeesterroel/CarSharing/issues/214)) ([20fb379](https://github.com/demeesterroel/CarSharing/commit/20fb379cc4e4801b46bc866b8fb029b1fa85bcd5))
-
+- **dev:** make allowedDevOrigins env-driven + harden cookie invariant ([#213](https://github.com/demeesterroel/CarSharing/issues/213)) ([#214](https://github.com/demeesterroel/CarSharing/issues/214)) ([20fb379](https://github.com/demeesterroel/CarSharing/commit/20fb379cc4e4801b46bc866b8fb029b1fa85bcd5))
 
 ### 🐛 Bug fixes
 
-* **payments:** color negative payments red (closes [#212](https://github.com/demeesterroel/CarSharing/issues/212)) ([#216](https://github.com/demeesterroel/CarSharing/issues/216)) ([74ddb05](https://github.com/demeesterroel/CarSharing/commit/74ddb05526a3a77ec95cb0b2c7c0aa65ccb804ae))
+- **payments:** color negative payments red (closes [#212](https://github.com/demeesterroel/CarSharing/issues/212)) ([#216](https://github.com/demeesterroel/CarSharing/issues/216)) ([74ddb05](https://github.com/demeesterroel/CarSharing/commit/74ddb05526a3a77ec95cb0b2c7c0aa65ccb804ae))
 
 ## [1.11.0](https://github.com/demeesterroel/CarSharing/compare/v1.10.3...v1.11.0) (2026-05-18)
 
-
 ### ✨ New features
 
-* **ui:** mono theme — full UI polish ([#210](https://github.com/demeesterroel/CarSharing/issues/210)) ([6276933](https://github.com/demeesterroel/CarSharing/commit/627693391876de0621d5b9dfcad3164426e1ef09))
+- **ui:** mono theme — full UI polish ([#210](https://github.com/demeesterroel/CarSharing/issues/210)) ([6276933](https://github.com/demeesterroel/CarSharing/commit/627693391876de0621d5b9dfcad3164426e1ef09))
 
 ## [1.10.3](https://github.com/demeesterroel/CarSharing/compare/v1.10.2...v1.10.3) (2026-05-18)
 
-
 ### 🐛 Bug fixes
 
-* **location:** auto-capture GPS on form open; reverse-geocode pasted coords ([#209](https://github.com/demeesterroel/CarSharing/issues/209)) ([3e0a71e](https://github.com/demeesterroel/CarSharing/commit/3e0a71edbf580a4f8fb565414221f62fd4cbb89e)), closes [#206](https://github.com/demeesterroel/CarSharing/issues/206)
+- **location:** auto-capture GPS on form open; reverse-geocode pasted coords ([#209](https://github.com/demeesterroel/CarSharing/issues/209)) ([3e0a71e](https://github.com/demeesterroel/CarSharing/commit/3e0a71edbf580a4f8fb565414221f62fd4cbb89e)), closes [#206](https://github.com/demeesterroel/CarSharing/issues/206)
 
 ## [1.10.2](https://github.com/demeesterroel/CarSharing/compare/v1.10.1...v1.10.2) (2026-05-18)
 

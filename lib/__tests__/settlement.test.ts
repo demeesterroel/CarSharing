@@ -60,7 +60,6 @@ describe("getSettlement", () => {
     expect(dave.s1).toBe(-90); // -(50+40)
   });
 
-
   it("S₂ for owners uses N_new", () => {
     const db = makeDb();
     seed(db);
@@ -238,7 +237,7 @@ describe("getSettlement — payment integration", () => {
   it("reports all_paid=true when all transfers are fully paid", () => {
     const db = makeDb();
     seed(db);
-    const nameToId: Record<string, number> = { "Alice": 1, "Bob": 2, "Carol": 3, "Dave": 4 };
+    const nameToId: Record<string, number> = { Alice: 1, Bob: 2, Carol: 3, Dave: 4 };
     const result0 = getSettlement(db, 2025);
     // Pay every transfer that has a payment_status
     for (const t of result0.transfers) {
@@ -270,6 +269,54 @@ describe("getSettlement — payment integration", () => {
     }
     const result1 = getSettlement(db, 2025);
     expect(result1.all_paid).toBe(true);
+  });
+
+  it("debit: overpayment + refund nets to zero open balance", () => {
+    const db = makeDb();
+    seed(db);
+    // Carol owes €180 (S1 = -180). She pays €220, co-op refunds €40 excess.
+    // Net: 220 - 40 = 180 = exactly her debt → open should be 0, no surplus.
+    insertPayment(db, { person_id: 3, date: "2026-01-01", amount: 220, note: "overpayment" });
+    insertPayment(db, { person_id: 3, date: "2026-01-15", amount: -40, note: "refund excess" });
+    const result = getSettlement(db, 2025);
+    const carolT = result.transfers.find((t) => t.step === 1 && t.from === "Carol")!;
+    expect(carolT.payment_status).not.toBeNull();
+    expect(carolT.payment_status!.paid).toBeCloseTo(180, 2);
+    expect(carolT.payment_status!.open).toBeCloseTo(0, 2);
+    expect(carolT.payment_status!.payments).toHaveLength(2);
+  });
+
+  it("credit: over-reimbursement + correction payment nets to zero open balance", () => {
+    const db = makeDb();
+    seed(db);
+    // Add Eve who pays €50 fuel for CarA (no trips) → S1(Eve) = +50, co-op owes Eve.
+    db.prepare(
+      "INSERT INTO people (id, first_name, last_name, active) VALUES (5,'Eve','Member',1)"
+    ).run();
+    db.prepare(
+      "INSERT INTO fuel_fillups (person_id, car_id, date, liters, amount, price_per_liter) VALUES (5,1,'2025-03-01',40,50,1.25)"
+    ).run();
+    // Co-op pays Eve €80 (too much by €30), Eve pays back €30.
+    // Net: -80 + 30 = -50, |net| = 50 = exactly what she was owed → open should be 0.
+    insertPayment(db, {
+      person_id: 5,
+      date: "2026-01-01",
+      amount: -80,
+      note: "reimbursement (too much)",
+    });
+    insertPayment(db, {
+      person_id: 5,
+      date: "2026-01-15",
+      amount: 30,
+      note: "Eve pays back excess",
+    });
+    const result = getSettlement(db, 2025);
+    const eveT = result.transfers.find((t) => t.step === 1 && t.to === "Eve")!;
+    expect(eveT).toBeDefined();
+    expect(eveT.payment_status).not.toBeNull();
+    expect(eveT.payment_status!.paid).toBeCloseTo(50, 2);
+    expect(eveT.payment_status!.open).toBeCloseTo(0, 2);
+    expect(eveT.payment_status!.payments).toHaveLength(2);
   });
 
   it("includes payments_by_person in the result", () => {

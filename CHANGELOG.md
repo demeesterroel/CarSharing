@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.13.1](https://github.com/demeesterroel/CarSharing/compare/v1.13.0...v1.13.1) (2026-05-25)
+
+
+### 🐛 Bug fixes
+
+* **calendar:** cast accessRole — not in googleapis Schema$Calendar types ([98cd798](https://github.com/demeesterroel/CarSharing/commit/98cd79826977e4e80c03e4244417a155b5c58000))
+* **calendar:** diagnostic messages for test connection (no access / read-only) ([#237](https://github.com/demeesterroel/CarSharing/issues/237)) ([2d6d7b3](https://github.com/demeesterroel/CarSharing/commit/2d6d7b38222b1775ce640b71d62beaaff8e9bf1d))
+
 ## [1.13.0](https://github.com/demeesterroel/CarSharing/compare/v1.12.5...v1.13.0) (2026-05-25)
 
 

@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.15.0](https://github.com/demeesterroel/CarSharing/compare/v1.14.3...v1.15.0) (2026-05-26)
+
+
+### ✨ New features
+
+* **settlement:** show already-paid amount in settlement message ([#253](https://github.com/demeesterroel/CarSharing/issues/253)) ([db1b2d2](https://github.com/demeesterroel/CarSharing/commit/db1b2d2093b1f1b265f4ee68821e1726d9e092f3)), closes [#249](https://github.com/demeesterroel/CarSharing/issues/249)
+
+
+### 🐛 Bug fixes
+
+* **calendar:** run delta sync on every renew call, not only on channel rotation ([#255](https://github.com/demeesterroel/CarSharing/issues/255)) ([591e237](https://github.com/demeesterroel/CarSharing/commit/591e237a26933e320d8e6bf4da77f8490ffcf068)), closes [#254](https://github.com/demeesterroel/CarSharing/issues/254)
+* **e2e:** make all 39 Playwright tests pass against prod server ([#250](https://github.com/demeesterroel/CarSharing/issues/250)) ([96b37f8](https://github.com/demeesterroel/CarSharing/commit/96b37f8f327e9c03360cbebb42ab59f7e971b504))
+
 ## [1.14.3](https://github.com/demeesterroel/CarSharing/compare/v1.14.2...v1.14.3) (2026-05-25)
 
 

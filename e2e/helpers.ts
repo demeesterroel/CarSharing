@@ -1,4 +1,19 @@
-import type { APIRequestContext } from "@playwright/test";
+import type { APIRequestContext, Page } from "@playwright/test";
+
+/**
+ * Scroll to the bottom of the page repeatedly until no new content loads.
+ * This triggers IntersectionObserver-based lazy loading (GroupedList sentinel).
+ */
+export async function scrollToLoadAll(page: Page): Promise<void> {
+  let prevHeight = -1;
+  for (let i = 0; i < 15; i++) {
+    const height: number = await page.evaluate(() => document.body.scrollHeight);
+    if (height === prevHeight) break;
+    prevHeight = height;
+    await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+    await page.waitForTimeout(300);
+  }
+}
 
 /**
  * Log in via the /api/auth/login endpoint and return the CSRF token

@@ -1,5 +1,5 @@
 import { test, expect } from "@playwright/test";
-import { loginAndGetCsrf, makeApi, getTestEntities } from "./helpers";
+import { loginAndGetSession, loginAndGetCsrf, makeApi, getTestEntities, scrollToLoadAll } from "./helpers";
 
 /**
  * Expense CRUD + dashboard delta tests.
@@ -25,11 +25,12 @@ test.describe("expense CRUD", () => {
   let carId: number;
 
   test.beforeEach(async ({ request }) => {
-    csrf = await loginAndGetCsrf(request);
+    const session = await loginAndGetSession(request);
+    csrf = session.csrf;
     api = makeApi(request, csrf);
 
     const entities = await getTestEntities(api);
-    personId = entities.personId;
+    personId = session.personId ?? entities.personId;
     carId = entities.carId;
 
     const res = await api.post<{ id: number }>("/api/expenses", {
@@ -57,13 +58,14 @@ test.describe("expense CRUD", () => {
   test("expense appears in the expenses list after creation", async ({ page }) => {
     await page.request.post("/api/auth/login", {
       data: {
-        username: process.env.TEST_EMAIL ?? "test@example.com",
-        password: process.env.TEST_PASSWORD ?? "changeme",
+        username: process.env.TEST_EMAIL ?? "alice",
+        password: process.env.TEST_PASSWORD ?? "alice",
       },
     });
 
     await page.goto("/expenses");
     await page.waitForLoadState("networkidle");
+    await scrollToLoadAll(page);
 
     // ExpenseCard renders: {description} as primary text
     await expect(page.locator(`text=${DESCRIPTION}`).first()).toBeVisible({ timeout: 10_000 });
@@ -101,13 +103,14 @@ test.describe("expense CRUD", () => {
   test("expense disappears from the list after deletion", async ({ page }) => {
     await page.request.post("/api/auth/login", {
       data: {
-        username: process.env.TEST_EMAIL ?? "test@example.com",
-        password: process.env.TEST_PASSWORD ?? "changeme",
+        username: process.env.TEST_EMAIL ?? "alice",
+        password: process.env.TEST_PASSWORD ?? "alice",
       },
     });
 
     await page.goto("/expenses");
     await page.waitForLoadState("networkidle");
+    await scrollToLoadAll(page);
 
     await expect(page.locator(`text=${DESCRIPTION}`).first()).toBeVisible({ timeout: 10_000 });
 
@@ -116,6 +119,6 @@ test.describe("expense CRUD", () => {
 
     await page.reload();
     await page.waitForLoadState("networkidle");
-    await expect(page.locator(`text=${DESCRIPTION}`)).toHaveCount(0);
+    await expect(page.getByText(DESCRIPTION, { exact: true })).toHaveCount(0);
   });
 });

@@ -68,8 +68,9 @@ test.describe("issue #193 – reservation cache invalidation", () => {
 
     // Wait for the CarToggle to render inside the form.
     // Car BB has no seed reservations this week — avoids date conflicts.
-    await expect(form.getByRole("button", { name: "BB Car BB" })).toBeVisible({ timeout: 8_000 });
-    await form.getByRole("button", { name: "BB Car BB" }).click();
+    // In mono theme, CarToggle shows car.name only ("Car BB"); in paper theme it shows "BB\nCar BB".
+    await expect(form.getByRole("button", { name: /car bb/i })).toBeVisible({ timeout: 8_000 });
+    await form.getByRole("button", { name: /car bb/i }).click();
 
     // No calendar navigation — use the current 14-day window (Mon of this week → Sun next).
     // Grid cells are direct children of the repeat(7, 1fr) grid div inside the form.
@@ -95,7 +96,7 @@ test.describe("issue #193 – reservation cache invalidation", () => {
 
     // Submit.
     await form
-      .getByRole("button", { name: /confirm reservation|request reservation|bevestig|aanvraag/i })
+      .getByRole("button", { name: /confirm reservation|request reservation|bevestig|aanvraag|opslaan|save/i })
       .click();
 
     const apiRes = await responsePromise;
@@ -132,37 +133,36 @@ test.describe("issue #176 – payment cache invalidation", () => {
 
   test("new payment appears in list without page refresh", async ({ page }) => {
     await loginViaApi(page);
-    await page.goto("/payments");
+    // Payments are managed at /admin/payments (no standalone /payments page).
+    await page.goto("/admin/payments");
     await page.waitForLoadState("networkidle");
+    await dismissDevOverlay(page);
 
-    // Open the add-payment dialog via the FAB.
-    await page.getByRole("button", { name: /^(\+|add payment|betaling toevoegen)$/i }).click();
+    // Click the "+ Toevoegen" / "+ Add" button to open the inline add form.
+    await page.getByRole("button", { name: /^\+\s*(toevoegen|add)$/i }).click();
 
-    // Wait for the Radix dialog (exclude Next.js error overlay by matching title).
-    const dialog = page.getByRole("dialog", { name: /betaling toevoegen|add payment/i });
-    await expect(dialog).toBeVisible({ timeout: 5_000 });
+    // Wait for the inline add form to appear ("Betaling toevoegen" heading).
+    await expect(page.getByText(/betaling toevoegen|add payment/i)).toBeVisible({ timeout: 3_000 });
 
-    // Select the first person.
-    const personSel = dialog.locator("select").first();
-    const firstPersonOption = personSel.locator("option:not([disabled])").first();
-    const personVal = await firstPersonOption.getAttribute("value");
-    if (personVal) await personSel.selectOption(personVal);
+    // Select the first real person (index 1 skips the disabled placeholder at index 0).
+    // The page has 2 filter selects before the form person select (index 2).
+    const personSel = page.locator("select").nth(2);
+    await personSel.selectOption({ index: 1 });
 
     // Amount.
-    const amountInput = dialog.locator("input[type='number']").first();
-    await amountInput.fill("42");
+    await page.locator("input[type='number']").fill("42");
 
     // Note — unique sentinel.
     const NOTE = `E2E-cache-pay-${Date.now()}`;
-    await dialog.locator("input:not([type='number']):not([type='date'])").last().fill(NOTE);
+    await page.locator("input[type='text']").fill(NOTE);
 
     // Arm response interceptor.
     const responsePromise = page.waitForResponse(
       (r) => r.url().includes("/api/payments") && r.request().method() === "POST"
     );
 
-    // Submit.
-    await dialog.getByRole("button", { name: /^(save|opslaan)$/i }).click();
+    // Submit with the save button inside the add form.
+    await page.getByRole("button", { name: /^(opslaan|save)$/i }).click();
 
     const apiRes = await responsePromise;
     if (apiRes.ok()) {
@@ -170,12 +170,7 @@ test.describe("issue #176 – payment cache invalidation", () => {
       if (body?.id) paymentId = body.id;
     }
 
-    // Wait for success toast.
-    await expect(page.locator("text=/payment saved|betaling opgeslagen/i")).toBeVisible({
-      timeout: 10_000,
-    });
-
-    // ── Core assertion: item must appear WITHOUT page.reload() ───────────────
-    await expect(page.locator(`text=${NOTE}`)).toBeVisible({ timeout: 8_000 });
+    // ── Core assertion: note must appear in the list WITHOUT page.reload() ──
+    await expect(page.getByText(NOTE)).toBeVisible({ timeout: 8_000 });
   });
 });

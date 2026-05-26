@@ -10,11 +10,8 @@ import path from "path";
  * inkDim minimum for body text — inkMute is intentionally excluded from small text).
  */
 
-// axe-core loaded from local node_modules — no CDN dependency
-const AXE_PATH = path.resolve(
-  __dirname,
-  "../node_modules/axe-core/axe.js"
-);
+// axe-core resolved via require — works in worktrees without own node_modules
+const AXE_PATH = require.resolve("axe-core");
 
 type AxeViolation = {
   id: string;

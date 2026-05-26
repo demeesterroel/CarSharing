@@ -33,8 +33,8 @@ test.describe("reservation approval flow", () => {
     // Log in as regular user to create the reservation
     userCsrf = await loginAndGetCsrf(
       request,
-      process.env.TEST_EMAIL ?? "test@example.com",
-      process.env.TEST_PASSWORD ?? "changeme"
+      process.env.TEST_EMAIL ?? "alice",
+      process.env.TEST_PASSWORD ?? "alice"
     );
     userApi = makeApi(request, userCsrf);
 
@@ -56,8 +56,8 @@ test.describe("reservation approval flow", () => {
     if (!reservationId) return;
     try {
       // Use admin credentials for cleanup (reservation delete may be admin-only)
-      const adminEmail = process.env.TEST_ADMIN_EMAIL ?? process.env.TEST_EMAIL ?? "test@example.com";
-      const adminPassword = process.env.TEST_ADMIN_PASSWORD ?? process.env.TEST_PASSWORD ?? "changeme";
+      const adminEmail = process.env.TEST_ADMIN_EMAIL ?? "admin";
+      const adminPassword = process.env.TEST_ADMIN_PASSWORD ?? "admin";
       const cleanupCsrf = await loginAndGetCsrf(request, adminEmail, adminPassword);
       const cleanupApi = makeApi(request, cleanupCsrf);
       await cleanupApi.delete(`/api/reservations/${reservationId}`);
@@ -67,8 +67,8 @@ test.describe("reservation approval flow", () => {
   });
 
   test("pending reservation appears in admin inbox and can be approved", async ({ browser }) => {
-    const adminEmail = process.env.TEST_ADMIN_EMAIL ?? process.env.TEST_EMAIL ?? "test@example.com";
-    const adminPassword = process.env.TEST_ADMIN_PASSWORD ?? process.env.TEST_PASSWORD ?? "changeme";
+    const adminEmail = process.env.TEST_ADMIN_EMAIL ?? "admin";
+    const adminPassword = process.env.TEST_ADMIN_PASSWORD ?? "admin";
 
     // ── Admin context ──────────────────────────────────────────────────────────
     const adminContext = await browser.newContext();
@@ -87,7 +87,7 @@ test.describe("reservation approval flow", () => {
       // The pending reservation card should be visible.
       // The admin inbox renders: person_name, start_date, end_date, note.
       // We match on our unique note text.
-      const reservationNote = adminPage.locator("text=E2E-test-reservation");
+      const reservationNote = adminPage.getByText("E2E-test-reservation").first();
       await expect(reservationNote).toBeVisible({ timeout: 10_000 });
 
       // Click the "Bevestigen" / "Confirm" button that sits next to our card.
@@ -117,8 +117,8 @@ test.describe("reservation approval flow", () => {
   });
 
   test("user sees reservation as confirmed after admin approval", async ({ browser, request }) => {
-    const adminEmail = process.env.TEST_ADMIN_EMAIL ?? process.env.TEST_EMAIL ?? "test@example.com";
-    const adminPassword = process.env.TEST_ADMIN_PASSWORD ?? process.env.TEST_PASSWORD ?? "changeme";
+    const adminEmail = process.env.TEST_ADMIN_EMAIL ?? "admin";
+    const adminPassword = process.env.TEST_ADMIN_PASSWORD ?? "admin";
 
     // Approve via API (simulates admin action without needing UI)
     const adminCsrf = await loginAndGetCsrf(request, adminEmail, adminPassword);
@@ -132,8 +132,8 @@ test.describe("reservation approval flow", () => {
     try {
       await userPage.request.post("/api/auth/login", {
         data: {
-          username: process.env.TEST_EMAIL ?? "test@example.com",
-          password: process.env.TEST_PASSWORD ?? "changeme",
+          username: process.env.TEST_EMAIL ?? "alice",
+          password: process.env.TEST_PASSWORD ?? "alice",
         },
       });
 
@@ -143,7 +143,7 @@ test.describe("reservation approval flow", () => {
 
       // The ReservationCard renders a "✓" when status is "confirmed"
       // and the person_name. Find our reservation by note text.
-      const noteText = userPage.locator("text=E2E-test-reservation");
+      const noteText = userPage.getByText("E2E-test-reservation").first();
       await expect(noteText).toBeVisible({ timeout: 10_000 });
 
       // The status indicator "✓" should be present near our reservation.
@@ -159,8 +159,8 @@ test.describe("reservation approval flow", () => {
     // Log in as the regular user
     await page.request.post("/api/auth/login", {
       data: {
-        username: process.env.TEST_EMAIL ?? "test@example.com",
-        password: process.env.TEST_PASSWORD ?? "changeme",
+        username: process.env.TEST_EMAIL ?? "alice",
+        password: process.env.TEST_PASSWORD ?? "alice",
       },
     });
 

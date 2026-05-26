@@ -1,5 +1,5 @@
 import { test, expect } from "@playwright/test";
-import { loginAndGetCsrf, makeApi, getTestEntities } from "./helpers";
+import { loginAndGetSession, loginAndGetCsrf, makeApi, getTestEntities, scrollToLoadAll } from "./helpers";
 
 /**
  * Fuel fill-up CRUD + dashboard delta tests.
@@ -27,11 +27,12 @@ test.describe("fuel fill-up CRUD", () => {
   let carId: number;
 
   test.beforeEach(async ({ request }) => {
-    csrf = await loginAndGetCsrf(request);
+    const session = await loginAndGetSession(request);
+    csrf = session.csrf;
     api = makeApi(request, csrf);
 
     const entities = await getTestEntities(api);
-    personId = entities.personId;
+    personId = session.personId ?? entities.personId;
     carId = entities.carId;
 
     const res = await api.post<{ id: number }>("/api/fuel", {
@@ -59,13 +60,14 @@ test.describe("fuel fill-up CRUD", () => {
   test("fill-up appears in the fuel list after creation", async ({ page }) => {
     await page.request.post("/api/auth/login", {
       data: {
-        username: process.env.TEST_EMAIL ?? "test@example.com",
-        password: process.env.TEST_PASSWORD ?? "changeme",
+        username: process.env.TEST_EMAIL ?? "alice",
+        password: process.env.TEST_PASSWORD ?? "alice",
       },
     });
 
     await page.goto("/fuel");
     await page.waitForLoadState("networkidle");
+    await scrollToLoadAll(page);
 
     // FuelCard renders: ⛽ {location} — look for the location text
     await expect(page.locator(`text=${LOCATION}`).first()).toBeVisible({ timeout: 10_000 });
@@ -106,13 +108,14 @@ test.describe("fuel fill-up CRUD", () => {
   test("fill-up disappears from the list after deletion", async ({ page }) => {
     await page.request.post("/api/auth/login", {
       data: {
-        username: process.env.TEST_EMAIL ?? "test@example.com",
-        password: process.env.TEST_PASSWORD ?? "changeme",
+        username: process.env.TEST_EMAIL ?? "alice",
+        password: process.env.TEST_PASSWORD ?? "alice",
       },
     });
 
     await page.goto("/fuel");
     await page.waitForLoadState("networkidle");
+    await scrollToLoadAll(page);
 
     // Confirm visible
     await expect(page.locator(`text=${LOCATION}`).first()).toBeVisible({ timeout: 10_000 });

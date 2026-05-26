@@ -1,5 +1,5 @@
 import { test, expect } from "@playwright/test";
-import { loginAndGetCsrf, makeApi, getTestEntities } from "./helpers";
+import { loginAndGetSession, loginAndGetCsrf, makeApi, getTestEntities, scrollToLoadAll } from "./helpers";
 
 /**
  * Trip CRUD + dashboard delta tests.
@@ -28,11 +28,12 @@ test.describe("trips CRUD", () => {
   let carId: number;
 
   test.beforeEach(async ({ request }) => {
-    csrf = await loginAndGetCsrf(request);
+    const session = await loginAndGetSession(request);
+    csrf = session.csrf;
     api = makeApi(request, csrf);
 
     const entities = await getTestEntities(api);
-    personId = entities.personId;
+    personId = session.personId ?? entities.personId;
     carId = entities.carId;
 
     // Create a trip via API
@@ -63,13 +64,14 @@ test.describe("trips CRUD", () => {
     // Log in first
     await page.request.post("/api/auth/login", {
       data: {
-        username: process.env.TEST_EMAIL ?? "test@example.com",
-        password: process.env.TEST_PASSWORD ?? "changeme",
+        username: process.env.TEST_EMAIL ?? "alice",
+        password: process.env.TEST_PASSWORD ?? "alice",
       },
     });
 
     await page.goto("/trips");
     await page.waitForLoadState("networkidle");
+    await scrollToLoadAll(page);
 
     // The TripCard renders the location as the primary text
     await expect(page.locator(`text=${LOCATION}`).first()).toBeVisible({ timeout: 10_000 });
@@ -116,13 +118,14 @@ test.describe("trips CRUD", () => {
     // Log in
     await page.request.post("/api/auth/login", {
       data: {
-        username: process.env.TEST_EMAIL ?? "test@example.com",
-        password: process.env.TEST_PASSWORD ?? "changeme",
+        username: process.env.TEST_EMAIL ?? "alice",
+        password: process.env.TEST_PASSWORD ?? "alice",
       },
     });
 
     await page.goto("/trips");
     await page.waitForLoadState("networkidle");
+    await scrollToLoadAll(page);
 
     // Confirm trip is visible
     await expect(page.locator(`text=${LOCATION}`).first()).toBeVisible({ timeout: 10_000 });

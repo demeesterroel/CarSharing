@@ -12,8 +12,8 @@ async function loginViaApi(page: import("@playwright/test").Page) {
   // POST credentials directly — faster than filling the form UI
   await page.request.post("/api/auth/login", {
     data: {
-      username: process.env.TEST_EMAIL ?? "test@example.com",
-      password: process.env.TEST_PASSWORD ?? "changeme",
+      username: process.env.TEST_EMAIL ?? "alice",
+      password: process.env.TEST_PASSWORD ?? "alice",
     },
   });
 }
@@ -26,9 +26,8 @@ test("login and view trips", async ({ page }) => {
 
   // Fill the login form
   // Labels come from t("form.name") → "Naam *" / "Name *"
-  await page.getByLabel(/naam|name/i).fill(process.env.TEST_EMAIL ?? "test@example.com");
-  // t("form.password") → "Wachtwoord" / "Password"
-  await page.getByLabel(/wachtwoord|password/i).fill(process.env.TEST_PASSWORD ?? "changeme");
+  await page.getByLabel(/naam|name/i).fill(process.env.TEST_EMAIL ?? "alice");
+  await page.locator("#login-password").fill(process.env.TEST_PASSWORD ?? "alice");
   // t("action.login") → "Inloggen" / "Log in"
   await page.getByRole("button", { name: /inloggen|log\s*in/i }).click();
 

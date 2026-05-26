@@ -13,6 +13,7 @@ import { apiFetch } from "@/lib/api/client";
 import { Card, Row, Perf } from "../_shared";
 import type { MemberStatement, AnnotatedTransfer } from "@/types";
 import { fullNameOf } from "@/lib/person-utils";
+import { buildSettlementMessage, buildSettlementLines, type SettlementLine } from "@/lib/settlement-message";
 
 function fmtL(liters: number): string {
   return liters.toLocaleString("nl-BE", { minimumFractionDigits: 1, maximumFractionDigits: 1 });
@@ -438,6 +439,110 @@ function CarSectionHeader({ label, saldo }: { label: string; saldo: number }) {
   );
 }
 
+function renderLineJsx(line: SettlementLine, key: number): React.ReactNode {
+  switch (line.kind) {
+    case "section_break":
+      return (
+        <div
+          key={key}
+          style={{ marginTop: 14, borderTop: `1px dashed ${paper.paperDark}`, paddingTop: 10 }}
+        />
+      );
+    case "car_header":
+      return (
+        <CarSectionHeader
+          key={key}
+          label={line.label}
+          saldo={line.sign === "+" ? line.amount : -line.amount}
+        />
+      );
+    case "row":
+      return (
+        <BreakdownCarRow
+          key={key}
+          car={line.label}
+          detail={null}
+          amount={`${line.sign} ${fmtMoney(line.amount)}`}
+          amountColor={line.sign === "−" ? paper.accent : paper.green}
+        />
+      );
+    case "row_zero":
+      return (
+        <BreakdownCarRow
+          key={key}
+          car={line.label}
+          detail={null}
+          amount={fmtMoney(0)}
+          amountColor={paper.inkDim}
+        />
+      );
+    case "note":
+      return (
+        <div
+          key={key}
+          style={{
+            fontFamily: fontMono,
+            fontSize: 8,
+            color: paper.inkDim,
+            paddingLeft: 16,
+            marginTop: 4,
+            fontStyle: "italic",
+          }}
+        >
+          {line.text}
+        </div>
+      );
+    case "separator":
+      return (
+        <div
+          key={key}
+          style={{ borderTop: `1px dashed ${paper.paperDark}`, marginTop: 10, paddingTop: 8 }}
+        />
+      );
+    case "summary": {
+      const signed = line.sign === "+" ? line.amount : -line.amount;
+      return (
+        <div
+          key={key}
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "baseline",
+            marginTop: line.emphasis ? 0 : 4,
+          }}
+        >
+          <span
+            style={{
+              fontFamily: fontMono,
+              fontSize: 9,
+              letterSpacing: 1.5,
+              textTransform: "uppercase" as const,
+              color: paper.inkDim,
+              fontWeight: line.emphasis ? 700 : 400,
+            }}
+          >
+            {line.label}
+          </span>
+          <span
+            style={{
+              fontFamily: fontMono,
+              fontSize: line.emphasis ? 14 : 10,
+              fontWeight: line.emphasis ? 700 : 400,
+              color: amtColor(signed),
+            }}
+          >
+            {signPrefix(signed)}
+            {fmtMoney(signed)}
+          </span>
+        </div>
+      );
+    }
+    case "instruction_pay":
+    case "instruction_receive":
+      return null;
+  }
+}
+
 function MemberCard({
   m,
   year,
@@ -447,6 +552,7 @@ function MemberCard({
   crossRows,
   settlementTransfer,
   showAll,
+  alreadyPaid,
 }: {
   m: MemberStatement;
   year: number;
@@ -456,6 +562,7 @@ function MemberCard({
   crossRows: { car_short: string; row: import("@/types").CarParticipantRow }[];
   settlementTransfer: AnnotatedTransfer | undefined;
   showAll: boolean;
+  alreadyPaid: number;
 }) {
   const t = useT();
   const [open, setOpen] = useState(false);
@@ -483,134 +590,20 @@ function MemberCard({
   const isSlim = !showAll && exactMatch;
 
   const copyMsg = () => {
-    const iban =
-      bankAccount || "(rekeningnummer niet ingesteld — stel in via Admin → Instellingen)";
-    const W = 40;
-    const WC = 32;
-    const e = (n: number) => `€ ${n.toFixed(2).replace(".", ",").padStart(6)}`;
-    const row = (left: string, sign: "+" | "−", n: number, w = W) => {
-      const right = `${sign} ${e(n)}`;
-      return left + " ".repeat(Math.max(1, w - left.length - right.length)) + right;
-    };
-
-    const sections: string[] = [];
-
-    if (m.is_owner) {
-      for (const era of m.car_eras) {
-        const nStar = era.n_c_star ?? 0;
-        const contribs = era.member_contributions ?? [];
-        if (Math.abs(nStar) < 0.005 && contribs.length === 0) continue;
-        const lines: string[] = [
-          row(
-            `${t("settlement.section_own_car")} — ${era.car_short}`,
-            nStar >= 0 ? "+" : "−",
-            Math.abs(nStar)
-          ),
-        ];
-        for (const c of contribs) {
-          const detail =
-            c.trip_km > 0
-              ? ` (${c.trip_km} km${c.fuel_liters > 0.05 ? `, ${fmtL(c.fuel_liters)} L` : ""}${c.expense_amount > 0 ? `, € ${c.expense_amount.toFixed(2).replace(".", ",")}` : ""})`
-              : "";
-          if (c.contribution === 0) {
-            const label = `  ${c.person_name}${detail}`;
-            lines.push(label + " ".repeat(Math.max(1, W - label.length - 7)) + `€  0,00`);
-          } else {
-            lines.push(
-              row(
-                `  ${c.person_name}${detail}`,
-                c.contribution >= 0 ? "+" : "−",
-                Math.abs(c.contribution),
-                WC
-              )
-            );
-          }
-        }
-        sections.push(lines.join("\n"));
-      }
-      if (crossRows.length > 0) {
-        const lines: string[] = [];
-        for (const { car_short, row: r } of crossRows) {
-          const parts: string[] = [];
-          if (r.trip_km > 0) parts.push(`${r.trip_km} km`);
-          if (r.fuel_liters > 0.05) parts.push(`${fmtL(r.fuel_liters)} L`);
-          const saldo = -r.balance;
-          lines.push(
-            row(
-              `${car_short}${parts.length ? ` (${parts.join(", ")})` : ""}`,
-              saldo >= 0 ? "+" : "−",
-              Math.abs(saldo)
-            )
-          );
-        }
-        sections.push(lines.join("\n"));
-      }
-    } else {
-      // Group by car, then type — mirrors the card structure
-      for (const era of m.car_eras) {
-        if (era.trip_km === 0 && era.fuel_liters === 0 && era.expense_amount === 0) continue;
-        const sec = [row(era.car_short, era.balance >= 0 ? "+" : "−", Math.abs(era.balance))];
-        if (era.trip_km > 0)
-          sec.push(row(`  ${t("page.trips")} (${era.trip_km} km)`, "−", era.trip_amount, WC));
-        const hasFuelStar = (era.fuel_settled_liters ?? 0) > 0.05;
-        const hasExpStar = (era.expense_settled_amount ?? 0) > 0.005;
-        if (era.fuel_liters > 0)
-          sec.push(
-            row(
-              `  ${t("settlement.breakdown_fuel")} (${fmtL(era.fuel_liters)} L)${hasFuelStar ? " (*)" : ""}`,
-              "+",
-              era.fuel_amount,
-              WC
-            )
-          );
-        if (era.expense_amount > 0)
-          sec.push(
-            row(
-              `  ${t("settlement.breakdown_costs")}${hasExpStar ? (hasFuelStar ? " (**)" : " (*)") : ""}`,
-              "+",
-              era.expense_amount,
-              WC
-            )
-          );
-        if (hasFuelStar)
-          sec.push(
-            `  (*) ${era.fuel_settled_count} tankbeurt${(era.fuel_settled_count ?? 0) !== 1 ? "en" : ""} (${fmtL(era.fuel_settled_liters ?? 0)} L) buiten afrekening`
-          );
-        if (hasExpStar) {
-          const prefix = hasFuelStar ? "(**)" : "(*)";
-          sec.push(
-            `  ${prefix} ${era.expense_settled_count} kost${(era.expense_settled_count ?? 0) !== 1 ? "en" : ""} buiten afrekening`
-          );
-        }
-        sections.push(sec.join("\n"));
-      }
-    }
-
-    const separator = "─".repeat(W);
-    const lines = [
-      "```",
-      `Beste ${personFullName},`,
-      m.is_owner
-        ? `Jouw eigenaarspayout voor ${year}:`
-        : `Jouw aandeel in de jaarafrekening ${year}:`,
-      ...(sections.length > 0 ? [sections.join("\n")] : []),
-      separator,
-      row(`Saldo`, net >= 0 ? "+" : "−", Math.abs(net)),
-      ``,
-      ...(net > 0
-        ? [
-            personBankAccount
-              ? `Coöp schrijft ${e(Math.abs(net))} over naar ${personBankAccount}.`
-              : `Coöp schrijft ${e(Math.abs(net))} over naar jou.`,
-          ]
-        : net < 0
-          ? [`Gelieve ${e(Math.abs(net))} over te schrijven naar ${iban}.`]
-          : []),
-      `Je overzicht: ${typeof window !== "undefined" ? window.location.origin : ""}`,
-      "```",
-    ];
-
-    navigator.clipboard.writeText(lines.join("\n"));
+    const text = buildSettlementMessage({
+      m,
+      year,
+      bankAccount,
+      personBankAccount,
+      personFullName,
+      crossRows,
+      alreadyPaid,
+      t: (key: string) => t(key as Parameters<typeof t>[0]),
+    }).replace(
+      "Je overzicht: ",
+      `Je overzicht: ${typeof window !== "undefined" ? window.location.origin : ""}`
+    );
+    navigator.clipboard.writeText(text);
     setMsgCopied(true);
     setTimeout(() => setMsgCopied(false), 2000);
   };
@@ -708,190 +701,15 @@ function MemberCard({
 
       {open && (
         <div style={{ borderTop: `1px dashed ${paper.paperDark}`, padding: "10px 14px 14px" }}>
-          {/* Non-owner: per-car breakdown */}
-          {!m.is_owner &&
-            m.car_eras.map((era, i) => (
-              <div key={i} style={{ marginTop: i === 0 ? 0 : 14 }}>
-                <CarSectionHeader label={era.car_short} saldo={era.balance} />
-                {era.trip_km > 0 && (
-                  <BreakdownCarRow
-                    car={`${t("page.trips")} (${era.trip_km} km)`}
-                    detail={null}
-                    amount={`− ${fmtMoney(era.trip_amount)}`}
-                    amountColor={paper.accent}
-                  />
-                )}
-                {era.fuel_liters > 0 && (
-                  <BreakdownCarRow
-                    car={`${t("settlement.breakdown_fuel")} (${fmtL(era.fuel_liters)} L${(era.fuel_settled_liters ?? 0) > 0.05 ? " (*)" : ""})`}
-                    detail={null}
-                    amount={`+ ${fmtMoney(era.fuel_amount)}`}
-                    amountColor={paper.green}
-                  />
-                )}
-                {era.expense_amount > 0 && (
-                  <BreakdownCarRow
-                    car={`${t("settlement.breakdown_costs")}${(era.expense_settled_amount ?? 0) > 0.005 ? ((era.fuel_settled_liters ?? 0) > 0.05 ? " (**)" : " (*)") : ""}`}
-                    detail={null}
-                    amount={`+ ${fmtMoney(era.expense_amount)}`}
-                    amountColor={paper.green}
-                  />
-                )}
-                <SettledNote
-                  fuelCount={era.fuel_settled_count ?? 0}
-                  fuelLiters={era.fuel_settled_liters ?? 0}
-                  expCount={era.expense_settled_count ?? 0}
-                  expAmt={era.expense_settled_amount ?? 0}
-                />
-              </div>
-            ))}
-
-          {/* EIGEN WAGEN section — owners only, shown first */}
-          {m.is_owner &&
-            m.car_eras.map((era, i) => {
-              const nStar = era.n_c_star ?? 0;
-              const contribs = era.member_contributions ?? [];
-              if (Math.abs(nStar) < 0.005 && contribs.length === 0) return null;
-              return (
-                <div
-                  key={i}
-                  style={{
-                    marginTop: i > 0 ? 14 : 0,
-                    borderTop: i > 0 ? `1px dashed ${paper.paperDark}` : undefined,
-                    paddingTop: i > 0 ? 10 : 0,
-                  }}
-                >
-                  <CarSectionHeader
-                    label={`${t("settlement.section_own_car")} — ${era.car_short}`}
-                    saldo={nStar}
-                  />
-                  {contribs.map((contrib, j) => {
-                    const detail = fmtDetail(
-                      contrib.trip_km,
-                      contrib.fuel_liters,
-                      contrib.expense_amount,
-                      contrib.fuel_settled_liters,
-                      contrib.expense_settled_amount
-                    );
-                    const isOwnRow = contrib.person_name === m.person_name;
-                    return (
-                      <div
-                        key={j}
-                        style={{
-                          display: "flex",
-                          justifyContent: "space-between",
-                          alignItems: "baseline",
-                          paddingLeft: 16,
-                          marginTop: 2,
-                        }}
-                      >
-                        <span style={{ fontFamily: fontMono, fontSize: 10, color: paper.inkDim }}>
-                          {contrib.person_name}
-                          {detail ? ` ${detail}` : ""}
-                        </span>
-                        <span
-                          style={{
-                            fontFamily: fontMono,
-                            fontSize: 10,
-                            color: isOwnRow ? paper.inkDim : amtColor(contrib.contribution),
-                            paddingLeft: 12,
-                          }}
-                        >
-                          {isOwnRow
-                            ? fmtMoney(0)
-                            : `${signPrefix(contrib.contribution)}${fmtMoney(contrib.contribution)}`}
-                        </span>
-                      </div>
-                    );
-                  })}
-                  <SettledNote
-                    fuelCount={contribs.reduce((s, c) => s + (c.fuel_settled_count ?? 0), 0)}
-                    fuelLiters={contribs.reduce((s, c) => s + (c.fuel_settled_liters ?? 0), 0)}
-                    expCount={contribs.reduce((s, c) => s + (c.expense_settled_count ?? 0), 0)}
-                    expAmt={contribs.reduce((s, c) => s + (c.expense_settled_amount ?? 0), 0)}
-                  />
-                </div>
-              );
-            })}
-
-          {/* Cross-car sections — owners who drove other owners' cars */}
-          {m.is_owner && crossRows.length > 0 && (
-            <div
-              style={{
-                marginTop: 14,
-                borderTop: `1px dashed ${paper.paperDark}`,
-                paddingTop: 10,
-              }}
-            >
-              {crossRows.map((item, i) => {
-                const crossSaldo = -item.row.balance;
-                return (
-                  <div key={i} style={{ marginTop: i === 0 ? 0 : 14 }}>
-                    <CarSectionHeader label={item.car_short} saldo={crossSaldo} />
-                    {item.row.trip_km > 0 && (
-                      <BreakdownCarRow
-                        car={`ritten (${item.row.trip_km} km)`}
-                        detail={null}
-                        amount={`− ${fmtMoney(item.row.trip_amount)}`}
-                        amountColor={paper.accent}
-                      />
-                    )}
-                    {item.row.fuel_liters > 0 && (
-                      <BreakdownCarRow
-                        car={`brandstof (${fmtL(item.row.fuel_liters)} L)${item.row.fuel_settled_liters > 0.05 ? " (*)" : ""}`}
-                        detail={null}
-                        amount={`+ ${fmtMoney(item.row.fuel_amount)}`}
-                        amountColor={paper.green}
-                      />
-                    )}
-                    {item.row.expense_amount > 0 && (
-                      <BreakdownCarRow
-                        car={`kosten${item.row.expense_settled_amount > 0.005 ? (item.row.fuel_settled_liters > 0.05 ? " (**)" : " (*)") : ""}`}
-                        detail={null}
-                        amount={`+ ${fmtMoney(item.row.expense_amount)}`}
-                        amountColor={paper.green}
-                      />
-                    )}
-                    <SettledNote
-                      fuelCount={item.row.fuel_settled_count}
-                      fuelLiters={item.row.fuel_settled_liters}
-                      expCount={item.row.expense_settled_count}
-                      expAmt={item.row.expense_settled_amount}
-                    />
-                  </div>
-                );
-              })}
-            </div>
-          )}
-
-          {/* SALDO */}
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "baseline",
-              marginTop: 10,
-              paddingTop: 8,
-              borderTop: `1px dashed ${paper.paperDark}`,
-            }}
-          >
-            <span
-              style={{
-                fontFamily: fontMono,
-                fontSize: 9,
-                letterSpacing: 1.5,
-                textTransform: "uppercase" as const,
-                color: paper.inkDim,
-                fontWeight: 700,
-              }}
-            >
-              Saldo
-            </span>
-            <span style={{ fontFamily: fontMono, fontSize: 14, fontWeight: 700, color: netColor }}>
-              {signPrefix(net)}
-              {fmtMoney(net)}
-            </span>
-          </div>
+          {buildSettlementLines({
+            m,
+            year,
+            bankAccount,
+            personBankAccount,
+            crossRows,
+            alreadyPaid,
+            t: (key: string) => t(key as Parameters<typeof t>[0]),
+          }).map((line, i) => renderLineJsx(line, i))}
 
           {/* Transfer direction */}
           {Math.abs(net) > 0.005 && bankAccount && (
@@ -1286,6 +1104,7 @@ function AdminSettlementPageContent() {
                         tr.payment_status !== null
                     )}
                     showAll={showAll}
+                    alreadyPaid={data.payments_by_person[m.person_id] ?? 0}
                   />
                 ))}
 

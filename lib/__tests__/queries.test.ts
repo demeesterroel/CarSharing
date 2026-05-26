@@ -355,13 +355,13 @@ describe("getDashboard", () => {
 
     insertFuelFillup(db, {
       person_id: memberId, car_id: cid, date: "2026-01-10",
-      amount: 40, liters: 25, price_per_liter: null, full_tank: 0,
+      amount: 40, liters: 25, full_tank: 0,
       odometer: null, receipt: null, location: null, gps_coords: null,
       settled_outside: 1,
     });
     insertFuelFillup(db, {
       person_id: memberId, car_id: cid, date: "2026-01-11",
-      amount: 20, liters: 12, price_per_liter: null, full_tank: 0,
+      amount: 20, liters: 12, full_tank: 0,
       odometer: null, receipt: null, location: null, gps_coords: null,
       settled_outside: 0,
     });
@@ -390,7 +390,7 @@ describe("getDashboard", () => {
     });
     insertFuelFillup(db, {
       person_id: ownerId, car_id: cid2, date: "2026-02-01",
-      amount: 50, liters: 30, price_per_liter: null, full_tank: 0,
+      amount: 50, liters: 30, full_tank: 0,
       odometer: null, receipt: null, location: null, gps_coords: null,
       settled_outside: 1,
     });
@@ -427,7 +427,6 @@ describe("getDashboard", () => {
       date: "2026-01-10",
       amount: 50,
       liters: 30,
-      price_per_liter: null,
       full_tank: 0,
       odometer: null,
       receipt: null,
@@ -442,7 +441,6 @@ describe("getDashboard", () => {
       date: "2026-01-10",
       amount: 20,
       liters: 12,
-      price_per_liter: null,
       full_tank: 0,
       odometer: null,
       receipt: null,

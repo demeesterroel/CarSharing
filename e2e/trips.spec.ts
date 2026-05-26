@@ -1,5 +1,5 @@
 import { test, expect } from "@playwright/test";
-import { loginAndGetSession, loginAndGetCsrf, makeApi, getTestEntities } from "./helpers";
+import { loginAndGetSession, loginAndGetCsrf, makeApi, getTestEntities, scrollToLoadAll } from "./helpers";
 
 /**
  * Trip CRUD + dashboard delta tests.
@@ -71,6 +71,7 @@ test.describe("trips CRUD", () => {
 
     await page.goto("/trips");
     await page.waitForLoadState("networkidle");
+    await scrollToLoadAll(page);
 
     // The TripCard renders the location as the primary text
     await expect(page.locator(`text=${LOCATION}`).first()).toBeVisible({ timeout: 10_000 });
@@ -124,6 +125,7 @@ test.describe("trips CRUD", () => {
 
     await page.goto("/trips");
     await page.waitForLoadState("networkidle");
+    await scrollToLoadAll(page);
 
     // Confirm trip is visible
     await expect(page.locator(`text=${LOCATION}`).first()).toBeVisible({ timeout: 10_000 });

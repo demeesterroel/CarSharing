@@ -87,7 +87,7 @@ test.describe("reservation approval flow", () => {
       // The pending reservation card should be visible.
       // The admin inbox renders: person_name, start_date, end_date, note.
       // We match on our unique note text.
-      const reservationNote = adminPage.locator("text=E2E-test-reservation");
+      const reservationNote = adminPage.getByText("E2E-test-reservation").first();
       await expect(reservationNote).toBeVisible({ timeout: 10_000 });
 
       // Click the "Bevestigen" / "Confirm" button that sits next to our card.
@@ -143,7 +143,7 @@ test.describe("reservation approval flow", () => {
 
       // The ReservationCard renders a "✓" when status is "confirmed"
       // and the person_name. Find our reservation by note text.
-      const noteText = userPage.locator("text=E2E-test-reservation");
+      const noteText = userPage.getByText("E2E-test-reservation").first();
       await expect(noteText).toBeVisible({ timeout: 10_000 });
 
       // The status indicator "✓" should be present near our reservation.

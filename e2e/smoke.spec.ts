@@ -27,8 +27,7 @@ test("login and view trips", async ({ page }) => {
   // Fill the login form
   // Labels come from t("form.name") → "Naam *" / "Name *"
   await page.getByLabel(/naam|name/i).fill(process.env.TEST_EMAIL ?? "alice");
-  // t("form.password") → "Wachtwoord" / "Password"
-  await page.getByLabel(/wachtwoord|password/i).fill(process.env.TEST_PASSWORD ?? "alice");
+  await page.locator("#login-password").fill(process.env.TEST_PASSWORD ?? "alice");
   // t("action.login") → "Inloggen" / "Log in"
   await page.getByRole("button", { name: /inloggen|log\s*in/i }).click();
 

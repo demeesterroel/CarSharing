@@ -1,5 +1,5 @@
 import { test, expect } from "@playwright/test";
-import { loginAndGetSession, loginAndGetCsrf, makeApi, getTestEntities } from "./helpers";
+import { loginAndGetSession, loginAndGetCsrf, makeApi, getTestEntities, scrollToLoadAll } from "./helpers";
 
 /**
  * Expense CRUD + dashboard delta tests.
@@ -65,6 +65,7 @@ test.describe("expense CRUD", () => {
 
     await page.goto("/expenses");
     await page.waitForLoadState("networkidle");
+    await scrollToLoadAll(page);
 
     // ExpenseCard renders: {description} as primary text
     await expect(page.locator(`text=${DESCRIPTION}`).first()).toBeVisible({ timeout: 10_000 });
@@ -109,6 +110,7 @@ test.describe("expense CRUD", () => {
 
     await page.goto("/expenses");
     await page.waitForLoadState("networkidle");
+    await scrollToLoadAll(page);
 
     await expect(page.locator(`text=${DESCRIPTION}`).first()).toBeVisible({ timeout: 10_000 });
 
@@ -117,6 +119,6 @@ test.describe("expense CRUD", () => {
 
     await page.reload();
     await page.waitForLoadState("networkidle");
-    await expect(page.locator(`text=${DESCRIPTION}`)).toHaveCount(0);
+    await expect(page.getByText(DESCRIPTION, { exact: true })).toHaveCount(0);
   });
 });

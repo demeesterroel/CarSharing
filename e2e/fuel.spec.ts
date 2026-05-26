@@ -1,5 +1,5 @@
 import { test, expect } from "@playwright/test";
-import { loginAndGetSession, loginAndGetCsrf, makeApi, getTestEntities } from "./helpers";
+import { loginAndGetSession, loginAndGetCsrf, makeApi, getTestEntities, scrollToLoadAll } from "./helpers";
 
 /**
  * Fuel fill-up CRUD + dashboard delta tests.
@@ -67,6 +67,7 @@ test.describe("fuel fill-up CRUD", () => {
 
     await page.goto("/fuel");
     await page.waitForLoadState("networkidle");
+    await scrollToLoadAll(page);
 
     // FuelCard renders: ⛽ {location} — look for the location text
     await expect(page.locator(`text=${LOCATION}`).first()).toBeVisible({ timeout: 10_000 });
@@ -114,6 +115,7 @@ test.describe("fuel fill-up CRUD", () => {
 
     await page.goto("/fuel");
     await page.waitForLoadState("networkidle");
+    await scrollToLoadAll(page);
 
     // Confirm visible
     await expect(page.locator(`text=${LOCATION}`).first()).toBeVisible({ timeout: 10_000 });

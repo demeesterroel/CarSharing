@@ -35,6 +35,25 @@ export async function handleCalendarRenew(
     const expiresMs = new Date(stateRow.expiration_at).getTime();
     const fiveDaysMs = 5 * 24 * 60 * 60 * 1000;
     if (!isNaN(expiresMs) && expiresMs - Date.now() > fiveDaysMs) {
+      // Channel healthy — still run a delta sync to recover any missed webhook notifications
+      try {
+        const { items, nextSyncToken } = await listEventsDelta(
+          client,
+          calendarId,
+          stateRow.sync_token
+        );
+        await processCalendarDelta(db, client, calendarId, items);
+        db.prepare("UPDATE calendar_sync_state SET sync_token=? WHERE id=1").run(nextSyncToken);
+      } catch (e: unknown) {
+        const code = (e as { code?: number })?.code;
+        if (code === 410) {
+          const { items, nextSyncToken } = await listEventsDelta(client, calendarId);
+          await processCalendarDelta(db, client, calendarId, items);
+          db.prepare("UPDATE calendar_sync_state SET sync_token=? WHERE id=1").run(nextSyncToken);
+        } else {
+          console.error("[calendar-renew] delta sync failed", e);
+        }
+      }
       return { ok: true, skipped: "not_due" };
     }
     try {

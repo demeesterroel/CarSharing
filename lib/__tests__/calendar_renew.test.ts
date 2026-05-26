@@ -37,7 +37,7 @@ describe("handleCalendarRenew", () => {
     expect(calMock.watchEvents).not.toHaveBeenCalled();
   });
 
-  it("returns skipped:not_due when channel expires in >5 days", async () => {
+  it("returns skipped:not_due but still runs delta sync when channel expires in >5 days", async () => {
     const db = makeDb();
     setSetting(db, "google_calendar_id", "cal-id");
     setSetting(db, "google_oauth_refresh_token", "rt");
@@ -49,6 +49,35 @@ describe("handleCalendarRenew", () => {
     const result = await handleCalendarRenew(db, "https://example.com");
     expect(result).toEqual({ ok: true, skipped: "not_due" });
     expect(calMock.watchEvents).not.toHaveBeenCalled();
+    expect(calMock.listEventsDelta).toHaveBeenCalledWith(expect.anything(), "cal-id", "tok");
+    const row = db
+      .prepare("SELECT sync_token FROM calendar_sync_state WHERE id = 1")
+      .get() as { sync_token: string };
+    expect(row.sync_token).toBe("new-tok");
+  });
+
+  it("recovers from 410 in not_due delta sync via full re-sync", async () => {
+    const db = makeDb();
+    setSetting(db, "google_calendar_id", "cal-id");
+    setSetting(db, "google_oauth_refresh_token", "rt");
+    const future = new Date(Date.now() + 6 * 24 * 60 * 60 * 1000).toISOString();
+    db.prepare(
+      "INSERT INTO calendar_sync_state (id, channel_id, resource_id, expiration_at, sync_token) VALUES (1, 'ch', 'res', ?, 'expired-tok')"
+    ).run(future);
+
+    vi.mocked(calMock.listEventsDelta)
+      .mockRejectedValueOnce(Object.assign(new Error("Gone"), { code: 410 }))
+      .mockResolvedValueOnce({ items: [], nextSyncToken: "fresh-tok" });
+
+    const result = await handleCalendarRenew(db, "https://example.com");
+    expect(result).toEqual({ ok: true, skipped: "not_due" });
+    // First call with stale token, second without (full re-sync)
+    expect(calMock.listEventsDelta).toHaveBeenCalledTimes(2);
+    expect(calMock.listEventsDelta).toHaveBeenLastCalledWith(expect.anything(), "cal-id");
+    const row = db
+      .prepare("SELECT sync_token FROM calendar_sync_state WHERE id = 1")
+      .get() as { sync_token: string };
+    expect(row.sync_token).toBe("fresh-tok");
   });
 
   it("renews channel when it expires in <5 days", async () => {

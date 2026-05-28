@@ -37,10 +37,16 @@ vi.mock("@/lib/env", () => ({
   },
 }));
 
-function makeReq(body: unknown) {
+// Each request gets a unique client IP by default so the brute-force rate
+// limiter (keyed on IP) does not bleed state between unrelated test cases.
+let ipCounter = 0;
+function makeReq(body: unknown, ip?: string) {
   return new Request("http://localhost/api/auth/login", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type": "application/json",
+      "x-forwarded-for": ip ?? `203.0.113.${++ipCounter}`,
+    },
     body: JSON.stringify(body),
   });
 }
@@ -109,5 +115,20 @@ describe("POST /api/auth/login", () => {
     mockGetPersonByUsername.mockReturnValue({ ...alicePerson, is_admin: 1 });
     await POST(makeReq({ username: "alice", password: "correct" }));
     expect(mockSession.isAdmin).toBe(true);
+  });
+
+  it("rate-limits repeated attempts from the same IP", async () => {
+    mockVerifyCredentials.mockResolvedValue(false);
+    const ip = "198.51.100.7";
+    // 5 attempts are allowed within the window.
+    for (let i = 0; i < 5; i++) {
+      const res = await POST(makeReq({ username: "alice", password: "x" }, ip));
+      expect(res.status).toBe(401);
+    }
+    // The 6th is throttled before credentials are ever checked.
+    const blocked = await POST(makeReq({ username: "alice", password: "x" }, ip));
+    expect(blocked.status).toBe(429);
+    expect(blocked.headers.get("Retry-After")).toBeTruthy();
+    expect(await blocked.json()).toMatchObject({ error: "too_many_requests" });
   });
 });

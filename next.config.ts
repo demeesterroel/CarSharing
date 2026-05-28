@@ -184,6 +184,42 @@ const withPWA = withPWAInit({
   publicExcludes: ["!icons/source.svg"],
 });
 
+const isProd = process.env.NODE_ENV === "production";
+
+// Content-Security-Policy. `unsafe-inline` is required for Next.js' bootstrap
+// scripts and the app's inline styles; `unsafe-eval` is only needed by the dev
+// server (HMR). Map tiles load as <img> from CARTO; the reverse-geocode call
+// goes to Nominatim. Everything else is same-origin.
+const csp = [
+  "default-src 'self'",
+  "base-uri 'self'",
+  "object-src 'none'",
+  "frame-ancestors 'none'",
+  "form-action 'self'",
+  `script-src 'self' 'unsafe-inline'${isProd ? "" : " 'unsafe-eval'"}`,
+  "style-src 'self' 'unsafe-inline'",
+  "img-src 'self' data: blob: https:",
+  "font-src 'self'",
+  "connect-src 'self' https://nominatim.openstreetmap.org",
+  "manifest-src 'self'",
+  "worker-src 'self' blob:",
+  "frame-src 'self'",
+  ...(isProd ? ["upgrade-insecure-requests"] : []),
+].join("; ");
+
+// Applied to every response. The CSP is attached separately so it can skip the
+// dev-only Scalar API docs page, which relies on inline/CDN scripts.
+const baseSecurityHeaders = [
+  { key: "X-Content-Type-Options", value: "nosniff" },
+  { key: "X-Frame-Options", value: "DENY" },
+  { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+  { key: "Permissions-Policy", value: "camera=(), microphone=(), payment=(), geolocation=(self)" },
+  { key: "X-DNS-Prefetch-Control", value: "off" },
+  ...(isProd
+    ? [{ key: "Strict-Transport-Security", value: "max-age=63072000; includeSubDomains" }]
+    : []),
+];
+
 const nextConfig: NextConfig = {
   output: "standalone",
   outputFileTracingRoot: __dirname,
@@ -194,6 +230,13 @@ const nextConfig: NextConfig = {
     .filter(Boolean),
   async rewrites() {
     return [{ source: "/uploads/:path*", destination: "/api/static/:path*" }];
+  },
+  async headers() {
+    return [
+      { source: "/:path*", headers: baseSecurityHeaders },
+      // Strict CSP everywhere except the /docs API reference page.
+      { source: "/((?!docs).*)", headers: [{ key: "Content-Security-Policy", value: csp }] },
+    ];
   },
 };
 

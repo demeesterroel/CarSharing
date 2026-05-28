@@ -24,7 +24,14 @@ export async function GET(_: Request, ctx: { params: Promise<{ path: string[] }>
     const ext = parts.at(-1)?.split(".").pop()?.toLowerCase() ?? "";
     const mime = MIME_BY_EXT[ext] ?? "application/octet-stream";
     return new Response(new Uint8Array(file), {
-      headers: { "Content-Type": mime, "Cache-Control": "public, max-age=31536000, immutable" },
+      headers: {
+        "Content-Type": mime,
+        "Cache-Control": "public, max-age=31536000, immutable",
+        // Defense in depth: never let the browser sniff a different type, and
+        // render uploads inline rather than as a same-origin document.
+        "X-Content-Type-Options": "nosniff",
+        "Content-Disposition": "inline",
+      },
     });
   } catch {
     return NextResponse.json({ error: "Not found" }, { status: 404 });

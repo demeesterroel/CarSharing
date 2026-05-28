@@ -1,7 +1,8 @@
-import { NextResponse } from "next/server";
+import { NextResponse, type NextRequest } from "next/server";
 import { writeFile, mkdir } from "fs/promises";
 import path from "path";
 import { randomUUID } from "crypto";
+import { validateCsrfToken } from "@/lib/csrf";
 
 const MAX_BYTES = 8 * 1024 * 1024;
 const ALLOWED_MIME: Record<string, string> = {
@@ -10,7 +11,36 @@ const ALLOWED_MIME: Record<string, string> = {
   "image/webp": "webp",
 };
 
-export async function POST(req: Request) {
+/**
+ * Verifies the file's leading bytes match its declared image type. The browser
+ * `File.type` is client-controlled, so without this a caller could store an
+ * arbitrary payload (HTML/SVG/script) under an image extension.
+ */
+function sniffMatchesMime(buffer: Buffer, mime: string): boolean {
+  if (mime === "image/jpeg") {
+    return buffer.length >= 3 && buffer[0] === 0xff && buffer[1] === 0xd8 && buffer[2] === 0xff;
+  }
+  if (mime === "image/png") {
+    const sig = [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a];
+    return buffer.length >= 8 && sig.every((b, i) => buffer[i] === b);
+  }
+  if (mime === "image/webp") {
+    return (
+      buffer.length >= 12 &&
+      buffer.toString("ascii", 0, 4) === "RIFF" &&
+      buffer.toString("ascii", 8, 12) === "WEBP"
+    );
+  }
+  return false;
+}
+
+export async function POST(req: NextRequest) {
+  // Mutating endpoint: enforce CSRF like every other write route. This handler
+  // does not go through the json() wrapper, so the check is applied directly.
+  if (!validateCsrfToken(req)) {
+    return NextResponse.json({ error: "invalid_csrf" }, { status: 403 });
+  }
+
   const formData = await req.formData().catch(() => null);
   const file = formData?.get("file");
   if (!(file instanceof File)) {
@@ -24,10 +54,14 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Unsupported file type" }, { status: 415 });
   }
 
+  const buffer = Buffer.from(await file.arrayBuffer());
+  if (!sniffMatchesMime(buffer, file.type)) {
+    return NextResponse.json({ error: "File content does not match its type" }, { status: 415 });
+  }
+
   const uploadsDir = path.join(process.cwd(), "uploads");
   const filename = `${randomUUID()}.${ext}`;
   const dest = path.join(uploadsDir, filename);
-  const buffer = Buffer.from(await file.arrayBuffer());
   await mkdir(uploadsDir, { recursive: true });
   await writeFile(dest, buffer);
 

@@ -16,6 +16,9 @@ export function checkRateLimit(
   key: string,
   options: RateLimitOptions
 ): { ok: boolean; retryAfter?: number } {
+  // Escape hatch for E2E/dev: the Playwright dev server sets this so the suite,
+  // which logs in repeatedly from one host, isn't throttled. Never set in prod.
+  if (process.env.DISABLE_RATE_LIMIT === "1") return { ok: true };
   const now = Date.now();
   const entry = store.get(key);
   if (!entry || entry.resetAt <= now) {

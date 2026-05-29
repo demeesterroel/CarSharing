@@ -1,44 +1,53 @@
 import { test, expect, type APIRequestContext } from "@playwright/test";
-import { makeApi } from "./helpers";
 
 /**
  * E2E for "log out everywhere" / server-side session revocation (issue #266).
  *
  * Bumping the user's session epoch must invalidate every previously issued
  * cookie — including sessions held by other devices — on the next request.
+ *
+ * Note: GET /api/me rotates the csrf-token cookie on every call, so the CSRF
+ * token is read from the context's cookie jar (storageState) immediately before
+ * each mutating call rather than captured earlier.
  */
 
 const EMAIL = process.env.TEST_EMAIL ?? "alice";
 const PASSWORD = process.env.TEST_PASSWORD ?? "alice";
 
-/** Logs a fresh context in and returns its CSRF token (or null on failure). */
-async function login(ctx: APIRequestContext): Promise<string | null> {
+/** Reads the current csrf-token cookie from the context's jar. */
+async function currentCsrf(ctx: APIRequestContext): Promise<string | null> {
+  const state = await ctx.storageState();
+  return state.cookies.find((c) => c.name === "csrf-token")?.value ?? null;
+}
+
+/** Logs the context in and primes a csrf-token cookie via /api/me. */
+async function login(ctx: APIRequestContext): Promise<boolean> {
   const res = await ctx.post("/api/auth/login", { data: { username: EMAIL, password: PASSWORD } });
-  if (!res.ok()) return null;
-  const me = await ctx.get("/api/me");
-  for (const h of await me.headersArray()) {
-    if (h.name.toLowerCase() === "set-cookie") {
-      const m = h.value.match(/csrf-token=([^;]+)/);
-      if (m) return decodeURIComponent(m[1]);
-    }
-  }
-  return null;
+  if (!res.ok()) return false;
+  await ctx.get("/api/me"); // sets the csrf-token cookie
+  return true;
+}
+
+async function logoutAll(ctx: APIRequestContext): Promise<number> {
+  const csrf = await currentCsrf(ctx);
+  const res = await ctx.post("/api/auth/logout-all", {
+    headers: csrf ? { "x-csrf-token": csrf } : {},
+  });
+  return res.status();
 }
 
 test.describe("Session revocation", () => {
   test("logout-all revokes the current session", async ({ request }) => {
-    const csrf = await login(request);
-    test.skip(!csrf, "Test account not available — needs seeded demo data");
+    const ok = await login(request);
+    test.skip(!ok, "Test account not available — needs seeded demo data");
 
-    // Confirm we are authenticated.
-    const before = await request.get("/api/me");
-    expect(await before.json()).not.toBeNull();
+    expect(await (await request.get("/api/me")).json()).not.toBeNull();
 
-    await makeApi(request, csrf!).post("/api/auth/logout-all", {});
+    const status = await logoutAll(request);
+    expect(status).toBe(200);
 
     // The cookie's epoch is now stale → /api/me reports logged out.
-    const after = await request.get("/api/me");
-    expect(await after.json()).toBeNull();
+    expect(await (await request.get("/api/me")).json()).toBeNull();
   });
 
   test("logout-all from one device revokes a second device's session", async ({ playwright }) => {
@@ -46,16 +55,15 @@ test.describe("Session revocation", () => {
     const deviceA = await playwright.request.newContext({ baseURL });
     const deviceB = await playwright.request.newContext({ baseURL });
 
-    const csrfA = await login(deviceA);
-    const csrfB = await login(deviceB);
-    test.skip(!csrfA || !csrfB, "Test account not available — needs seeded demo data");
+    const okA = await login(deviceA);
+    const okB = await login(deviceB);
+    test.skip(!okA || !okB, "Test account not available — needs seeded demo data");
 
-    // Both devices are authenticated.
     expect(await (await deviceA.get("/api/me")).json()).not.toBeNull();
     expect(await (await deviceB.get("/api/me")).json()).not.toBeNull();
 
     // Device A triggers "log out everywhere".
-    await makeApi(deviceA, csrfA!).post("/api/auth/logout-all", {});
+    expect(await logoutAll(deviceA)).toBe(200);
 
     // Device B's previously valid cookie is now revoked.
     expect(await (await deviceB.get("/api/me")).json()).toBeNull();
@@ -65,8 +73,8 @@ test.describe("Session revocation", () => {
   });
 
   test("logout-all requires a CSRF token", async ({ request }) => {
-    const csrf = await login(request);
-    test.skip(!csrf, "Test account not available — needs seeded demo data");
+    const ok = await login(request);
+    test.skip(!ok, "Test account not available — needs seeded demo data");
     // Deliberately omit the x-csrf-token header.
     const res = await request.post("/api/auth/logout-all", {});
     expect(res.status()).toBe(403);

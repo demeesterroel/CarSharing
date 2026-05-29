@@ -11,12 +11,16 @@ vi.mock("@/lib/db", () => ({
   getDb: vi.fn(() => ({ transaction: (fn: (a: unknown) => void) => (a: unknown) => fn(a) })),
 }));
 
-const mockGetAuthToken = vi.fn();
-const mockDeleteAuthToken = vi.fn();
-const mockSetPasswordHash = vi.fn();
-const mockBumpSessionEpoch = vi.fn();
-const mockGetSessionEpoch = vi.fn(() => 1);
-const mockGetPersonById = vi.fn(() => ({ id: 9, first_name: "Alice", is_admin: 0 }));
+const mockGetAuthToken = vi.fn<(...a: unknown[]) => unknown>();
+const mockDeleteAuthToken = vi.fn<(...a: unknown[]) => unknown>();
+const mockSetPasswordHash = vi.fn<(...a: unknown[]) => unknown>();
+const mockBumpSessionEpoch = vi.fn<(...a: unknown[]) => unknown>();
+const mockGetSessionEpoch = vi.fn<(...a: unknown[]) => number>(() => 1);
+const mockGetPersonById = vi.fn<(...a: unknown[]) => unknown>(() => ({
+  id: 9,
+  first_name: "Alice",
+  is_admin: 0,
+}));
 vi.mock("@/lib/queries/people", () => ({
   getAuthToken: (...a: unknown[]) => mockGetAuthToken(...a),
   deleteAuthToken: (...a: unknown[]) => mockDeleteAuthToken(...a),

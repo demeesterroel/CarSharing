@@ -519,6 +519,22 @@ export const en: Messages = {
   "invite.invalid": "Invalid or expired invitation",
   "invite.success": "Password set — you're logged in",
 
+  // Account recovery & session
+  "auth.forgot_password": "Forgot password?",
+  "auth.forgot_title": "Reset your password",
+  "auth.forgot_subtitle": "Enter your email and we'll send you a reset link.",
+  "auth.email": "Email",
+  "auth.send_reset_link": "Send reset link",
+  "auth.send_magic_link": "Email me a sign-in link",
+  "auth.forgot_sent": "If an account exists for that email, a link is on its way.",
+  "auth.forgot_error": "Something went wrong. Please try again.",
+  "auth.reset_title": "Choose a new password",
+  "auth.reset_subtitle": "Enter a new password for your account.",
+  "auth.reset_error": "This reset link is invalid or has expired.",
+  "auth.back_to_login": "Back to log in",
+  "auth.logout_all": "Log out all devices",
+  "auth.logout_all_confirm": "Sign out of every device, including this one?",
+
   // Admin settings page
   "settings.title": "Settings",
   "settings.bank_title": "Cooperative bank account",

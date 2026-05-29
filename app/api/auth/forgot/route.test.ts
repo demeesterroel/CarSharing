@@ -10,14 +10,14 @@ vi.mock("@/lib/env", () => ({
 }));
 vi.mock("@/lib/db", () => ({ getDb: vi.fn(() => ({})) }));
 
-const mockGetPersonByEmail = vi.fn();
-const mockCreateAuthToken = vi.fn();
+const mockGetPersonByEmail = vi.fn<(...a: unknown[]) => unknown>();
+const mockCreateAuthToken = vi.fn<(...a: unknown[]) => unknown>();
 vi.mock("@/lib/queries/people", () => ({
   getPersonByEmail: (...a: unknown[]) => mockGetPersonByEmail(...a),
   createAuthToken: (...a: unknown[]) => mockCreateAuthToken(...a),
 }));
 
-const mockSendMail = vi.fn(() => Promise.resolve());
+const mockSendMail = vi.fn<(...a: unknown[]) => Promise<void>>(() => Promise.resolve());
 vi.mock("@/lib/mailer", () => ({ sendMail: (...a: unknown[]) => mockSendMail(...a) }));
 
 import { POST } from "./route";

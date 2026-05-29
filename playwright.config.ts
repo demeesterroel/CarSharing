@@ -16,5 +16,8 @@ export default defineConfig({
         url: "http://localhost:3000",
         reuseExistingServer: !process.env.CI,
         timeout: 60_000,
+        // The suite authenticates many times from one host; disable the login
+        // brute-force rate limit on the test server so logins aren't 429'd.
+        env: { ...process.env, DISABLE_RATE_LIMIT: "1" },
       },
 });

@@ -6,11 +6,13 @@ import { test, expect, type APIRequestContext } from "@playwright/test";
  * Bumping the user's session epoch must invalidate every previously issued
  * cookie — including sessions held by other devices — on the next request.
  *
- * Note: GET /api/me rotates the csrf-token cookie on every call, so the CSRF
- * token is read from the context's cookie jar (storageState) immediately before
- * each mutating call rather than captured earlier.
+ * Each test uses its own freshly created request context (its own cookie jar)
+ * so sessions don't leak between tests. GET /api/me rotates the csrf-token
+ * cookie, so the CSRF token is read from the jar immediately before each
+ * mutating call.
  */
 
+const baseURL = process.env.TEST_BASE_URL ?? "http://localhost:3000";
 const EMAIL = process.env.TEST_EMAIL ?? "alice";
 const PASSWORD = process.env.TEST_PASSWORD ?? "alice";
 
@@ -24,8 +26,8 @@ async function currentCsrf(ctx: APIRequestContext): Promise<string | null> {
 async function login(ctx: APIRequestContext): Promise<boolean> {
   const res = await ctx.post("/api/auth/login", { data: { username: EMAIL, password: PASSWORD } });
   if (!res.ok()) return false;
-  await ctx.get("/api/me"); // sets the csrf-token cookie
-  return true;
+  const me = await (await ctx.get("/api/me")).json(); // also sets csrf-token
+  return me !== null;
 }
 
 async function logoutAll(ctx: APIRequestContext): Promise<number> {
@@ -36,22 +38,42 @@ async function logoutAll(ctx: APIRequestContext): Promise<number> {
   return res.status();
 }
 
+/**
+ * Returns true if the context is logged out. A revoked-but-present cookie still
+ * passes the proxy auth gate, so /api/me returns `null` JSON; a destroyed cookie
+ * (current-session logout) fails the gate and the proxy redirects /api/me to
+ * /login (HTML). Treat both as logged out.
+ */
+async function isLoggedOut(ctx: APIRequestContext): Promise<boolean> {
+  const res = await ctx.get("/api/me");
+  const ct = res.headers()["content-type"] ?? "";
+  if (!ct.includes("application/json")) return true; // redirected to /login HTML
+  return (await res.json()) === null;
+}
+
+async function isLoggedIn(ctx: APIRequestContext): Promise<boolean> {
+  const res = await ctx.get("/api/me");
+  if (!(res.headers()["content-type"] ?? "").includes("application/json")) return false;
+  return (await res.json()) !== null;
+}
+
 test.describe("Session revocation", () => {
-  test("logout-all revokes the current session", async ({ request }) => {
-    const ok = await login(request);
+  test("logout-all revokes the current session", async ({ playwright }) => {
+    const ctx = await playwright.request.newContext({ baseURL });
+    const ok = await login(ctx);
     test.skip(!ok, "Test account not available — needs seeded demo data");
 
-    expect(await (await request.get("/api/me")).json()).not.toBeNull();
+    expect(await isLoggedIn(ctx)).toBe(true);
 
-    const status = await logoutAll(request);
-    expect(status).toBe(200);
+    expect(await logoutAll(ctx)).toBe(200);
 
-    // The cookie's epoch is now stale → /api/me reports logged out.
-    expect(await (await request.get("/api/me")).json()).toBeNull();
+    // The current session was destroyed → no longer logged in.
+    expect(await isLoggedOut(ctx)).toBe(true);
+
+    await ctx.dispose();
   });
 
   test("logout-all from one device revokes a second device's session", async ({ playwright }) => {
-    const baseURL = process.env.TEST_BASE_URL ?? "http://localhost:3000";
     const deviceA = await playwright.request.newContext({ baseURL });
     const deviceB = await playwright.request.newContext({ baseURL });
 
@@ -59,24 +81,26 @@ test.describe("Session revocation", () => {
     const okB = await login(deviceB);
     test.skip(!okA || !okB, "Test account not available — needs seeded demo data");
 
-    expect(await (await deviceA.get("/api/me")).json()).not.toBeNull();
-    expect(await (await deviceB.get("/api/me")).json()).not.toBeNull();
+    expect(await isLoggedIn(deviceA)).toBe(true);
+    expect(await isLoggedIn(deviceB)).toBe(true);
 
     // Device A triggers "log out everywhere".
     expect(await logoutAll(deviceA)).toBe(200);
 
     // Device B's previously valid cookie is now revoked.
-    expect(await (await deviceB.get("/api/me")).json()).toBeNull();
+    expect(await isLoggedOut(deviceB)).toBe(true);
 
     await deviceA.dispose();
     await deviceB.dispose();
   });
 
-  test("logout-all requires a CSRF token", async ({ request }) => {
-    const ok = await login(request);
+  test("logout-all requires a CSRF token", async ({ playwright }) => {
+    const ctx = await playwright.request.newContext({ baseURL });
+    const ok = await login(ctx);
     test.skip(!ok, "Test account not available — needs seeded demo data");
     // Deliberately omit the x-csrf-token header.
-    const res = await request.post("/api/auth/logout-all", {});
+    const res = await ctx.post("/api/auth/logout-all", {});
     expect(res.status()).toBe(403);
+    await ctx.dispose();
   });
 });

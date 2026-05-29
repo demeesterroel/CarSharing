@@ -27,6 +27,7 @@ export async function POST(req: Request) {
   let sessionPersonId: number | undefined;
   let sessionShortName: string | undefined;
   let sessionIsAdmin = false;
+  let sessionEpoch = 0;
 
   if (person?.password_hash) {
     // DB-based per-person auth
@@ -38,6 +39,7 @@ export async function POST(req: Request) {
       sessionPersonId = person.id;
       sessionShortName = shortNameOf(person);
       sessionIsAdmin = person.is_admin === 1;
+      sessionEpoch = person.session_epoch ?? 0;
     }
   } else {
     // Env-var fallback for initial/legacy setup
@@ -74,6 +76,7 @@ export async function POST(req: Request) {
   session.personId = sessionPersonId;
   session.shortName = sessionShortName;
   session.isAdmin = sessionIsAdmin;
+  session.epoch = sessionEpoch;
   await session.save();
   return res;
 }

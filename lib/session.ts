@@ -7,6 +7,12 @@ export interface SessionData {
   personId?: number;
   shortName?: string;
   isAdmin?: boolean;
+  /**
+   * The user's session epoch at the time this cookie was issued. If it no longer
+   * matches `people.session_epoch`, the session has been revoked. Absent on
+   * legacy cookies issued before this field existed (treated as still valid).
+   */
+  epoch?: number;
   /** Set while an admin is impersonating another person. */
   cloakedAs?: {
     personId: number;

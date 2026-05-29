@@ -115,6 +115,17 @@ export default function EditProfilePage({ params }: { params: Promise<{ id: stri
     }
   }
 
+  async function handleLogoutAll() {
+    if (!window.confirm(t("auth.logout_all_confirm"))) return;
+    try {
+      await apiFetch("/api/auth/logout-all", { method: "POST" });
+    } catch {
+      // Ignore — redirect to login regardless of the response.
+    }
+    queryClient.clear();
+    router.replace("/login");
+  }
+
   async function handleThemeToggle(newTheme: Theme) {
     setThemePreference(newTheme);
     setTheme(newTheme);
@@ -435,6 +446,32 @@ export default function EditProfilePage({ params }: { params: Promise<{ id: stri
               </div>
             )}
           </div>
+
+          {me?.personId === id && (
+            <div
+              style={{ marginTop: 20, paddingTop: 16, borderTop: `1px solid ${paper.paperDark}` }}
+            >
+              <button
+                type="button"
+                onClick={handleLogoutAll}
+                style={{
+                  width: "100%",
+                  padding: "8px",
+                  fontFamily: fontMono,
+                  fontSize: 9,
+                  fontWeight: 700,
+                  letterSpacing: 2,
+                  textTransform: "uppercase",
+                  background: "transparent",
+                  color: paper.accent,
+                  border: `1.5px solid ${paper.accent}`,
+                  cursor: "pointer",
+                }}
+              >
+                {t("auth.logout_all")}
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </div>

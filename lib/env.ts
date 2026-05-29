@@ -17,6 +17,10 @@ const envSchema = z.object({
   CRON_SECRET: z.string().optional(),
   GOOGLE_CLIENT_ID: z.string().optional(),
   GOOGLE_CLIENT_SECRET: z.string().optional(),
+  // Outbound email for password-reset / magic-link. When MAIL_WEBHOOK_URL is set,
+  // messages are POSTed there as JSON; otherwise they are logged (self-host dev).
+  MAIL_WEBHOOK_URL: z.string().url().optional(),
+  MAIL_FROM: z.string().optional(),
 });
 
 type Env = z.infer<typeof envSchema>;

@@ -176,7 +176,18 @@ export default function LoginPage() {
                 type="button"
                 onClick={() => setShowPassword((v) => !v)}
                 aria-label={showPassword ? t("action.hide_password") : t("action.show_password")}
-                style={{ position: "absolute", right: 10, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", padding: 0, color: paper.inkMute, display: "flex" }}
+                style={{
+                  position: "absolute",
+                  right: 10,
+                  top: "50%",
+                  transform: "translateY(-50%)",
+                  background: "none",
+                  border: "none",
+                  cursor: "pointer",
+                  padding: 0,
+                  color: paper.inkMute,
+                  display: "flex",
+                }}
               >
                 {showPassword ? <EyeOff size={15} /> : <Eye size={15} />}
               </button>
@@ -219,6 +230,22 @@ export default function LoginPage() {
           >
             {loading ? t("state.loading") : t("action.login")}
           </button>
+
+          <a
+            href="/forgot"
+            style={{
+              display: "block",
+              textAlign: "center",
+              marginTop: 16,
+              fontFamily: fontMono,
+              fontSize: 10,
+              letterSpacing: 1,
+              color: paper.inkDim,
+              textDecoration: "none",
+            }}
+          >
+            {t("auth.forgot_password")}
+          </a>
         </form>
       </div>
     </div>

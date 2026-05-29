@@ -10,7 +10,9 @@ export interface Person {
   is_admin: 0 | 1;
   bank_account: string;
   email: string | null;
-  theme_preference: 'paper' | 'mono';
+  theme_preference: "paper" | "mono";
+  /** Bumped to revoke all of a user's existing sessions ("log out everywhere"). */
+  session_epoch?: number;
   updated_at: string;
 }
 
@@ -181,7 +183,10 @@ export interface DashboardRow {
 }
 
 // Form input types (no id, no computed fields)
-export type PersonInput = Pick<Person, "first_name" | "last_name" | "discount" | "discount_long" | "active"> & {
+export type PersonInput = Pick<
+  Person,
+  "first_name" | "last_name" | "discount" | "discount_long" | "active"
+> & {
   username?: string | null;
   is_admin?: 0 | 1;
 };

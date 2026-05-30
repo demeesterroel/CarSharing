@@ -20,7 +20,7 @@ import { loginAndGetCsrf, makeApi, getTestEntities } from "./helpers";
 
 // Future dates to avoid conflicts with existing real reservations
 const FUTURE_START = new Date(Date.now() + 60 * 86400_000).toISOString().slice(0, 10); // +60 days
-const FUTURE_END = new Date(Date.now() + 62 * 86400_000).toISOString().slice(0, 10);   // +62 days
+const FUTURE_END = new Date(Date.now() + 62 * 86400_000).toISOString().slice(0, 10); // +62 days
 
 test.describe("reservation approval flow", () => {
   let userCsrf: string;
@@ -94,23 +94,29 @@ test.describe("reservation approval flow", () => {
       // The confirm button text comes from t("admin.confirm") → "Bevestigen" (nl) / "Confirm" (en).
       // There may be multiple pending reservations; click the first confirm button
       // (our reservation was just inserted so it should be at the top).
-      const confirmBtn = adminPage
-        .getByRole("button", { name: /bevestigen|confirm/i })
-        .first();
+      const confirmBtn = adminPage.getByRole("button", { name: /bevestigen|confirm/i }).first();
+
+      // Wait for the PATCH .../status response triggered by the click, rather
+      // than a fixed timeout — removes the race that left status === "pending".
+      const statusResponse = adminPage.waitForResponse(
+        (r) => /\/api\/reservations\/\d+\/status$/.test(r.url()) && r.request().method() === "PATCH"
+      );
       await confirmBtn.click();
+      await statusResponse;
 
-      // After confirmation a toast appears and the card disappears from the inbox
-      // (or the list refreshes). Wait for the reservation to no longer be "pending"
-      // in the inbox by checking the API.
-      await adminPage.waitForTimeout(1000); // let the mutation settle
-
-      const reservationsAfter = await adminPage.request.get("/api/reservations");
-      const all = await reservationsAfter.json() as Array<{
-        id: number;
-        status: string;
-      }>;
-      const updated = all.find((r) => r.id === reservationId);
-      expect(updated?.status).toBe("confirmed");
+      // Poll the API until the status flips (poll auto-retries, so a single
+      // transient read error — e.g. ECONNRESET — no longer fails the test).
+      await expect
+        .poll(
+          async () => {
+            const res = await adminPage.request.get("/api/reservations");
+            if (!res.ok()) return undefined;
+            const all = (await res.json()) as Array<{ id: number; status: string }>;
+            return all.find((r) => r.id === reservationId)?.status;
+          },
+          { timeout: 10_000 }
+        )
+        .toBe("confirmed");
     } finally {
       await adminContext.close();
     }
@@ -175,7 +181,7 @@ test.describe("reservation approval flow", () => {
 
     // Fetch via API to confirm status is still pending
     const res = await page.request.get("/api/reservations");
-    const all = await res.json() as Array<{ id: number; status: string }>;
+    const all = (await res.json()) as Array<{ id: number; status: string }>;
     const mine = all.find((r) => r.id === reservationId);
     expect(mine?.status).toBe("pending");
   });

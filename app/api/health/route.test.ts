@@ -1,11 +1,12 @@
 import { describe, it, expect } from "vitest";
+import { version } from "@/package.json";
 import { GET, HEAD } from "./route";
 
 describe("GET /api/health", () => {
-  it("returns 200 with { ok: true }", async () => {
+  it("returns 200 with { ok: true, version }", async () => {
     const res = GET();
     expect(res.status).toBe(200);
-    expect(await res.json()).toEqual({ ok: true });
+    expect(await res.json()).toEqual({ ok: true, version });
   });
 
   it("does not set any auth cookie", async () => {

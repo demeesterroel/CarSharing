@@ -543,6 +543,8 @@ export const en: Messages = {
   "auth.reset_subtitle": "Enter a new password for your account.",
   "auth.reset_error": "This reset link is invalid or has expired.",
   "auth.back_to_login": "Back to log in",
+  "auth.use_magic_link": "Sign in with a link instead",
+  "auth.use_password": "Use a password instead",
   "auth.logout_all": "Log out all devices",
   "auth.logout_all_confirm": "Sign out of every device, including this one?",
 

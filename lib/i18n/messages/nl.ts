@@ -542,6 +542,8 @@ export const nl = {
   "auth.reset_subtitle": "Vul een nieuw wachtwoord in voor je account.",
   "auth.reset_error": "Deze resetlink is ongeldig of verlopen.",
   "auth.back_to_login": "Terug naar inloggen",
+  "auth.use_magic_link": "Inloggen met een link",
+  "auth.use_password": "Met wachtwoord inloggen",
   "auth.logout_all": "Op alle apparaten uitloggen",
   "auth.logout_all_confirm": "Uitloggen op elk apparaat, ook dit apparaat?",
 

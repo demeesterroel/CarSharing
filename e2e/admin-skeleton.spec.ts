@@ -1,7 +1,11 @@
 import { test, expect } from "@playwright/test";
 import { sealData } from "iron-session";
 
-const SESSION_PASSWORD = "autodelen-dev-session-password-32-chars-xyz";
+// Must match the password the e2e web server boots with — see
+// E2E_SESSION_PASSWORD in playwright.config.ts. If these diverge the sealed
+// cookie can't be decrypted and the app redirects /admin → /login.
+const SESSION_PASSWORD =
+  process.env.SESSION_PASSWORD ?? "autodelen-dev-session-password-32-chars-xyz";
 
 const EMPTY_ADMIN_SUMMARY = {
   carPnL: [],

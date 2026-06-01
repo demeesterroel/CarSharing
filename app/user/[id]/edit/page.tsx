@@ -409,7 +409,7 @@ export default function EditProfilePage({ params }: { params: Promise<{ id: stri
               {t("form.theme")}
             </div>
             <div style={{ display: "flex", gap: 8 }}>
-              {(["paper", "mono"] as Theme[]).map((t2) => (
+              {(["mono", "paper"] as Theme[]).map((t2) => (
                 <button
                   key={t2}
                   type="button"

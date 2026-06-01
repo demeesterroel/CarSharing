@@ -183,7 +183,9 @@ export default function AdminInboxPage() {
   const gaps = (adminData?.kmGaps ?? []).filter(
     (g) => !ownerCarShorts || ownerCarShorts.has(g.car_short)
   );
-  const duplicatePairs = adminData?.duplicateTrips ?? [];
+  const duplicatePairs = (adminData?.duplicateTrips ?? []).filter(
+    (p) => !ownerCarShorts || ownerCarShorts.has(p.car_short)
+  );
 
   const [expandedGap, setExpandedGap] = useState<string | null>(null);
 
@@ -237,9 +239,9 @@ export default function AdminInboxPage() {
       {/* ── Open reservations ─────────────────────────────── */}
       <SectionHeader
         label={t("admin.sub_inbox")}
-        count={pending.length}
-        countSuffix={t("admin.pending_badge").toLowerCase()}
-        isLoading={isResLoading}
+        count={pending.length + duplicatePairs.length + gaps.length}
+        countSuffix={t("admin.inbox_noun")}
+        isLoading={isResLoading || isAdminLoading}
       />
 
       {isResLoading ? (
@@ -361,6 +363,95 @@ export default function AdminInboxPage() {
               >
                 {t("admin.reject")}
               </button>
+            </div>
+          </Card>
+        ))
+      )}
+
+      {/* ── Divider ──────────────────────────────────────── */}
+      <Perf margin="20px 0 16px" />
+
+      {/* ── Duplicate trips ──────────────────────────────── */}
+      <SectionHeader
+        label={t("admin.duplicate_trips_title")}
+        count={duplicatePairs.length}
+        countSuffix={t("admin.duplicates_noun")}
+        isLoading={isAdminLoading}
+      />
+
+      {isAdminLoading ? null : duplicatePairs.length === 0 ? (
+        <div
+          style={{
+            padding: "12px 0 4px",
+            textAlign: "center",
+            fontFamily: fontMono,
+            fontSize: 10,
+            color: paper.inkDim,
+            letterSpacing: 1,
+          }}
+        >
+          {t("admin.no_duplicate_trips")}
+        </div>
+      ) : (
+        duplicatePairs.map((pair) => (
+          <Card
+            key={`${pair.trip1_id}-${pair.trip2_id}`}
+            style={{ borderLeft: `3px solid ${paper.accent}`, marginBottom: 8 }}
+          >
+            <div style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
+              <CarBadge short={pair.car_short} />
+              <div style={{ flex: 1 }}>
+                <div
+                  style={{
+                    fontFamily: fontSerif,
+                    fontSize: 16,
+                    fontWeight: 700,
+                    color: paper.ink,
+                    lineHeight: 1.1,
+                  }}
+                >
+                  {pair.person_name} · {pair.km.toLocaleString("nl-BE")} km
+                </div>
+                <div
+                  style={{
+                    fontFamily: fontMono,
+                    fontSize: 9,
+                    color: paper.inkDim,
+                    letterSpacing: 1,
+                    marginTop: 3,
+                  }}
+                >
+                  {pair.start_odometer.toLocaleString("nl-BE")} →{" "}
+                  {pair.end_odometer.toLocaleString("nl-BE")} km
+                </div>
+                <div style={{ marginTop: 8, display: "flex", gap: 8 }}>
+                  {(
+                    [
+                      { id: pair.trip1_id, date: pair.date1, amount: pair.amount1 },
+                      { id: pair.trip2_id, date: pair.date2, amount: pair.amount2 },
+                    ] as const
+                  ).map((leg) => (
+                    <a
+                      key={leg.id}
+                      href={`/trips?edit=${leg.id}`}
+                      style={{
+                        flex: 1,
+                        display: "block",
+                        padding: "6px 8px",
+                        border: `1px dashed ${paper.paperDark}`,
+                        fontFamily: fontMono,
+                        fontSize: 9,
+                        color: paper.ink,
+                        textDecoration: "none",
+                        letterSpacing: 1,
+                      }}
+                    >
+                      <div>{leg.date}</div>
+                      <div style={{ color: paper.inkDim }}>€{leg.amount.toFixed(2)}</div>
+                    </a>
+                  ))}
+                </div>
+              </div>
             </div>
           </Card>
         ))
@@ -519,94 +610,6 @@ export default function AdminInboxPage() {
         ))
       )}
 
-      {/* ── Divider ──────────────────────────────────────── */}
-      <Perf margin="20px 0 16px" />
-
-      {/* ── Duplicate trips ──────────────────────────────── */}
-      <SectionHeader
-        label={t("admin.duplicate_trips_title")}
-        count={duplicatePairs.length}
-        countSuffix={t("admin.duplicates_noun")}
-        isLoading={isAdminLoading}
-      />
-
-      {isAdminLoading ? null : duplicatePairs.length === 0 ? (
-        <div
-          style={{
-            padding: "12px 0 4px",
-            textAlign: "center",
-            fontFamily: fontMono,
-            fontSize: 10,
-            color: paper.inkDim,
-            letterSpacing: 1,
-          }}
-        >
-          {t("admin.no_duplicate_trips")}
-        </div>
-      ) : (
-        duplicatePairs.map((pair) => (
-          <Card
-            key={`${pair.trip1_id}-${pair.trip2_id}`}
-            style={{ borderLeft: `3px solid ${paper.accent}`, marginBottom: 8 }}
-          >
-            <div style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
-              <CarBadge short={pair.car_short} />
-              <div style={{ flex: 1 }}>
-                <div
-                  style={{
-                    fontFamily: fontSerif,
-                    fontSize: 16,
-                    fontWeight: 700,
-                    color: paper.ink,
-                    lineHeight: 1.1,
-                  }}
-                >
-                  {pair.person_name} · {pair.km.toLocaleString("nl-BE")} km
-                </div>
-                <div
-                  style={{
-                    fontFamily: fontMono,
-                    fontSize: 9,
-                    color: paper.inkDim,
-                    letterSpacing: 1,
-                    marginTop: 3,
-                  }}
-                >
-                  {pair.start_odometer.toLocaleString("nl-BE")} →{" "}
-                  {pair.end_odometer.toLocaleString("nl-BE")} km
-                </div>
-                <div style={{ marginTop: 8, display: "flex", gap: 8 }}>
-                  {(
-                    [
-                      { id: pair.trip1_id, date: pair.date1, amount: pair.amount1 },
-                      { id: pair.trip2_id, date: pair.date2, amount: pair.amount2 },
-                    ] as const
-                  ).map((leg) => (
-                    <a
-                      key={leg.id}
-                      href={`/trips?edit=${leg.id}`}
-                      style={{
-                        flex: 1,
-                        display: "block",
-                        padding: "6px 8px",
-                        border: `1px dashed ${paper.paperDark}`,
-                        fontFamily: fontMono,
-                        fontSize: 9,
-                        color: paper.ink,
-                        textDecoration: "none",
-                        letterSpacing: 1,
-                      }}
-                    >
-                      <div>{leg.date}</div>
-                      <div style={{ color: paper.inkDim }}>€{leg.amount.toFixed(2)}</div>
-                    </a>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </Card>
-        ))
-      )}
     </div>
   );
 }

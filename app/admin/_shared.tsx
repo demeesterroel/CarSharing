@@ -157,6 +157,25 @@ export function useOwnerCarShorts(): Set<string> | null {
   return new Set(cars.filter((c) => c.owner_person_id === me.personId).map((c) => c.short));
 }
 
+export function useInboxCount(): { count: number; isLoading: boolean } {
+  const { data: reservations = [], isLoading: isResLoading } = useReservations();
+  const ownerCarShorts = useOwnerCarShorts();
+  const year = new Date().getFullYear();
+  const { data: adminData, isLoading: isAdminLoading } = useAdminSummary(year);
+
+  const pending = reservations.filter(
+    (r) => r.status === "pending" && (!ownerCarShorts || ownerCarShorts.has(r.car_short ?? ""))
+  ).length;
+  const duplicates = (adminData?.duplicateTrips ?? []).filter(
+    (p) => !ownerCarShorts || ownerCarShorts.has(p.car_short)
+  ).length;
+  const gaps = (adminData?.kmGaps ?? []).filter(
+    (g) => !ownerCarShorts || ownerCarShorts.has(g.car_short)
+  ).length;
+
+  return { count: pending + duplicates + gaps, isLoading: isResLoading || isAdminLoading };
+}
+
 // ── Fleet economics helpers ───────────────────────────────────
 export function beMetrics(car: CarPnL) {
   // Net = trip revenue minus actual expenses (fuel + maintenance)

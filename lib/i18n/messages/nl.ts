@@ -299,6 +299,7 @@ export const nl = {
   "admin.confirm": "✓ Bevestigen",
   "admin.reject": "✗ Weigeren",
   "admin.pending_badge": "Aanvraag",
+  "admin.inbox_noun": "openstaand",
   "admin.km_cost_title": "Opbouw kostprijs / km",
   "admin.fuel_per_km": "Brandstof / km",
   "admin.maintenance_per_km": "Onderhoud / km",

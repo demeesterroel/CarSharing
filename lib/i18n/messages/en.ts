@@ -300,6 +300,7 @@ export const en: Messages = {
   "admin.confirm": "✓ Confirm",
   "admin.reject": "✗ Reject",
   "admin.pending_badge": "Pending",
+  "admin.inbox_noun": "open",
   "admin.km_cost_title": "Cost breakdown / km",
   "admin.fuel_per_km": "Fuel / km",
   "admin.maintenance_per_km": "Maintenance / km",

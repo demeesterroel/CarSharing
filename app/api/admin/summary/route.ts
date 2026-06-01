@@ -10,6 +10,7 @@ import {
   getRollingFuelPerKm,
   getHistoricalOwnerSplit,
   getHistoricalExpenses,
+  getDuplicateTrips,
 } from "@/lib/queries/admin";
 import { getDashboard } from "@/lib/queries/dashboard";
 import { json, requireAdminOrOwner } from "@/lib/api";
@@ -25,6 +26,7 @@ export const GET = json(async (req) => {
     settlement: getDashboard(db, year),
     kmGaps: getKmGaps(db),
     zeroKmTrips: getZeroKmTrips(db),
+    duplicateTrips: getDuplicateTrips(db),
     monthlyCarKm: getMonthlyCarKm(db, year),
     personContributions: getPersonContributions(db, year),
     historicalCarKm: getHistoricalCarKm(db, year),

@@ -85,6 +85,7 @@ import type {
   CarPnL,
   KmGap,
   ZeroKmTrip,
+  DuplicateTripPair,
   MonthlyCarKm,
   PersonContribution,
   CarYearKm,
@@ -102,6 +103,7 @@ export interface AdminSummary {
   settlement: DashboardRow[];
   kmGaps: KmGap[];
   zeroKmTrips: ZeroKmTrip[];
+  duplicateTrips: DuplicateTripPair[];
   monthlyCarKm: MonthlyCarKm[];
   personContributions: PersonContribution[];
   historicalCarKm: CarYearKm[];

@@ -131,38 +131,38 @@ test.describe("issue #176 – payment cache invalidation", () => {
     paymentId = null;
   });
 
-  test("new payment appears in list without page refresh", async ({ page }) => {
+  test("payment added via FAB dialog appears in list immediately without page refresh", async ({ page }) => {
     await loginViaApi(page);
     // Payments are managed at /admin/payments (no standalone /payments page).
     await page.goto("/admin/payments");
     await page.waitForLoadState("networkidle");
     await dismissDevOverlay(page);
 
-    // Click the "+ Toevoegen" / "+ Add" button to open the inline add form.
-    await page.getByRole("button", { name: /^\+\s*(toevoegen|add)$/i }).click();
+    // Click the FAB to open the add payment dialog.
+    await page.getByRole("button", { name: /betaling toevoegen|add payment/i }).click();
 
-    // Wait for the inline add form to appear ("Betaling toevoegen" heading).
-    await expect(page.getByText(/betaling toevoegen|add payment/i)).toBeVisible({ timeout: 3_000 });
+    // Wait for the dialog to appear.
+    const dialog = page.getByRole("dialog");
+    await expect(dialog).toBeVisible({ timeout: 3_000 });
 
     // Select the first real person (index 1 skips the disabled placeholder at index 0).
-    // The page has 2 filter selects before the form person select (index 2).
-    const personSel = page.locator("select").nth(2);
+    const personSel = dialog.locator("select").nth(0);
     await personSel.selectOption({ index: 1 });
 
     // Amount.
-    await page.locator("input[type='number']").fill("42");
+    await dialog.locator("input[type='number']").fill("42");
 
     // Note — unique sentinel.
     const NOTE = `E2E-cache-pay-${Date.now()}`;
-    await page.locator("input[type='text']").fill(NOTE);
+    await dialog.locator("input[type='text']").fill(NOTE);
 
     // Arm response interceptor.
     const responsePromise = page.waitForResponse(
       (r) => r.url().includes("/api/payments") && r.request().method() === "POST"
     );
 
-    // Submit with the save button inside the add form.
-    await page.getByRole("button", { name: /^(opslaan|save)$/i }).click();
+    // Submit with the add button inside the dialog.
+    await dialog.getByRole("button", { name: /^(toevoegen|add)$/i }).click();
 
     const apiRes = await responsePromise;
     if (apiRes.ok()) {

@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { getIronSession } from "iron-session";
 import { sessionOptions, type SessionData } from "@/lib/session";
 import { getDb } from "@/lib/db";
-import { isOwner, shortNameOf, getSessionEpoch } from "@/lib/queries/people";
+import { isOwner, isActivePerson, shortNameOf, getSessionEpoch } from "@/lib/queries/people";
 import { generateCsrfToken } from "@/lib/csrf";
 
 function getPersonFields(personId: number): {
@@ -37,10 +37,19 @@ function withCsrfCookie(response: NextResponse): NextResponse {
 }
 
 export async function GET(req: Request) {
-  const res = NextResponse.next();
-  const session = await getIronSession<SessionData>(req, res, sessionOptions);
+  // Use the final response when reading the session so cookie writes (destroy) attach to it.
+  const out = NextResponse.json(null);
+  const session = await getIronSession<SessionData>(req, out, sessionOptions);
   if (!session.authenticated) {
-    return withCsrfCookie(NextResponse.json(null));
+    return withCsrfCookie(out);
+  }
+
+  // Reject phantom sessions — person deleted, deactivated, or missing after cookie was issued.
+  // Destroy the session so the client is forced to log in again.
+  if (!session.personId || !isActivePerson(getDb(), session.personId)) {
+    session.destroy();
+    await session.save();
+    return withCsrfCookie(out);
   }
 
   // Honour server-side session revocation ("log out everywhere"): if this

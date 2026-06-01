@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import * as Dialog from "@radix-ui/react-dialog";
 import { paper, fontMono, fontSerif, fmtMoney, fmtDate, amtColor, signPrefix } from "@/lib/paper-theme";
 import { useT } from "@/components/locale-provider";
 import {
@@ -9,12 +10,52 @@ import {
   useDeletePayment,
 } from "@/hooks/use-payments";
 import { usePeople } from "@/hooks/use-people";
-import { Card, Perf } from "../_shared";
+import { Fab } from "@/components/fab";
 import type { Payment } from "@/types";
 import { fullNameOf } from "@/lib/person-utils";
 
-// ── Form ──────────────────────────────────────────────────────
+// ── Sheet styles ──────────────────────────────────────────────
+const overlayStyle: React.CSSProperties = {
+  position: "fixed",
+  inset: 0,
+  background: "rgba(0,0,0,0.45)",
+  zIndex: 49,
+};
+const sheetStyle: React.CSSProperties = {
+  position: "fixed",
+  bottom: 0,
+  left: "50%",
+  transform: "translateX(-50%)",
+  width: "min(100%, 480px)",
+  maxHeight: "92dvh",
+  borderRadius: "14px 14px 0 0",
+  background: paper.paperDeep,
+  zIndex: 50,
+  overflowY: "auto",
+};
 
+const inputStyle: React.CSSProperties = {
+  width: "100%",
+  padding: "6px 8px",
+  fontFamily: fontMono,
+  fontSize: 11,
+  border: `1px solid ${paper.paperDark}`,
+  background: paper.paperDeep,
+  color: paper.ink,
+  outline: "none",
+  boxSizing: "border-box",
+};
+const labelStyle: React.CSSProperties = {
+  fontFamily: fontMono,
+  fontSize: 9,
+  color: paper.inkDim,
+  letterSpacing: 1.5,
+  textTransform: "uppercase",
+  display: "block",
+  marginBottom: 3,
+};
+
+// ── Form state ────────────────────────────────────────────────
 interface FormState {
   person_id: number | "";
   date: string;
@@ -38,50 +79,106 @@ function fromPayment(p: Payment): FormState {
   };
 }
 
-interface FormProps {
-  initial: FormState;
-  onSave: (f: FormState) => void;
-  onCancel: () => void;
-  saving: boolean;
-}
-
-function PaymentForm({ initial, onSave, onCancel, saving }: FormProps) {
+// ── Add payment sheet ─────────────────────────────────────────
+function AddPaymentSheet({ onClose }: { onClose: () => void }) {
   const t = useT();
   const { data: people = [] } = usePeople();
-  const [f, setF] = useState<FormState>(initial);
-  const set = <K extends keyof FormState>(k: K, v: FormState[K]) => setF((p) => ({ ...p, [k]: v }));
+  const create = useCreatePayment();
+  const [f, setF] = useState<FormState>(emptyForm());
+  const set = <K extends keyof FormState>(k: K, v: FormState[K]) =>
+    setF((p) => ({ ...p, [k]: v }));
 
   const valid = f.person_id !== "" && f.date.length >= 10 && Number(f.amount) !== 0;
 
+  function handleSave() {
+    if (!valid || create.isPending) return;
+    create.mutate(
+      {
+        person_id: Number(f.person_id),
+        date: f.date,
+        amount: Number(f.amount),
+        note: f.note || null,
+      },
+      { onSuccess: onClose }
+    );
+  }
+
   return (
-    <div style={{ padding: "12px 0" }}>
-      <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-        <div>
-          <label
-            style={{
-              display: "block",
-              fontFamily: fontMono,
-              fontSize: 9,
-              color: paper.inkMute,
-              letterSpacing: 1,
-              marginBottom: 4,
-            }}
-          >
-            {t("form.person")}
-          </label>
+    <div style={{ background: paper.paperDeep }}>
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          padding: "0 16px",
+          height: 52,
+          borderBottom: `1.5px solid ${paper.paperDark}`,
+          background: paper.paper,
+          position: "sticky",
+          top: 0,
+          zIndex: 10,
+          borderRadius: "14px 14px 0 0",
+        }}
+      >
+        <button
+          type="button"
+          onClick={onClose}
+          style={{
+            fontFamily: fontMono,
+            fontSize: 18,
+            fontWeight: 700,
+            background: "transparent",
+            border: "none",
+            cursor: "pointer",
+            color: paper.ink,
+            padding: "0 4px",
+            lineHeight: 1,
+          }}
+        >
+          ×
+        </button>
+        <div
+          style={{
+            fontFamily: fontMono,
+            fontSize: 10,
+            fontWeight: 700,
+            letterSpacing: 3,
+            color: paper.inkDim,
+            textTransform: "uppercase",
+          }}
+        >
+          {t("page.payment_add")}
+        </div>
+        <button
+          type="button"
+          disabled={!valid || create.isPending}
+          onClick={handleSave}
+          style={{
+            fontFamily: fontMono,
+            fontSize: 9,
+            fontWeight: 700,
+            letterSpacing: 2,
+            textTransform: "uppercase",
+            background: valid && !create.isPending ? paper.ink : paper.paperDark,
+            color: valid && !create.isPending ? paper.paper : paper.inkMute,
+            border: "none",
+            padding: "8px 14px",
+            cursor: valid && !create.isPending ? "pointer" : "default",
+          }}
+        >
+          {create.isPending ? "…" : t("action.add")}
+        </button>
+      </div>
+
+      <div style={{ padding: 16 }}>
+        <div style={{ marginBottom: 8 }}>
+          <label style={labelStyle}>{t("form.person")}</label>
           <select
             value={f.person_id}
-            onChange={(e) => set("person_id", e.target.value === "" ? "" : Number(e.target.value))}
-            style={{
-              width: "100%",
-              padding: "8px 10px",
-              fontFamily: fontMono,
-              fontSize: 12,
-              background: paper.paperDark,
-              color: paper.ink,
-              border: `1.5px solid ${paper.paperDark}`,
-              outline: "none",
-            }}
+            onChange={(e) =>
+              set("person_id", e.target.value === "" ? "" : Number(e.target.value))
+            }
+            style={inputStyle}
           >
             <option value="">— {t("form.person")} —</option>
             {people
@@ -94,162 +191,343 @@ function PaymentForm({ initial, onSave, onCancel, saving }: FormProps) {
           </select>
         </div>
 
-        <div style={{ display: "flex", gap: 8 }}>
+        <div style={{ display: "flex", gap: 8, marginBottom: 8 }}>
           <div style={{ flex: 1 }}>
-            <label
-              style={{
-                display: "block",
-                fontFamily: fontMono,
-                fontSize: 9,
-                color: paper.inkMute,
-                letterSpacing: 1,
-                marginBottom: 4,
-              }}
-            >
-              {t("form.date")}
-            </label>
+            <label style={labelStyle}>{t("form.date")}</label>
             <input
               type="date"
               value={f.date}
               onChange={(e) => set("date", e.target.value)}
-              style={{
-                width: "100%",
-                padding: "8px 10px",
-                fontFamily: fontMono,
-                fontSize: 12,
-                background: paper.paperDark,
-                color: paper.ink,
-                border: `1.5px solid ${paper.paperDark}`,
-                outline: "none",
-                boxSizing: "border-box",
-              }}
+              style={inputStyle}
             />
           </div>
           <div style={{ flex: 1 }}>
-            <label
-              style={{
-                display: "block",
-                fontFamily: fontMono,
-                fontSize: 9,
-                color: paper.inkMute,
-                letterSpacing: 1,
-                marginBottom: 4,
-              }}
-            >
-              {t("form.amount")} (€)
-            </label>
+            <label style={labelStyle}>{t("form.amount")} (€)</label>
             <input
               type="number"
               step="0.01"
               value={f.amount}
               onChange={(e) => set("amount", e.target.value)}
-              style={{
-                width: "100%",
-                padding: "8px 10px",
-                fontFamily: fontMono,
-                fontSize: 12,
-                background: paper.paperDark,
-                color: paper.ink,
-                border: `1.5px solid ${paper.paperDark}`,
-                outline: "none",
-                boxSizing: "border-box",
-              }}
+              style={inputStyle}
             />
           </div>
         </div>
 
-        <div>
-          <label
-            style={{
-              display: "block",
-              fontFamily: fontMono,
-              fontSize: 9,
-              color: paper.inkMute,
-              letterSpacing: 1,
-              marginBottom: 4,
-            }}
-          >
+        <div style={{ marginBottom: 16 }}>
+          <label style={labelStyle}>
             {t("form.note")} ({t("form.optional")})
           </label>
           <input
             type="text"
             value={f.note}
             onChange={(e) => set("note", e.target.value)}
-            style={{
-              width: "100%",
-              padding: "8px 10px",
-              fontFamily: fontMono,
-              fontSize: 12,
-              background: paper.paperDark,
-              color: paper.ink,
-              border: `1.5px solid ${paper.paperDark}`,
-              outline: "none",
-              boxSizing: "border-box",
-            }}
+            style={inputStyle}
           />
-        </div>
-
-        <div style={{ display: "flex", gap: 8 }}>
-          <button
-            onClick={onCancel}
-            style={{
-              flex: 1,
-              padding: "8px",
-              fontFamily: fontMono,
-              fontSize: 9,
-              fontWeight: 700,
-              letterSpacing: 2,
-              textTransform: "uppercase",
-              background: "transparent",
-              color: paper.inkMute,
-              border: `1.5px solid ${paper.paperDark}`,
-              cursor: "pointer",
-            }}
-          >
-            {t("action.cancel")}
-          </button>
-          <button
-            onClick={() => valid && onSave(f)}
-            disabled={!valid || saving}
-            style={{
-              flex: 2,
-              padding: "8px",
-              fontFamily: fontMono,
-              fontSize: 9,
-              fontWeight: 700,
-              letterSpacing: 2,
-              textTransform: "uppercase",
-              background: valid ? paper.ink : paper.paperDark,
-              color: valid ? paper.paper : paper.inkMute,
-              border: "none",
-              cursor: valid && !saving ? "pointer" : "default",
-            }}
-          >
-            {saving ? t("action.saving") : t("action.save")}
-          </button>
         </div>
       </div>
     </div>
   );
 }
 
-// ── Main page ─────────────────────────────────────────────────
+// ── Payment accordion card ────────────────────────────────────
+function PaymentAccordion({
+  payment,
+  expanded,
+  onToggle,
+}: {
+  payment: Payment;
+  expanded: boolean;
+  onToggle: () => void;
+}) {
+  const t = useT();
+  const { data: people = [] } = usePeople();
+  const update = useUpdatePayment();
+  const remove = useDeletePayment();
 
+  const [f, setF] = useState<FormState>(() => fromPayment(payment));
+  const set = <K extends keyof FormState>(k: K, v: FormState[K]) =>
+    setF((p) => ({ ...p, [k]: v }));
+  const [deleteConfirm, setDeleteConfirm] = useState(false);
+
+  // Reset form when payment changes externally
+  const [prevId, setPrevId] = useState(payment.id);
+  if (payment.id !== prevId) {
+    setPrevId(payment.id);
+    setF(fromPayment(payment));
+    setDeleteConfirm(false);
+  }
+
+  const dirty =
+    Number(f.person_id) !== payment.person_id ||
+    f.date !== payment.date ||
+    Number(f.amount) !== payment.amount ||
+    (f.note || null) !== (payment.note ?? null);
+
+  function handleSave() {
+    update.mutate(
+      {
+        id: payment.id,
+        person_id: Number(f.person_id),
+        date: f.date,
+        amount: Number(f.amount),
+        note: f.note || null,
+      },
+      { onSuccess: onToggle }
+    );
+  }
+
+  function handleDelete() {
+    if (!deleteConfirm) {
+      setDeleteConfirm(true);
+      return;
+    }
+    remove.mutate(payment.id, { onSuccess: () => setDeleteConfirm(false) });
+  }
+
+  function handleCancel() {
+    setF(fromPayment(payment));
+    setDeleteConfirm(false);
+    onToggle();
+  }
+
+  const barColor = amtColor(payment.amount);
+
+  return (
+    <div
+      style={{
+        background: paper.paper,
+        marginBottom: 6,
+        boxShadow: "0 1px 2px rgba(0,0,0,0.05), 0 4px 16px rgba(0,0,0,0.06)",
+        borderLeft: `3px solid ${barColor}`,
+      }}
+    >
+      {/* Collapsed header — click to toggle */}
+      <div
+        role="button"
+        tabIndex={0}
+        onClick={onToggle}
+        onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && onToggle()}
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: 12,
+          padding: "12px 14px",
+          cursor: "pointer",
+          userSelect: "none",
+        }}
+      >
+        <div
+          style={{
+            fontFamily: fontMono,
+            fontSize: 9,
+            color: paper.inkDim,
+            whiteSpace: "nowrap",
+            flexShrink: 0,
+          }}
+        >
+          {fmtDate(payment.date)}
+        </div>
+        <div style={{ flex: 1, overflow: "hidden" }}>
+          <div
+            style={{
+              fontFamily: fontSerif,
+              fontSize: 14,
+              fontWeight: 600,
+              color: paper.ink,
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              whiteSpace: "nowrap",
+            }}
+          >
+            {payment.person_name}
+          </div>
+          {payment.note && (
+            <div
+              style={{
+                fontFamily: fontMono,
+                fontSize: 9,
+                color: paper.inkDim,
+                marginTop: 1,
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                whiteSpace: "nowrap",
+              }}
+            >
+              {payment.note}
+            </div>
+          )}
+        </div>
+        <div
+          style={{
+            fontFamily: fontMono,
+            fontSize: 12,
+            fontWeight: 700,
+            color: barColor,
+            whiteSpace: "nowrap",
+            flexShrink: 0,
+          }}
+        >
+          {signPrefix(payment.amount)}
+          {fmtMoney(payment.amount)}
+        </div>
+      </div>
+
+      {/* Expanded edit form */}
+      {expanded && (
+        <div style={{ padding: "0 14px 14px", borderTop: `1px solid ${paper.paperDark}` }}>
+          <div style={{ paddingTop: 12, marginBottom: 8 }}>
+            <label style={labelStyle}>{t("form.person")}</label>
+            <select
+              value={f.person_id}
+              onChange={(e) =>
+                set("person_id", e.target.value === "" ? "" : Number(e.target.value))
+              }
+              style={inputStyle}
+            >
+              <option value="">— {t("form.person")} —</option>
+              {people
+                .filter((p) => p.active)
+                .map((p) => (
+                  <option key={p.id} value={p.id}>
+                    {fullNameOf(p)}
+                  </option>
+                ))}
+            </select>
+          </div>
+
+          <div style={{ display: "flex", gap: 8, marginBottom: 8 }}>
+            <div style={{ flex: 1 }}>
+              <label style={labelStyle}>{t("form.date")}</label>
+              <input
+                type="date"
+                value={f.date}
+                onChange={(e) => set("date", e.target.value)}
+                style={inputStyle}
+              />
+            </div>
+            <div style={{ flex: 1 }}>
+              <label style={labelStyle}>{t("form.amount")} (€)</label>
+              <input
+                type="number"
+                step="0.01"
+                value={f.amount}
+                onChange={(e) => set("amount", e.target.value)}
+                style={inputStyle}
+              />
+            </div>
+          </div>
+
+          <div style={{ marginBottom: 12 }}>
+            <label style={labelStyle}>
+              {t("form.note")} ({t("form.optional")})
+            </label>
+            <input
+              type="text"
+              value={f.note}
+              onChange={(e) => set("note", e.target.value)}
+              style={inputStyle}
+            />
+          </div>
+
+          <div style={{ display: "flex", gap: 8, marginBottom: 8 }}>
+            <button
+              onClick={handleCancel}
+              style={{
+                flex: 1,
+                padding: "9px",
+                background: "transparent",
+                color: paper.inkDim,
+                border: `1px solid ${paper.paperDark}`,
+                cursor: "pointer",
+                fontFamily: fontMono,
+                fontSize: 9,
+                fontWeight: 700,
+                letterSpacing: 1.5,
+                textTransform: "uppercase",
+              }}
+            >
+              {t("action.cancel")}
+            </button>
+            <button
+              disabled={!dirty || update.isPending}
+              onClick={handleSave}
+              style={{
+                flex: 2,
+                padding: "9px",
+                background: dirty && !update.isPending ? paper.ink : paper.paperDark,
+                color: dirty && !update.isPending ? paper.paper : paper.inkMute,
+                border: "none",
+                cursor: dirty && !update.isPending ? "pointer" : "default",
+                fontFamily: fontMono,
+                fontSize: 9,
+                fontWeight: 700,
+                letterSpacing: 2,
+                textTransform: "uppercase",
+              }}
+            >
+              {update.isPending ? "…" : t("action.save")}
+            </button>
+          </div>
+
+          <button
+            onClick={handleDelete}
+            disabled={remove.isPending}
+            style={{
+              width: "100%",
+              padding: "9px",
+              background: deleteConfirm ? paper.accent : "transparent",
+              color: deleteConfirm ? paper.paper : paper.accent,
+              border: `1px solid ${paper.accent}`,
+              cursor: "pointer",
+              fontFamily: fontMono,
+              fontSize: 9,
+              fontWeight: 700,
+              letterSpacing: 1.5,
+              textTransform: "uppercase",
+            }}
+          >
+            {remove.isPending
+              ? "…"
+              : deleteConfirm
+                ? t("owner.delete_confirm")
+                : t("action.delete")}
+          </button>
+          {deleteConfirm && (
+            <button
+              onClick={() => setDeleteConfirm(false)}
+              style={{
+                width: "100%",
+                marginTop: 4,
+                padding: "6px",
+                background: "transparent",
+                color: paper.inkDim,
+                border: `1px solid ${paper.paperDark}`,
+                cursor: "pointer",
+                fontFamily: fontMono,
+                fontSize: 8,
+                letterSpacing: 1,
+              }}
+            >
+              {t("action.cancel")}
+            </button>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── Main page ─────────────────────────────────────────────────
 export default function AdminPaymentsPage() {
   const t = useT();
   const { data: payments = [], isLoading } = usePayments();
   const { data: people = [] } = usePeople();
-  const create = useCreatePayment();
-  const update = useUpdatePayment();
-  const remove = useDeletePayment();
 
   const [personFilter, setPersonFilter] = useState<number | "">("");
   const [yearFilter, setYearFilter] = useState<number | "">("");
   const [adding, setAdding] = useState(false);
-  const [editing, setEditing] = useState<Payment | null>(null);
-  const [confirmDelete, setConfirmDelete] = useState<number | null>(null);
+  const [expandedId, setExpandedId] = useState<number | null>(null);
 
-  // Derive available years from data
   const years = [...new Set(payments.map((p) => p.year))].sort((a, b) => b - a);
 
   const filtered = payments.filter((p) => {
@@ -258,7 +536,6 @@ export default function AdminPaymentsPage() {
     return true;
   });
 
-  // Group by year descending
   const grouped = new Map<number, Payment[]>();
   for (const p of filtered) {
     if (!grouped.has(p.year)) grouped.set(p.year, []);
@@ -266,44 +543,18 @@ export default function AdminPaymentsPage() {
   }
   const sortedYears = [...grouped.keys()].sort((a, b) => b - a);
 
-  const handleCreate = (f: FormState) => {
-    create.mutate(
-      {
-        person_id: Number(f.person_id),
-        date: f.date,
-        amount: Number(f.amount),
-        note: f.note || null,
-      },
-      { onSuccess: () => setAdding(false) }
-    );
-  };
-
-  const handleUpdate = (f: FormState) => {
-    if (!editing) return;
-    update.mutate(
-      {
-        id: editing.id,
-        person_id: Number(f.person_id),
-        date: f.date,
-        amount: Number(f.amount),
-        note: f.note || null,
-      },
-      { onSuccess: () => setEditing(null) }
-    );
-  };
-
-  const handleDelete = (id: number) => {
-    remove.mutate(id, { onSuccess: () => setConfirmDelete(null) });
-  };
-
   return (
     <div style={{ padding: 16 }}>
+      <Fab onClick={() => setAdding(true)} label={t("page.payment_add")} />
+
       {/* Filters */}
       <div style={{ display: "flex", gap: 8, marginBottom: 16 }}>
         <select
           aria-label={t("filter.all_persons")}
           value={personFilter}
-          onChange={(e) => setPersonFilter(e.target.value === "" ? "" : Number(e.target.value))}
+          onChange={(e) =>
+            setPersonFilter(e.target.value === "" ? "" : Number(e.target.value))
+          }
           style={{
             flex: 1,
             padding: "7px 10px",
@@ -325,7 +576,9 @@ export default function AdminPaymentsPage() {
         <select
           aria-label={t("filter.all_years")}
           value={yearFilter}
-          onChange={(e) => setYearFilter(e.target.value === "" ? "" : Number(e.target.value))}
+          onChange={(e) =>
+            setYearFilter(e.target.value === "" ? "" : Number(e.target.value))
+          }
           style={{
             flex: 1,
             padding: "7px 10px",
@@ -344,51 +597,7 @@ export default function AdminPaymentsPage() {
             </option>
           ))}
         </select>
-        <button
-          onClick={() => {
-            setAdding(true);
-            setEditing(null);
-          }}
-          style={{
-            padding: "7px 14px",
-            fontFamily: fontMono,
-            fontSize: 10,
-            fontWeight: 700,
-            letterSpacing: 1,
-            textTransform: "uppercase",
-            background: paper.ink,
-            color: paper.paper,
-            border: "none",
-            cursor: "pointer",
-          }}
-        >
-          + {t("action.add")}
-        </button>
       </div>
-
-      {/* Add form */}
-      {adding && (
-        <Card>
-          <div
-            style={{
-              fontFamily: fontSerif,
-              fontSize: 13,
-              fontWeight: 700,
-              color: paper.ink,
-              marginBottom: 4,
-            }}
-          >
-            {t("page.payment_add")}
-          </div>
-          <Perf margin="0 0 8px" />
-          <PaymentForm
-            initial={emptyForm()}
-            onSave={handleCreate}
-            onCancel={() => setAdding(false)}
-            saving={create.isPending}
-          />
-        </Card>
-      )}
 
       {isLoading && (
         <div
@@ -410,7 +619,6 @@ export default function AdminPaymentsPage() {
         const total = rows.reduce((s, p) => s + p.amount, 0);
         return (
           <div key={year} style={{ marginBottom: 24 }}>
-            {/* Year header */}
             <div
               style={{
                 display: "flex",
@@ -435,143 +643,14 @@ export default function AdminPaymentsPage() {
               </div>
             </div>
 
-            <Card>
-              {rows.map((p, i) => (
-                <div key={p.id}>
-                  {i > 0 && <Perf margin="0" />}
-
-                  {editing?.id === p.id ? (
-                    <PaymentForm
-                      initial={fromPayment(p)}
-                      onSave={handleUpdate}
-                      onCancel={() => setEditing(null)}
-                      saving={update.isPending}
-                    />
-                  ) : confirmDelete === p.id ? (
-                    <div
-                      style={{ padding: "10px 0", display: "flex", alignItems: "center", gap: 8 }}
-                    >
-                      <div
-                        style={{ flex: 1, fontFamily: fontMono, fontSize: 10, color: paper.accent }}
-                      >
-                        {t("action.delete")} {p.person_name} {fmtMoney(p.amount)}?
-                      </div>
-                      <button
-                        onClick={() => setConfirmDelete(null)}
-                        style={{
-                          padding: "4px 10px",
-                          fontFamily: fontMono,
-                          fontSize: 9,
-                          background: "transparent",
-                          color: paper.inkMute,
-                          border: `1.5px solid ${paper.paperDark}`,
-                          cursor: "pointer",
-                        }}
-                      >
-                        {t("action.cancel")}
-                      </button>
-                      <button
-                        onClick={() => handleDelete(p.id)}
-                        disabled={remove.isPending}
-                        style={{
-                          padding: "4px 10px",
-                          fontFamily: fontMono,
-                          fontSize: 9,
-                          fontWeight: 700,
-                          background: paper.accent,
-                          color: paper.paper,
-                          border: "none",
-                          cursor: "pointer",
-                        }}
-                      >
-                        {t("action.delete")}
-                      </button>
-                    </div>
-                  ) : (
-                    <div
-                      style={{ display: "flex", alignItems: "baseline", gap: 8, padding: "10px 0" }}
-                    >
-                      <div
-                        style={{
-                          fontFamily: fontMono,
-                          fontSize: 9,
-                          color: paper.inkDim,
-                          whiteSpace: "nowrap",
-                        }}
-                      >
-                        {fmtDate(p.date)}
-                      </div>
-                      <div style={{ flex: 1 }}>
-                        <div
-                          style={{
-                            fontFamily: fontSerif,
-                            fontSize: 13,
-                            fontWeight: 700,
-                            color: paper.ink,
-                          }}
-                        >
-                          {p.person_name}
-                        </div>
-                        {p.note && (
-                          <div
-                            style={{
-                              fontFamily: fontMono,
-                              fontSize: 9,
-                              color: paper.inkDim,
-                              marginTop: 2,
-                            }}
-                          >
-                            {p.note}
-                          </div>
-                        )}
-                      </div>
-                      <div
-                        style={{
-                          fontFamily: fontMono,
-                          fontSize: 12,
-                          color: amtColor(p.amount),
-                          whiteSpace: "nowrap",
-                        }}
-                      >
-                        {signPrefix(p.amount)}
-                        {fmtMoney(p.amount)}
-                      </div>
-                      <button
-                        onClick={() => {
-                          setEditing(p);
-                          setAdding(false);
-                        }}
-                        style={{
-                          padding: "3px 8px",
-                          fontFamily: fontMono,
-                          fontSize: 9,
-                          background: "transparent",
-                          color: paper.inkMute,
-                          border: `1.5px solid ${paper.paperDark}`,
-                          cursor: "pointer",
-                        }}
-                      >
-                        ✎
-                      </button>
-                      <button
-                        onClick={() => setConfirmDelete(p.id)}
-                        style={{
-                          padding: "3px 8px",
-                          fontFamily: fontMono,
-                          fontSize: 9,
-                          background: "transparent",
-                          color: paper.accent,
-                          border: `1.5px solid ${paper.paperDark}`,
-                          cursor: "pointer",
-                        }}
-                      >
-                        ✕
-                      </button>
-                    </div>
-                  )}
-                </div>
-              ))}
-            </Card>
+            {rows.map((p) => (
+              <PaymentAccordion
+                key={p.id}
+                payment={p}
+                expanded={expandedId === p.id}
+                onToggle={() => setExpandedId(expandedId === p.id ? null : p.id)}
+              />
+            ))}
           </div>
         );
       })}
@@ -589,6 +668,27 @@ export default function AdminPaymentsPage() {
           {t("admin.inbox_empty")}
         </div>
       )}
+
+      {/* Add payment sheet */}
+      <Dialog.Root open={adding} onOpenChange={(open) => !open && setAdding(false)}>
+        <Dialog.Portal>
+          <Dialog.Overlay style={overlayStyle} />
+          <Dialog.Content style={sheetStyle} aria-describedby={undefined}>
+            <Dialog.Title
+              style={{
+                position: "absolute",
+                width: 1,
+                height: 1,
+                overflow: "hidden",
+                clip: "rect(0,0,0,0)",
+              }}
+            >
+              {t("page.payment_add")}
+            </Dialog.Title>
+            <AddPaymentSheet onClose={() => setAdding(false)} />
+          </Dialog.Content>
+        </Dialog.Portal>
+      </Dialog.Root>
     </div>
   );
 }

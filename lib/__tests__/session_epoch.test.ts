@@ -19,6 +19,7 @@ const mockGetSessionEpoch = vi.fn();
 vi.mock("@/lib/queries/people", () => ({
   getSessionEpoch: (...a: unknown[]) => mockGetSessionEpoch(...a),
   isOwner: vi.fn(() => false),
+  isActivePerson: vi.fn(() => true),
 }));
 
 import { requireAdmin } from "../api";

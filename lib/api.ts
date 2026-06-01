@@ -54,6 +54,11 @@ export async function requireAdmin(req: Request) {
   const session = await getIronSession<SessionData>(req, NextResponse.next(), sessionOptions);
   if (!session.isAdmin) forbidden();
   await assertSessionEpoch(session);
+  if (session.personId) {
+    const { getDb } = await import("./db");
+    const { isActivePerson } = await import("./queries/people");
+    if (!isActivePerson(getDb(), session.personId)) forbidden();
+  }
   return session;
 }
 
@@ -93,6 +98,9 @@ export async function requireSession(req: Request) {
   const session = await getIronSession<SessionData>(req, NextResponse.next(), sessionOptions);
   if (!session.personId) forbidden("Not authenticated");
   await assertSessionEpoch(session);
+  const { getDb } = await import("./db");
+  const { isActivePerson } = await import("./queries/people");
+  if (!isActivePerson(getDb(), session.personId!)) forbidden("Not authenticated");
   return session;
 }
 

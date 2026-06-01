@@ -27,6 +27,10 @@ export function getPersonById(db: Database.Database, id: number): Person | null 
   return row ? strip(row) : null;
 }
 
+export function isActivePerson(db: Database.Database, id: number): boolean {
+  return !!db.prepare("SELECT 1 FROM people WHERE id = ? AND active = 1").get(id);
+}
+
 export function getPersonByUsername(db: Database.Database, username: string): Person | null {
   return (db.prepare("SELECT * FROM people WHERE username=?").get(username) as Person) ?? null;
 }

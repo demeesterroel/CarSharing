@@ -48,9 +48,9 @@ async function heartbeat(): Promise<boolean> {
 }
 
 export function OnlineStateProvider({ children }: { children: React.ReactNode }) {
-  const [online, setOnline] = useState<boolean>(() =>
-    typeof navigator !== "undefined" ? navigator.onLine : true
-  );
+  // Initialize to true to match SSR output; useEffect syncs actual navigator.onLine on client.
+  // Avoids hydration mismatch when browser has navigator.onLine = false at mount time.
+  const [online, setOnline] = useState<boolean>(true);
   const [lastSyncAt, setLastSyncAt] = useState<number | null>(null);
   const [now, setNow] = useState(() => Date.now());
   const [pendingCount, setPendingCount] = useState(0);
@@ -59,6 +59,7 @@ export function OnlineStateProvider({ children }: { children: React.ReactNode })
   const markSynced = useCallback(() => setLastSyncAt(Date.now()), []);
 
   useEffect(() => {
+    setOnline(navigator.onLine);
     const onUp = () => setOnline(true);
     const onDown = () => setOnline(false);
     window.addEventListener("online", onUp);

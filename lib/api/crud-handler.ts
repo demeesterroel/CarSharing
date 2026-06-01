@@ -14,7 +14,7 @@ import { NextResponse } from "next/server";
 import type { ZodSchema } from "zod";
 import type Database from "better-sqlite3";
 import { getDb } from "@/lib/db";
-import { json, readBody, readId, notFound } from "@/lib/api";
+import { json, readBody, readId, notFound, requireSession } from "@/lib/api";
 
 type Ctx = { params: Promise<Record<string, string>> };
 
@@ -26,7 +26,10 @@ type Ctx = { params: Promise<Record<string, string>> };
  * Returns a GET handler that calls `list(db)` and returns the result as JSON.
  */
 export function listHandler<T>(list: (db: Database.Database) => T[]) {
-  return json(async () => list(getDb()));
+  return json(async (req: Request) => {
+    await requireSession(req);
+    return list(getDb());
+  });
 }
 
 /**
@@ -55,7 +58,8 @@ export function createHandler<T>(
 export function getOneHandler<T>(
   getById: (db: Database.Database, id: number) => T | null | undefined
 ) {
-  return json(async (_req: Request, ctx: Ctx) => {
+  return json(async (req: Request, ctx: Ctx) => {
+    await requireSession(req);
     const row = getById(getDb(), await readId(ctx));
     if (!row) notFound();
     return row;

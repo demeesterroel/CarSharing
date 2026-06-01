@@ -38,14 +38,15 @@ export async function sendMail(email: OutgoingEmail): Promise<void> {
     }
   } else if (env.MAIL_WEBHOOK_URL) {
     try {
-      await fetch(env.MAIL_WEBHOOK_URL, {
+      const res = await fetch(env.MAIL_WEBHOOK_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ from, ...email }),
       });
-      return;
+      if (res.ok) return;
+      console.error(`[mailer] webhook delivery failed: ${res.status}`);
     } catch (e) {
-      console.error("[mailer] webhook delivery failed", e);
+      console.error("[mailer] webhook delivery error", e);
     }
   }
 

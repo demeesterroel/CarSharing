@@ -83,4 +83,13 @@ describe("sendMail", () => {
     vi.spyOn(globalThis, "fetch").mockRejectedValue(new Error("network"));
     await expect(sendMail(msg)).resolves.toBeUndefined();
   });
+
+  it("does not throw when the webhook responds non-ok", async () => {
+    env.MAIL_WEBHOOK_URL = "https://hook.example/mail";
+    const fetchMock = vi
+      .spyOn(globalThis, "fetch")
+      .mockResolvedValue(new Response(null, { status: 500 }));
+    await expect(sendMail(msg)).resolves.toBeUndefined();
+    expect(fetchMock).toHaveBeenCalledOnce();
+  });
 });

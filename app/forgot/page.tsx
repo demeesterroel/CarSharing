@@ -1,9 +1,9 @@
-import { env } from "@/lib/env";
+import { isMailEnabled } from "@/lib/mailer";
 import ForgotForm from "./forgot-form";
 
 // Read mail config at request time, not build time: production enables delivery
-// by setting MAIL_WEBHOOK_URL (#277) without a rebuild, and the form's
-// availability must reflect that live.
+// by setting a transport (RESEND_API_KEY or MAIL_WEBHOOK_URL — #277) without a
+// rebuild, and the form's availability must reflect that live.
 export const dynamic = "force-dynamic";
 
 /**
@@ -12,6 +12,5 @@ export const dynamic = "force-dynamic";
  * actually wired up (see #277). The form disables itself with a notice when not.
  */
 export default function ForgotPasswordPage() {
-  const mailEnabled = Boolean(env.MAIL_WEBHOOK_URL);
-  return <ForgotForm mailEnabled={mailEnabled} />;
+  return <ForgotForm mailEnabled={isMailEnabled()} />;
 }

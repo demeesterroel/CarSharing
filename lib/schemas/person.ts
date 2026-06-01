@@ -10,5 +10,5 @@ export const personSchema = z.object({
   is_admin: z.union([z.literal(0), z.literal(1)]).default(0),
   bank_account: z.string().default(""),
   email: z.string().email().nullable().optional(),
-  theme_preference: z.enum(["paper", "mono"]).optional().default("paper"),
+  theme_preference: z.enum(["paper", "mono"]).optional().default("mono"),
 });

@@ -22,7 +22,7 @@ function getPersonFields(personId: number): {
   if (!row) return { shortName: null, themePreference: null };
   return {
     shortName: shortNameOf(row) || null,
-    themePreference: (row.theme_preference === "mono" ? "mono" : "paper") as "paper" | "mono",
+    themePreference: (row.theme_preference === "paper" ? "paper" : "mono") as "paper" | "mono",
   };
 }
 

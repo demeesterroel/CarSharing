@@ -1,4 +1,7 @@
-import { test, expect } from "@playwright/test";
+import { test, expect, request as playwrightRequest } from "@playwright/test";
+
+const EMAIL = process.env.TEST_EMAIL ?? "alice";
+const PASSWORD = process.env.TEST_PASSWORD ?? "alice";
 
 /**
  * E2E for self-service account recovery (issue #267):
@@ -64,5 +67,56 @@ test.describe("Account recovery", () => {
     expect(res.status()).toBeGreaterThanOrEqual(300);
     expect(res.status()).toBeLessThan(400);
     expect(res.headers()["location"]).toContain("/login");
+  });
+});
+
+/**
+ * Recovery pages are guest-only (issue #275): an already-authenticated user is
+ * redirected away from /forgot and /reset/<token>, the same way /login already
+ * redirects logged-in users. Logged-out users must still reach them.
+ *
+ * Each test uses its own request context (cookie jar) so the logged-in and
+ * logged-out cases don't share session state.
+ */
+test.describe("Recovery pages are guest-only", () => {
+  /** Path of the Location header, or "" if absent. */
+  function redirectPath(location: string | undefined): string {
+    if (!location) return "";
+    return new URL(location, "http://localhost").pathname;
+  }
+
+  test("a logged-in user visiting /forgot is redirected to /", async () => {
+    const ctx = await playwrightRequest.newContext();
+    const login = await ctx.post("/api/auth/login", {
+      data: { username: EMAIL, password: PASSWORD },
+    });
+    expect(login.ok()).toBe(true);
+
+    const res = await ctx.get("/forgot", { maxRedirects: 0 });
+    expect(res.status()).toBeGreaterThanOrEqual(300);
+    expect(res.status()).toBeLessThan(400);
+    expect(redirectPath(res.headers()["location"])).toBe("/");
+    await ctx.dispose();
+  });
+
+  test("a logged-in user visiting /reset/<token> is redirected to /", async () => {
+    const ctx = await playwrightRequest.newContext();
+    const login = await ctx.post("/api/auth/login", {
+      data: { username: EMAIL, password: PASSWORD },
+    });
+    expect(login.ok()).toBe(true);
+
+    const res = await ctx.get("/reset/some-token", { maxRedirects: 0 });
+    expect(res.status()).toBeGreaterThanOrEqual(300);
+    expect(res.status()).toBeLessThan(400);
+    expect(redirectPath(res.headers()["location"])).toBe("/");
+    await ctx.dispose();
+  });
+
+  test("a logged-out user can still reach /forgot", async () => {
+    const ctx = await playwrightRequest.newContext();
+    const res = await ctx.get("/forgot", { maxRedirects: 0 });
+    expect(res.status()).toBe(200);
+    await ctx.dispose();
   });
 });

@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.16.1](https://github.com/demeesterroel/CarSharing/compare/v1.16.0...v1.16.1) (2026-06-01)
+
+
+### 🐛 Bug fixes
+
+* **admin:** prevent password managers autofilling Google settings fields ([#288](https://github.com/demeesterroel/CarSharing/issues/288)) ([1ce377b](https://github.com/demeesterroel/CarSharing/commit/1ce377b85177bf62f8c1bbd9078524f86e9833b8)), closes [#287](https://github.com/demeesterroel/CarSharing/issues/287)
+
 ## [1.16.0](https://github.com/demeesterroel/CarSharing/compare/v1.15.0...v1.16.0) (2026-06-01)
 
 

@@ -478,6 +478,45 @@ console.log(`  → ${expensesTotal} expenses`);
   }
 }
 
+// ── 5c. Duplicate trips (proves duplicate-detection feature) ─────────────────
+// Insert 2 pairs of trips with identical person+car+odometer range.
+{
+  const aaId = carIdByShort["AA"];
+  const bbId = carIdByShort["BB"];
+  const aliceId = personIdByUsername["alice"];
+  const ownerIdVal = personIdByUsername["owner"];
+
+  // Pair 1: Alice on AA — same range entered twice on different dates
+  const p1Exists = db
+    .prepare("SELECT 1 FROM trips WHERE car_id = ? AND person_id = ? AND start_odometer = ? AND end_odometer = ?")
+    .get(aaId, aliceId, 9000, 9080);
+  if (!p1Exists) {
+    db.prepare(
+      `INSERT INTO trips (person_id, car_id, date, start_odometer, end_odometer, km, amount, location)
+       VALUES (?, ?, '2025-03-12', 9000, 9080, 80, 24.00, 'Gent')`
+    ).run(aliceId, aaId);
+    db.prepare(
+      `INSERT INTO trips (person_id, car_id, date, start_odometer, end_odometer, km, amount, location)
+       VALUES (?, ?, '2025-03-13', 9000, 9080, 80, 24.00, 'Gent (dup)')`
+    ).run(aliceId, aaId);
+  }
+
+  // Pair 2: Owner on BB — same range, different dates
+  const p2Exists = db
+    .prepare("SELECT 1 FROM trips WHERE car_id = ? AND person_id = ? AND start_odometer = ? AND end_odometer = ?")
+    .get(bbId, ownerIdVal, 8800, 8950);
+  if (!p2Exists) {
+    db.prepare(
+      `INSERT INTO trips (person_id, car_id, date, start_odometer, end_odometer, km, amount, location)
+       VALUES (?, ?, '2025-04-05', 8800, 8950, 150, 45.00, 'Antwerpen')`
+    ).run(ownerIdVal, bbId);
+    db.prepare(
+      `INSERT INTO trips (person_id, car_id, date, start_odometer, end_odometer, km, amount, location)
+       VALUES (?, ?, '2025-04-06', 8800, 8950, 150, 45.00, 'Antwerpen (dup)')`
+    ).run(ownerIdVal, bbId);
+  }
+}
+
 // ── 6. Payments ───────────────────────────────────────────────────────────────
 // 2023: all transfers fully paid (settlement will be finalized).
 // 2024: all transfers paid EXCEPT Owner — they still have an outstanding balance.

@@ -26,12 +26,17 @@ const PUBLIC_PATHS = [
 // Pages only admins can visit (non-admins get redirected to /).
 const ADMIN_ONLY_PAGES = ["/vehicles", "/people", "/payments"];
 
+// Guest-only pages — authenticated users get redirected to / (mirror of
+// protected routes redirecting logged-out users to /login). The /api/auth/*
+// endpoints and the magic-link consume route stay accessible.
+const GUEST_ONLY_PAGES = ["/login", "/forgot", "/reset"];
+
 export async function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
   // Static assets and Next.js internals are excluded via the matcher below.
   if (PUBLIC_PATHS.some((p) => pathname === p || pathname.startsWith(p + "/"))) {
-    if (pathname === "/login") {
+    if (GUEST_ONLY_PAGES.some((p) => pathname === p || pathname.startsWith(p + "/"))) {
       const res = NextResponse.next();
       const session = await getIronSession<SessionData>(req, res, sessionOptions);
       if (session.authenticated) {

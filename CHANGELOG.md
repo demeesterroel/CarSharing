@@ -1,5 +1,28 @@
 # Changelog
 
+## [1.16.0](https://github.com/demeesterroel/CarSharing/compare/v1.15.0...v1.16.0) (2026-06-01)
+
+
+### ✨ New features
+
+* **admin:** revoke a member's sessions from /admin/members ([#266](https://github.com/demeesterroel/CarSharing/issues/266)) ([#285](https://github.com/demeesterroel/CarSharing/issues/285)) ([c4e9a5f](https://github.com/demeesterroel/CarSharing/commit/c4e9a5febdd3a88f8cef34ba6f37c73bc7e251f3))
+* **auth:** disable /forgot with 'not available yet' notice until mail transport ([#283](https://github.com/demeesterroel/CarSharing/issues/283)) ([fb619ad](https://github.com/demeesterroel/CarSharing/commit/fb619ad4d7f13db98befd2115451a3be7d8ecfa3)), closes [#282](https://github.com/demeesterroel/CarSharing/issues/282)
+* **auth:** session revocation ([#266](https://github.com/demeesterroel/CarSharing/issues/266)) + self-service password reset / magic link ([#267](https://github.com/demeesterroel/CarSharing/issues/267)) ([#270](https://github.com/demeesterroel/CarSharing/issues/270)) ([3ebf95e](https://github.com/demeesterroel/CarSharing/commit/3ebf95e17fce227ed9b8698587df874704e22e97))
+* **owner:** show potential duplicate trips in inbox ([#276](https://github.com/demeesterroel/CarSharing/issues/276)) ([5ff98ba](https://github.com/demeesterroel/CarSharing/commit/5ff98ba6fb49bceeaa0aa43ecc5f3837e508c312))
+* **theme:** mono as default theme ([#263](https://github.com/demeesterroel/CarSharing/issues/263)) + /user redirect ([#279](https://github.com/demeesterroel/CarSharing/issues/279)) ([3be85ee](https://github.com/demeesterroel/CarSharing/commit/3be85ee2fc21dccbffcbeb94bad0c5d3f113a6c0))
+
+
+### 🐛 Bug fixes
+
+* **auth:** make /forgot and /reset guest-only (redirect logged-in users) ([#280](https://github.com/demeesterroel/CarSharing/issues/280)) ([a3164be](https://github.com/demeesterroel/CarSharing/commit/a3164befe82b7f956a5cbb30016f51facf331fd1)), closes [#275](https://github.com/demeesterroel/CarSharing/issues/275)
+* **e2e:** target reservation confirm button by id to kill approve flake ([#274](https://github.com/demeesterroel/CarSharing/issues/274)) ([2daac88](https://github.com/demeesterroel/CarSharing/commit/2daac888ce904f06ae87d67ac7935a3e76327d43))
+* **payments:** redesign admin page to match app UX patterns ([#273](https://github.com/demeesterroel/CarSharing/issues/273)) ([308feda](https://github.com/demeesterroel/CarSharing/commit/308fedaccaa73b4d89930719badc116b316ffe65)), closes [#265](https://github.com/demeesterroel/CarSharing/issues/265)
+
+
+### 📖 Documentation
+
+* add full feature/test coverage overview ([#224](https://github.com/demeesterroel/CarSharing/issues/224)) ([#260](https://github.com/demeesterroel/CarSharing/issues/260)) ([e1517fe](https://github.com/demeesterroel/CarSharing/commit/e1517fe1982328010a647445d31561f830704612))
+
 ## [1.15.0](https://github.com/demeesterroel/CarSharing/compare/v1.14.3...v1.15.0) (2026-05-26)
 
 

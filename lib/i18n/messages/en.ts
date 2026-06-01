@@ -532,6 +532,8 @@ export const en: Messages = {
   "auth.send_magic_link": "Email me a sign-in link",
   "auth.forgot_sent": "If an account exists for that email, a link is on its way.",
   "auth.forgot_error": "Something went wrong. Please try again.",
+  "auth.forgot_unavailable":
+    "Password reset by email isn't available yet. Ask an administrator to reset your password.",
   "auth.reset_title": "Choose a new password",
   "auth.reset_subtitle": "Enter a new password for your account.",
   "auth.reset_error": "This reset link is invalid or has expired.",

@@ -532,6 +532,8 @@ export const nl = {
   "auth.send_magic_link": "Stuur me een inloglink",
   "auth.forgot_sent": "Als er een account bestaat voor dit e-mailadres, is er een link onderweg.",
   "auth.forgot_error": "Er ging iets mis. Probeer het opnieuw.",
+  "auth.forgot_unavailable":
+    "Wachtwoord opnieuw instellen via e-mail is nog niet beschikbaar. Vraag een beheerder om je wachtwoord te resetten.",
   "auth.reset_title": "Kies een nieuw wachtwoord",
   "auth.reset_subtitle": "Vul een nieuw wachtwoord in voor je account.",
   "auth.reset_error": "Deze resetlink is ongeldig of verlopen.",

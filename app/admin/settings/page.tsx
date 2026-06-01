@@ -194,9 +194,16 @@ export default function AdminSettingsPage() {
                 <div style={labelStyle}>{t("settings.calendar_id_label")}</div>
                 <input
                   type="text"
+                  name="google-calendar-id"
+                  id="google-calendar-id"
                   value={calendarId}
                   onChange={(e) => setCalendarId(e.target.value)}
                   placeholder="abc123@group.calendar.google.com"
+                  autoComplete="off"
+                  data-1p-ignore
+                  data-lpignore="true"
+                  data-bwignore
+                  data-form-type="other"
                   style={{
                     ...inputStyle,
                     border: `1.5px solid ${calendarDirty ? paper.ink : paper.paperDark}`,
@@ -208,6 +215,8 @@ export default function AdminSettingsPage() {
                 <div style={{ position: "relative" }}>
                   <input
                     type={showToken ? "text" : "password"}
+                    name="google-oauth-refresh-token"
+                    id="google-oauth-refresh-token"
                     value={refreshToken}
                     onChange={(e) => setRefreshToken(e.target.value)}
                     placeholder={
@@ -215,6 +224,11 @@ export default function AdminSettingsPage() {
                         ? t("settings.token_stored")
                         : t("settings.token_empty")
                     }
+                    autoComplete="off"
+                    data-1p-ignore
+                    data-lpignore="true"
+                    data-bwignore
+                    data-form-type="other"
                     style={{
                       ...inputStyle,
                       paddingRight: 32,

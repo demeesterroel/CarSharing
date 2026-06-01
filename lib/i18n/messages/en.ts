@@ -194,6 +194,7 @@ export const en: Messages = {
 
   // Toasts
   "toast.saved": "Saved",
+  "toast.sessions_revoked": "Sessions revoked",
   "toast.deleted": "Deleted",
   "toast.person_added": "Member added",
   "toast.car_added": "Car added",
@@ -411,6 +412,9 @@ export const en: Messages = {
   "admin.inactive_section": "Others",
   "admin.activate": "Activate",
   "admin.deactivate": "Deactivate",
+  "admin.revoke_sessions": "Revoke sessions",
+  "admin.revoke_sessions_confirm":
+    "Sign {name} out of every device? They will need to log in again.",
   "admin.zero_km_title": "Zero-km trips",
   "admin.no_zero_km": "None found",
   "admin.car_active": "Active",

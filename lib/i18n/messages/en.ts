@@ -195,6 +195,7 @@ export const en: Messages = {
   // Toasts
   "toast.saved": "Saved",
   "toast.sessions_revoked": "Sessions revoked",
+  "toast.error": "Something went wrong",
   "toast.deleted": "Deleted",
   "toast.person_added": "Member added",
   "toast.car_added": "Car added",

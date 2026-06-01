@@ -194,6 +194,7 @@ export const nl = {
   // Toasts
   "toast.saved": "Opgeslagen",
   "toast.sessions_revoked": "Sessies ingetrokken",
+  "toast.error": "Er ging iets mis",
   "toast.deleted": "Verwijderd",
   "toast.person_added": "Persoon toegevoegd",
   "toast.car_added": "Wagen toegevoegd",

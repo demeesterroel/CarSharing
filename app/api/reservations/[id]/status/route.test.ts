@@ -14,6 +14,7 @@ const mockSession = {
 vi.mock("iron-session", () => ({ getIronSession: vi.fn(async () => mockSession) }));
 
 vi.mock("@/lib/db", () => ({ getDb: vi.fn(() => ({})) }));
+vi.mock("@/lib/queries/people", () => ({ isActivePerson: vi.fn(() => true) }));
 
 const mockGetReservationById = vi.fn();
 const mockUpdateReservationStatus = vi.fn();

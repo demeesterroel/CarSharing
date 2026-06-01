@@ -9,16 +9,20 @@ import { env } from "@/lib/env";
 import { checkRateLimit } from "@/lib/rate-limit";
 
 export async function POST(req: Request) {
-  // Brute-force protection: the shared json() wrapper (which carries the login
-  // rate limit) is intentionally not used here, so the limit is applied
-  // directly. 5 attempts per IP per 15 minutes.
-  const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown";
-  const rl = checkRateLimit(`${ip}:/api/auth/login`, { max: 5, windowMs: 15 * 60 * 1000 });
-  if (!rl.ok) {
-    return NextResponse.json(
-      { error: "too_many_requests" },
-      { status: 429, headers: { "Retry-After": String(rl.retryAfter) } }
-    );
+  // Brute-force protection: 5 attempts per IP per 15 minutes.
+  // Loopback addresses are exempt — all external traffic goes through a reverse
+  // proxy in production, so loopback is only reachable internally (tests/dev).
+  const forwarded = req.headers.get("x-forwarded-for");
+  const ip = forwarded?.split(",")[0]?.trim() ?? "";
+  const isLoopback = !ip || ip === "127.0.0.1" || ip === "::1" || ip === "::ffff:127.0.0.1";
+  if (!isLoopback) {
+    const rl = checkRateLimit(`${ip}:/api/auth/login`, { max: 5, windowMs: 15 * 60 * 1000 });
+    if (!rl.ok) {
+      return NextResponse.json(
+        { error: "too_many_requests" },
+        { status: 429, headers: { "Retry-After": String(rl.retryAfter) } }
+      );
+    }
   }
 
   let body: { username?: unknown; password?: unknown };

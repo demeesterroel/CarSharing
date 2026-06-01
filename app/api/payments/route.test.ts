@@ -14,6 +14,7 @@ const mockSession = {
 vi.mock("iron-session", () => ({ getIronSession: vi.fn(async () => mockSession) }));
 
 vi.mock("@/lib/db", () => ({ getDb: vi.fn(() => ({})) }));
+vi.mock("@/lib/queries/people", () => ({ isActivePerson: vi.fn(() => true) }));
 
 const mockGetPayments = vi.fn((..._a: unknown[]) => [{ id: 1 }]);
 const mockInsertPayment = vi.fn((..._a: unknown[]) => 7);

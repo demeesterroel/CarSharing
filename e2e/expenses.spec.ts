@@ -14,7 +14,7 @@ import { loginAndGetSession, loginAndGetCsrf, makeApi, getTestEntities, scrollTo
 const TODAY = new Date().toISOString().slice(0, 10);
 const YEAR = new Date().getFullYear();
 
-const DESCRIPTION = "E2E-Test-Expense-Description";
+const DESCRIPTION = `E2E-Test-Expense-${Date.now()}`;
 const AMOUNT = 123.45;
 
 test.describe("expense CRUD", () => {

@@ -34,3 +34,11 @@ export async function sendMail(email: OutgoingEmail): Promise<void> {
     `[mailer] no transport configured — would send:\n  to: ${email.to}\n  subject: ${email.subject}\n  ${email.text}`
   );
 }
+
+/**
+ * True when a real mail transport is configured (Resend or a webhook). UIs use
+ * this to decide whether to offer reset / magic-link delivery (#277).
+ */
+export function isMailEnabled(): boolean {
+  return Boolean(env.RESEND_API_KEY || env.MAIL_WEBHOOK_URL);
+}

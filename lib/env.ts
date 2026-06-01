@@ -21,6 +21,9 @@ const envSchema = z.object({
   // messages are POSTed there as JSON; otherwise they are logged (self-host dev).
   MAIL_WEBHOOK_URL: z.string().url().optional(),
   MAIL_FROM: z.string().optional(),
+  // Resend HTTP API key. When set, transactional mail (reset / magic-link /
+  // invite) is sent via Resend; takes precedence over MAIL_WEBHOOK_URL.
+  RESEND_API_KEY: z.string().optional(),
 });
 
 type Env = z.infer<typeof envSchema>;

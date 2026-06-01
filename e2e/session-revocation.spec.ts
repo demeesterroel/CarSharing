@@ -13,8 +13,12 @@ import { test, expect, type APIRequestContext } from "@playwright/test";
  */
 
 const baseURL = process.env.TEST_BASE_URL ?? "http://localhost:3000";
-const EMAIL = process.env.TEST_EMAIL ?? "alice";
-const PASSWORD = process.env.TEST_PASSWORD ?? "alice";
+// Use a DEDICATED user, not the shared TEST_EMAIL (alice). logout-all bumps the
+// user's session epoch in the shared demo.db; if this ran as the same account the
+// CRUD specs authenticate with, it would revoke their in-flight sessions under
+// parallel execution and they'd 403 with "Session revoked".
+const EMAIL = process.env.TEST_REVOKE_EMAIL ?? "carol";
+const PASSWORD = process.env.TEST_REVOKE_PASSWORD ?? "carol";
 
 /** Reads the current csrf-token cookie from the context's jar. */
 async function currentCsrf(ctx: APIRequestContext): Promise<string | null> {

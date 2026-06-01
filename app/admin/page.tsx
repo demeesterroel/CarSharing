@@ -15,7 +15,7 @@ import { toast } from "sonner";
 import { CarBadge } from "@/components/car-badge";
 import { apiFetch } from "@/lib/api/client";
 import { useCreateTrip } from "@/hooks/use-trips";
-import type { KmGap } from "@/lib/queries/admin";
+import type { KmGap, DuplicateTripPair } from "@/lib/queries/admin";
 import { shortNameOf } from "@/lib/person-utils";
 import { ShimmerBar, shimmerKeyframes } from "@/components/shimmer";
 
@@ -30,15 +30,28 @@ function groupByYear<T extends { date?: string; after_date?: string }>(
   }
   return Array.from(map.entries())
     .sort((a, b) => b[0].localeCompare(a[0]))
-    .map(([yr, bucket]) => [
-      yr,
-      [...bucket].sort((a, b) =>
-        (b.after_date ?? b.date ?? "").localeCompare(a.after_date ?? a.date ?? "")
-      ),
-    ] as [string, T[]]);
+    .map(
+      ([yr, bucket]) =>
+        [
+          yr,
+          [...bucket].sort((a, b) =>
+            (b.after_date ?? b.date ?? "").localeCompare(a.after_date ?? a.date ?? "")
+          ),
+        ] as [string, T[]]
+    );
 }
 
-function YearGroup({ year, count, totalKm, children }: { year: string; count: number; totalKm: number; children: React.ReactNode }) {
+function YearGroup({
+  year,
+  count,
+  totalKm,
+  children,
+}: {
+  year: string;
+  count: number;
+  totalKm: number;
+  children: React.ReactNode;
+}) {
   const t = useT();
   return (
     <div style={{ marginBottom: 4 }}>
@@ -59,7 +72,9 @@ function YearGroup({ year, count, totalKm, children }: { year: string; count: nu
         }}
       >
         <span>{year}</span>
-        <span>{count} {t("admin.gaps_noun")} · {totalKm.toLocaleString("nl-BE")} km</span>
+        <span>
+          {count} {t("admin.gaps_noun")} · {totalKm.toLocaleString("nl-BE")} km
+        </span>
       </div>
       {children}
     </div>
@@ -101,7 +116,8 @@ function SectionHeader({
       ) : (
         count > 0 && (
           <span style={{ color: paper.accent }}>
-            {count} {countSuffix}{totalKm != null ? ` · ${totalKm.toLocaleString("nl-BE")} km` : ""}
+            {count} {countSuffix}
+            {totalKm != null ? ` · ${totalKm.toLocaleString("nl-BE")} km` : ""}
           </span>
         )
       )}
@@ -167,6 +183,9 @@ export default function AdminInboxPage() {
   const gaps = (adminData?.kmGaps ?? []).filter(
     (g) => !ownerCarShorts || ownerCarShorts.has(g.car_short)
   );
+  const duplicatePairs = (adminData?.duplicateTrips ?? []).filter(
+    (p) => !ownerCarShorts || ownerCarShorts.has(p.car_short)
+  );
 
   const [expandedGap, setExpandedGap] = useState<string | null>(null);
 
@@ -220,9 +239,9 @@ export default function AdminInboxPage() {
       {/* ── Open reservations ─────────────────────────────── */}
       <SectionHeader
         label={t("admin.sub_inbox")}
-        count={pending.length}
-        countSuffix={t("admin.pending_badge").toLowerCase()}
-        isLoading={isResLoading}
+        count={pending.length + duplicatePairs.length + gaps.length}
+        countSuffix={t("admin.inbox_noun")}
+        isLoading={isResLoading || isAdminLoading}
       />
 
       {isResLoading ? (
@@ -349,6 +368,95 @@ export default function AdminInboxPage() {
         ))
       )}
 
+      {/* ── Divider ──────────────────────────────────────── */}
+      <Perf margin="20px 0 16px" />
+
+      {/* ── Duplicate trips ──────────────────────────────── */}
+      <SectionHeader
+        label={t("admin.duplicate_trips_title")}
+        count={duplicatePairs.length}
+        countSuffix={t("admin.duplicates_noun")}
+        isLoading={isAdminLoading}
+      />
+
+      {isAdminLoading ? null : duplicatePairs.length === 0 ? (
+        <div
+          style={{
+            padding: "12px 0 4px",
+            textAlign: "center",
+            fontFamily: fontMono,
+            fontSize: 10,
+            color: paper.inkDim,
+            letterSpacing: 1,
+          }}
+        >
+          {t("admin.no_duplicate_trips")}
+        </div>
+      ) : (
+        duplicatePairs.map((pair) => (
+          <Card
+            key={`${pair.trip1_id}-${pair.trip2_id}`}
+            style={{ borderLeft: `3px solid ${paper.accent}`, marginBottom: 8 }}
+          >
+            <div style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
+              <CarBadge short={pair.car_short} />
+              <div style={{ flex: 1 }}>
+                <div
+                  style={{
+                    fontFamily: fontSerif,
+                    fontSize: 16,
+                    fontWeight: 700,
+                    color: paper.ink,
+                    lineHeight: 1.1,
+                  }}
+                >
+                  {pair.person_name} · {pair.km.toLocaleString("nl-BE")} km
+                </div>
+                <div
+                  style={{
+                    fontFamily: fontMono,
+                    fontSize: 9,
+                    color: paper.inkDim,
+                    letterSpacing: 1,
+                    marginTop: 3,
+                  }}
+                >
+                  {pair.start_odometer.toLocaleString("nl-BE")} →{" "}
+                  {pair.end_odometer.toLocaleString("nl-BE")} km
+                </div>
+                <div style={{ marginTop: 8, display: "flex", gap: 8 }}>
+                  {(
+                    [
+                      { id: pair.trip1_id, date: pair.date1, amount: pair.amount1 },
+                      { id: pair.trip2_id, date: pair.date2, amount: pair.amount2 },
+                    ] as const
+                  ).map((leg) => (
+                    <a
+                      key={leg.id}
+                      href={`/trips?edit=${leg.id}`}
+                      style={{
+                        flex: 1,
+                        display: "block",
+                        padding: "6px 8px",
+                        border: `1px dashed ${paper.paperDark}`,
+                        fontFamily: fontMono,
+                        fontSize: 9,
+                        color: paper.ink,
+                        textDecoration: "none",
+                        letterSpacing: 1,
+                      }}
+                    >
+                      <div>{leg.date}</div>
+                      <div style={{ color: paper.inkDim }}>€{leg.amount.toFixed(2)}</div>
+                    </a>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </Card>
+        ))
+      )}
+
       {/* ── Divider ───────────────────────────────────────── */}
       <Perf margin="20px 0 16px" />
 
@@ -382,7 +490,12 @@ export default function AdminInboxPage() {
         </div>
       ) : (
         gapsByYear.map(([yr, items]) => (
-          <YearGroup key={yr} year={yr} count={items.length} totalKm={items.reduce((s, g) => s + g.missing_km, 0)}>
+          <YearGroup
+            key={yr}
+            year={yr}
+            count={items.length}
+            totalKm={items.reduce((s, g) => s + g.missing_km, 0)}
+          >
             {items.map((gap) => {
               const key = gapKey(gap);
               const expanded = expandedGap === key;
@@ -496,6 +609,7 @@ export default function AdminInboxPage() {
           </YearGroup>
         ))
       )}
+
     </div>
   );
 }

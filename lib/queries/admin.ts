@@ -27,8 +27,8 @@ export interface CarPnL {
   owner_expense_amount: number;
   // derived
   variable_total: number; // fuel + expense
-  net: number;            // trip_revenue - variable_total
-  cost_per_km: number;    // variable_total / trip_km (or 0)
+  net: number; // trip_revenue - variable_total
+  cost_per_km: number; // variable_total / trip_km (or 0)
   prev_year_trip_km: number;
 }
 
@@ -70,13 +70,17 @@ export function getCarPnL(db: Database.Database, year: number): CarPnL[] {
   const yearStr = String(year);
   const prevYearStr = String(year - 1);
 
-  const cars = db.prepare(`
+  const cars = db
+    .prepare(
+      `
     SELECT c.id, c.short, c.name, c.price_per_km, c.owner_person_id, c.long_threshold, c.expected_km,
            p.first_name || CASE WHEN p.last_name != '' THEN ' ' || p.last_name ELSE '' END AS owner_name
     FROM cars c
     LEFT JOIN people p ON p.id = c.owner_person_id
     ORDER BY c.short
-  `).all() as {
+  `
+    )
+    .all() as {
     id: number;
     short: string;
     name: string;
@@ -88,7 +92,6 @@ export function getCarPnL(db: Database.Database, year: number): CarPnL[] {
   }[];
 
   return cars.map((car) => {
-
     const trips = db
       .prepare(
         `
@@ -141,7 +144,11 @@ export function getCarPnL(db: Database.Database, year: number): CarPnL[] {
              FROM fuel_fillups f
              WHERE f.car_id = ? AND strftime('%Y', f.date) = ? AND f.person_id = ?`
           )
-          .get(car.id, yearStr, car.owner_person_id) as { cnt: number; amt: number; liters: number })
+          .get(car.id, yearStr, car.owner_person_id) as {
+          cnt: number;
+          amt: number;
+          liters: number;
+        })
       : { cnt: 0, amt: 0, liters: 0 };
 
     const ownerExp = car.owner_person_id
@@ -340,6 +347,51 @@ export function getHistoricalExpenses(
   `
     )
     .all(currentYear - 5, currentYear - 1) as CarYearExpenses[];
+}
+
+export interface DuplicateTripPair {
+  trip1_id: number;
+  trip2_id: number;
+  person_name: string;
+  car_short: string;
+  date1: string;
+  date2: string;
+  start_odometer: number;
+  end_odometer: number;
+  km: number;
+  amount1: number;
+  amount2: number;
+}
+
+export function getDuplicateTrips(db: Database.Database): DuplicateTripPair[] {
+  return db
+    .prepare(
+      `
+    SELECT
+      t1.id            AS trip1_id,
+      t2.id            AS trip2_id,
+      p.first_name     AS person_name,
+      c.short          AS car_short,
+      t1.date          AS date1,
+      t2.date          AS date2,
+      t1.start_odometer,
+      t1.end_odometer,
+      t1.km,
+      t1.amount        AS amount1,
+      t2.amount        AS amount2
+    FROM trips t1
+    JOIN trips t2
+      ON  t1.person_id      = t2.person_id
+      AND t1.car_id         = t2.car_id
+      AND t1.start_odometer = t2.start_odometer
+      AND t1.end_odometer   = t2.end_odometer
+      AND t1.id < t2.id
+    JOIN people p ON p.id = t1.person_id
+    JOIN cars   c ON c.id = t1.car_id
+    ORDER BY t1.date DESC
+  `
+    )
+    .all() as DuplicateTripPair[];
 }
 
 export interface ZeroKmTrip {

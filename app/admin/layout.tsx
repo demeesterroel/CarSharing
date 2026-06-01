@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { PageHeader, TITLE_BAR_HEIGHT } from "@/components/page-header";
 import { paper, fontMono } from "@/lib/paper-theme";
 import { useT } from "@/components/locale-provider";
-import { useReservations, useOwnerCarShorts, useAdminSummary } from "./_shared";
+import { useInboxCount } from "./_shared";
 import { useMe } from "@/hooks/use-me";
 
 const OWNER_PAGES = ["/admin", "/admin/settlement", "/admin/vehicles"];
@@ -13,20 +13,9 @@ const OWNER_PAGES = ["/admin", "/admin/settlement", "/admin/vehicles"];
 function SubNav() {
   const t = useT();
   const pathname = usePathname();
-  const { data: reservations = [], isLoading: isResLoading } = useReservations();
   const { data: me } = useMe();
-  const ownerCarShorts = useOwnerCarShorts();
-  const pendingCount = reservations.filter(
-    (r) => r.status === "pending" && (!ownerCarShorts || ownerCarShorts.has(r.car_short ?? ""))
-  ).length;
-
+  const { count: inboxCount, isLoading: isInboxLoading } = useInboxCount();
   const year = new Date().getFullYear();
-  const { data: adminData, isLoading: isAdminLoading } = useAdminSummary(year);
-  const isInboxLoading = isResLoading || isAdminLoading;
-  const gapsCount = (adminData?.kmGaps ?? []).filter(
-    (g) => !ownerCarShorts || ownerCarShorts.has(g.car_short)
-  ).length;
-  const inboxCount = pendingCount + gapsCount;
 
   const ALL_PAGES = [
     {

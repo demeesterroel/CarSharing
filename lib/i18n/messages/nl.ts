@@ -519,6 +519,22 @@ export const nl = {
   "invite.invalid": "Ongeldige of verlopen uitnodiging",
   "invite.success": "Wachtwoord ingesteld — je bent ingelogd",
 
+  // Account recovery & session
+  "auth.forgot_password": "Wachtwoord vergeten?",
+  "auth.forgot_title": "Wachtwoord opnieuw instellen",
+  "auth.forgot_subtitle": "Vul je e-mailadres in en we sturen je een resetlink.",
+  "auth.email": "E-mail",
+  "auth.send_reset_link": "Resetlink versturen",
+  "auth.send_magic_link": "Stuur me een inloglink",
+  "auth.forgot_sent": "Als er een account bestaat voor dit e-mailadres, is er een link onderweg.",
+  "auth.forgot_error": "Er ging iets mis. Probeer het opnieuw.",
+  "auth.reset_title": "Kies een nieuw wachtwoord",
+  "auth.reset_subtitle": "Vul een nieuw wachtwoord in voor je account.",
+  "auth.reset_error": "Deze resetlink is ongeldig of verlopen.",
+  "auth.back_to_login": "Terug naar inloggen",
+  "auth.logout_all": "Op alle apparaten uitloggen",
+  "auth.logout_all_confirm": "Uitloggen op elk apparaat, ook dit apparaat?",
+
   // Admin settings page
   "settings.title": "Instellingen",
   "settings.bank_title": "Coöperatie bankrekening",

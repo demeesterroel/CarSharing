@@ -3,30 +3,30 @@ import { z } from "zod";
 import bcrypt from "bcryptjs";
 import { getDb } from "@/lib/db";
 import {
-  getInviteToken,
-  deleteInviteToken,
+  getAuthToken,
+  deleteAuthToken,
   setPasswordHash,
-  getPersonById,
+  bumpSessionEpoch,
   getSessionEpoch,
+  getPersonById,
   shortNameOf,
 } from "@/lib/queries/people";
 import { getIronSession } from "iron-session";
 import { sessionOptions, type SessionData } from "@/lib/session";
 
-const Schema = z.object({
-  password: z.string().min(8),
-});
+const Schema = z.object({ password: z.string().min(8) });
 
+/** Completes a password reset: sets the new password and revokes old sessions. */
 export async function POST(req: Request, ctx: { params: Promise<{ token: string }> }) {
   const { token } = await ctx.params;
   const db = getDb();
 
-  const record = getInviteToken(db, token);
-  if (!record) {
+  const record = getAuthToken(db, token);
+  if (!record || record.purpose !== "reset") {
     return NextResponse.json({ error: "invalid_token" }, { status: 400 });
   }
   if (new Date(record.expires_at) < new Date()) {
-    deleteInviteToken(db, token);
+    deleteAuthToken(db, token);
     return NextResponse.json({ error: "token_expired" }, { status: 400 });
   }
 
@@ -44,7 +44,9 @@ export async function POST(req: Request, ctx: { params: Promise<{ token: string 
   const hash = await bcrypt.hash(parsed.data.password, 12);
   db.transaction((args: { personId: number; hash: string; token: string }) => {
     setPasswordHash(db, args.personId, args.hash);
-    deleteInviteToken(db, args.token);
+    // A password reset invalidates every existing session for the account.
+    bumpSessionEpoch(db, args.personId);
+    deleteAuthToken(db, args.token);
   })({ personId: record.person_id, hash, token });
 
   const person = getPersonById(db, record.person_id);

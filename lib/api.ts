@@ -33,12 +33,27 @@ export function conflict(msg = "Conflict"): never {
   throw new HttpError(409, msg);
 }
 
+/**
+ * Throws 403 if the session has been revoked (its epoch no longer matches the
+ * user's current `session_epoch`). Legacy cookies and unit-test sessions carry
+ * no epoch and are treated as valid.
+ */
+async function assertSessionEpoch(session: SessionData): Promise<void> {
+  if (session.epoch === undefined || session.personId === undefined) return;
+  const { getDb } = await import("./db");
+  const { getSessionEpoch } = await import("./queries/people");
+  if (getSessionEpoch(getDb(), session.personId) !== session.epoch) {
+    forbidden("Session revoked");
+  }
+}
+
 /** Reads the session from the request and throws 403 if the user is not an admin. */
 export async function requireAdmin(req: Request) {
   const { getIronSession } = await import("iron-session");
   const { sessionOptions } = await import("./session");
   const session = await getIronSession<SessionData>(req, NextResponse.next(), sessionOptions);
   if (!session.isAdmin) forbidden();
+  await assertSessionEpoch(session);
   if (session.personId) {
     const { getDb } = await import("./db");
     const { isActivePerson } = await import("./queries/people");
@@ -52,6 +67,7 @@ export async function requireAdminOrOwner(req: Request) {
   const { getIronSession } = await import("iron-session");
   const { sessionOptions } = await import("./session");
   const session = await getIronSession<SessionData>(req, NextResponse.next(), sessionOptions);
+  await assertSessionEpoch(session);
   if (session.isAdmin) return session;
   const personId = session.personId;
   if (!personId) forbidden();
@@ -101,6 +117,7 @@ export async function requireSession(req: Request) {
   const { sessionOptions } = await import("./session");
   const session = await getIronSession<SessionData>(req, NextResponse.next(), sessionOptions);
   if (!session.personId) forbidden("Not authenticated");
+  await assertSessionEpoch(session);
   const { getDb } = await import("./db");
   const { isActivePerson } = await import("./queries/people");
   if (!isActivePerson(getDb(), session.personId!)) forbidden("Not authenticated");

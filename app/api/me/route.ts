@@ -2,17 +2,27 @@ import { NextResponse } from "next/server";
 import { getIronSession } from "iron-session";
 import { sessionOptions, type SessionData } from "@/lib/session";
 import { getDb } from "@/lib/db";
-import { isOwner, isActivePerson, shortNameOf } from "@/lib/queries/people";
+import { isOwner, isActivePerson, shortNameOf, getSessionEpoch } from "@/lib/queries/people";
 import { generateCsrfToken } from "@/lib/csrf";
 
-function getPersonFields(personId: number): { shortName: string | null; themePreference: 'paper' | 'mono' | null } {
+function getPersonFields(personId: number): {
+  shortName: string | null;
+  themePreference: "paper" | "mono" | null;
+} {
   const row = getDb()
     .prepare("SELECT first_name, last_name, username, theme_preference FROM people WHERE id = ?")
-    .get(personId) as { first_name: string; last_name: string; username: string | null; theme_preference: string | null } | undefined;
+    .get(personId) as
+    | {
+        first_name: string;
+        last_name: string;
+        username: string | null;
+        theme_preference: string | null;
+      }
+    | undefined;
   if (!row) return { shortName: null, themePreference: null };
   return {
     shortName: shortNameOf(row) || null,
-    themePreference: (row.theme_preference === 'mono' ? 'mono' : 'paper') as 'paper' | 'mono',
+    themePreference: (row.theme_preference === "mono" ? "mono" : "paper") as "paper" | "mono",
   };
 }
 
@@ -42,6 +52,15 @@ export async function GET(req: Request) {
     return withCsrfCookie(out);
   }
 
+  // Honour server-side session revocation ("log out everywhere"): if this
+  // cookie's epoch is stale, destroy it and report as logged out.
+  if (session.epoch !== undefined && session.personId !== undefined) {
+    if (getSessionEpoch(getDb(), session.personId) !== session.epoch) {
+      session.destroy();
+      return withCsrfCookie(NextResponse.json(null));
+    }
+  }
+
   const cloaked = session.cloakedAs;
 
   if (cloaked) {
@@ -66,7 +85,9 @@ export async function GET(req: Request) {
     owner = isOwner(getDb(), session.personId);
   }
 
-  const fields = session.personId ? getPersonFields(session.personId) : { shortName: session.shortName ?? null, themePreference: null };
+  const fields = session.personId
+    ? getPersonFields(session.personId)
+    : { shortName: session.shortName ?? null, themePreference: null };
   return withCsrfCookie(
     NextResponse.json({
       personId: session.personId ?? null,

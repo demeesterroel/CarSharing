@@ -14,6 +14,13 @@ const PUBLIC_PATHS = [
   "/api/invite",
   "/api/admin/calendar-renew",
   "/api/calendar-id",
+  // Self-service password reset / magic-link sign-in (issue #267).
+  "/forgot",
+  "/reset",
+  "/magic",
+  "/api/auth/forgot",
+  "/api/auth/reset",
+  "/api/auth/magic",
 ];
 
 // Pages only admins can visit (non-admins get redirected to /).

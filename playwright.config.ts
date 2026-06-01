@@ -32,11 +32,15 @@ export default defineConfig({
         //   - DISABLE_RATE_LIMIT — the suite logs in many times from one host,
         //     so the login brute-force limiter must not 429 it (no-op unless the
         //     rate-limit code that reads it is present).
+        //   - MAIL_WEBHOOK_URL — /forgot disables its buttons unless a mail
+        //     transport is configured (#282); a stub URL keeps the recovery UI
+        //     flow enabled (delivery fails silently, the route still returns ok).
         env: {
           ...process.env,
           SESSION_PASSWORD: E2E_SESSION_PASSWORD,
           NEXT_PUBLIC_BASE_URL: baseURL,
           DISABLE_RATE_LIMIT: "1",
+          MAIL_WEBHOOK_URL: "http://127.0.0.1:9/e2e-mail-stub",
         },
       },
 });

@@ -193,6 +193,8 @@ export const nl = {
 
   // Toasts
   "toast.saved": "Opgeslagen",
+  "toast.sessions_revoked": "Sessies ingetrokken",
+  "toast.error": "Er ging iets mis",
   "toast.deleted": "Verwijderd",
   "toast.person_added": "Persoon toegevoegd",
   "toast.car_added": "Wagen toegevoegd",
@@ -412,6 +414,8 @@ export const nl = {
   "admin.inactive_section": "Anderen",
   "admin.activate": "Activeren",
   "admin.deactivate": "Deactiveren",
+  "admin.revoke_sessions": "Sessies intrekken",
+  "admin.revoke_sessions_confirm": "{name} op elk apparaat uitloggen? Ze moeten opnieuw inloggen.",
   "admin.zero_km_title": "Ritten met 0 km",
   "admin.duplicate_trips_title": "Mogelijke dubbele ritten",
   "admin.no_duplicate_trips": "Geen dubbele ritten gevonden",

@@ -20,6 +20,7 @@ function PersonRow({
   onToggle,
   onSave,
   onCloak,
+  onRevokeSessions,
   isSaving,
 }: {
   person: Person;
@@ -27,6 +28,7 @@ function PersonRow({
   onToggle: () => void;
   onSave: (p: Person) => void;
   onCloak?: (personId: number) => void;
+  onRevokeSessions?: (person: Person) => void;
   isSaving?: boolean;
 }) {
   const t = useT();
@@ -409,6 +411,33 @@ function PersonRow({
             </button>
           </div>
 
+          {/* Revoke sessions */}
+          {onRevokeSessions && (
+            <div style={{ marginBottom: 12 }}>
+              <button
+                type="button"
+                disabled={isSaving}
+                onClick={() => onRevokeSessions(person)}
+                style={{
+                  width: "100%",
+                  padding: "8px",
+                  background: "transparent",
+                  color: paper.accent,
+                  border: `1.5px solid ${paper.accent}`,
+                  cursor: isSaving ? "default" : "pointer",
+                  opacity: isSaving ? 0.6 : 1,
+                  fontFamily: fontMono,
+                  fontSize: 9,
+                  fontWeight: 700,
+                  letterSpacing: 1.5,
+                  textTransform: "uppercase",
+                }}
+              >
+                {t("admin.revoke_sessions")}
+              </button>
+            </div>
+          )}
+
           {/* Cancel / Save */}
           <div style={{ display: "flex", gap: 8 }}>
             <button
@@ -516,6 +545,30 @@ export default function AdminLedenPage() {
     window.location.href = "/";
   }
 
+  async function handleRevokeSessions(person: Person) {
+    if (!window.confirm(t("admin.revoke_sessions_confirm", { name: fullNameOf(person) }))) return;
+    // Revoking your own sessions must destroy the current cookie, not just bump
+    // the epoch: the Edge proxy can't see a stale epoch, so an undestroyed cookie
+    // keeps passing page navigation. /api/auth/logout-all bumps the epoch AND
+    // destroys the cookie, so the redirect to /login sticks.
+    if (person.id === me?.personId) {
+      try {
+        await apiFetch("/api/auth/logout-all", { method: "POST" });
+      } catch {
+        // Ignore — redirect to login regardless of the response.
+      }
+      qc.clear();
+      router.replace("/login");
+      return;
+    }
+    try {
+      await apiFetch(`/api/people/${person.id}/revoke-sessions`, { method: "POST" });
+      toast.success(t("toast.sessions_revoked"));
+    } catch {
+      toast.error(t("toast.error"));
+    }
+  }
+
   if (!me?.isAdmin) return null;
 
   const active = people.filter((p) => p.active);
@@ -531,6 +584,7 @@ export default function AdminLedenPage() {
           onToggle={() => toggle(person.id)}
           onSave={(p) => savePerson.mutate(p)}
           onCloak={handleCloak}
+          onRevokeSessions={handleRevokeSessions}
           isSaving={savingId === person.id}
         />
       ))}

@@ -8,11 +8,11 @@ interface ThemeCtx {
   setTheme: (t: Theme) => void;
 }
 
-const ThemeContext = createContext<ThemeCtx>({ theme: "paper", setTheme: () => {} });
+const ThemeContext = createContext<ThemeCtx>({ theme: "mono", setTheme: () => {} });
 
 export function ThemeProvider({
   children,
-  initialTheme = "paper",
+  initialTheme = "mono",
 }: {
   children: React.ReactNode;
   initialTheme?: Theme;

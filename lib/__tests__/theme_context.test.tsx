@@ -14,18 +14,18 @@ afterEach(() => {
 });
 
 describe("ThemeProvider", () => {
-  it("defaults to paper theme", () => {
+  it("defaults to mono theme", () => {
     const { getByTestId } = render(
       <ThemeProvider>
         <ThemeReader />
       </ThemeProvider>
     );
-    expect(getByTestId("theme").textContent).toBe("paper");
+    expect(getByTestId("theme").textContent).toBe("mono");
   });
 
   it("applies data-theme attribute to html element", () => {
     render(<ThemeProvider><div /></ThemeProvider>);
-    expect(document.documentElement.getAttribute("data-theme")).toBe("paper");
+    expect(document.documentElement.getAttribute("data-theme")).toBe("mono");
   });
 
   it("setTheme updates html data-theme attribute", () => {

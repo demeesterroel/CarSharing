@@ -21,7 +21,7 @@ import { NextResponse } from "next/server";
 import type { ZodSchema } from "zod";
 import type Database from "better-sqlite3";
 import { getDb } from "@/lib/db";
-import { json, readBody, readId, notFound } from "@/lib/api";
+import { json, readBody, readId, notFound, requireSession } from "@/lib/api";
 
 type Ctx = { params: Promise<Record<string, string>> };
 
@@ -42,7 +42,7 @@ export type Authorize = (req: Request) => Promise<unknown> | unknown;
  */
 export function listHandler<T>(list: (db: Database.Database) => T[], authorize?: Authorize) {
   return json(async (req: Request) => {
-    if (authorize) await authorize(req);
+    await (authorize ?? requireSession)(req);
     return list(getDb());
   });
 }
@@ -79,7 +79,7 @@ export function getOneHandler<T>(
   authorize?: Authorize
 ) {
   return json(async (req: Request, ctx: Ctx) => {
-    if (authorize) await authorize(req);
+    await (authorize ?? requireSession)(req);
     const row = getById(getDb(), await readId(ctx));
     if (!row) notFound();
     return row;

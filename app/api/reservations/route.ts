@@ -1,11 +1,14 @@
 import { NextResponse } from "next/server";
 import { getDb } from "@/lib/db";
 import { getReservations, getReservationById, insertReservation } from "@/lib/queries/reservations";
-import { json, readBody } from "@/lib/api";
+import { json, readBody, requireSession } from "@/lib/api";
 import { reservationSchema } from "@/lib/schemas/reservation";
 import { syncReservationCreate } from "@/lib/reservation-sync";
 
-export const GET = json(async () => getReservations(getDb()));
+export const GET = json(async (req) => {
+  await requireSession(req);
+  return getReservations(getDb());
+});
 
 export const POST = json(async (req) => {
   const raw = await req.json();

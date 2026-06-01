@@ -98,6 +98,20 @@ export function makeApi(request: APIRequestContext, csrf: string) {
       return res.json() as Promise<T>;
     },
 
+    async put<T>(path: string, body: unknown): Promise<T> {
+      const res = await request.put(path, {
+        data: body,
+        headers: {
+          "Content-Type": "application/json",
+          "x-csrf-token": csrf,
+        },
+      });
+      if (!res.ok()) {
+        throw new Error(`PUT ${path} failed: ${res.status()} ${await res.text()}`);
+      }
+      return res.json() as Promise<T>;
+    },
+
     async get<T>(path: string): Promise<T> {
       const res = await request.get(path);
       if (!res.ok()) {

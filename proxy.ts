@@ -34,13 +34,25 @@ export async function proxy(req: NextRequest) {
     return NextResponse.next();
   }
 
-  const res = NextResponse.next();
-  const session = await getIronSession<SessionData>(req, res, sessionOptions);
+  // Reject sessions that lack a personId — env-var fallback admin sessions
+  // without a person row, or phantom sessions where the person was removed.
+  // (Per-row DB validity is enforced downstream in requireSession; Edge runtime
+  // can't reach SQLite.)
+  const loginRedirect = NextResponse.redirect(new URL("/login", req.url));
+  const session = await getIronSession<SessionData>(req, loginRedirect, sessionOptions);
 
   if (!session.authenticated) {
-    const loginUrl = new URL("/login", req.url);
-    return NextResponse.redirect(loginUrl);
+    return loginRedirect;
   }
+  if (!session.personId) {
+    session.destroy();
+    await session.save();
+    return loginRedirect;
+  }
+
+  const res = NextResponse.next();
+  // Re-read session on the pass-through response so downstream cookie ops are wired correctly.
+  await getIronSession<SessionData>(req, res, sessionOptions);
 
   // Admin-only pages — redirect non-admins to dashboard
   if (ADMIN_ONLY_PAGES.some((p) => pathname === p || pathname.startsWith(p + "/"))) {

@@ -8,7 +8,6 @@ import { LangSwitcher } from "@/components/lang-switcher";
 import { paper, fontMono, fontSerif } from "@/lib/paper-theme";
 
 export default function LoginForm({ mailEnabled }: { mailEnabled: boolean }) {
-  void mailEnabled; // wired up in the magic-link task
   const router = useRouter();
   const qc = useQueryClient();
   const t = useT();
@@ -17,8 +16,34 @@ export default function LoginForm({ mailEnabled }: { mailEnabled: boolean }) {
   const [error, setError] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [mode, setMode] = useState<"password" | "magic">("password");
+  const [magicEmail, setMagicEmail] = useState("");
+  const [magicSent, setMagicSent] = useState(false);
+
+  const submitMagic = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+    setLoading(true);
+    try {
+      // Always 200 (no account enumeration); show the same confirmation regardless.
+      await fetch("/api/auth/magic", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: magicEmail }),
+      });
+      setMagicSent(true);
+    } catch {
+      setError(t("auth.forgot_error"));
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
+    if (mode === "magic") {
+      await submitMagic(e);
+      return;
+    }
     e.preventDefault();
     setError(null);
     setLoading(true);
@@ -97,156 +122,278 @@ export default function LoginForm({ mailEnabled }: { mailEnabled: boolean }) {
             boxShadow: "0 1px 2px rgba(0,0,0,0.05), 0 4px 16px rgba(0,0,0,0.06)",
           }}
         >
-          {/* Username field */}
-          <div style={{ marginBottom: 20 }}>
-            <label
-              htmlFor="login-username"
-              style={{
-                display: "block",
-                fontFamily: fontMono,
-                fontSize: 10,
-                letterSpacing: 1.5,
-                textTransform: "uppercase",
-                color: paper.inkDim,
-                marginBottom: 6,
-              }}
-            >
-              {t("form.name")}
-            </label>
-            <input
-              id="login-username"
-              type="text"
-              autoComplete="username"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              required
-              style={{
-                width: "100%",
-                padding: "10px 12px",
-                border: "1px solid " + paper.paperDark,
-                background: paper.paperDeep,
-                fontFamily: fontMono,
-                fontSize: 13,
-                color: paper.ink,
-                outline: "none",
-                appearance: "none",
-                boxSizing: "border-box",
-              }}
-            />
-          </div>
+          {mode === "password" && (
+            <>
+              {/* Username field */}
+              <div style={{ marginBottom: 20 }}>
+                <label
+                  htmlFor="login-username"
+                  style={{
+                    display: "block",
+                    fontFamily: fontMono,
+                    fontSize: 10,
+                    letterSpacing: 1.5,
+                    textTransform: "uppercase",
+                    color: paper.inkDim,
+                    marginBottom: 6,
+                  }}
+                >
+                  {t("form.name")}
+                </label>
+                <input
+                  id="login-username"
+                  type="text"
+                  autoComplete="username"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  required
+                  style={{
+                    width: "100%",
+                    padding: "10px 12px",
+                    border: "1px solid " + paper.paperDark,
+                    background: paper.paperDeep,
+                    fontFamily: fontMono,
+                    fontSize: 13,
+                    color: paper.ink,
+                    outline: "none",
+                    appearance: "none",
+                    boxSizing: "border-box",
+                  }}
+                />
+              </div>
 
-          {/* Password field */}
-          <div style={{ marginBottom: 24 }}>
-            <label
-              htmlFor="login-password"
-              style={{
-                display: "block",
-                fontFamily: fontMono,
-                fontSize: 10,
-                letterSpacing: 1.5,
-                textTransform: "uppercase",
-                color: paper.inkDim,
-                marginBottom: 6,
-              }}
-            >
-              {t("form.password")}
-            </label>
-            <div style={{ position: "relative" }}>
-              <input
-                id="login-password"
-                type={showPassword ? "text" : "password"}
-                autoComplete="current-password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
+              {/* Password field */}
+              <div style={{ marginBottom: 24 }}>
+                <label
+                  htmlFor="login-password"
+                  style={{
+                    display: "block",
+                    fontFamily: fontMono,
+                    fontSize: 10,
+                    letterSpacing: 1.5,
+                    textTransform: "uppercase",
+                    color: paper.inkDim,
+                    marginBottom: 6,
+                  }}
+                >
+                  {t("form.password")}
+                </label>
+                <div style={{ position: "relative" }}>
+                  <input
+                    id="login-password"
+                    type={showPassword ? "text" : "password"}
+                    autoComplete="current-password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                    style={{
+                      width: "100%",
+                      padding: "10px 12px",
+                      paddingRight: 36,
+                      border: "1px solid " + paper.paperDark,
+                      background: paper.paperDeep,
+                      fontFamily: fontMono,
+                      fontSize: 13,
+                      color: paper.ink,
+                      outline: "none",
+                      appearance: "none",
+                      boxSizing: "border-box",
+                    }}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword((v) => !v)}
+                    aria-label={showPassword ? t("action.hide_password") : t("action.show_password")}
+                    style={{
+                      position: "absolute",
+                      right: 10,
+                      top: "50%",
+                      transform: "translateY(-50%)",
+                      background: "none",
+                      border: "none",
+                      cursor: "pointer",
+                      padding: 0,
+                      color: paper.inkMute,
+                      display: "flex",
+                    }}
+                  >
+                    {showPassword ? <EyeOff size={15} /> : <Eye size={15} />}
+                  </button>
+                </div>
+              </div>
+
+              {/* Error message */}
+              {error && (
+                <p
+                  style={{
+                    fontFamily: fontMono,
+                    fontSize: 11,
+                    color: "#c0392b",
+                    marginBottom: 16,
+                    marginTop: 0,
+                  }}
+                >
+                  {error}
+                </p>
+              )}
+
+              {/* Submit button */}
+              <button
+                type="submit"
+                disabled={loading}
                 style={{
                   width: "100%",
-                  padding: "10px 12px",
-                  paddingRight: 36,
-                  border: "1px solid " + paper.paperDark,
-                  background: paper.paperDeep,
+                  background: loading ? paper.inkDim : paper.ink,
+                  color: paper.paper,
                   fontFamily: fontMono,
-                  fontSize: 13,
-                  color: paper.ink,
+                  fontSize: 10,
+                  letterSpacing: 2,
+                  textTransform: "uppercase",
+                  padding: "14px",
+                  border: "none",
+                  cursor: loading ? "not-allowed" : "pointer",
                   outline: "none",
                   appearance: "none",
-                  boxSizing: "border-box",
-                }}
-              />
-              <button
-                type="button"
-                onClick={() => setShowPassword((v) => !v)}
-                aria-label={showPassword ? t("action.hide_password") : t("action.show_password")}
-                style={{
-                  position: "absolute",
-                  right: 10,
-                  top: "50%",
-                  transform: "translateY(-50%)",
-                  background: "none",
-                  border: "none",
-                  cursor: "pointer",
-                  padding: 0,
-                  color: paper.inkMute,
-                  display: "flex",
                 }}
               >
-                {showPassword ? <EyeOff size={15} /> : <Eye size={15} />}
+                {loading ? t("state.loading") : t("action.login")}
               </button>
-            </div>
-          </div>
-
-          {/* Error message */}
-          {error && (
-            <p
-              style={{
-                fontFamily: fontMono,
-                fontSize: 11,
-                color: "#c0392b",
-                marginBottom: 16,
-                marginTop: 0,
-              }}
-            >
-              {error}
-            </p>
+            </>
           )}
 
-          {/* Submit button */}
-          <button
-            type="submit"
-            disabled={loading}
-            style={{
-              width: "100%",
-              background: loading ? paper.inkDim : paper.ink,
-              color: paper.paper,
-              fontFamily: fontMono,
-              fontSize: 10,
-              letterSpacing: 2,
-              textTransform: "uppercase",
-              padding: "14px",
-              border: "none",
-              cursor: loading ? "not-allowed" : "pointer",
-              outline: "none",
-              appearance: "none",
-            }}
-          >
-            {loading ? t("state.loading") : t("action.login")}
-          </button>
+          {mode === "password" && (
+            <a
+              href="/forgot"
+              style={{
+                display: "block",
+                textAlign: "center",
+                marginTop: 16,
+                fontFamily: fontMono,
+                fontSize: 10,
+                letterSpacing: 1,
+                color: paper.inkDim,
+                textDecoration: "none",
+              }}
+            >
+              {t("auth.forgot_password")}
+            </a>
+          )}
 
-          <a
-            href="/forgot"
-            style={{
-              display: "block",
-              textAlign: "center",
-              marginTop: 16,
-              fontFamily: fontMono,
-              fontSize: 10,
-              letterSpacing: 1,
-              color: paper.inkDim,
-              textDecoration: "none",
-            }}
-          >
-            {t("auth.forgot_password")}
-          </a>
+          {mailEnabled && mode === "password" && (
+            <button
+              type="button"
+              onClick={() => setMode("magic")}
+              style={{
+                display: "block",
+                width: "100%",
+                marginTop: 12,
+                background: "none",
+                border: "none",
+                fontFamily: fontMono,
+                fontSize: 10,
+                letterSpacing: 1,
+                textTransform: "uppercase",
+                color: paper.inkDim,
+                cursor: "pointer",
+              }}
+            >
+              {t("auth.use_magic_link")}
+            </button>
+          )}
+
+          {mode === "magic" && (
+            <div>
+              {magicSent ? (
+                <p
+                  role="status"
+                  style={{ fontFamily: fontMono, fontSize: 12, color: paper.ink, lineHeight: 1.6 }}
+                >
+                  {t("auth.forgot_sent")}
+                </p>
+              ) : (
+                <div>
+                  <div style={{ marginBottom: 20 }}>
+                    <label
+                      htmlFor="login-magic-email"
+                      style={{
+                        display: "block",
+                        fontFamily: fontMono,
+                        fontSize: 10,
+                        letterSpacing: 1.5,
+                        textTransform: "uppercase",
+                        color: paper.inkDim,
+                        marginBottom: 6,
+                      }}
+                    >
+                      {t("auth.email")}
+                    </label>
+                    <input
+                      id="login-magic-email"
+                      type="email"
+                      autoComplete="email"
+                      value={magicEmail}
+                      onChange={(e) => setMagicEmail(e.target.value)}
+                      required
+                      style={{
+                        width: "100%",
+                        padding: "10px 12px",
+                        border: "1px solid " + paper.paperDark,
+                        background: paper.paperDeep,
+                        fontFamily: fontMono,
+                        fontSize: 13,
+                        color: paper.ink,
+                        outline: "none",
+                        appearance: "none",
+                        boxSizing: "border-box",
+                      }}
+                    />
+                  </div>
+                  <button
+                    type="button"
+                    disabled={loading || !magicEmail}
+                    onClick={submitMagic}
+                    style={{
+                      width: "100%",
+                      background: loading ? paper.inkDim : paper.ink,
+                      color: paper.paper,
+                      fontFamily: fontMono,
+                      fontSize: 10,
+                      letterSpacing: 2,
+                      textTransform: "uppercase",
+                      padding: "14px",
+                      border: "none",
+                      cursor: loading || !magicEmail ? "not-allowed" : "pointer",
+                    }}
+                  >
+                    {t("auth.send_magic_link")}
+                  </button>
+                </div>
+              )}
+              <button
+                type="button"
+                onClick={() => {
+                  setMode("password");
+                  setMagicSent(false);
+                  setError(null);
+                }}
+                style={{
+                  display: "block",
+                  width: "100%",
+                  marginTop: 16,
+                  background: "none",
+                  border: "none",
+                  fontFamily: fontMono,
+                  fontSize: 10,
+                  letterSpacing: 1,
+                  textTransform: "uppercase",
+                  color: paper.inkDim,
+                  cursor: "pointer",
+                }}
+              >
+                {t("auth.use_password")}
+              </button>
+            </div>
+          )}
         </form>
       </div>
     </div>

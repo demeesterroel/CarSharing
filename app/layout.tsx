@@ -66,7 +66,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="nl" className={`${fraunces.variable} ${inter.variable} ${courierPrime.variable} ${interTight.variable} ${jetbrainsMono.variable}`}>
+    <html lang="nl" data-theme="mono" className={`${fraunces.variable} ${inter.variable} ${courierPrime.variable} ${interTight.variable} ${jetbrainsMono.variable}`}>
       <head></head>
       <body>
         <LocaleProvider>

@@ -298,6 +298,7 @@ export default function AdminInboxPage() {
             <Perf margin="8px 0" />
             <div style={{ display: "flex", gap: 8 }}>
               <button
+                data-testid={`confirm-${r.id}`}
                 onClick={() =>
                   approve.mutate(
                     { id: r.id, status: "confirmed" },

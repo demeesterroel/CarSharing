@@ -27,7 +27,7 @@ export default function EditProfilePage({ params }: { params: Promise<{ id: stri
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
   const { theme: _theme, setTheme } = useTheme();
-  const [themePreference, setThemePreference] = useState<Theme>("paper");
+  const [themePreference, setThemePreference] = useState<Theme>("mono");
   const [themeSaved, setThemeSaved] = useState(false);
 
   useEffect(() => {
@@ -57,7 +57,7 @@ export default function EditProfilePage({ params }: { params: Promise<{ id: stri
 
   useEffect(() => {
     if (person) {
-      setThemePreference((person.theme_preference as Theme) ?? "paper");
+      setThemePreference((person.theme_preference as Theme) ?? "mono");
     }
   }, [person]);
 

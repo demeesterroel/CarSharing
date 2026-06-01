@@ -202,6 +202,7 @@ export default function LoginForm({ mailEnabled }: { mailEnabled: boolean }) {
                   />
                   <button
                     type="button"
+                    tabIndex={-1}
                     onClick={() => setShowPassword((v) => !v)}
                     aria-label={showPassword ? t("action.hide_password") : t("action.show_password")}
                     style={{

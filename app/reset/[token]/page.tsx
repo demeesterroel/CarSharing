@@ -123,6 +123,7 @@ export default function ResetPasswordPage() {
               />
               <button
                 type="button"
+                tabIndex={-1}
                 onClick={() => setShowPassword((v) => !v)}
                 aria-label={showPassword ? t("action.hide_password") : t("action.show_password")}
                 style={eyeButtonStyle}

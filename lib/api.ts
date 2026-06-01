@@ -75,6 +75,26 @@ export function canEdit(
   return false;
 }
 
+/**
+ * Throws 403 unless the session user is an admin or the owner of the given car.
+ * Used for actions that are the prerogative of the car's owner (e.g. approving
+ * or rejecting reservations for that car) rather than the record's creator.
+ */
+export async function requireAdminOrCarOwner(
+  req: Request,
+  carId: number,
+  db: import("better-sqlite3").Database
+) {
+  const session = await requireSession(req);
+  if (session.isAdmin) return session;
+  const { getCarById } = await import("./queries/cars");
+  const car = getCarById(db, carId);
+  if (!car || car.owner_person_id !== session.personId) {
+    forbidden("Only the car owner or an admin may change this reservation's status");
+  }
+  return session;
+}
+
 /** Reads session from request; throws 403 if not authenticated (no personId). */
 export async function requireSession(req: Request) {
   const { getIronSession } = await import("iron-session");

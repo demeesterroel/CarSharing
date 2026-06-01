@@ -24,7 +24,8 @@ test.describe("payments update + delete", () => {
   let personId: number;
 
   test.beforeEach(async ({ request }) => {
-    const session = await loginAndGetSession(request);
+    // Payments require admin — login as admin so POST/PUT/DELETE are permitted.
+    const session = await loginAndGetSession(request, "admin", "admin");
     csrf = session.csrf;
     api = makeApi(request, csrf);
 
@@ -42,7 +43,7 @@ test.describe("payments update + delete", () => {
   test.afterEach(async ({ request }) => {
     if (!paymentId) return;
     try {
-      const cleanupCsrf = await loginAndGetCsrf(request);
+      const cleanupCsrf = await loginAndGetCsrf(request, "admin", "admin");
       const cleanupApi = makeApi(request, cleanupCsrf);
       await cleanupApi.delete(`/api/payments/${paymentId}`);
     } catch {

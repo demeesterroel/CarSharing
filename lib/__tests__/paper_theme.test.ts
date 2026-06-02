@@ -2,6 +2,7 @@
 import { describe, it, expect } from "vitest";
 import {
   fmtMoney,
+  fmtMoneyOut,
   fmtKm,
   fmtDate,
   fmtYearMonth,
@@ -47,6 +48,24 @@ describe("fmtMoney", () => {
     const pos = fmtMoney(50);
     const neg = fmtMoney(-50);
     expect(pos).toBe(neg);
+  });
+});
+
+describe("fmtMoneyOut", () => {
+  it("prepends a minus sign (U+2212) to a positive cost", () => {
+    const result = fmtMoneyOut(1788.24);
+    expect(result.startsWith("− ")).toBe(true);
+    expect(result).toContain("€");
+    expect(result).toContain("1.788,24");
+  });
+
+  it("never double-negates: a negative input still yields a single leading minus", () => {
+    expect(fmtMoneyOut(50)).toBe(fmtMoneyOut(-50));
+  });
+
+  it("renders zero as a negative-prefixed amount", () => {
+    expect(fmtMoneyOut(0).startsWith("− ")).toBe(true);
+    expect(fmtMoneyOut(0)).toContain("0,00");
   });
 });
 

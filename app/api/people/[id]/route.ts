@@ -1,11 +1,19 @@
 import { getDb } from "@/lib/db";
 import { getPersonById, updatePerson } from "@/lib/queries/people";
-import { json, readBody, readId, notFound, requireAdmin } from "@/lib/api";
+import { json, readBody, readId, notFound, requireAdmin, requireSession } from "@/lib/api";
 import { personSchema } from "@/lib/schemas/person";
 
-export const GET = json(async (_req, ctx) => {
-  const person = getPersonById(getDb(), await readId(ctx));
+export const GET = json(async (req, ctx) => {
+  const session = await requireSession(req);
+  const id = await readId(ctx);
+  const person = getPersonById(getDb(), id);
   if (!person) notFound();
+  // Contact and banking details are private: only the record's owner or an
+  // admin may see them. Mirror the strip logic of the collection route.
+  if (!session.isAdmin && session.personId !== id) {
+    const { email: _e, bank_account: _b, ...rest } = person;
+    return rest;
+  }
   return person;
 });
 

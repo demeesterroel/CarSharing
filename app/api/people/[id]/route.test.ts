@@ -80,12 +80,45 @@ beforeEach(() => {
 });
 
 describe("GET /api/people/[id]", () => {
-  it("returns the person for a valid id", async () => {
+  it("returns the full row (incl. email + bank_account) for an admin", async () => {
+    mockSession.isAdmin = true;
+    mockSession.personId = 99; // not the record owner, but admin
     const res = await GET(new Request("http://localhost/api/people/5"), makeCtx("5"));
     expect(res.status).toBe(200);
     const body = await res.json();
     expect(body).toMatchObject({ id: 5, first_name: "Alice" });
+    expect(body.email).toBe("alice@example.com");
+    expect(body).toHaveProperty("bank_account");
     expect(mockGetPersonById).toHaveBeenCalledWith({}, 5);
+  });
+
+  it("returns the full row for a member requesting their OWN id", async () => {
+    mockSession.isAdmin = false;
+    mockSession.personId = 5; // owns record 5
+    const res = await GET(new Request("http://localhost/api/people/5"), makeCtx("5"));
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    expect(body.email).toBe("alice@example.com");
+    expect(body).toHaveProperty("bank_account");
+  });
+
+  it("strips email + bank_account for a member requesting ANOTHER id", async () => {
+    mockSession.isAdmin = false;
+    mockSession.personId = 2; // different person
+    const res = await GET(new Request("http://localhost/api/people/5"), makeCtx("5"));
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    expect(body).not.toHaveProperty("email");
+    expect(body).not.toHaveProperty("bank_account");
+    expect(body).toMatchObject({ id: 5, first_name: "Alice" });
+  });
+
+  it("returns 403 when unauthenticated", async () => {
+    mockSession.authenticated = false;
+    mockSession.personId = undefined;
+    mockSession.isAdmin = false;
+    const res = await GET(new Request("http://localhost/api/people/5"), makeCtx("5"));
+    expect(res.status).toBe(403);
   });
 
   it("returns 404 when the person does not exist", async () => {

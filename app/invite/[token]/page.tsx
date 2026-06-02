@@ -15,7 +15,6 @@ export default function InvitePage() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const [showConfirm, setShowConfirm] = useState(false);
 
   const inputStyle: React.CSSProperties = {
     width: "100%",
@@ -130,7 +129,9 @@ export default function InvitePage() {
               />
               <button
                 type="button"
+                tabIndex={-1}
                 onClick={() => setShowPassword((v) => !v)}
+                aria-label={showPassword ? t("action.hide_password") : t("action.show_password")}
                 style={{ position: "absolute", right: 10, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", padding: 0, color: paper.inkMute, display: "flex" }}
               >
                 {showPassword ? <EyeOff size={15} /> : <Eye size={15} />}
@@ -152,23 +153,14 @@ export default function InvitePage() {
             >
               {t("invite.confirm_label")}
             </label>
-            <div style={{ position: "relative" }}>
-              <input
-                type={showConfirm ? "text" : "password"}
-                autoComplete="new-password"
-                value={confirm}
-                onChange={(e) => setConfirm(e.target.value)}
-                style={{ ...inputStyle, paddingRight: 36 }}
-                required
-              />
-              <button
-                type="button"
-                onClick={() => setShowConfirm((v) => !v)}
-                style={{ position: "absolute", right: 10, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", padding: 0, color: paper.inkMute, display: "flex" }}
-              >
-                {showConfirm ? <EyeOff size={15} /> : <Eye size={15} />}
-              </button>
-            </div>
+            <input
+              type={showPassword ? "text" : "password"}
+              autoComplete="new-password"
+              value={confirm}
+              onChange={(e) => setConfirm(e.target.value)}
+              style={inputStyle}
+              required
+            />
           </div>
 
           {error && (

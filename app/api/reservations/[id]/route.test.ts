@@ -55,9 +55,7 @@ function putReq(body: unknown, withCsrf = true) {
     method: "PUT",
     headers: {
       "Content-Type": "application/json",
-      ...(withCsrf
-        ? { Cookie: `csrf-token=${CSRF}`, "x-csrf-token": CSRF }
-        : {}),
+      ...(withCsrf ? { Cookie: `csrf-token=${CSRF}`, "x-csrf-token": CSRF } : {}),
       "x-forwarded-for": `198.51.100.${++ip}`,
     },
     body: JSON.stringify(body),
@@ -67,9 +65,7 @@ function deleteReq(withCsrf = true) {
   return new Request("http://localhost/api/reservations/5", {
     method: "DELETE",
     headers: {
-      ...(withCsrf
-        ? { Cookie: `csrf-token=${CSRF}`, "x-csrf-token": CSRF }
-        : {}),
+      ...(withCsrf ? { Cookie: `csrf-token=${CSRF}`, "x-csrf-token": CSRF } : {}),
       "x-forwarded-for": `198.51.100.${++ip}`,
     },
   });
@@ -92,7 +88,14 @@ beforeEach(() => {
 });
 
 describe("GET /api/reservations/[id]", () => {
-  it("returns the reservation for any request (no auth guard on GET)", async () => {
+  it("returns 403 for an unauthenticated request", async () => {
+    mockSession.personId = undefined as unknown as number;
+    const res = await GET(getReq(), ctx);
+    expect(res.status).toBe(403);
+    expect(mockGetReservationById).not.toHaveBeenCalled();
+  });
+
+  it("returns the reservation for an authenticated request", async () => {
     const res = await GET(getReq(), ctx);
     expect(res.status).toBe(200);
     expect(await res.json()).toMatchObject({ id: 5 });

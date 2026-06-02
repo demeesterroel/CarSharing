@@ -45,9 +45,7 @@ function putReq(body: unknown, withCsrf = true) {
     method: "PUT",
     headers: {
       "Content-Type": "application/json",
-      ...(withCsrf
-        ? { Cookie: `csrf-token=${CSRF}`, "x-csrf-token": CSRF }
-        : {}),
+      ...(withCsrf ? { Cookie: `csrf-token=${CSRF}`, "x-csrf-token": CSRF } : {}),
       "x-forwarded-for": `198.51.100.${++ip}`,
     },
     body: JSON.stringify(body),
@@ -57,9 +55,7 @@ function deleteReq(withCsrf = true) {
   return new Request("http://localhost/api/vehicles/5", {
     method: "DELETE",
     headers: {
-      ...(withCsrf
-        ? { Cookie: `csrf-token=${CSRF}`, "x-csrf-token": CSRF }
-        : {}),
+      ...(withCsrf ? { Cookie: `csrf-token=${CSRF}`, "x-csrf-token": CSRF } : {}),
       "x-forwarded-for": `198.51.100.${++ip}`,
     },
   });
@@ -102,7 +98,14 @@ beforeEach(() => {
 });
 
 describe("GET /api/vehicles/[id]", () => {
-  it("returns the car without any auth check", async () => {
+  it("returns 403 for an unauthenticated request", async () => {
+    mockSession.personId = undefined;
+    const res = await GET(getReq(), ctx);
+    expect(res.status).toBe(403);
+    expect(mockGetCarById).not.toHaveBeenCalled();
+  });
+
+  it("returns the car for an authenticated request", async () => {
     const res = await GET(getReq(), ctx);
     expect(res.status).toBe(200);
     expect(await res.json()).toMatchObject({ id: 5 });
@@ -133,7 +136,18 @@ describe("PUT /api/vehicles/[id]", () => {
 
   it("returns 403 when owner tries to update a car they do not own", async () => {
     mockIsOwner.mockReturnValue(true);
-    mockGetCarById.mockReturnValue({ id: 5, owner_person_id: 99, short: "XX", name: "Other", price_per_km: 0.2, brand: null, color: null, long_threshold: 500, active: 1, expected_km: null });
+    mockGetCarById.mockReturnValue({
+      id: 5,
+      owner_person_id: 99,
+      short: "XX",
+      name: "Other",
+      price_per_km: 0.2,
+      brand: null,
+      color: null,
+      long_threshold: 500,
+      active: 1,
+      expected_km: null,
+    });
     const res = await PUT(putReq(ownerPatch), ctx);
     expect(res.status).toBe(403);
     expect(mockUpdateCar).not.toHaveBeenCalled();

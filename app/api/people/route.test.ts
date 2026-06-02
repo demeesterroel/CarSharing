@@ -117,14 +117,11 @@ describe("GET /api/people", () => {
     expect(body[1]).toHaveProperty("first_name", "Bob");
   });
 
-  it("returns list even when not authenticated (unauthenticated session has isAdmin=false by default)", async () => {
+  it("returns 403 for an unauthenticated request", async () => {
     mockSession.isAdmin = false;
     mockSession.personId = undefined;
     const res = await GET(new Request("http://localhost/api/people"), ctx);
-    expect(res.status).toBe(200);
-    const body = await res.json();
-    // Stripped of contacts
-    expect(body[0]).not.toHaveProperty("email");
+    expect(res.status).toBe(403);
   });
 });
 

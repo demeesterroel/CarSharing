@@ -25,8 +25,9 @@ vi.mock("@/lib/queries/reservations", () => ({
   getReservationById: (...a: unknown[]) => mockGetReservationById(...a),
 }));
 
+const mockSyncReservationCreate = vi.fn(() => Promise.resolve());
 vi.mock("@/lib/reservation-sync", () => ({
-  syncReservationCreate: vi.fn(() => Promise.resolve()),
+  syncReservationCreate: () => mockSyncReservationCreate(),
 }));
 
 import { GET, POST } from "./route";
@@ -43,9 +44,7 @@ function postReq(body: unknown, withCsrf = true) {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      ...(withCsrf
-        ? { Cookie: `csrf-token=${CSRF}`, "x-csrf-token": CSRF }
-        : {}),
+      ...(withCsrf ? { Cookie: `csrf-token=${CSRF}`, "x-csrf-token": CSRF } : {}),
       "x-forwarded-for": `198.51.100.${++ip}`,
     },
     body: JSON.stringify(body),
@@ -83,6 +82,14 @@ describe("GET /api/reservations", () => {
 });
 
 describe("POST /api/reservations", () => {
+  it("returns 403 for an unauthenticated request before any insert or sync", async () => {
+    mockSession.personId = undefined as unknown as number;
+    const res = await POST(postReq(validReservation), ctx);
+    expect(res.status).toBe(403);
+    expect(mockInsertReservation).not.toHaveBeenCalled();
+    expect(mockSyncReservationCreate).not.toHaveBeenCalled();
+  });
+
   it("creates a reservation with a valid body", async () => {
     const res = await POST(postReq(validReservation), ctx);
     expect(res.status).toBe(201);

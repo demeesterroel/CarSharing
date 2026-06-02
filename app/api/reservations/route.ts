@@ -11,6 +11,7 @@ export const GET = json(async (req) => {
 });
 
 export const POST = json(async (req) => {
+  await requireSession(req);
   const raw = await req.json();
   const body = reservationSchema.parse(raw);
   const client_id = typeof raw.client_id === "string" ? raw.client_id : null;

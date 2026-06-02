@@ -102,7 +102,14 @@ beforeEach(() => {
 });
 
 describe("GET /api/vehicles/[id]", () => {
-  it("returns the car without any auth check", async () => {
+  it("returns 403 for an unauthenticated request", async () => {
+    mockSession.personId = undefined;
+    const res = await GET(getReq(), ctx);
+    expect(res.status).toBe(403);
+    expect(mockGetCarById).not.toHaveBeenCalled();
+  });
+
+  it("returns the car for an authenticated user", async () => {
     const res = await GET(getReq(), ctx);
     expect(res.status).toBe(200);
     expect(await res.json()).toMatchObject({ id: 5 });

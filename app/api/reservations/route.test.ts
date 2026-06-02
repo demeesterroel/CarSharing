@@ -83,6 +83,15 @@ describe("GET /api/reservations", () => {
 });
 
 describe("POST /api/reservations", () => {
+  it("returns 403 for an unauthenticated request (no insert, no sync)", async () => {
+    mockSession.personId = undefined as unknown as number;
+    const { syncReservationCreate } = await import("@/lib/reservation-sync");
+    const res = await POST(postReq(validReservation), ctx);
+    expect(res.status).toBe(403);
+    expect(mockInsertReservation).not.toHaveBeenCalled();
+    expect(syncReservationCreate).not.toHaveBeenCalled();
+  });
+
   it("creates a reservation with a valid body", async () => {
     const res = await POST(postReq(validReservation), ctx);
     expect(res.status).toBe(201);

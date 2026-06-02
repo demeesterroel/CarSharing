@@ -9,9 +9,11 @@ import {
   forbidden,
   conflict,
   requireAdminOrOwner,
+  requireSession,
 } from "@/lib/api";
 
-export const GET = json(async (_req, ctx) => {
+export const GET = json(async (req, ctx) => {
+  await requireSession(req);
   const car = getCarById(getDb(), await readId(ctx));
   if (!car) notFound();
   return car;

@@ -2,7 +2,13 @@ import { NextRequest, NextResponse } from "next/server";
 import { z, ZodError, type ZodSchema } from "zod";
 import { validateCsrfToken } from "./csrf";
 import { checkRateLimit } from "./rate-limit";
+import { canEdit } from "./permissions";
 import type { SessionData } from "./session";
+
+// Re-export the pure permission helper so existing call sites that import it
+// from "./api" keep working. The single source of truth lives in
+// ./permissions (importable from both backend and frontend).
+export { canEdit };
 
 export class HttpError extends Error {
   constructor(
@@ -76,19 +82,6 @@ export async function requireAdminOrOwner(req: Request) {
   const { isOwner } = await import("./queries/people");
   if (!isOwner(getDb(), personId)) forbidden();
   return session;
-}
-
-/** Pure function. Returns true if the person may edit/delete the given record. */
-export function canEdit(
-  personId: number,
-  isAdmin: boolean,
-  record: { person_id: number; car_id: number },
-  carOwnerPersonId: number | null
-): boolean {
-  if (isAdmin) return true;
-  if (record.person_id === personId) return true;
-  if (carOwnerPersonId !== null && carOwnerPersonId === personId) return true;
-  return false;
 }
 
 /**

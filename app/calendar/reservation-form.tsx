@@ -42,7 +42,16 @@ interface Props {
   defaultValues?: Partial<Reservation>;
   onSubmit: (data: ReservationInput) => void;
   onCancel: () => void;
+  /** When true the form is shown read-only: inputs disabled, save hidden. */
+  readOnly?: boolean;
 }
+
+const fieldsetReset: React.CSSProperties = {
+  border: 0,
+  margin: 0,
+  padding: 0,
+  minInlineSize: "auto",
+};
 
 function diffDays(start: string, end: string): number {
   return Math.round((new Date(end).getTime() - new Date(start).getTime()) / 86400000) + 1;
@@ -67,7 +76,7 @@ const monoLabel: React.CSSProperties = {
   marginBottom: 4,
 };
 
-export function ReservationForm({ defaultValues, onSubmit, onCancel }: Props) {
+export function ReservationForm({ defaultValues, onSubmit, onCancel, readOnly = false }: Props) {
   const t = useT();
   const { locale } = useLocale();
   const { theme } = useTheme();
@@ -145,6 +154,10 @@ export function ReservationForm({ defaultValues, onSubmit, onCancel }: Props) {
   return (
     <form
       onSubmit={(e) => {
+        if (readOnly) {
+          e.preventDefault();
+          return;
+        }
         if (!online) {
           e.preventDefault();
           toast.error(t("offline.mutation_blocked"));
@@ -210,501 +223,543 @@ export function ReservationForm({ defaultValues, onSubmit, onCancel }: Props) {
         >
           {mono ? t("form.reservation") : `▦ ${t("form.reservation").toUpperCase()}`}
         </div>
-        <div style={{ position: "relative" }} className="submit-wrap">
-          <button
-            type="submit"
-            disabled={!canSubmit}
+        {readOnly ? (
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 6,
+              fontFamily: fontMono,
+              fontSize: 9,
+              fontWeight: 700,
+              letterSpacing: 2,
+              textTransform: "uppercase",
+              color: paper.inkMute,
+            }}
+          >
+            <Lock size={13} color={paper.inkMute} strokeWidth={1.75} />
+            {t("form.read_only")}
+          </div>
+        ) : (
+          <div style={{ position: "relative" }} className="submit-wrap">
+            <button
+              type="submit"
+              disabled={!canSubmit}
+              style={
+                mono
+                  ? {
+                      fontFamily: "var(--font-inter, 'Inter', system-ui, sans-serif)",
+                      fontSize: 14,
+                      fontWeight: 600,
+                      background: paper.accent,
+                      color: "#fff",
+                      border: "none",
+                      padding: "8px 18px",
+                      borderRadius: "var(--radius-pill, 999px)",
+                      cursor: canSubmit && online ? "pointer" : "default",
+                      opacity: canSubmit && online ? 1 : 0.5,
+                      transition: "opacity 0.15s",
+                    }
+                  : {
+                      fontFamily: fontMono,
+                      fontSize: 9,
+                      fontWeight: 700,
+                      letterSpacing: 2,
+                      textTransform: "uppercase" as const,
+                      background: isAdmin ? paper.blue : paper.accent,
+                      color: "#fff",
+                      border: "none",
+                      padding: "8px 14px",
+                      cursor: canSubmit && online ? "pointer" : "default",
+                      opacity: canSubmit && online ? 1 : 0.35,
+                    }
+              }
+            >
+              {mono
+                ? t("action.save")
+                : isAdmin
+                  ? t("action.confirm_reservation").toUpperCase()
+                  : t("action.request_reservation").toUpperCase()}
+            </button>
+            {!canSubmit && (
+              <div
+                className="submit-tip"
+                style={{
+                  position: "absolute",
+                  right: 0,
+                  top: "calc(100% + 6px)",
+                  background: paper.ink,
+                  color: paper.paper,
+                  fontFamily: fontMono,
+                  fontSize: 9,
+                  letterSpacing: 1,
+                  padding: "5px 8px",
+                  whiteSpace: "pre-line",
+                  pointerEvents: "none",
+                  opacity: 0,
+                  transition: "opacity 0.15s",
+                  zIndex: 20,
+                }}
+              >
+                {missingLabel}
+              </div>
+            )}
+          </div>
+        )}
+        <style>{`.submit-wrap:hover .submit-tip, .submit-wrap:focus-within .submit-tip { opacity: 1 !important; }`}</style>
+      </div>
+
+      <fieldset disabled={readOnly} style={fieldsetReset}>
+        {readOnly && (
+          <div
+            style={{
+              padding: "8px 14px",
+              fontFamily: fontMono,
+              fontSize: 9,
+              fontWeight: 700,
+              letterSpacing: 1,
+              color: paper.amber,
+              borderBottom: mono
+                ? `1px solid ${paper.paperDark}`
+                : `1.5px dashed ${paper.paperDark}`,
+            }}
+          >
+            🔒 {t("form.read_only_hint")}
+          </div>
+        )}
+
+        {/* Car tabs */}
+        <Controller
+          name="car_id"
+          control={control}
+          render={({ field }) => (
+            <CarToggle cars={cars} value={field.value} onChange={field.onChange} />
+          )}
+        />
+
+        {/* Driver row */}
+        <div
+          style={{
+            padding: "10px 14px",
+            borderBottom: mono ? `1px solid ${paper.paperDark}` : `1.5px dashed ${paper.paperDark}`,
+            background: paper.paper,
+          }}
+        >
+          {mono ? (
+            isAdmin ? (
+              <>
+                <span style={lbl}>{t("form.driver")}</span>
+                <select
+                  value={personId ?? ""}
+                  onChange={(e) => setValue("person_id", Number(e.target.value))}
+                  style={{
+                    fontFamily: fontSerif,
+                    fontSize: 17,
+                    fontWeight: 600,
+                    color: paper.ink,
+                    background: "transparent",
+                    border: "none",
+                    outline: "none",
+                    width: "100%",
+                    padding: 0,
+                    cursor: "pointer",
+                  }}
+                >
+                  <option value="" disabled>
+                    {t("form.select_person_placeholder")}
+                  </option>
+                  {people
+                    .filter((p) => p.active)
+                    .map((p) => (
+                      <option key={p.id} value={p.id}>
+                        {fullNameOf(p)}
+                      </option>
+                    ))}
+                </select>
+              </>
+            ) : (
+              <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                <span
+                  style={{
+                    fontFamily:
+                      "var(--font-inter-tight, 'Inter Tight', 'Inter', system-ui, sans-serif)",
+                    fontSize: 19,
+                    fontWeight: 700,
+                    color: paper.ink,
+                  }}
+                >
+                  {person ? fullNameOf(person) : (me?.shortName ?? "—")}
+                </span>
+                <Lock size={14} color={paper.inkMute} strokeWidth={1.75} />
+              </div>
+            )
+          ) : (
+            <>
+              <span style={lbl}>{t("form.driver")}</span>
+              {isAdmin ? (
+                <select
+                  value={personId ?? ""}
+                  onChange={(e) => setValue("person_id", Number(e.target.value))}
+                  style={{
+                    fontFamily: fontSerif,
+                    fontSize: 17,
+                    fontWeight: 600,
+                    color: paper.ink,
+                    background: "transparent",
+                    border: "none",
+                    outline: "none",
+                    width: "100%",
+                    padding: 0,
+                    cursor: "pointer",
+                  }}
+                >
+                  <option value="" disabled>
+                    {t("form.select_person_placeholder")}
+                  </option>
+                  {people
+                    .filter((p) => p.active)
+                    .map((p) => (
+                      <option key={p.id} value={p.id}>
+                        {fullNameOf(p)}
+                      </option>
+                    ))}
+                </select>
+              ) : (
+                <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                  <span
+                    style={{
+                      fontFamily: fontSerif,
+                      fontSize: 17,
+                      fontWeight: 600,
+                      color: paper.ink,
+                    }}
+                  >
+                    {person ? fullNameOf(person) : (me?.shortName ?? "—")}
+                  </span>
+                  <span style={{ fontSize: 13 }}>🔒</span>
+                </div>
+              )}
+            </>
+          )}
+        </div>
+        {!isAdmin && !mono && (
+          <div
+            style={{
+              padding: "6px 14px",
+              fontFamily: fontMono,
+              fontSize: 9,
+              color: paper.amber,
+              letterSpacing: 1,
+            }}
+          >
+            🔒 {t("form.driver_locked_hint")}
+          </div>
+        )}
+
+        {/* Hidden RHF fields */}
+        <input type="hidden" {...register("start_date")} />
+        <input type="hidden" {...register("end_date")} />
+
+        {/* Calendar date picker */}
+        <div
+          style={
+            mono
+              ? {
+                  margin: "12px 14px",
+                  background: paper.paper,
+                  border: `1px solid ${paper.paperDark}`,
+                  borderRadius: "var(--radius-md, 10px)",
+                  overflow: "hidden",
+                }
+              : {
+                  margin: "12px 14px",
+                  background: paper.paper,
+                  border: `1.5px solid ${paper.paperDark}`,
+                }
+          }
+        >
+          {/* Header: date range + day count */}
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              padding: "8px 14px",
+              borderBottom: mono ? `1px solid ${paper.paperDark}` : `1px dashed ${paper.paperDark}`,
+            }}
+          >
+            <div>
+              {!mono && (
+                <div
+                  style={{
+                    fontFamily: fontMono,
+                    fontSize: 10,
+                    fontWeight: 700,
+                    letterSpacing: 2,
+                    color: paper.blue,
+                  }}
+                >
+                  ● {t("page.reservation_request")}
+                </div>
+              )}
+              {startDate && endDate && startDate !== endDate ? (
+                <div
+                  style={
+                    mono
+                      ? {
+                          fontFamily:
+                            "var(--font-inter-tight, 'Inter Tight', 'Inter', system-ui, sans-serif)",
+                          fontSize: 15,
+                          fontWeight: 700,
+                          color: paper.ink,
+                        }
+                      : {
+                          fontFamily: fontSerif,
+                          fontSize: 13,
+                          fontWeight: 600,
+                          color: paper.inkDim,
+                          marginTop: 2,
+                        }
+                  }
+                >
+                  {fmtDate(startDate, locale as "nl" | "en")}
+                  {mono ? " – " : " → "}
+                  {fmtDate(endDate, locale as "nl" | "en")}
+                </div>
+              ) : startDate ? (
+                <div
+                  style={
+                    mono
+                      ? {
+                          fontFamily:
+                            "var(--font-inter-tight, 'Inter Tight', 'Inter', system-ui, sans-serif)",
+                          fontSize: 15,
+                          fontWeight: 700,
+                          color: paper.ink,
+                        }
+                      : {
+                          fontFamily: fontSerif,
+                          fontSize: 13,
+                          fontWeight: 600,
+                          color: paper.inkDim,
+                          marginTop: 2,
+                        }
+                  }
+                >
+                  {fmtDate(startDate, locale as "nl" | "en")}
+                </div>
+              ) : (
+                mono && (
+                  <div
+                    style={{
+                      fontFamily: fontMono,
+                      fontSize: 12,
+                      color: paper.inkMute,
+                    }}
+                  >
+                    {t("field.dates")}
+                  </div>
+                )
+              )}
+            </div>
+            <div style={{ textAlign: "center" }}>
+              <div
+                style={{
+                  fontFamily: fontSerif,
+                  fontSize: 24,
+                  fontWeight: 700,
+                  color: datesSelected ? paper.ink : paper.inkMute,
+                  lineHeight: 1,
+                }}
+              >
+                {dayCount}
+              </div>
+              <div
+                style={
+                  mono
+                    ? {
+                        fontFamily: fontMono,
+                        fontSize: 9,
+                        color: paper.inkMute,
+                      }
+                    : {
+                        fontFamily: fontMono,
+                        fontSize: 7,
+                        color: paper.inkMute,
+                        letterSpacing: 1.5,
+                        textTransform: "uppercase" as const,
+                      }
+                }
+              >
+                {t("form.days")}
+              </div>
+            </div>
+          </div>
+
+          {/* Calendar grid */}
+          <div style={{ padding: "10px 14px 12px" }}>
+            <PickCalendar
+              initialOffset={calendarInitOffset}
+              reservations={reservations}
+              carId={carId}
+              excludeId={defaultValues?.id}
+              from={startDate ?? null}
+              to={endDate ?? null}
+              onRangePick={(from, to) => {
+                if (readOnly) return;
+                setValue("start_date", from, { shouldValidate: true });
+                setValue("end_date", to, { shouldValidate: true });
+              }}
+            />
+          </div>
+        </div>
+
+        {/* Conflict warning */}
+        {conflicts.length > 0 && (
+          <div
             style={
               mono
                 ? {
-                    fontFamily: "var(--font-inter, 'Inter', system-ui, sans-serif)",
-                    fontSize: 14,
-                    fontWeight: 600,
-                    background: paper.accent,
-                    color: "#fff",
-                    border: "none",
-                    padding: "8px 18px",
-                    borderRadius: "var(--radius-pill, 999px)",
-                    cursor: canSubmit && online ? "pointer" : "default",
-                    opacity: canSubmit && online ? 1 : 0.5,
-                    transition: "opacity 0.15s",
+                    margin: "0 14px 12px",
+                    border: `1px solid ${paper.amber}`,
+                    borderRadius: "var(--radius-md, 10px)",
+                    padding: "10px 14px",
+                    background: "rgba(180, 83, 9, 0.05)",
                   }
+                : {
+                    margin: "0 14px 12px",
+                    background: "transparent",
+                    border: `1.5px solid ${paper.accent}`,
+                    padding: "10px 14px",
+                  }
+            }
+          >
+            <div
+              style={
+                mono
+                  ? {
+                      fontFamily:
+                        "var(--font-inter-tight, 'Inter Tight', 'Inter', system-ui, sans-serif)",
+                      fontSize: 13,
+                      fontWeight: 600,
+                      color: paper.amber,
+                      marginBottom: 6,
+                    }
+                  : {
+                      fontFamily: fontMono,
+                      fontSize: 9,
+                      fontWeight: 700,
+                      color: paper.accent,
+                      letterSpacing: 1.5,
+                      textTransform: "uppercase" as const,
+                      marginBottom: 6,
+                    }
+              }
+            >
+              {mono ? "⚠ " : "▲ "}
+              {t("form.conflict_warning")}
+            </div>
+            {conflicts.map((r) => (
+              <div key={r.id} style={{ marginBottom: 4 }}>
+                <div
+                  style={
+                    mono
+                      ? {
+                          fontFamily: "var(--font-inter, 'Inter', system-ui, sans-serif)",
+                          fontSize: 13,
+                          fontWeight: 600,
+                          color: paper.ink,
+                        }
+                      : {
+                          fontFamily: fontSerif,
+                          fontSize: 13,
+                          fontWeight: 600,
+                          color: paper.ink,
+                        }
+                  }
+                >
+                  {r.person_name} — {r.car_short}
+                </div>
+                <div
+                  style={{
+                    fontFamily: fontMono,
+                    fontSize: 9,
+                    color: paper.inkDim,
+                    letterSpacing: mono ? 0 : 1,
+                  }}
+                >
+                  {r.start_date} · {r.status}
+                </div>
+              </div>
+            ))}
+            <div
+              style={{
+                fontFamily: mono ? "var(--font-inter, 'Inter', system-ui, sans-serif)" : fontMono,
+                fontSize: mono ? 11 : 9,
+                color: paper.inkMute,
+                letterSpacing: mono ? 0 : 1,
+                marginTop: 6,
+                fontStyle: "italic",
+              }}
+            >
+              {t("form.conflict_note")}
+            </div>
+          </div>
+        )}
+
+        {/* Note */}
+        <div style={{ padding: "4px 14px 16px" }}>
+          <span
+            style={
+              mono
+                ? { ...monoLabel }
                 : {
                     fontFamily: fontMono,
                     fontSize: 9,
                     fontWeight: 700,
                     letterSpacing: 2,
                     textTransform: "uppercase" as const,
-                    background: isAdmin ? paper.blue : paper.accent,
-                    color: "#fff",
-                    border: "none",
-                    padding: "8px 14px",
-                    cursor: canSubmit && online ? "pointer" : "default",
-                    opacity: canSubmit && online ? 1 : 0.35,
+                    color: paper.inkMute,
+                    display: "block",
+                    marginBottom: 4,
                   }
             }
           >
-            {mono
-              ? t("action.save")
-              : isAdmin
-                ? t("action.confirm_reservation").toUpperCase()
-                : t("action.request_reservation").toUpperCase()}
-          </button>
-          {!canSubmit && (
-            <div
-              className="submit-tip"
-              style={{
-                position: "absolute",
-                right: 0,
-                top: "calc(100% + 6px)",
-                background: paper.ink,
-                color: paper.paper,
-                fontFamily: fontMono,
-                fontSize: 9,
-                letterSpacing: 1,
-                padding: "5px 8px",
-                whiteSpace: "pre-line",
-                pointerEvents: "none",
-                opacity: 0,
-                transition: "opacity 0.15s",
-                zIndex: 20,
-              }}
-            >
-              {missingLabel}
-            </div>
-          )}
-        </div>
-        <style>{`.submit-wrap:hover .submit-tip, .submit-wrap:focus-within .submit-tip { opacity: 1 !important; }`}</style>
-      </div>
-
-      {/* Car tabs */}
-      <Controller
-        name="car_id"
-        control={control}
-        render={({ field }) => (
-          <CarToggle cars={cars} value={field.value} onChange={field.onChange} />
-        )}
-      />
-
-      {/* Driver row */}
-      <div
-        style={{
-          padding: "10px 14px",
-          borderBottom: mono ? `1px solid ${paper.paperDark}` : `1.5px dashed ${paper.paperDark}`,
-          background: paper.paper,
-        }}
-      >
-        {mono ? (
-          isAdmin ? (
-            <>
-              <span style={lbl}>{t("form.driver")}</span>
-              <select
-                value={personId ?? ""}
-                onChange={(e) => setValue("person_id", Number(e.target.value))}
-                style={{
-                  fontFamily: fontSerif,
-                  fontSize: 17,
-                  fontWeight: 600,
-                  color: paper.ink,
-                  background: "transparent",
-                  border: "none",
-                  outline: "none",
-                  width: "100%",
-                  padding: 0,
-                  cursor: "pointer",
-                }}
-              >
-                <option value="" disabled>
-                  {t("form.select_person_placeholder")}
-                </option>
-                {people
-                  .filter((p) => p.active)
-                  .map((p) => (
-                    <option key={p.id} value={p.id}>
-                      {fullNameOf(p)}
-                    </option>
-                  ))}
-              </select>
-            </>
-          ) : (
-            <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-              <span
-                style={{
-                  fontFamily:
-                    "var(--font-inter-tight, 'Inter Tight', 'Inter', system-ui, sans-serif)",
-                  fontSize: 19,
-                  fontWeight: 700,
-                  color: paper.ink,
-                }}
-              >
-                {person ? fullNameOf(person) : (me?.shortName ?? "—")}
-              </span>
-              <Lock size={14} color={paper.inkMute} strokeWidth={1.75} />
-            </div>
-          )
-        ) : (
-          <>
-            <span style={lbl}>{t("form.driver")}</span>
-            {isAdmin ? (
-              <select
-                value={personId ?? ""}
-                onChange={(e) => setValue("person_id", Number(e.target.value))}
-                style={{
-                  fontFamily: fontSerif,
-                  fontSize: 17,
-                  fontWeight: 600,
-                  color: paper.ink,
-                  background: "transparent",
-                  border: "none",
-                  outline: "none",
-                  width: "100%",
-                  padding: 0,
-                  cursor: "pointer",
-                }}
-              >
-                <option value="" disabled>
-                  {t("form.select_person_placeholder")}
-                </option>
-                {people
-                  .filter((p) => p.active)
-                  .map((p) => (
-                    <option key={p.id} value={p.id}>
-                      {fullNameOf(p)}
-                    </option>
-                  ))}
-              </select>
-            ) : (
-              <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                <span
-                  style={{ fontFamily: fontSerif, fontSize: 17, fontWeight: 600, color: paper.ink }}
-                >
-                  {person ? fullNameOf(person) : (me?.shortName ?? "—")}
-                </span>
-                <span style={{ fontSize: 13 }}>🔒</span>
-              </div>
-            )}
-          </>
-        )}
-      </div>
-      {!isAdmin && !mono && (
-        <div
-          style={{
-            padding: "6px 14px",
-            fontFamily: fontMono,
-            fontSize: 9,
-            color: paper.amber,
-            letterSpacing: 1,
-          }}
-        >
-          🔒 {t("form.driver_locked_hint")}
-        </div>
-      )}
-
-      {/* Hidden RHF fields */}
-      <input type="hidden" {...register("start_date")} />
-      <input type="hidden" {...register("end_date")} />
-
-      {/* Calendar date picker */}
-      <div
-        style={
-          mono
-            ? {
-                margin: "12px 14px",
-                background: paper.paper,
-                border: `1px solid ${paper.paperDark}`,
-                borderRadius: "var(--radius-md, 10px)",
-                overflow: "hidden",
-              }
-            : {
-                margin: "12px 14px",
-                background: paper.paper,
-                border: `1.5px solid ${paper.paperDark}`,
-              }
-        }
-      >
-        {/* Header: date range + day count */}
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            padding: "8px 14px",
-            borderBottom: mono ? `1px solid ${paper.paperDark}` : `1px dashed ${paper.paperDark}`,
-          }}
-        >
-          <div>
-            {!mono && (
-              <div
-                style={{
-                  fontFamily: fontMono,
-                  fontSize: 10,
-                  fontWeight: 700,
-                  letterSpacing: 2,
-                  color: paper.blue,
-                }}
-              >
-                ● {t("page.reservation_request")}
-              </div>
-            )}
-            {startDate && endDate && startDate !== endDate ? (
-              <div
-                style={
-                  mono
-                    ? {
-                        fontFamily:
-                          "var(--font-inter-tight, 'Inter Tight', 'Inter', system-ui, sans-serif)",
-                        fontSize: 15,
-                        fontWeight: 700,
-                        color: paper.ink,
-                      }
-                    : {
-                        fontFamily: fontSerif,
-                        fontSize: 13,
-                        fontWeight: 600,
-                        color: paper.inkDim,
-                        marginTop: 2,
-                      }
-                }
-              >
-                {fmtDate(startDate, locale as "nl" | "en")}
-                {mono ? " – " : " → "}
-                {fmtDate(endDate, locale as "nl" | "en")}
-              </div>
-            ) : startDate ? (
-              <div
-                style={
-                  mono
-                    ? {
-                        fontFamily:
-                          "var(--font-inter-tight, 'Inter Tight', 'Inter', system-ui, sans-serif)",
-                        fontSize: 15,
-                        fontWeight: 700,
-                        color: paper.ink,
-                      }
-                    : {
-                        fontFamily: fontSerif,
-                        fontSize: 13,
-                        fontWeight: 600,
-                        color: paper.inkDim,
-                        marginTop: 2,
-                      }
-                }
-              >
-                {fmtDate(startDate, locale as "nl" | "en")}
-              </div>
-            ) : (
-              mono && (
-                <div
-                  style={{
-                    fontFamily: fontMono,
-                    fontSize: 12,
-                    color: paper.inkMute,
-                  }}
-                >
-                  {t("field.dates")}
-                </div>
-              )
-            )}
-          </div>
-          <div style={{ textAlign: "center" }}>
-            <div
-              style={{
-                fontFamily: fontSerif,
-                fontSize: 24,
-                fontWeight: 700,
-                color: datesSelected ? paper.ink : paper.inkMute,
-                lineHeight: 1,
-              }}
-            >
-              {dayCount}
-            </div>
-            <div
-              style={
-                mono
-                  ? {
-                      fontFamily: fontMono,
-                      fontSize: 9,
-                      color: paper.inkMute,
-                    }
-                  : {
-                      fontFamily: fontMono,
-                      fontSize: 7,
-                      color: paper.inkMute,
-                      letterSpacing: 1.5,
-                      textTransform: "uppercase" as const,
-                    }
-              }
-            >
-              {t("form.days")}
-            </div>
-          </div>
-        </div>
-
-        {/* Calendar grid */}
-        <div style={{ padding: "10px 14px 12px" }}>
-          <PickCalendar
-            initialOffset={calendarInitOffset}
-            reservations={reservations}
-            carId={carId}
-            excludeId={defaultValues?.id}
-            from={startDate ?? null}
-            to={endDate ?? null}
-            onRangePick={(from, to) => {
-              setValue("start_date", from, { shouldValidate: true });
-              setValue("end_date", to, { shouldValidate: true });
-            }}
-          />
-        </div>
-      </div>
-
-      {/* Conflict warning */}
-      {conflicts.length > 0 && (
-        <div
-          style={
-            mono
-              ? {
-                  margin: "0 14px 12px",
-                  border: `1px solid ${paper.amber}`,
-                  borderRadius: "var(--radius-md, 10px)",
-                  padding: "10px 14px",
-                  background: "rgba(180, 83, 9, 0.05)",
-                }
-              : {
-                  margin: "0 14px 12px",
-                  background: "transparent",
-                  border: `1.5px solid ${paper.accent}`,
-                  padding: "10px 14px",
-                }
-          }
-        >
+            {t("form.reservation_reason")}
+          </span>
           <div
             style={
               mono
                 ? {
-                    fontFamily:
-                      "var(--font-inter-tight, 'Inter Tight', 'Inter', system-ui, sans-serif)",
-                    fontSize: 13,
-                    fontWeight: 600,
-                    color: paper.amber,
-                    marginBottom: 6,
+                    border: `1px solid ${paper.paperDark}`,
+                    borderRadius: "var(--radius-md, 10px)",
+                    padding: "8px 14px",
                   }
                 : {
-                    fontFamily: fontMono,
-                    fontSize: 9,
-                    fontWeight: 700,
-                    color: paper.accent,
-                    letterSpacing: 1.5,
-                    textTransform: "uppercase" as const,
-                    marginBottom: 6,
+                    border: `1.5px dashed ${paper.paperDark}`,
+                    padding: "8px 14px",
                   }
             }
           >
-            {mono ? "⚠ " : "▲ "}
-            {t("form.conflict_warning")}
-          </div>
-          {conflicts.map((r) => (
-            <div key={r.id} style={{ marginBottom: 4 }}>
-              <div
-                style={
-                  mono
-                    ? {
-                        fontFamily:
-                          "var(--font-inter, 'Inter', system-ui, sans-serif)",
-                        fontSize: 13,
-                        fontWeight: 600,
-                        color: paper.ink,
-                      }
-                    : {
-                        fontFamily: fontSerif,
-                        fontSize: 13,
-                        fontWeight: 600,
-                        color: paper.ink,
-                      }
-                }
-              >
-                {r.person_name} — {r.car_short}
-              </div>
-              <div
-                style={{
-                  fontFamily: fontMono,
-                  fontSize: 9,
-                  color: paper.inkDim,
-                  letterSpacing: mono ? 0 : 1,
-                }}
-              >
-                {r.start_date} · {r.status}
-              </div>
-            </div>
-          ))}
-          <div
-            style={{
-              fontFamily: mono
-                ? "var(--font-inter, 'Inter', system-ui, sans-serif)"
-                : fontMono,
-              fontSize: mono ? 11 : 9,
-              color: paper.inkMute,
-              letterSpacing: mono ? 0 : 1,
-              marginTop: 6,
-              fontStyle: "italic",
-            }}
-          >
-            {t("form.conflict_note")}
+            <input
+              {...register("note")}
+              type="text"
+              placeholder={t("form.reservation_reason_placeholder")}
+              style={{
+                fontFamily: fontSerif,
+                fontSize: 15,
+                fontWeight: 600,
+                color: paper.ink,
+                background: "transparent",
+                border: "none",
+                outline: "none",
+                width: "100%",
+                padding: 0,
+              }}
+            />
           </div>
         </div>
-      )}
-
-      {/* Note */}
-      <div style={{ padding: "4px 14px 16px" }}>
-        <span
-          style={
-            mono
-              ? { ...monoLabel }
-              : {
-                  fontFamily: fontMono,
-                  fontSize: 9,
-                  fontWeight: 700,
-                  letterSpacing: 2,
-                  textTransform: "uppercase" as const,
-                  color: paper.inkMute,
-                  display: "block",
-                  marginBottom: 4,
-                }
-          }
-        >
-          {t("form.reservation_reason")}
-        </span>
-        <div
-          style={
-            mono
-              ? {
-                  border: `1px solid ${paper.paperDark}`,
-                  borderRadius: "var(--radius-md, 10px)",
-                  padding: "8px 14px",
-                }
-              : {
-                  border: `1.5px dashed ${paper.paperDark}`,
-                  padding: "8px 14px",
-                }
-          }
-        >
-          <input
-            {...register("note")}
-            type="text"
-            placeholder={t("form.reservation_reason_placeholder")}
-            style={{
-              fontFamily: fontSerif,
-              fontSize: 15,
-              fontWeight: 600,
-              color: paper.ink,
-              background: "transparent",
-              border: "none",
-              outline: "none",
-              width: "100%",
-              padding: 0,
-            }}
-          />
-        </div>
-      </div>
+      </fieldset>
 
       <div style={{ height: 32 }} />
     </form>

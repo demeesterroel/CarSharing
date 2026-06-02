@@ -13,6 +13,8 @@ import {
   useDeleteReservation,
 } from "@/hooks/use-reservations";
 import { useCars } from "@/hooks/use-vehicles";
+import { useMe } from "@/hooks/use-me";
+import { canEdit } from "@/lib/permissions";
 import type { Reservation, Car } from "@/types";
 import { paper, fontMono, fontSerif } from "@/lib/paper-theme";
 import { useT } from "@/components/locale-provider";
@@ -114,6 +116,7 @@ function CalendarContent() {
 
   const { data: reservations = [], isLoading } = useReservations();
   const { data: cars = [] } = useCars();
+  const { data: me } = useMe();
   const { data: calendarMeta } = useQuery<{ calendarId: string | null }>({
     queryKey: ["calendar-id"],
     queryFn: () => apiFetch("/api/calendar-id"),
@@ -136,6 +139,18 @@ function CalendarContent() {
     !isLoading && editIdParam
       ? (reservations.find((r) => r.id === Number(editIdParam)) ?? null)
       : null;
+
+  const editingReadOnly =
+    editing != null &&
+    !(
+      me?.personId != null &&
+      canEdit(
+        me.personId,
+        me.isAdmin,
+        editing,
+        cars.find((c) => c.id === editing.car_id)?.owner_person_id ?? null
+      )
+    );
 
   const [sheetClosed, setSheetClosed] = useState(false);
   useEffect(() => {
@@ -338,6 +353,7 @@ function CalendarContent() {
           <>
             <ReservationForm
               defaultValues={editing}
+              readOnly={editingReadOnly}
               onSubmit={(data) =>
                 updateR.mutate(
                   { id: editing.id, ...data },
@@ -352,34 +368,36 @@ function CalendarContent() {
               }
               onCancel={() => closeSheet()}
             />
-            <div style={{ padding: "0 16px 24px" }}>
-              <button
-                onClick={() =>
-                  deleteR.mutate(editing.id, {
-                    onSuccess: () => {
-                      closeSheet();
-                      toast.success(t("toast.deleted"));
-                    },
-                    onError: (e) => toast.error(e.message),
-                  })
-                }
-                style={{
-                  width: "100%",
-                  padding: "10px",
-                  background: "transparent",
-                  border: `1.5px solid ${paper.accent}`,
-                  color: paper.accent,
-                  fontFamily: fontMono,
-                  fontSize: 10,
-                  fontWeight: 700,
-                  letterSpacing: 2,
-                  textTransform: "uppercase",
-                  cursor: "pointer",
-                }}
-              >
-                {t("action.delete")}
-              </button>
-            </div>
+            {!editingReadOnly && (
+              <div style={{ padding: "0 16px 24px" }}>
+                <button
+                  onClick={() =>
+                    deleteR.mutate(editing.id, {
+                      onSuccess: () => {
+                        closeSheet();
+                        toast.success(t("toast.deleted"));
+                      },
+                      onError: (e) => toast.error(e.message),
+                    })
+                  }
+                  style={{
+                    width: "100%",
+                    padding: "10px",
+                    background: "transparent",
+                    border: `1.5px solid ${paper.accent}`,
+                    color: paper.accent,
+                    fontFamily: fontMono,
+                    fontSize: 10,
+                    fontWeight: 700,
+                    letterSpacing: 2,
+                    textTransform: "uppercase",
+                    cursor: "pointer",
+                  }}
+                >
+                  {t("action.delete")}
+                </button>
+              </div>
+            )}
           </>
         )}
       </BottomSheet>

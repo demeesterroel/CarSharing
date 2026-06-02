@@ -152,11 +152,23 @@ proxy's trusted client-IP.
   calendar-renew cron endpoint requires a `CRON_SECRET` bearer token.
 - **Path traversal** — upload serving normalizes and confines paths to the uploads root.
 
+## Access control reference
+
+The authoritative role/scope permission matrix for the API — who may act on
+`own`, `other`, or `all` records, per role (Guest / Member / Owner / Admin),
+plus the known open authorization gaps — lives in
+**[docs/access-control.md](docs/access-control.md)**. It is the spec for the
+planned central policy module (#310) and a per-route audit checklist until then.
+
 ## Follow-ups (separate issues)
 
 - **#266** — "log out everywhere" / server-side session revocation (a leaked stateless
   cookie currently can't be invalidated before its 7-day expiry).
 - **#267** — self-service password reset / magic-link sign-in (needs email transport).
+- **#310** — centralize access control in a policy module (`lib/acl.ts`) instead of
+  per-route checks; see [docs/access-control.md](docs/access-control.md) for the spec.
+- **#306** — reservation-create and several GET reads are unauthenticated.
+- **#307** — `GET /api/people/[id]` leaks email + bank account to any authenticated member.
 
 ## Verification
 

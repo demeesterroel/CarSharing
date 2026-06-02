@@ -3,10 +3,11 @@ import { getIronSession } from "iron-session";
 import { sessionOptions, type SessionData } from "@/lib/session";
 import { getDb } from "@/lib/db";
 import { getPeople, insertPerson } from "@/lib/queries/people";
-import { json, readBody, requireAdmin } from "@/lib/api";
+import { json, readBody, requireAdmin, requireSession } from "@/lib/api";
 import { personSchema } from "@/lib/schemas/person";
 
 export const GET = json(async (req) => {
+  await requireSession(req);
   const session = await getIronSession<SessionData>(req, NextResponse.next(), sessionOptions);
   const people = getPeople(getDb());
   // The people list is consumed by forms across the app (driver/owner pickers),

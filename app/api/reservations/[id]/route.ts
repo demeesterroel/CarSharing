@@ -6,11 +6,12 @@ import {
   deleteReservation,
   ConflictError,
 } from "@/lib/queries/reservations";
-import { json, readBody, readId, notFound, requireCanEdit } from "@/lib/api";
+import { json, readBody, readId, notFound, requireCanEdit, requireSession } from "@/lib/api";
 import { reservationSchema } from "@/lib/schemas/reservation";
 import { syncReservationUpdate, syncReservationDelete } from "@/lib/reservation-sync";
 
-export const GET = json(async (_req, ctx) => {
+export const GET = json(async (req, ctx) => {
+  await requireSession(req);
   const id = await readId(ctx);
   const row = getReservationById(getDb(), id);
   if (!row) notFound();

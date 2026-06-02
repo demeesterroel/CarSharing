@@ -18,8 +18,7 @@ export const fontSerif = "var(--font-serif)";
 export const fontSans = "var(--font-sans)";
 
 /** Signed color: positive → green, negative → accent, zero → inkMute */
-export const amtColor = (n: number) =>
-  n > 0 ? paper.green : n < 0 ? paper.accent : paper.inkMute;
+export const amtColor = (n: number) => (n > 0 ? paper.green : n < 0 ? paper.accent : paper.inkMute);
 
 /** Sign prefix string: +, −, or empty */
 export const signPrefix = (n: number) => (n > 0 ? "+" : n < 0 ? "−" : "");
@@ -30,6 +29,15 @@ export function fmtMoney(n: number): string {
     "€\u00a0" +
     Math.abs(n).toLocaleString("nl-BE", { minimumFractionDigits: 2, maximumFractionDigits: 2 })
   );
+}
+
+/**
+ * Format a cost / outgoing amount as a negative euro value: − € 1.234,56
+ * Always prepends the minus sign (U+2212), regardless of the input's sign,
+ * so callers can pass the stored (positive) cost value directly.
+ */
+export function fmtMoneyOut(n: number): string {
+  return "− " + fmtMoney(n);
 }
 
 /** Format km with thousands separator */

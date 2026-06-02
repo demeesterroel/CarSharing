@@ -63,6 +63,8 @@ export const nl = {
   "action.copied": "Gekopieerd!",
   "action.cancel": "Annuleer",
   "action.close": "Sluiten",
+  "action.collapse": "Inklappen",
+  "action.expand": "Uitklappen",
   "action.show_password": "Wachtwoord tonen",
   "action.hide_password": "Wachtwoord verbergen",
   "action.delete": "Verwijderen",

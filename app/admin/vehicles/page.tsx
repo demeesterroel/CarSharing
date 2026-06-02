@@ -239,7 +239,16 @@ function CarAccordion({
             whiteSpace: "nowrap",
           }}
         >
-          {car.owner_person_id ? (displayName(people.find((p) => p.id === car.owner_person_id) ?? { first_name: "?", username: null })) : <span style={{ color: paper.inkDim, fontStyle: "italic" }}>—</span>}
+          {car.owner_person_id ? (
+            displayName(
+              people.find((p) => p.id === car.owner_person_id) ?? {
+                first_name: "?",
+                username: null,
+              }
+            )
+          ) : (
+            <span style={{ color: paper.inkDim, fontStyle: "italic" }}>—</span>
+          )}
         </div>
         <div
           style={{
@@ -334,7 +343,14 @@ function CarAccordion({
                   cursor: "default",
                 }}
               >
-                {car.owner_person_id ? displayName(people.find((p) => p.id === car.owner_person_id) ?? { first_name: "?", username: null }) : "—"}
+                {car.owner_person_id
+                  ? displayName(
+                      people.find((p) => p.id === car.owner_person_id) ?? {
+                        first_name: "?",
+                        username: null,
+                      }
+                    )
+                  : "—"}
               </div>
             )}
           </div>
@@ -714,6 +730,10 @@ function OwnerFleet() {
 
   const [expandedId, setExpandedId] = useState<number | null>(null);
 
+  // Coverage-card collapse, kept here (parent survives year switches, which
+  // remount CostCoverageScreen via its key) and keyed per car. Absent = expanded.
+  const [coverageExpanded, setCoverageExpanded] = useState<Record<number, boolean>>({});
+
   const goToFleet = () => {
     const p = new URLSearchParams();
     if (year !== currentYear) p.set("year", String(year));
@@ -852,6 +872,10 @@ function OwnerFleet() {
           priceHistory={priceHistory.filter((h) => h.car_id === screenCarId)}
           rollingFuelPerKm={carRollingFuel?.fuel_per_km ?? 0}
           year={year}
+          expanded={coverageExpanded[screenCarId] ?? true}
+          onToggleExpanded={() =>
+            setCoverageExpanded((m) => ({ ...m, [screenCarId]: !(m[screenCarId] ?? true) }))
+          }
         />
       </div>
     );
@@ -947,7 +971,11 @@ function OwnerFleet() {
 }
 
 // ── Page ──────────────────────────────────────────────────────
-function displayName(p: { first_name?: string | null; last_name?: string | null; username?: string | null }): string {
+function displayName(p: {
+  first_name?: string | null;
+  last_name?: string | null;
+  username?: string | null;
+}): string {
   return shortNameOf(p) || "?";
 }
 

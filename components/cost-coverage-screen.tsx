@@ -1,12 +1,18 @@
 "use client";
 import { useState } from "react";
-import { paper, fontMono, fontSerif, fmtMoney } from "@/lib/paper-theme";
+import { paper, fontMono, fontSerif, fmtMoney, fmtMoneyOut } from "@/lib/paper-theme";
 import { useT } from "@/components/locale-provider";
 import { useUpdateCar } from "@/hooks/use-vehicles";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Card, Row } from "@/app/admin/_shared";
-import type { CarPnL, CarYearKm, CarOwnerSplit, CarYearExpenses, CarPriceHistory } from "@/lib/queries/admin";
+import type {
+  CarPnL,
+  CarYearKm,
+  CarOwnerSplit,
+  CarYearExpenses,
+  CarPriceHistory,
+} from "@/lib/queries/admin";
 import type { Car } from "@/types";
 
 export interface CostCoverageScreenProps {
@@ -18,6 +24,9 @@ export interface CostCoverageScreenProps {
   priceHistory: CarPriceHistory[];
   rollingFuelPerKm: number; // 0 = no data
   year: number;
+  /** Controlled collapse state. When omitted, the card manages it internally. */
+  expanded?: boolean;
+  onToggleExpanded?: () => void;
 }
 
 // ── Zone bar ──────────────────────────────────────────────────
@@ -45,19 +54,56 @@ function ZoneBar({
 
   return (
     <div style={{ marginBottom: 16 }}>
-      <div style={{ position: "relative", height: 14, display: "flex", borderRadius: 2, overflow: "hidden", marginBottom: 20 }}>
+      <div
+        style={{
+          position: "relative",
+          height: 14,
+          display: "flex",
+          borderRadius: 2,
+          overflow: "hidden",
+          marginBottom: 20,
+        }}
+      >
         <div style={{ width: zone1W, background: paper.accent }} />
         <div style={{ width: zone2W, background: paper.amber }} />
         <div style={{ width: zone3W, background: paper.green, opacity: 0.55 }} />
         <div style={{ width: zone4W, background: paper.green }} />
-        <div style={{ position: "absolute", top: -3, left: markerLeft, transform: "translateX(-50%)", display: "flex", flexDirection: "column", alignItems: "center" }}>
+        <div
+          style={{
+            position: "absolute",
+            top: -3,
+            left: markerLeft,
+            transform: "translateX(-50%)",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+          }}
+        >
           <div style={{ width: 2, height: 20, background: paper.ink }} />
-          <div style={{ fontFamily: fontMono, fontSize: 7, fontWeight: 700, color: paper.ink, whiteSpace: "nowrap", marginTop: 2 }}>
+          <div
+            style={{
+              fontFamily: fontMono,
+              fontSize: 7,
+              fontWeight: 700,
+              color: paper.ink,
+              whiteSpace: "nowrap",
+              marginTop: 2,
+            }}
+          >
             € {currentPrice.toFixed(2)}
           </div>
         </div>
       </div>
-      <div style={{ display: "flex", justifyContent: "space-between", fontFamily: fontMono, fontSize: 7, color: paper.inkMute, letterSpacing: 0.5 }}>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          fontFamily: fontMono,
+          fontSize: 7,
+          color: paper.inkMute,
+          letterSpacing: 0.5,
+        }}
+      >
         <span>0</span>
         <span>€{fuelThreshold.toFixed(2)} brandstof</span>
         <span>€{expenseThreshold.toFixed(2)} kosten</span>
@@ -92,12 +138,31 @@ function SliderRow({
 }) {
   return (
     <div style={{ marginBottom: 14 }}>
-      <div style={{ display: "flex", justifyContent: "space-between", fontFamily: fontMono, fontSize: 8, color: paper.inkMute, letterSpacing: 0.8, marginBottom: 3 }}>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          fontFamily: fontMono,
+          fontSize: 8,
+          color: paper.inkMute,
+          letterSpacing: 0.8,
+          marginBottom: 3,
+        }}
+      >
         <span style={{ textTransform: "uppercase", letterSpacing: 1 }}>{label}</span>
         <span style={{ color: paper.inkDim }}>{hint}</span>
       </div>
       {readOnly ? (
-        <div style={{ fontFamily: fontMono, fontSize: 11, fontWeight: 700, textAlign: "center", color: paper.ink, padding: "6px 0" }}>
+        <div
+          style={{
+            fontFamily: fontMono,
+            fontSize: 11,
+            fontWeight: 700,
+            textAlign: "center",
+            color: paper.ink,
+            padding: "6px 0",
+          }}
+        >
           {format(value)}
         </div>
       ) : (
@@ -111,7 +176,15 @@ function SliderRow({
             onChange={(e) => onChange(parseFloat(e.target.value))}
             style={{ width: "100%", accentColor: paper.ink, marginBottom: 2 }}
           />
-          <div style={{ fontFamily: fontMono, fontSize: 11, fontWeight: 700, textAlign: "center", color: paper.ink }}>
+          <div
+            style={{
+              fontFamily: fontMono,
+              fontSize: 11,
+              fontWeight: 700,
+              textAlign: "center",
+              color: paper.ink,
+            }}
+          >
             {format(value)}
           </div>
         </>
@@ -130,7 +203,11 @@ function zoneColor(zone: Zone): string {
   return paper.green;
 }
 
-type ZoneKey = "coverage.zone.red" | "coverage.zone.orange" | "coverage.zone.light_green" | "coverage.zone.dark_green";
+type ZoneKey =
+  | "coverage.zone.red"
+  | "coverage.zone.orange"
+  | "coverage.zone.light_green"
+  | "coverage.zone.dark_green";
 
 function zoneKey(zone: Zone): ZoneKey {
   return `coverage.zone.${zone}` as ZoneKey;
@@ -157,6 +234,8 @@ export function CostCoverageScreen({
   priceHistory,
   rollingFuelPerKm,
   year,
+  expanded: expandedProp,
+  onToggleExpanded,
 }: CostCoverageScreenProps) {
   const t = useT();
   const qc = useQueryClient();
@@ -194,7 +273,9 @@ export function CostCoverageScreen({
 
   const avgExpenses =
     _historicalExpenses.length > 0
-      ? Math.round(_historicalExpenses.reduce((s, e) => s + e.amount, 0) / _historicalExpenses.length)
+      ? Math.round(
+          _historicalExpenses.reduce((s, e) => s + e.amount, 0) / _historicalExpenses.length
+        )
       : 0;
 
   const kmDataYears = historicalKm.length;
@@ -209,7 +290,7 @@ export function CostCoverageScreen({
   // For current year, initialize from rolling/historical averages.
 
   const [fuelPerKm, setFuelPerKm] = useState(
-    isHistoric ? exactFuelPerKm : (defaultFuelPerKm || 0.12)
+    isHistoric ? exactFuelPerKm : defaultFuelPerKm || 0.12
   );
   const [totalKm, setTotalKm] = useState(
     isHistoric ? car.trip_km : (car.expected_km ?? (avgHistKm || car.prev_year_trip_km || 14000))
@@ -218,11 +299,9 @@ export function CostCoverageScreen({
     isHistoric ? Math.round(exactPctOthers * 100) / 100 : Math.round(avgOthersPct * 100) / 100
   );
   const [expectedExpenses, setExpectedExpenses] = useState(
-    isHistoric ? exactExpenses : (avgExpenses || car.expense_amount || 0)
+    isHistoric ? exactExpenses : avgExpenses || car.expense_amount || 0
   );
-  const [pricePerKm, setPricePerKm] = useState(
-    isHistoric ? exactPrice : car.car_price_per_km
-  );
+  const [pricePerKm, setPricePerKm] = useState(isHistoric ? exactPrice : car.car_price_per_km);
 
   // ── Derived projections ───────────────────────────────────────
 
@@ -235,8 +314,7 @@ export function CostCoverageScreen({
   const fuelThreshold = fuelPerKm;
   const safeNonOwnerKm = Math.max(1, nonOwnerKm);
   const expenseThreshold = fuelPerKm + expectedExpenses / safeNonOwnerKm;
-  const fuelCoverThreshold =
-    fuelPerKm + (expectedExpenses + ownerFuelCost) / safeNonOwnerKm;
+  const fuelCoverThreshold = fuelPerKm + (expectedExpenses + ownerFuelCost) / safeNonOwnerKm;
 
   const zone: Zone =
     markupPerKm < 0
@@ -256,12 +334,22 @@ export function CostCoverageScreen({
   const othersRevenue = car.trip_revenue - car.owner_trip_amount;
   const ytdNet = othersRevenue - car.variable_total;
 
+  // ── Card collapse ─────────────────────────────────────────────
+  // Controlled by the parent when props are supplied (so the choice survives
+  // year switches that remount this component); otherwise managed locally.
+
+  const [expandedInternal, setExpandedInternal] = useState(true);
+  const expanded = expandedProp ?? expandedInternal;
+  const toggleExpanded = onToggleExpanded ?? (() => setExpandedInternal((v) => !v));
+
   // ── Save ──────────────────────────────────────────────────────
 
   function handleSave() {
     if (!fullCar) return;
     updateCar.mutate(
-      { ...fullCar, price_per_km: pricePerKm, expected_km: Math.round(totalKm) } as Car & { id: number },
+      { ...fullCar, price_per_km: pricePerKm, expected_km: Math.round(totalKm) } as Car & {
+        id: number;
+      },
       {
         onSuccess: () => {
           qc.invalidateQueries({ queryKey: ["admin-summary"] });
@@ -275,8 +363,8 @@ export function CostCoverageScreen({
   // ── Hint labels ───────────────────────────────────────────────
 
   const exactHint = t("coverage.exact");
-  const nYrHint = (n: number) => n > 0 ? t("coverage.default_avg_n", { n }) : "—";
-  const fuelHint = isHistoric ? exactHint : (rollingFuelPerKm > 0 ? t("coverage.default_12m") : "—");
+  const nYrHint = (n: number) => (n > 0 ? t("coverage.default_avg_n", { n }) : "—");
+  const fuelHint = isHistoric ? exactHint : rollingFuelPerKm > 0 ? t("coverage.default_12m") : "—";
   const kmHint = isHistoric ? exactHint : nYrHint(kmDataYears);
   const othersHint = isHistoric ? exactHint : nYrHint(othersDataYears);
   const expensesHint = isHistoric ? exactHint : nYrHint(expensesDataYears);
@@ -286,52 +374,180 @@ export function CostCoverageScreen({
     <div>
       {/* Header */}
       <Card style={{ marginBottom: 12 }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            marginBottom: 8,
+          }}
+        >
           <div style={{ fontFamily: fontSerif, fontSize: 20, fontWeight: 700 }}>{car.car_name}</div>
-          <div style={{ fontFamily: fontMono, fontSize: 8, fontWeight: 700, letterSpacing: 1.5, color, border: `2px solid ${color}`, padding: "3px 8px", textTransform: "uppercase", transform: "rotate(-2deg)" }}>
-            {t(zoneKey(zone))}
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <div
+              style={{
+                fontFamily: fontMono,
+                fontSize: 8,
+                fontWeight: 700,
+                letterSpacing: 1.5,
+                color,
+                border: `2px solid ${color}`,
+                padding: "3px 8px",
+                textTransform: "uppercase",
+                transform: "rotate(-2deg)",
+              }}
+            >
+              {t(zoneKey(zone))}
+            </div>
+            <button
+              type="button"
+              onClick={toggleExpanded}
+              aria-expanded={expanded}
+              aria-label={expanded ? t("action.collapse") : t("action.expand")}
+              style={{
+                background: "transparent",
+                border: "none",
+                cursor: "pointer",
+                color: paper.inkDim,
+                fontFamily: fontMono,
+                fontSize: 13,
+                lineHeight: 1,
+                padding: "2px 4px",
+                transform: expanded ? "rotate(0deg)" : "rotate(-90deg)",
+                transition: "transform 0.15s",
+              }}
+            >
+              ▾
+            </button>
           </div>
         </div>
-        <div style={{ fontFamily: fontMono, fontSize: 9, color: paper.inkDim, letterSpacing: 1, textTransform: "uppercase" }}>
+        <div
+          style={{
+            fontFamily: fontMono,
+            fontSize: 9,
+            color: paper.inkDim,
+            letterSpacing: 1,
+            textTransform: "uppercase",
+          }}
+        >
           {isHistoric ? String(year) : t("coverage.ytd", { months: currentMonth })}
         </div>
 
         {/* General stats */}
-        {(() => {
-          const othersTrips = car.trip_count - car.owner_trip_count;
-          const othersKm = car.trip_km - car.owner_trip_km;
-          const othersFuelCnt = car.fuel_count - car.owner_fuel_count;
-          const othersFuelL = car.fuel_liters - car.owner_fuel_liters;
-          const othersFuelAmt = car.fuel_amount - car.owner_fuel_amount;
-          const sub: React.CSSProperties = { paddingLeft: 12, display: "flex", justifyContent: "space-between", fontFamily: fontMono, fontSize: 9, color: paper.inkDim, marginBottom: 1 };
-          const head: React.CSSProperties = { display: "flex", justifyContent: "space-between", fontFamily: fontMono, fontSize: 11, fontWeight: 700, color: paper.ink, marginBottom: 2 };
-          return (
-            <div style={{ marginTop: 10, borderTop: `1px dashed ${paper.paperDark}`, paddingTop: 10 }}>
-              <div style={head}>
-                <span>{car.trip_count} {t("stats.trips")} · {car.trip_km.toLocaleString("nl-BE")} km</span>
-              </div>
-              <div style={sub}><span>{t("stats.others")}</span><span>{othersTrips} {t("stats.trips_short")} · {othersKm.toLocaleString("nl-BE")} km · {fmtMoney(othersRevenue)}</span></div>
-              <div style={sub}><span>{t("stats.own")}</span><span>{car.owner_trip_count} {t("stats.trips_short")} · {car.owner_trip_km.toLocaleString("nl-BE")} km · {fmtMoney(car.owner_trip_amount)}</span></div>
+        {expanded &&
+          (() => {
+            const othersTrips = car.trip_count - car.owner_trip_count;
+            const othersKm = car.trip_km - car.owner_trip_km;
+            const othersFuelCnt = car.fuel_count - car.owner_fuel_count;
+            const othersFuelL = car.fuel_liters - car.owner_fuel_liters;
+            const othersFuelAmt = car.fuel_amount - car.owner_fuel_amount;
+            const sub: React.CSSProperties = {
+              paddingLeft: 12,
+              display: "flex",
+              justifyContent: "space-between",
+              fontFamily: fontMono,
+              fontSize: 9,
+              color: paper.inkDim,
+              marginBottom: 1,
+            };
+            const head: React.CSSProperties = {
+              display: "flex",
+              justifyContent: "space-between",
+              fontFamily: fontMono,
+              fontSize: 11,
+              fontWeight: 700,
+              color: paper.ink,
+              marginBottom: 2,
+            };
+            return (
+              <div
+                style={{
+                  marginTop: 10,
+                  borderTop: `1px dashed ${paper.paperDark}`,
+                  paddingTop: 10,
+                }}
+              >
+                <div style={head}>
+                  <span>
+                    {car.trip_count} {t("stats.trips")} · {car.trip_km.toLocaleString("nl-BE")} km
+                  </span>
+                </div>
+                <div style={sub}>
+                  <span>{t("stats.others")}</span>
+                  <span>
+                    {othersTrips} {t("stats.trips_short")} · {othersKm.toLocaleString("nl-BE")} km ·{" "}
+                    {fmtMoney(othersRevenue)}
+                  </span>
+                </div>
+                <div style={sub}>
+                  <span>{t("stats.own")}</span>
+                  <span>
+                    {car.owner_trip_count} {t("stats.trips_short")} ·{" "}
+                    {car.owner_trip_km.toLocaleString("nl-BE")} km ·{" "}
+                    {fmtMoney(car.owner_trip_amount)}
+                  </span>
+                </div>
 
-              <div style={{ ...head, marginTop: 8 }}>
-                <span>{car.fuel_count} {t("stats.fillups")} · {car.fuel_liters.toFixed(0)} L · {fmtMoney(car.fuel_amount)}</span>
-              </div>
-              <div style={sub}><span>{t("stats.others")}</span><span>{othersFuelCnt} {t("stats.fillups_short")} · {othersFuelL.toFixed(0)} L · {fmtMoney(othersFuelAmt)}</span></div>
-              <div style={sub}><span>{t("stats.own")}</span><span>{car.owner_fuel_count} {t("stats.fillups_short")} · {car.owner_fuel_liters.toFixed(0)} L · {fmtMoney(car.owner_fuel_amount)}</span></div>
+                <div style={{ ...head, marginTop: 8 }}>
+                  <span>
+                    {car.fuel_count} {t("stats.fillups")} · {car.fuel_liters.toFixed(0)} L ·{" "}
+                    {fmtMoney(car.fuel_amount)}
+                  </span>
+                </div>
+                <div style={sub}>
+                  <span>{t("stats.others")}</span>
+                  <span>
+                    {othersFuelCnt} {t("stats.fillups_short")} · {othersFuelL.toFixed(0)} L ·{" "}
+                    {fmtMoney(othersFuelAmt)}
+                  </span>
+                </div>
+                <div style={sub}>
+                  <span>{t("stats.own")}</span>
+                  <span>
+                    {car.owner_fuel_count} {t("stats.fillups_short")} ·{" "}
+                    {car.owner_fuel_liters.toFixed(0)} L · {fmtMoney(car.owner_fuel_amount)}
+                  </span>
+                </div>
 
-              <div style={{ ...head, marginTop: 8 }}>
-                <span>{car.expense_count} {t("stats.expenses")} · {fmtMoney(car.expense_amount)}</span>
+                <div style={{ ...head, marginTop: 8 }}>
+                  <span>
+                    {car.expense_count} {t("stats.expenses")} · {fmtMoney(car.expense_amount)}
+                  </span>
+                </div>
+                <div style={sub}>
+                  <span>{t("stats.others")}</span>
+                  <span>
+                    {car.expense_count - car.owner_expense_count} {t("stats.expenses_short")} ·{" "}
+                    {fmtMoney(car.expense_amount - car.owner_expense_amount)}
+                  </span>
+                </div>
+                <div style={sub}>
+                  <span>{t("stats.own")}</span>
+                  <span>
+                    {car.owner_expense_count} {t("stats.expenses_short")} ·{" "}
+                    {fmtMoney(car.owner_expense_amount)}
+                  </span>
+                </div>
               </div>
-              <div style={sub}><span>{t("stats.others")}</span><span>{car.expense_count - car.owner_expense_count} {t("stats.expenses_short")} · {fmtMoney(car.expense_amount - car.owner_expense_amount)}</span></div>
-              <div style={sub}><span>{t("stats.own")}</span><span>{car.owner_expense_count} {t("stats.expenses_short")} · {fmtMoney(car.owner_expense_amount)}</span></div>
-            </div>
-          );
-        })()}
+            );
+          })()}
 
-        {/* YTD / year actuals */}
+        {/* YTD / year actuals — NET always visible; revenue & costs only when expanded */}
         <div style={{ marginTop: 10, borderTop: `1px dashed ${paper.paperDark}`, paddingTop: 10 }}>
-          <Row label={t("breakeven.revenue")} value={fmtMoney(othersRevenue)} color={paper.green} />
-          <Row label={t("breakeven.expenses")} value={fmtMoney(car.variable_total)} />
+          {expanded && (
+            <>
+              <Row
+                label={t("breakeven.revenue")}
+                value={fmtMoney(othersRevenue)}
+                color={paper.green}
+              />
+              <Row
+                label={t("breakeven.expenses")}
+                value={fmtMoneyOut(car.variable_total)}
+                color={paper.accent}
+              />
+            </>
+          )}
           <Row
             label={t("breakeven.net")}
             value={fmtMoney(Math.abs(ytdNet))}
@@ -343,7 +559,17 @@ export function CostCoverageScreen({
 
       {/* Zone bar + sliders */}
       <Card>
-        <div style={{ fontFamily: fontMono, fontSize: 9, letterSpacing: 2, textTransform: "uppercase", color: paper.inkDim, fontWeight: 700, marginBottom: 12 }}>
+        <div
+          style={{
+            fontFamily: fontMono,
+            fontSize: 9,
+            letterSpacing: 2,
+            textTransform: "uppercase",
+            color: paper.inkDim,
+            fontWeight: 700,
+            marginBottom: 12,
+          }}
+        >
           {t("coverage.title")}
         </div>
         <ZoneBar
@@ -411,13 +637,37 @@ export function CostCoverageScreen({
         />
 
         {/* Projection / actuals summary */}
-        <div style={{ background: paper.paperDeep, padding: "12px", marginTop: 8, marginBottom: 12 }}>
-          <div style={{ fontFamily: fontMono, fontSize: 8, letterSpacing: 1.5, textTransform: "uppercase", color: paper.inkDim, fontWeight: 700, marginBottom: 8 }}>
+        <div
+          style={{ background: paper.paperDeep, padding: "12px", marginTop: 8, marginBottom: 12 }}
+        >
+          <div
+            style={{
+              fontFamily: fontMono,
+              fontSize: 8,
+              letterSpacing: 1.5,
+              textTransform: "uppercase",
+              color: paper.inkDim,
+              fontWeight: 700,
+              marginBottom: 8,
+            }}
+          >
             {t("coverage.projection.title")}
           </div>
-          <Row label={t("coverage.projection.others_contribution")} value={fmtMoney(nonOwnerMarkup)} color={nonOwnerMarkup >= 0 ? paper.green : paper.accent} />
-          <Row label={t("coverage.projection.expenses")} value={fmtMoney(expectedExpenses)} />
-          <Row label={t("coverage.projection.owner_fuel")} value={fmtMoney(ownerFuelCost)} />
+          <Row
+            label={t("coverage.projection.others_contribution")}
+            value={fmtMoney(nonOwnerMarkup)}
+            color={nonOwnerMarkup >= 0 ? paper.green : paper.accent}
+          />
+          <Row
+            label={t("coverage.projection.expenses")}
+            value={fmtMoneyOut(expectedExpenses)}
+            color={paper.accent}
+          />
+          <Row
+            label={t("coverage.projection.owner_fuel")}
+            value={fmtMoneyOut(ownerFuelCost)}
+            color={paper.accent}
+          />
           <div style={{ height: 0, borderTop: `1px dashed ${paper.inkMute}`, margin: "6px 0" }} />
           <Row
             label={t("coverage.projection.net")}

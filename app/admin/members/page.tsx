@@ -32,6 +32,13 @@ function PersonRow({
   isSaving?: boolean;
 }) {
   const t = useT();
+  const { data: me } = useMe();
+  // Send the invite by email when a mail transport is configured AND this member
+  // has an email; otherwise fall back to copying the link to the clipboard.
+  const canSendInvite = Boolean(me?.mailEnabled && person.email);
+  // Inviting requires a username — the invite flow only sets a password, so
+  // without one the member could never log in.
+  const hasUsername = Boolean(person.username);
   const [disc, setDisc] = useState(person.discount);
   const [discLong, setDiscLong] = useState(person.discount_long);
   const [username, setUsername] = useState(person.username ?? "");
@@ -69,12 +76,17 @@ function PersonRow({
       const csrfToken = document.cookie.match(/csrf-token=([^;]+)/)?.[1] ?? "";
       const res = await fetch(`/api/people/${person.id}/invite`, {
         method: "POST",
-        headers: { "x-csrf-token": csrfToken },
+        headers: { "x-csrf-token": csrfToken, "Content-Type": "application/json" },
+        body: JSON.stringify({ send: canSendInvite }),
       });
       if (!res.ok) throw new Error();
-      const { url } = await res.json();
-      await navigator.clipboard.writeText(url);
-      setInviteBanner(t("admin.invite_copied"));
+      if (canSendInvite) {
+        setInviteBanner(t("admin.invite_sent"));
+      } else {
+        const { url } = await res.json();
+        await navigator.clipboard.writeText(url);
+        setInviteBanner(t("admin.invite_copied"));
+      }
       setTimeout(() => setInviteBanner(null), 3000);
     } catch {
       setInviteBanner("Error generating invite");
@@ -310,15 +322,18 @@ function PersonRow({
             </label>
           </div>
 
-          {/* Invite */}
+          {/* Invite — needs a username; without one the invitee can't log in. */}
           <div style={{ marginBottom: 12 }}>
             <button
               onClick={handleInvite}
+              disabled={!hasUsername}
+              title={!hasUsername ? t("admin.invite_needs_username") : undefined}
               style={{
                 padding: "7px 12px",
                 background: "transparent",
                 border: `1px dashed ${paper.inkDim}`,
-                cursor: "pointer",
+                cursor: hasUsername ? "pointer" : "not-allowed",
+                opacity: hasUsername ? 1 : 0.45,
                 fontFamily: fontMono,
                 fontSize: 9,
                 letterSpacing: 1.5,
@@ -326,7 +341,7 @@ function PersonRow({
                 color: paper.inkDim,
               }}
             >
-              {t("admin.invite_copy")}
+              {canSendInvite ? t("admin.invite_send") : t("admin.invite_copy")}
             </button>
             {inviteBanner && (
               <span

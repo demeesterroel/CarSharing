@@ -28,8 +28,9 @@ test("login and view trips", async ({ page }) => {
   // Labels come from t("form.name") → "Naam *" / "Name *"
   await page.getByLabel(/naam|name/i).fill(process.env.TEST_EMAIL ?? "alice");
   await page.locator("#login-password").fill(process.env.TEST_PASSWORD ?? "alice");
-  // t("action.login") → "Inloggen" / "Log in"
-  await page.getByRole("button", { name: /inloggen|log\s*in/i }).click();
+  // The login form's submit button (the "sign in with a link instead" toggle also
+  // matches /inloggen/, so target the submit button specifically).
+  await page.locator('button[type="submit"]').click();
 
   // After login the app redirects to "/"
   await page.waitForURL(/trips|dashboard|\//);

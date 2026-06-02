@@ -12,6 +12,19 @@ export const E2E_SESSION_PASSWORD =
 
 export default defineConfig({
   testDir: "./e2e",
+
+  // ── Hermetic isolation ────────────────────────────────────────────────────
+  // globalSetup seeds data/e2e.db fresh on every run so no residue (E2E* rows,
+  // half-deleted records, etc.) carries over between runs.
+  globalSetup: "./e2e/global-setup.ts",
+
+  // SQLite is a single-file database shared by the one app-server process.
+  // Parallel Playwright workers would all write through the same server to the
+  // same WAL, causing lock contention and unpredictable test failures.
+  // workers: 1 is the correct constraint for a shared-SQLite test server.
+  workers: 1,
+  fullyParallel: false,
+
   use: {
     baseURL,
     screenshot: "only-on-failure",
@@ -27,6 +40,7 @@ export default defineConfig({
         // Pin the env the suite depends on so it doesn't rely on a local
         // .env.local. Kept identical across the e2e branches so the file never
         // conflicts on merge:
+        //   - DB_PATH           — dedicated e2e DB seeded fresh by globalSetup
         //   - SESSION_PASSWORD  — matches admin-skeleton's sealed cookie
         //   - NEXT_PUBLIC_BASE_URL — absolute redirects
         //   - DISABLE_RATE_LIMIT — the suite logs in many times from one host,
@@ -37,6 +51,7 @@ export default defineConfig({
         //     flow enabled (delivery fails silently, the route still returns ok).
         env: {
           ...process.env,
+          DB_PATH: "data/e2e.db",
           SESSION_PASSWORD: E2E_SESSION_PASSWORD,
           NEXT_PUBLIC_BASE_URL: baseURL,
           DISABLE_RATE_LIMIT: "1",

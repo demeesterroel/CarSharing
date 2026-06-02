@@ -7,16 +7,21 @@ import { loginAndGetSession, loginAndGetCsrf, makeApi, scrollToLoadAll } from ".
  * No DELETE endpoint exists — deactivation is done via PUT with active=0.
  *
  * Strategy:
- * - Admin creates a person via API in beforeEach.
+ * - Admin creates a person via API in beforeEach with a unique per-test name
+ *   (timestamp suffix) so tests that run sequentially never see each other's
+ *   rows in the people list.
  * - Deactivate via PUT (active=0), verify absence from /people list.
- * - Reactivate in afterEach (active=1), then final delete not possible — we
- *   leave the inactive test person in place (demo.db only, not production).
+ * - Reactivate in afterEach (active=1) to avoid low-contrast a11y failures on
+ *   /admin/members.  No DELETE endpoint exists, so the row remains — but
+ *   globalSetup reseeds data/e2e.db before every run, so no row accumulates
+ *   across runs.
  *
- * Cleanup: set active=0 is permanent for the test record since there is no
- * DELETE endpoint. Tests are run against demo.db which is reset between runs.
+ * Cleanup guarantee: globalSetup (see playwright.config.ts) seeds a fresh
+ * data/e2e.db on every `npx playwright test` invocation, so stale E2E* rows
+ * from a previous run are never present when tests start.
  */
 
-const FIRST_NAME = "E2ETest";
+const FIRST_NAME_PREFIX = "E2ETest";
 const LAST_NAME = "Member";
 
 type PersonRow = {
@@ -31,10 +36,12 @@ test.describe("members deactivate", () => {
   let api: ReturnType<typeof makeApi>;
   let personId: number;
   let personData: ReturnType<typeof buildPersonData>;
+  // Unique suffix per test so the /people list can identify this specific row.
+  let uniqueFirstName: string;
 
-  function buildPersonData() {
+  function buildPersonData(firstName: string) {
     return {
-      first_name: FIRST_NAME,
+      first_name: firstName,
       last_name: LAST_NAME,
       discount: 0,
       discount_long: 0,
@@ -43,11 +50,15 @@ test.describe("members deactivate", () => {
     };
   }
 
-  test.beforeEach(async ({ request }) => {
+  test.beforeEach(async ({ request }, testInfo) => {
+    // Make the name unique per test (index + title hash) so the /people list
+    // never shows a sibling test's member when we assert HaveCount(0).
+    uniqueFirstName = `${FIRST_NAME_PREFIX}${testInfo.workerIndex}${Date.now()}`;
+
     const session = await loginAndGetSession(request, "admin", "admin");
     csrf = session.csrf;
     api = makeApi(request, csrf);
-    personData = buildPersonData();
+    personData = buildPersonData(uniqueFirstName);
 
     const res = await api.post<{ id: number }>("/api/people", personData);
     personId = res.id;
@@ -78,7 +89,7 @@ test.describe("members deactivate", () => {
     await page.waitForLoadState("networkidle");
     await scrollToLoadAll(page);
 
-    await expect(page.locator(`text=${FIRST_NAME}`).first()).toBeVisible({ timeout: 10_000 });
+    await expect(page.locator(`text=${uniqueFirstName}`).first()).toBeVisible({ timeout: 10_000 });
   });
 
   test("deactivated member no longer appears in people list", async ({ page }) => {
@@ -96,8 +107,9 @@ test.describe("members deactivate", () => {
     await page.waitForLoadState("networkidle");
     await scrollToLoadAll(page);
 
-    // Active members list should not show the deactivated test member
-    await expect(page.getByText(`${FIRST_NAME} ${LAST_NAME}`, { exact: true })).toHaveCount(0);
+    // Active members list should not show the deactivated test member.
+    // The unique name guarantees no other test's member matches this assertion.
+    await expect(page.getByText(`${uniqueFirstName} ${LAST_NAME}`, { exact: true })).toHaveCount(0);
   });
 
   test("deactivated member still retrievable via API", async () => {
@@ -108,6 +120,6 @@ test.describe("members deactivate", () => {
 
     const person = await api.get<PersonRow>(`/api/people/${personId}`);
     expect(person.active).toBe(0);
-    expect(person.first_name).toBe(FIRST_NAME);
+    expect(person.first_name).toBe(uniqueFirstName);
   });
 });

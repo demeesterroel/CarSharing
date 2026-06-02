@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.17.2](https://github.com/demeesterroel/CarSharing/compare/v1.17.1...v1.17.2) (2026-06-02)
+
+
+### 🐛 Bug fixes
+
+* **api:** require authentication on reservation create + public GET endpoints ([#306](https://github.com/demeesterroel/CarSharing/issues/306)) ([#314](https://github.com/demeesterroel/CarSharing/issues/314)) ([ce73a1c](https://github.com/demeesterroel/CarSharing/commit/ce73a1c38265368558569f01ea1eaa925998997d))
+
+
+### 📖 Documentation
+
+* **security:** add access-control (ACL) reference table, link from SECURITY-AUDIT ([#311](https://github.com/demeesterroel/CarSharing/issues/311)) ([0bfba47](https://github.com/demeesterroel/CarSharing/commit/0bfba47778290ced40fdbc76867a4aa5b70b66a3))
+* **test-coverage:** refresh overview (547 unit / 53 e2e) ([#303](https://github.com/demeesterroel/CarSharing/issues/303)) ([f9596a6](https://github.com/demeesterroel/CarSharing/commit/f9596a6593983c2cd32445682e88fa60e594e405))
+
 ## [1.17.1](https://github.com/demeesterroel/CarSharing/compare/v1.17.0...v1.17.1) (2026-06-02)
 
 

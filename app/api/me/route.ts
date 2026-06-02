@@ -4,6 +4,7 @@ import { sessionOptions, type SessionData } from "@/lib/session";
 import { getDb } from "@/lib/db";
 import { isOwner, isActivePerson, shortNameOf, getSessionEpoch } from "@/lib/queries/people";
 import { generateCsrfToken } from "@/lib/csrf";
+import { isMailEnabled } from "@/lib/mailer";
 
 function getPersonFields(personId: number): {
   shortName: string | null;
@@ -76,6 +77,7 @@ export async function GET(req: Request) {
         isOwner: cloakedOwner,
         isCloaked: true,
         themePreference,
+        mailEnabled: isMailEnabled(),
       })
     );
   }
@@ -96,6 +98,7 @@ export async function GET(req: Request) {
       isOwner: owner,
       isCloaked: false,
       themePreference: fields.themePreference,
+      mailEnabled: isMailEnabled(),
     })
   );
 }

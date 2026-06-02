@@ -32,7 +32,11 @@ export const sessionOptions: SessionOptions = {
     // put a TLS terminator in front (reverse proxy, tunnel, etc.) — do not
     // weaken this flag.
     secure: env.NODE_ENV === "production",
-    sameSite: "strict",
+    // Lax (not Strict): magic-link / reset sign-in lands here via a top-level
+    // navigation from an external mail client; Strict would withhold the just-set
+    // cookie on the redirect to "/", bouncing the user to /login. Lax still
+    // blocks cross-site POSTs, and mutating routes are CSRF-token protected.
+    sameSite: "lax",
     maxAge: 60 * 60 * 24 * 7, // 7 days
   },
 };

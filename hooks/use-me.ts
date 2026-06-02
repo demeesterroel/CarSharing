@@ -8,6 +8,8 @@ export interface Me {
   isOwner: boolean;
   isCloaked: boolean;
   themePreference: 'paper' | 'mono' | null;
+  /** Whether a mail transport is configured server-side (drives send-vs-copy invite). */
+  mailEnabled: boolean;
 }
 
 export function useMe() {

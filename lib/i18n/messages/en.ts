@@ -124,6 +124,8 @@ export const en: Messages = {
   "form.select_person_placeholder": "Select member",
   "form.driver": "Driver",
   "form.driver_locked_hint": "Your name — only admins can log on behalf of others",
+  "form.read_only": "Read-only",
+  "form.read_only_hint": "Read-only — you cannot edit this",
   "form.pick_dates_first": "Pick a period first",
   "form.fill_required": "Fill in required fields",
   "field.car": "car",

@@ -123,6 +123,8 @@ export const nl = {
   "form.select_person_placeholder": "Selecteer persoon",
   "form.driver": "Bestuurder",
   "form.driver_locked_hint": "Jouw naam — enkel admins kunnen voor anderen loggen",
+  "form.read_only": "Alleen-lezen",
+  "form.read_only_hint": "Alleen-lezen — je kan dit niet bewerken",
   "form.pick_dates_first": "Kies eerst een periode",
   "form.fill_required": "Vul verplichte velden in",
   "field.car": "wagen",

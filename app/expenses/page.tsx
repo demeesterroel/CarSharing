@@ -7,8 +7,15 @@ import { Fab } from "@/components/fab";
 import { ListFilterBar } from "@/components/list-filter-bar";
 import { ModalSheet } from "@/components/modal-sheet";
 import { ExpenseForm } from "./expense-form";
-import { useExpenses, useCreateExpense, useUpdateExpense, useDeleteExpense } from "@/hooks/use-expenses";
+import {
+  useExpenses,
+  useCreateExpense,
+  useUpdateExpense,
+  useDeleteExpense,
+} from "@/hooks/use-expenses";
 import { useMe } from "@/hooks/use-me";
+import { useCars } from "@/hooks/use-vehicles";
+import { canEdit } from "@/lib/permissions";
 import { useQueryParam } from "@/hooks/use-query-param";
 import { useEditModal } from "@/hooks/use-edit-modal";
 import { paper, fontMono, fmtYearMonth } from "@/lib/paper-theme";
@@ -20,6 +27,7 @@ function ExpensesContent() {
   const t = useT();
   const { data: expenses = [], isLoading } = useExpenses();
   const { data: me } = useMe();
+  const { data: carList = [] } = useCars();
   const createE = useCreateExpense();
   const updateE = useUpdateExpense();
   const deleteE = useDeleteExpense();
@@ -30,7 +38,20 @@ function ExpensesContent() {
 
   const { adding, editingId, modalClosed, openAdd, openEdit, closeModal } = useEditModal();
 
-  const editing = !isLoading && editingId ? (expenses.find((e) => e.id === editingId) ?? null) : null;
+  const editing =
+    !isLoading && editingId ? (expenses.find((e) => e.id === editingId) ?? null) : null;
+
+  const editingReadOnly =
+    editing != null &&
+    !(
+      me?.personId != null &&
+      canEdit(
+        me.personId,
+        me.isAdmin,
+        editing,
+        carList.find((c) => c.id === editing.car_id)?.owner_person_id ?? null
+      )
+    );
 
   const isMine = mineParam === "true";
   const isOthers = mineParam === "false";
@@ -38,7 +59,9 @@ function ExpensesContent() {
   const cars = Array.from(
     new Set(expenses.map((e) => e.car_short).filter((s): s is string => !!s))
   ).sort();
-  const years = Array.from(new Set(expenses.map((e) => e.date.slice(0, 4)))).sort().reverse();
+  const years = Array.from(new Set(expenses.map((e) => e.date.slice(0, 4))))
+    .sort()
+    .reverse();
 
   const visible = expenses
     .filter((e) => {
@@ -53,7 +76,15 @@ function ExpensesContent() {
     return (
       <div style={{ background: paper.paperDeep, minHeight: "100dvh" }}>
         <PageHeader title={t("page.expenses")} />
-        <div style={{ padding: "32px 20px", fontFamily: fontMono, fontSize: 11, color: paper.inkDim, letterSpacing: 1 }}>
+        <div
+          style={{
+            padding: "32px 20px",
+            fontFamily: fontMono,
+            fontSize: 11,
+            color: paper.inkDim,
+            letterSpacing: 1,
+          }}
+        >
           {t("state.loading")}
         </div>
       </div>
@@ -85,7 +116,16 @@ function ExpensesContent() {
       />
 
       {visible.length === 0 && (
-        <div style={{ padding: "32px 20px", textAlign: "center", fontFamily: fontMono, fontSize: 11, color: paper.inkDim, letterSpacing: 1 }}>
+        <div
+          style={{
+            padding: "32px 20px",
+            textAlign: "center",
+            fontFamily: fontMono,
+            fontSize: 11,
+            color: paper.inkDim,
+            letterSpacing: 1,
+          }}
+        >
           {t("state.empty_expenses")}
         </div>
       )}
@@ -94,7 +134,10 @@ function ExpensesContent() {
         <ExpenseForm
           onSubmit={(data) =>
             createE.mutate(data as any, {
-              onSuccess: () => { closeModal(); toast.success(t("toast.saved")); },
+              onSuccess: () => {
+                closeModal();
+                toast.success(t("toast.saved"));
+              },
               onError: (e) => toast.error(e.message),
             })
           }
@@ -102,22 +145,36 @@ function ExpensesContent() {
         />
       </ModalSheet>
 
-      <ModalSheet open={!!editing && !modalClosed} onClose={closeModal} title={t("page.expense_edit")}>
+      <ModalSheet
+        open={!!editing && !modalClosed}
+        onClose={closeModal}
+        title={t("page.expense_edit")}
+      >
         {editing && (
           <ExpenseForm
             defaultValues={editing}
+            readOnly={editingReadOnly}
             onSubmit={(data) =>
               updateE.mutate({ id: editing.id, ...data } as any, {
-                onSuccess: () => { closeModal(); toast.success(t("toast.saved")); },
+                onSuccess: () => {
+                  closeModal();
+                  toast.success(t("toast.saved"));
+                },
                 onError: (e) => toast.error(e.message),
               })
             }
             onCancel={closeModal}
-            onDelete={() =>
-              deleteE.mutate(editing.id, {
-                onSuccess: () => { closeModal(); toast.success(t("toast.saved")); },
-                onError: (e) => toast.error(e.message),
-              })
+            onDelete={
+              editingReadOnly
+                ? undefined
+                : () =>
+                    deleteE.mutate(editing.id, {
+                      onSuccess: () => {
+                        closeModal();
+                        toast.success(t("toast.saved"));
+                      },
+                      onError: (e) => toast.error(e.message),
+                    })
             }
           />
         )}

@@ -7,8 +7,15 @@ import { Fab } from "@/components/fab";
 import { ListFilterBar } from "@/components/list-filter-bar";
 import { ModalSheet } from "@/components/modal-sheet";
 import { FuelForm } from "./fuel-form";
-import { useFuelFillups, useCreateFuelFillup, useUpdateFuelFillup, useDeleteFuelFillup } from "@/hooks/use-fuel-fillups";
+import {
+  useFuelFillups,
+  useCreateFuelFillup,
+  useUpdateFuelFillup,
+  useDeleteFuelFillup,
+} from "@/hooks/use-fuel-fillups";
 import { useMe } from "@/hooks/use-me";
+import { useCars } from "@/hooks/use-vehicles";
+import { canEdit } from "@/lib/permissions";
 import { useQueryParam } from "@/hooks/use-query-param";
 import { useEditModal } from "@/hooks/use-edit-modal";
 import { paper, fontMono, fmtYearMonth } from "@/lib/paper-theme";
@@ -20,6 +27,7 @@ function FuelContent() {
   const t = useT();
   const { data: fillups = [], isLoading } = useFuelFillups();
   const { data: me } = useMe();
+  const { data: carList = [] } = useCars();
   const createF = useCreateFuelFillup();
   const updateF = useUpdateFuelFillup();
   const deleteF = useDeleteFuelFillup();
@@ -30,7 +38,20 @@ function FuelContent() {
 
   const { adding, editingId, modalClosed, openAdd, openEdit, closeModal } = useEditModal();
 
-  const editing = !isLoading && editingId ? (fillups.find((f) => f.id === editingId) ?? null) : null;
+  const editing =
+    !isLoading && editingId ? (fillups.find((f) => f.id === editingId) ?? null) : null;
+
+  const editingReadOnly =
+    editing != null &&
+    !(
+      me?.personId != null &&
+      canEdit(
+        me.personId,
+        me.isAdmin,
+        editing,
+        carList.find((c) => c.id === editing.car_id)?.owner_person_id ?? null
+      )
+    );
 
   const isMine = mineParam === "true";
   const isOthers = mineParam === "false";
@@ -38,7 +59,9 @@ function FuelContent() {
   const cars = Array.from(
     new Set(fillups.map((f) => f.car_short).filter((s): s is string => !!s))
   ).sort();
-  const years = Array.from(new Set(fillups.map((f) => f.date.slice(0, 4)))).sort().reverse();
+  const years = Array.from(new Set(fillups.map((f) => f.date.slice(0, 4))))
+    .sort()
+    .reverse();
 
   const visible = fillups
     .filter((f) => {
@@ -53,7 +76,15 @@ function FuelContent() {
     return (
       <div style={{ background: paper.paperDeep, minHeight: "100dvh" }}>
         <PageHeader title={t("page.fuel")} />
-        <div style={{ padding: "32px 20px", fontFamily: fontMono, fontSize: 11, color: paper.inkDim, letterSpacing: 1 }}>
+        <div
+          style={{
+            padding: "32px 20px",
+            fontFamily: fontMono,
+            fontSize: 11,
+            color: paper.inkDim,
+            letterSpacing: 1,
+          }}
+        >
           {t("state.loading")}
         </div>
       </div>
@@ -85,7 +116,16 @@ function FuelContent() {
       />
 
       {visible.length === 0 && (
-        <div style={{ padding: "32px 20px", textAlign: "center", fontFamily: fontMono, fontSize: 11, color: paper.inkDim, letterSpacing: 1 }}>
+        <div
+          style={{
+            padding: "32px 20px",
+            textAlign: "center",
+            fontFamily: fontMono,
+            fontSize: 11,
+            color: paper.inkDim,
+            letterSpacing: 1,
+          }}
+        >
           {t("state.empty_fuel")}
         </div>
       )}
@@ -94,7 +134,10 @@ function FuelContent() {
         <FuelForm
           onSubmit={(data) =>
             createF.mutate(data as any, {
-              onSuccess: () => { closeModal(); toast.success(t("toast.saved")); },
+              onSuccess: () => {
+                closeModal();
+                toast.success(t("toast.saved"));
+              },
               onError: (e) => toast.error(e.message),
             })
           }
@@ -106,18 +149,28 @@ function FuelContent() {
         {editing && (
           <FuelForm
             defaultValues={editing}
+            readOnly={editingReadOnly}
             onSubmit={(data) =>
               updateF.mutate({ id: editing.id, ...data } as any, {
-                onSuccess: () => { closeModal(); toast.success(t("toast.saved")); },
+                onSuccess: () => {
+                  closeModal();
+                  toast.success(t("toast.saved"));
+                },
                 onError: (e) => toast.error(e.message),
               })
             }
             onCancel={closeModal}
-            onDelete={() =>
-              deleteF.mutate(editing.id, {
-                onSuccess: () => { closeModal(); toast.success(t("toast.saved")); },
-                onError: (e) => toast.error(e.message),
-              })
+            onDelete={
+              editingReadOnly
+                ? undefined
+                : () =>
+                    deleteF.mutate(editing.id, {
+                      onSuccess: () => {
+                        closeModal();
+                        toast.success(t("toast.saved"));
+                      },
+                      onError: (e) => toast.error(e.message),
+                    })
             }
           />
         )}

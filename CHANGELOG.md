@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.17.1](https://github.com/demeesterroel/CarSharing/compare/v1.17.0...v1.17.1) (2026-06-02)
+
+
+### 🐛 Bug fixes
+
+* **auth:** single password toggle on invite form, skip eye in tab order ([#300](https://github.com/demeesterroel/CarSharing/issues/300)) ([e050e59](https://github.com/demeesterroel/CarSharing/commit/e050e59d4f6f47ba40aba2f23ed187a17b46e12c))
+
 ## [1.17.0](https://github.com/demeesterroel/CarSharing/compare/v1.16.1...v1.17.0) (2026-06-02)
 
 

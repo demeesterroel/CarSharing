@@ -36,7 +36,12 @@ test.describe("invite flow", () => {
     csrf = session.csrf;
     api = makeApi(request, csrf);
 
-    const res = await api.post<{ id: number }>("/api/people", personData);
+    // Invite generation requires a username (the invite flow only sets a password).
+    // Unique per insert so the repeated beforeEach creations don't collide.
+    const res = await api.post<{ id: number }>("/api/people", {
+      ...personData,
+      username: `invite-${Date.now()}-${Math.floor(Math.random() * 1e6)}`,
+    });
     personId = res.id;
   });
 

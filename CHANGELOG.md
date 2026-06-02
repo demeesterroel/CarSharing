@@ -1,5 +1,20 @@
 # Changelog
 
+## [1.17.0](https://github.com/demeesterroel/CarSharing/compare/v1.16.1...v1.17.0) (2026-06-02)
+
+
+### ✨ New features
+
+* **admin:** send invite link by email + fix magic-link SameSite ([#299](https://github.com/demeesterroel/CarSharing/issues/299)) ([7768326](https://github.com/demeesterroel/CarSharing/commit/77683262bc96bf42d9ab6e4ecf291a69b4f237e8))
+* **auth:** magic-link sign-in on /login + Resend mail transport ([#296](https://github.com/demeesterroel/CarSharing/issues/296)) ([78d6110](https://github.com/demeesterroel/CarSharing/commit/78d6110929d61d1d454831adb745b2b8eec05c73))
+* **forms:** show edit forms read-only when user lacks edit permission ([#297](https://github.com/demeesterroel/CarSharing/issues/297)) ([67c99a1](https://github.com/demeesterroel/CarSharing/commit/67c99a121ea316a6a33f407463d9e4b959f812a3)), closes [#172](https://github.com/demeesterroel/CarSharing/issues/172)
+* **owner:** collapsible coverage card + costs/fuel as negative red ([#298](https://github.com/demeesterroel/CarSharing/issues/298)) ([a9ec7e7](https://github.com/demeesterroel/CarSharing/commit/a9ec7e737c31ac7b061acf29fa9eae5d825a0515)), closes [#182](https://github.com/demeesterroel/CarSharing/issues/182)
+
+
+### 📖 Documentation
+
+* add RELEASING.md (release-please merge-timing policy) ([#292](https://github.com/demeesterroel/CarSharing/issues/292)) ([a488a11](https://github.com/demeesterroel/CarSharing/commit/a488a1166bbabdc1023f769d1c0a2e4383a9bc51))
+
 ## [1.16.1](https://github.com/demeesterroel/CarSharing/compare/v1.16.0...v1.16.1) (2026-06-01)
 
 

@@ -6,6 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Lock, Wrench, Search, FileText, Shield, MoreHorizontal } from "lucide-react";
 import { CarToggle } from "@/components/car-toggle";
+import { ReceiptUpload } from "@/components/receipt-upload";
 import { usePeople } from "@/hooks/use-people";
 import { useCars } from "@/hooks/use-vehicles";
 import { useMe } from "@/hooks/use-me";
@@ -41,6 +42,11 @@ const schema = z.object({
     .optional()
     .transform((v) => v ?? null),
   category: z
+    .string()
+    .nullable()
+    .optional()
+    .transform((v) => v ?? null),
+  receipt: z
     .string()
     .nullable()
     .optional()
@@ -120,6 +126,7 @@ export function ExpenseForm({
       amount: defaultValues?.amount ?? 0,
       description: defaultValues?.description ?? null,
       category: defaultValues?.category ?? null,
+      receipt: defaultValues?.receipt ?? null,
       settled_outside: defaultValues?.settled_outside === 1,
       person_id: defaultValues?.person_id,
       car_id: defaultValues?.car_id,
@@ -153,6 +160,7 @@ export function ExpenseForm({
       amount: data.amount,
       description: data.description,
       category: (data.category as ExpenseCategory) ?? null,
+      receipt: data.receipt,
       settled_outside: data.settled_outside ? 1 : 0,
     });
   }
@@ -704,6 +712,19 @@ export function ExpenseForm({
               }}
             />
           </div>
+        </div>
+
+        {/* Receipt */}
+        <div style={{ padding: "12px 14px 0" }}>
+          {!mono && <span style={lbl}>{t("form.receipt")}</span>}
+          {mono && <span style={{ ...lbl, marginBottom: 8 }}>{t("form.receipt")}</span>}
+          <Controller
+            name="receipt"
+            control={control}
+            render={({ field }) => (
+              <ReceiptUpload value={field.value ?? null} onChange={field.onChange} />
+            )}
+          />
         </div>
 
         {/* Settled outside */}

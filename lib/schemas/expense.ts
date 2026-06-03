@@ -17,6 +17,11 @@ export const expenseSchema = z.object({
     .optional()
     .transform((v) => v ?? null),
   category: expenseCategorySchema,
+  receipt: z
+    .string()
+    .nullable()
+    .optional()
+    .transform((v) => v ?? null),
   settled_outside: z
     .number()
     .int()

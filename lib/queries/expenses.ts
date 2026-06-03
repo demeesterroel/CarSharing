@@ -49,7 +49,7 @@ export function insertExpense(db: Database.Database, input: ExpenseInput): numbe
   const result = db
     .prepare(
       `
-    INSERT INTO expenses (person_id,car_id,date,amount,description,category,settled_outside,client_id,updated_at) VALUES (?,?,?,?,?,?,?,?,datetime('now'))
+    INSERT INTO expenses (person_id,car_id,date,amount,description,category,receipt,settled_outside,client_id,updated_at) VALUES (?,?,?,?,?,?,?,?,?,datetime('now'))
   `
     )
     .run(
@@ -59,6 +59,7 @@ export function insertExpense(db: Database.Database, input: ExpenseInput): numbe
       input.amount,
       input.description ?? null,
       input.category ?? null,
+      input.receipt ?? null,
       input.settled_outside ?? 0,
       input.client_id ?? null
     );
@@ -82,7 +83,7 @@ export function updateExpense(
   }
   db.prepare(
     `
-    UPDATE expenses SET person_id=?,car_id=?,date=?,amount=?,description=?,category=?,settled_outside=? WHERE id=?
+    UPDATE expenses SET person_id=?,car_id=?,date=?,amount=?,description=?,category=?,receipt=?,settled_outside=? WHERE id=?
   `
   ).run(
     input.person_id,
@@ -91,6 +92,7 @@ export function updateExpense(
     input.amount,
     input.description ?? null,
     input.category ?? null,
+    input.receipt ?? null,
     input.settled_outside ?? 0,
     id
   );

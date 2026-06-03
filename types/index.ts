@@ -82,6 +82,7 @@ export interface Expense {
   amount: number;
   description: string | null;
   category: ExpenseCategory | null;
+  receipt: string | null;
   settled_outside: 0 | 1;
   client_id: string | null;
   updated_at: string;
@@ -95,6 +96,7 @@ export type ExpenseInput = Pick<
   "person_id" | "car_id" | "date" | "amount" | "description"
 > & {
   category?: ExpenseCategory | null;
+  receipt?: string | null;
   settled_outside?: 0 | 1;
   client_id?: string | null;
 };

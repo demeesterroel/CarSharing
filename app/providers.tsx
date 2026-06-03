@@ -9,6 +9,7 @@ import { useSyncEngine } from "@/lib/offline/sync-engine";
 import { useT } from "@/components/locale-provider";
 import { ThemeProvider, useTheme } from "@/lib/theme-context";
 import { useMe } from "@/hooks/use-me";
+import PullToRefresh from "@/components/pull-to-refresh";
 
 function BootPrewarm() {
   // useMe is the auth signal. Read it here so prewarm gates on auth.
@@ -61,6 +62,8 @@ export function Providers({ children }: { children: React.ReactNode }) {
           <BootPrewarm />
           <ThemeSync />
           <ConflictListener />
+          {/* No-op in a normal browser tab; active only when installed as a PWA. */}
+          <PullToRefresh />
           {children}
           <Toaster position="bottom-center" />
         </ThemeProvider>

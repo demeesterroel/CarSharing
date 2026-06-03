@@ -590,7 +590,8 @@ export const nl = {
   "admin.invite_copied": "Link gekopieerd!",
   "admin.invite_send": "Stuur uitnodigingslink",
   "admin.invite_sent": "Uitnodiging verstuurd!",
-  "admin.invite_needs_username": "Stel eerst een gebruikersnaam in — via de uitnodiging stelt het lid een wachtwoord in, geen gebruikersnaam.",
+  "admin.invite_needs_username":
+    "Stel eerst een gebruikersnaam in — via de uitnodiging stelt het lid een wachtwoord in, geen gebruikersnaam.",
   "admin.username_label": "Gebruikersnaam",
   "admin.is_admin_label": "Admin",
   "admin.no_username": "Nog geen login",
@@ -641,6 +642,9 @@ export const nl = {
   "offline.queued_suffix": "{count} wachten",
   "offline.tooltip_syncing": "Synchroniseren…",
   "offline.conflict_toast": "Bewerkingsconflict — ververs en probeer opnieuw.",
+  "pwa.refreshing": "Verversen…",
+  "pwa.refresh_blocked_offline":
+    "Verversen kan niet — je bent offline met niet-gesynchroniseerde wijzigingen.",
 
   // Owner dashboard
   "owner.title": "Mijn wagens",

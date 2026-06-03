@@ -591,7 +591,8 @@ export const en: Messages = {
   "admin.invite_copied": "Link copied!",
   "admin.invite_send": "Send invite link",
   "admin.invite_sent": "Invite sent!",
-  "admin.invite_needs_username": "Set a username first — the invite lets the member set a password, not a username.",
+  "admin.invite_needs_username":
+    "Set a username first — the invite lets the member set a password, not a username.",
   "admin.username_label": "Username",
   "admin.is_admin_label": "Admin",
   "admin.no_username": "No login yet",
@@ -642,6 +643,8 @@ export const en: Messages = {
   "offline.queued_suffix": "{count} pending",
   "offline.tooltip_syncing": "Syncing…",
   "offline.conflict_toast": "Edit conflict — refresh and retry.",
+  "pwa.refreshing": "Refreshing…",
+  "pwa.refresh_blocked_offline": "Can't refresh — you're offline with unsynced changes.",
 
   // Owner dashboard
   "owner.title": "My cars",

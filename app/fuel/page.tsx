@@ -148,6 +148,7 @@ function FuelContent() {
       <ModalSheet open={!!editing && !modalClosed} onClose={closeModal} title={t("page.fuel_edit")}>
         {editing && (
           <FuelForm
+            key={editing.id}
             defaultValues={editing}
             readOnly={editingReadOnly}
             onSubmit={(data) =>

@@ -156,4 +156,18 @@ describe("GET /api/me", () => {
     expect(body.personId).toBe(1);
     expect(mockSession.destroy).not.toHaveBeenCalled();
   });
+
+  // #333: the csrf token must be stable (issued once, reused) — not rotated on
+  // every call, which raced with refetch-on-focus and broke save with invalid_csrf.
+  it("issues a csrf-token cookie when the request has none", async () => {
+    const res = await GET(new Request("http://localhost/api/me"));
+    expect(res.cookies.get("csrf-token")?.value).toBe("mock-csrf-token");
+  });
+
+  it("does NOT rotate the csrf-token when the request already has one", async () => {
+    const res = await GET(
+      new Request("http://localhost/api/me", { headers: { cookie: "csrf-token=existing-abc" } })
+    );
+    expect(res.cookies.get("csrf-token")).toBeUndefined();
+  });
 });

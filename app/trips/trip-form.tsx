@@ -431,6 +431,7 @@ export function TripForm({ defaultValues, onSubmit, onCancel, onDelete, readOnly
                 <input
                   {...register("date")}
                   type="date"
+                  onClick={(e) => e.currentTarget.showPicker?.()}
                   style={{
                     position: "absolute",
                     inset: 0,

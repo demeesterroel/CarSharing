@@ -27,13 +27,18 @@ function getPersonFields(personId: number): {
   };
 }
 
-function withCsrfCookie(response: NextResponse): NextResponse {
-  const token = generateCsrfToken();
-  response.cookies.set("csrf-token", token, {
-    httpOnly: false,
-    sameSite: "strict",
-    path: "/",
-  });
+function withCsrfCookie(req: Request, response: NextResponse): NextResponse {
+  // Issue the double-submit CSRF token once and reuse it. Rotating it on every
+  // /api/me call races with React Query's refetch-on-focus (e.g. after a file
+  // picker), breaking validation on the next save with invalid_csrf (#333).
+  const hasToken = /(?:^|;\s*)csrf-token=/.test(req.headers.get("cookie") ?? "");
+  if (!hasToken) {
+    response.cookies.set("csrf-token", generateCsrfToken(), {
+      httpOnly: false,
+      sameSite: "strict",
+      path: "/",
+    });
+  }
   return response;
 }
 
@@ -42,7 +47,7 @@ export async function GET(req: Request) {
   const out = NextResponse.json(null);
   const session = await getIronSession<SessionData>(req, out, sessionOptions);
   if (!session.authenticated) {
-    return withCsrfCookie(out);
+    return withCsrfCookie(req, out);
   }
 
   // Reject phantom sessions — person deleted, deactivated, or missing after cookie was issued.
@@ -50,7 +55,7 @@ export async function GET(req: Request) {
   if (!session.personId || !isActivePerson(getDb(), session.personId)) {
     session.destroy();
     await session.save();
-    return withCsrfCookie(out);
+    return withCsrfCookie(req, out);
   }
 
   // Honour server-side session revocation ("log out everywhere"): if this
@@ -58,7 +63,7 @@ export async function GET(req: Request) {
   if (session.epoch !== undefined && session.personId !== undefined) {
     if (getSessionEpoch(getDb(), session.personId) !== session.epoch) {
       session.destroy();
-      return withCsrfCookie(NextResponse.json(null));
+      return withCsrfCookie(req, NextResponse.json(null));
     }
   }
 
@@ -70,6 +75,7 @@ export async function GET(req: Request) {
     const cloakedOwner = isOwner(getDb(), cloaked.personId);
     const { shortName: cloakedShortName, themePreference } = getPersonFields(cloaked.personId);
     return withCsrfCookie(
+      req,
       NextResponse.json({
         personId: cloaked.personId,
         shortName: cloakedShortName ?? cloaked.shortName,
@@ -91,6 +97,7 @@ export async function GET(req: Request) {
     ? getPersonFields(session.personId)
     : { shortName: session.shortName ?? null, themePreference: null };
   return withCsrfCookie(
+    req,
     NextResponse.json({
       personId: session.personId ?? null,
       shortName: fields.shortName,

@@ -152,6 +152,7 @@ function ExpensesContent() {
       >
         {editing && (
           <ExpenseForm
+            key={editing.id}
             defaultValues={editing}
             readOnly={editingReadOnly}
             onSubmit={(data) =>

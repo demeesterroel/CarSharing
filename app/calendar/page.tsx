@@ -352,6 +352,7 @@ function CalendarContent() {
         {editing && (
           <>
             <ReservationForm
+              key={editing.id}
               defaultValues={editing}
               readOnly={editingReadOnly}
               onSubmit={(data) =>

@@ -145,6 +145,7 @@ function TripsContent() {
       <ModalSheet open={!!editing && !modalClosed} onClose={closeModal} title={t("page.trip_edit")}>
         {editing && (
           <TripForm
+            key={editing.id}
             defaultValues={editing}
             readOnly={editingReadOnly}
             onSubmit={(data) =>

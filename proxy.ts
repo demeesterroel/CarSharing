@@ -14,6 +14,11 @@ const PUBLIC_PATHS = [
   "/api/invite",
   "/api/admin/calendar-renew",
   "/api/calendar-id",
+  // Google Calendar push notifications (events.watch webhook). The POST arrives
+  // with no session cookie, so it must bypass the auth redirect or inbound 2-way
+  // sync is dead (#339). The handler has its own auth: it validates the
+  // x-goog-channel-id header against the stored channel_id.
+  "/api/calendar-webhook",
   // Self-service password reset / magic-link sign-in (issue #267).
   "/forgot",
   "/reset",

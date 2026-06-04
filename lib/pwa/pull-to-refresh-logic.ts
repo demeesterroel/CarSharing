@@ -7,6 +7,12 @@ export const PULL_THRESHOLD_PX = 70;
 export const PULL_RESISTANCE = 0.5;
 // Maximum visual travel of the indicator regardless of how far the user drags.
 export const PULL_MAX_PX = 120;
+// Resistance factor for content translation past the threshold (lighter than indicator).
+export const CONTENT_RESISTANCE = 0.3;
+// Maximum content translateY during the drag.
+export const CONTENT_MAX_PX = 90;
+// Content translateY held while the hard-refresh is running (spinner visible).
+export const CONTENT_LOADING_PX = 40;
 
 /**
  * Detects whether the app is running as an installed PWA (standalone display
@@ -33,6 +39,21 @@ export function pullOffset(rawDelta: number): number {
   if (rawDelta <= PULL_THRESHOLD_PX) return rawDelta;
   const extra = (rawDelta - PULL_THRESHOLD_PX) * PULL_RESISTANCE;
   return Math.min(PULL_THRESHOLD_PX + extra, PULL_MAX_PX);
+}
+
+/**
+ * Translates a raw vertical drag distance into the content wrapper's translateY
+ * offset, giving the elastic "the page follows your finger" feel.
+ *
+ * Curve: 1:1 up to the threshold (finger and content move in lock-step), then
+ * damped by CONTENT_RESISTANCE so the page feels increasingly heavy past the
+ * threshold, and clamped to CONTENT_MAX_PX.
+ */
+export function contentOffset(rawDelta: number): number {
+  if (rawDelta <= 0) return 0;
+  if (rawDelta <= PULL_THRESHOLD_PX) return rawDelta;
+  const extra = (rawDelta - PULL_THRESHOLD_PX) * CONTENT_RESISTANCE;
+  return Math.min(PULL_THRESHOLD_PX + extra, CONTENT_MAX_PX);
 }
 
 export interface RefreshDecisionInput {

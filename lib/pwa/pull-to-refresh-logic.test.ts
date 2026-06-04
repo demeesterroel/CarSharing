@@ -2,9 +2,12 @@ import { describe, it, expect } from "vitest";
 import {
   decideRefresh,
   pullOffset,
+  contentOffset,
   isStandalone,
   PULL_THRESHOLD_PX,
   PULL_MAX_PX,
+  CONTENT_MAX_PX,
+  CONTENT_RESISTANCE,
 } from "./pull-to-refresh-logic";
 
 describe("decideRefresh", () => {
@@ -79,6 +82,50 @@ describe("pullOffset", () => {
 
   it("never exceeds the max travel", () => {
     expect(pullOffset(10_000)).toBe(PULL_MAX_PX);
+  });
+});
+
+describe("contentOffset", () => {
+  it("returns 0 at pull 0", () => {
+    expect(contentOffset(0)).toBe(0);
+  });
+
+  it("returns 0 for negative pull", () => {
+    expect(contentOffset(-10)).toBe(0);
+  });
+
+  it("tracks 1:1 below the threshold (elastic feel, no resistance yet)", () => {
+    expect(contentOffset(1)).toBe(1);
+    expect(contentOffset(35)).toBe(35);
+    expect(contentOffset(PULL_THRESHOLD_PX)).toBe(PULL_THRESHOLD_PX);
+  });
+
+  it("is damped above the threshold (page feels heavy)", () => {
+    const overBy = 40;
+    const expected = PULL_THRESHOLD_PX + overBy * CONTENT_RESISTANCE;
+    expect(contentOffset(PULL_THRESHOLD_PX + overBy)).toBeCloseTo(expected);
+    // Must be less than raw drag distance.
+    expect(contentOffset(PULL_THRESHOLD_PX + overBy)).toBeLessThan(PULL_THRESHOLD_PX + overBy);
+    // Must be greater than threshold.
+    expect(contentOffset(PULL_THRESHOLD_PX + overBy)).toBeGreaterThan(PULL_THRESHOLD_PX);
+  });
+
+  it("is more damped than the indicator (CONTENT_RESISTANCE < PULL_RESISTANCE)", () => {
+    // Both applied to the same over-threshold amount.
+    const raw = PULL_THRESHOLD_PX + 50;
+    expect(contentOffset(raw)).toBeLessThan(pullOffset(raw));
+  });
+
+  it("never exceeds CONTENT_MAX_PX", () => {
+    expect(contentOffset(10_000)).toBe(CONTENT_MAX_PX);
+  });
+
+  it("is continuous at the threshold boundary (no jump)", () => {
+    const justBelow = contentOffset(PULL_THRESHOLD_PX - 0.001);
+    const atThreshold = contentOffset(PULL_THRESHOLD_PX);
+    const justAbove = contentOffset(PULL_THRESHOLD_PX + 0.001);
+    expect(atThreshold).toBeCloseTo(justBelow, 1);
+    expect(atThreshold).toBeCloseTo(justAbove, 1);
   });
 });
 

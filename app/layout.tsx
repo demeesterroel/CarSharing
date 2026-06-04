@@ -72,6 +72,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <LocaleProvider>
           <Providers>
             <div
+              data-ptr-content
               style={{
                 minHeight: "100dvh",
                 width: "100%",

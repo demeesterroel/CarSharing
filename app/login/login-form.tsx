@@ -16,9 +16,30 @@ export default function LoginForm({ mailEnabled }: { mailEnabled: boolean }) {
   const [error, setError] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [mode, setMode] = useState<"password" | "magic">("password");
+  const [mode, setMode] = useState<"password" | "magic" | "reset">("password");
   const [magicEmail, setMagicEmail] = useState("");
   const [magicSent, setMagicSent] = useState(false);
+  const [resetEmail, setResetEmail] = useState("");
+  const [resetSent, setResetSent] = useState(false);
+
+  const submitReset = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+    setLoading(true);
+    try {
+      // Always 200 (no account enumeration); show the same confirmation regardless.
+      await fetch("/api/auth/forgot", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: resetEmail }),
+      });
+      setResetSent(true);
+    } catch {
+      setError(t("auth.forgot_error"));
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const submitMagic = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -42,6 +63,10 @@ export default function LoginForm({ mailEnabled }: { mailEnabled: boolean }) {
   const handleSubmit = async (e: React.FormEvent) => {
     if (mode === "magic") {
       await submitMagic(e);
+      return;
+    }
+    if (mode === "reset") {
+      await submitReset(e);
       return;
     }
     e.preventDefault();
@@ -262,7 +287,7 @@ export default function LoginForm({ mailEnabled }: { mailEnabled: boolean }) {
             </>
           )}
 
-          {mode === "password" && (
+          {mode === "password" && !mailEnabled && (
             <a
               href="/forgot"
               style={{
@@ -281,25 +306,46 @@ export default function LoginForm({ mailEnabled }: { mailEnabled: boolean }) {
           )}
 
           {mailEnabled && mode === "password" && (
-            <button
-              type="button"
-              onClick={() => setMode("magic")}
-              style={{
-                display: "block",
-                width: "100%",
-                marginTop: 12,
-                background: "none",
-                border: "none",
-                fontFamily: fontMono,
-                fontSize: 10,
-                letterSpacing: 1,
-                textTransform: "uppercase",
-                color: paper.inkDim,
-                cursor: "pointer",
-              }}
-            >
-              {t("auth.use_magic_link")}
-            </button>
+            <>
+              <button
+                type="button"
+                onClick={() => setMode("reset")}
+                style={{
+                  display: "block",
+                  width: "100%",
+                  marginTop: 16,
+                  background: "none",
+                  border: "none",
+                  fontFamily: fontMono,
+                  fontSize: 10,
+                  letterSpacing: 1,
+                  textTransform: "uppercase",
+                  color: paper.inkDim,
+                  cursor: "pointer",
+                }}
+              >
+                {t("auth.forgot_password")}
+              </button>
+              <button
+                type="button"
+                onClick={() => setMode("magic")}
+                style={{
+                  display: "block",
+                  width: "100%",
+                  marginTop: 12,
+                  background: "none",
+                  border: "none",
+                  fontFamily: fontMono,
+                  fontSize: 10,
+                  letterSpacing: 1,
+                  textTransform: "uppercase",
+                  color: paper.inkDim,
+                  cursor: "pointer",
+                }}
+              >
+                {t("auth.use_magic_link")}
+              </button>
+            </>
           )}
 
           {mode === "magic" && (
@@ -375,6 +421,113 @@ export default function LoginForm({ mailEnabled }: { mailEnabled: boolean }) {
                 onClick={() => {
                   setMode("password");
                   setMagicSent(false);
+                  setError(null);
+                }}
+                style={{
+                  display: "block",
+                  width: "100%",
+                  marginTop: 16,
+                  background: "none",
+                  border: "none",
+                  fontFamily: fontMono,
+                  fontSize: 10,
+                  letterSpacing: 1,
+                  textTransform: "uppercase",
+                  color: paper.inkDim,
+                  cursor: "pointer",
+                }}
+              >
+                {t("auth.use_password")}
+              </button>
+            </div>
+          )}
+
+          {mode === "reset" && (
+            <div>
+              {resetSent ? (
+                <p
+                  role="status"
+                  style={{ fontFamily: fontMono, fontSize: 12, color: paper.ink, lineHeight: 1.6 }}
+                >
+                  {t("auth.forgot_sent")}
+                </p>
+              ) : (
+                <div>
+                  <div style={{ marginBottom: 20 }}>
+                    <label
+                      htmlFor="login-reset-email"
+                      style={{
+                        display: "block",
+                        fontFamily: fontMono,
+                        fontSize: 10,
+                        letterSpacing: 1.5,
+                        textTransform: "uppercase",
+                        color: paper.inkDim,
+                        marginBottom: 6,
+                      }}
+                    >
+                      {t("auth.email")}
+                    </label>
+                    <input
+                      id="login-reset-email"
+                      type="email"
+                      autoComplete="email"
+                      value={resetEmail}
+                      onChange={(e) => setResetEmail(e.target.value)}
+                      required
+                      style={{
+                        width: "100%",
+                        padding: "10px 12px",
+                        border: "1px solid " + paper.paperDark,
+                        background: paper.paperDeep,
+                        fontFamily: fontMono,
+                        fontSize: 13,
+                        color: paper.ink,
+                        outline: "none",
+                        appearance: "none",
+                        boxSizing: "border-box",
+                      }}
+                    />
+                  </div>
+                  {error && (
+                    <p
+                      style={{
+                        fontFamily: fontMono,
+                        fontSize: 11,
+                        color: "#c0392b",
+                        marginBottom: 16,
+                        marginTop: 0,
+                      }}
+                    >
+                      {error}
+                    </p>
+                  )}
+                  <button
+                    type="button"
+                    disabled={loading || !resetEmail}
+                    onClick={submitReset}
+                    style={{
+                      width: "100%",
+                      background: loading ? paper.inkDim : paper.ink,
+                      color: paper.paper,
+                      fontFamily: fontMono,
+                      fontSize: 10,
+                      letterSpacing: 2,
+                      textTransform: "uppercase",
+                      padding: "14px",
+                      border: "none",
+                      cursor: loading || !resetEmail ? "not-allowed" : "pointer",
+                    }}
+                  >
+                    {t("auth.send_reset_link")}
+                  </button>
+                </div>
+              )}
+              <button
+                type="button"
+                onClick={() => {
+                  setMode("password");
+                  setResetSent(false);
                   setError(null);
                 }}
                 style={{

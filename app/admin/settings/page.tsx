@@ -1,5 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
+import Link from "next/link";
 import { Eye, EyeOff } from "lucide-react";
 import { toast } from "sonner";
 import { paper, fontMono, fontSerif } from "@/lib/paper-theme";
@@ -425,6 +426,25 @@ export default function AdminSettingsPage() {
                   {backfillStatus.message}
                 </div>
               )}
+              <Link
+                href="/admin/calendar-log"
+                style={{
+                  display: "block",
+                  marginTop: 8,
+                  textAlign: "center",
+                  padding: "8px",
+                  fontFamily: fontMono,
+                  fontSize: 9,
+                  fontWeight: 700,
+                  letterSpacing: 2,
+                  textTransform: "uppercase",
+                  color: paper.inkDim,
+                  border: `1px solid ${paper.paperDark}`,
+                  textDecoration: "none",
+                }}
+              >
+                {t("settings.view_sync_log")}
+              </Link>
             </>
           )}
         </Card>

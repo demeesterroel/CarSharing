@@ -42,6 +42,7 @@ const ALL_MIGRATIONS = [
   "0021_people_session_epoch.sql",
   "0022_invite_tokens_purpose.sql",
   "0023_expenses_receipt.sql",
+  "0024_calendar_sync_log.sql",
 ];
 
 const LATER_MIGRATIONS = ALL_MIGRATIONS.slice(10); // 0011–0022
@@ -194,12 +195,12 @@ describe("forward migration — 0001–0010 → 0011–0022", () => {
     // (b) owner_person_id added to cars (migration 0012)
     expect(carCols.map((c) => c.name)).toContain("owner_person_id");
 
-    // (c) _migrations log lists all 22 migrations
+    // (c) _migrations log lists all migrations
     const applied = db
       .prepare("SELECT filename FROM _migrations ORDER BY filename")
       .pluck()
       .all() as string[];
-    expect(applied).toHaveLength(23);
+    expect(applied).toHaveLength(24);
     for (const f of ALL_MIGRATIONS) {
       expect(applied).toContain(f);
     }
@@ -210,6 +211,6 @@ describe("forward migration — 0001–0010 → 0011–0022", () => {
       .prepare("SELECT filename FROM _migrations ORDER BY filename")
       .pluck()
       .all() as string[];
-    expect(appliedAfter).toHaveLength(23);
+    expect(appliedAfter).toHaveLength(24);
   });
 });

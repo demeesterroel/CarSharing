@@ -583,6 +583,7 @@ export const nl = {
     "✗ Alleen leesrechten — de app kan geen afspraken aanmaken. Wijzig de deling naar 'Wijzigingen aanbrengen in evenementen'.",
   "settings.test_fail": "✗ Onverwachte fout: {error}",
   "settings.backfill": "Toekomstige reserveringen synchroniseren",
+  "settings.view_sync_log": "Synclog bekijken",
 
   // Admin members
   "admin.members_title": "Leden",

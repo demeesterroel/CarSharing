@@ -4,6 +4,7 @@ import { getDb } from "@/lib/db";
 import { getSetting } from "@/lib/queries/settings";
 import { getOAuthClient, listEventsDelta } from "@/lib/google-calendar";
 import { processCalendarDelta } from "@/lib/process-calendar-delta";
+import { logSync } from "@/lib/calendar-sync-log";
 
 export async function POST(req: NextRequest): Promise<NextResponse> {
   // Initial handshake from Google
@@ -23,6 +24,12 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
   // Validate channel ID to reject spoofed webhook calls
   const incomingChannelId = req.headers.get("x-goog-channel-id");
   if (stateRow && incomingChannelId !== stateRow.channel_id) {
+    logSync(db, {
+      direction: "inbound",
+      action: "webhook",
+      ok: false,
+      detail: { reason: "channel_mismatch", incomingChannelId },
+    });
     return NextResponse.json({ ok: true });
   }
 
@@ -42,13 +49,31 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
         ({ items, nextSyncToken } = await listEventsDelta(client, calendarId));
       } catch (e2) {
         console.error("[calendar-webhook] full re-sync also failed", e2);
+        logSync(db, {
+          direction: "inbound",
+          action: "webhook",
+          ok: false,
+          detail: { reason: "resync_failed", message: e2 instanceof Error ? e2.message : String(e2) },
+        });
         return NextResponse.json({ ok: true });
       }
     } else {
       console.error("[calendar-webhook] listEventsDelta failed", e);
+      logSync(db, {
+        direction: "inbound",
+        action: "webhook",
+        ok: false,
+        detail: { reason: "delta_failed", code, message: e instanceof Error ? e.message : String(e) },
+      });
       return NextResponse.json({ ok: true });
     }
   }
+
+  logSync(db, {
+    direction: "inbound",
+    action: "webhook",
+    detail: { itemCount: items.length, hadSyncToken: Boolean(stateRow?.sync_token) },
+  });
 
   await processCalendarDelta(db, client, calendarId, items);
 

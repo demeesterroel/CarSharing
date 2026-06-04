@@ -61,6 +61,20 @@ const withPWA = withPWAInit({
         },
       },
 
+      // ---- Map tiles (cross-origin, no-cors → opaque responses) ----
+      // Must come before the generic image rule: these .png tiles are loaded
+      // no-cors, so the response is opaque (status 0). cacheableResponse must
+      // allow status 0 or the SW fetch fails (ERR_FAILED) and the map is blank.
+      {
+        urlPattern: /^https:\/\/[a-d]\.basemaps\.cartocdn\.com\/.*/i,
+        handler: "CacheFirst",
+        options: {
+          cacheName: "map-tiles",
+          expiration: { maxEntries: 256, maxAgeSeconds: ONE_WEEK },
+          cacheableResponse: { statuses: [0, 200] },
+        },
+      },
+
       // ---- Static asset types ----
       {
         urlPattern: /\.(?:eot|otf|ttc|ttf|woff|woff2|font.css)$/i,
@@ -200,7 +214,9 @@ const csp = [
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' data: blob: https:",
   "font-src 'self'",
-  "connect-src 'self' https://nominatim.openstreetmap.org",
+  // cartocdn: the service worker re-fetches map tiles via fetch(), which is
+  // governed by connect-src (img-src alone isn't enough once the SW intercepts).
+  "connect-src 'self' https://nominatim.openstreetmap.org https://*.basemaps.cartocdn.com",
   "manifest-src 'self'",
   "worker-src 'self' blob:",
   "frame-src 'self'",

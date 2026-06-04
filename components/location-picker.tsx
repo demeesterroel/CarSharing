@@ -51,11 +51,18 @@ function makeIcon(L: any) {
   });
 }
 
-export function LocationPicker({ address, coords, onAddressChange, onCoordsChange, autoGps }: Props) {
+export function LocationPicker({
+  address,
+  coords,
+  onAddressChange,
+  onCoordsChange,
+  autoGps,
+}: Props) {
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstance = useRef<any>(null);
   const markerRef = useRef<any>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const resizeObserverRef = useRef<ResizeObserver | null>(null);
   const { theme } = useTheme();
   const mono = theme === "mono";
 
@@ -127,13 +134,37 @@ export function LocationPicker({ address, coords, onAddressChange, onCoordsChang
       }
 
       mapInstance.current = map;
-      setTimeout(() => {
-        if (!cancelled) map.invalidateSize();
-      }, 200);
+
+      // Robust sizing: the map is mounted inside a Radix Dialog that opens with
+      // a layout/animation, so the container may be zero-sized or hidden at
+      // init. Instead of relying on a single fixed timeout, observe the
+      // container and invalidate the map size whenever it resizes to a
+      // non-zero box (covers the open transition on slow devices / Android PWA).
+      const el = mapRef.current;
+      if (typeof ResizeObserver !== "undefined" && el) {
+        const observer = new ResizeObserver((entries) => {
+          if (cancelled || !mapInstance.current) return;
+          const rect = entries[0]?.contentRect;
+          if (rect && rect.width > 0 && rect.height > 0) {
+            mapInstance.current.invalidateSize();
+          }
+        });
+        observer.observe(el);
+        resizeObserverRef.current = observer;
+      }
+
+      // Belt-and-braces: invalidate on the next frame once the open transition
+      // has had a chance to settle. Not relied upon for correctness — the
+      // ResizeObserver above is the primary mechanism.
+      requestAnimationFrame(() => {
+        if (!cancelled && mapInstance.current) mapInstance.current.invalidateSize();
+      });
     })();
 
     return () => {
       cancelled = true;
+      resizeObserverRef.current?.disconnect();
+      resizeObserverRef.current = null;
       mapInstance.current?.remove();
       mapInstance.current = null;
       markerRef.current = null;
@@ -247,7 +278,12 @@ export function LocationPicker({ address, coords, onAddressChange, onCoordsChang
         }
       >
         {mono && (
-          <MapPin size={16} color={paper.inkMute} strokeWidth={1.75} style={{ flexShrink: 0, alignSelf: "flex-start", marginTop: 2 }} />
+          <MapPin
+            size={16}
+            color={paper.inkMute}
+            strokeWidth={1.75}
+            style={{ flexShrink: 0, alignSelf: "flex-start", marginTop: 2 }}
+          />
         )}
         <div style={{ flex: 1, minWidth: 0 }}>
           <input
@@ -368,6 +404,8 @@ export function LocationPicker({ address, coords, onAddressChange, onCoordsChang
         ref={mapRef}
         style={{
           height: 200,
+          minHeight: 200,
+          width: "100%",
           border: mono ? `1px solid ${paper.paperDark}` : `1.5px solid ${paper.paperDark}`,
           borderRadius: mono ? "var(--radius-md, 10px)" : 0,
           overflow: "hidden",

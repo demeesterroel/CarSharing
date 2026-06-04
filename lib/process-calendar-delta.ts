@@ -140,26 +140,88 @@ export async function processCalendarDelta(
       newResponseStatus = attendee?.responseStatus ?? "needsAction";
     }
 
-    if (newResponseStatus !== row.last_known_response_status) {
-      let newStatus: string | null = null;
-      if (newResponseStatus === "accepted") newStatus = "confirmed";
-      else if (newResponseStatus === "declined") newStatus = "rejected";
+    // After an in-app or GCal confirm we remove the owner attendee (below /
+    // buildEventBody), so later deltas legitimately report needsAction. Don't let
+    // that churn or revert an already-confirmed reservation.
+    if (newResponseStatus === "needsAction" && row.status === "confirmed") continue;
 
-      db.prepare(
-        "UPDATE reservations SET status=COALESCE(?, status), last_known_response_status=?, last_synced_etag=? WHERE id=?"
-      ).run(newStatus, newResponseStatus, event.etag ?? null, row.id);
-      logSync(db, {
-        direction: "inbound",
-        action: "rsvp",
-        reservationId: row.id,
-        googleEventId: event.id,
-        detail: {
-          from: row.last_known_response_status,
-          to: newResponseStatus,
-          newStatus,
-          eventStatus: event.status,
-        },
-      });
+    if (newResponseStatus !== row.last_known_response_status) {
+      if (newResponseStatus === "accepted") {
+        // Owner accepted the invite in Google Calendar. Converge to the same
+        // end-state as an in-app confirm: mark the event confirmed AND remove the
+        // owner attendee (buildEventBody drops it when status=confirmed). This is
+        // an app write — it stamps a fresh nonce/etag, so the webhook it triggers
+        // is skipped by the echo guard above. No loop. (#337)
+        const nonce = crypto.randomUUID();
+        let newEtag: string | null = event.etag ?? null;
+        try {
+          const res = await updateEvent(
+            client,
+            calendarId,
+            event.id,
+            {
+              start_date: row.start_date,
+              end_date: row.end_date,
+              note: row.note,
+              status: "confirmed",
+              car_short: row.car_short,
+              person_name: row.person_name,
+            },
+            nonce,
+            row.owner_email ?? undefined
+          );
+          newEtag = res.etag;
+          logSync(db, {
+            direction: "outbound",
+            action: "confirm",
+            reservationId: row.id,
+            googleEventId: event.id,
+            detail: { nonce, uninvited: row.owner_email ?? null },
+          });
+        } catch (e) {
+          console.error("[calendar-delta] confirm push failed", e);
+          logSync(db, {
+            direction: "outbound",
+            action: "confirm",
+            reservationId: row.id,
+            googleEventId: event.id,
+            ok: false,
+            detail: { message: e instanceof Error ? e.message : String(e) },
+          });
+        }
+        db.prepare(
+          "UPDATE reservations SET status='confirmed', last_known_response_status='accepted', last_synced_etag=?, last_app_write_nonce=? WHERE id=?"
+        ).run(newEtag, nonce, row.id);
+        logSync(db, {
+          direction: "inbound",
+          action: "rsvp",
+          reservationId: row.id,
+          googleEventId: event.id,
+          detail: {
+            from: row.last_known_response_status,
+            to: "accepted",
+            newStatus: "confirmed",
+            eventStatus: event.status,
+          },
+        });
+      } else {
+        const newStatus: string | null = newResponseStatus === "declined" ? "rejected" : null;
+        db.prepare(
+          "UPDATE reservations SET status=COALESCE(?, status), last_known_response_status=?, last_synced_etag=? WHERE id=?"
+        ).run(newStatus, newResponseStatus, event.etag ?? null, row.id);
+        logSync(db, {
+          direction: "inbound",
+          action: "rsvp",
+          reservationId: row.id,
+          googleEventId: event.id,
+          detail: {
+            from: row.last_known_response_status,
+            to: newResponseStatus,
+            newStatus,
+            eventStatus: event.status,
+          },
+        });
+      }
     }
   }
 }

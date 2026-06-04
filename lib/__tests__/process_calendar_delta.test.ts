@@ -157,6 +157,72 @@ describe("processCalendarDelta", () => {
     expect(row.status).toBe("rejected");
   });
 
+  it("pushes a confirmed event and uninvites the owner when the owner accepts (#337)", async () => {
+    const db = makeDb();
+    seedWithEvent(db);
+    const events: CalendarEvent[] = [
+      {
+        id: "evt-123",
+        etag: '"different-etag"',
+        start: { date: "2026-06-01" },
+        end: { date: "2026-06-04" },
+        attendees: [{ email: "bob@example.com", responseStatus: "accepted" }],
+        extendedProperties: { private: { appWriteNonce: "other-nonce" } },
+      },
+    ];
+    await processCalendarDelta(db, fakeClient, calendarId, events);
+
+    // Pushed an outbound confirm: updateEvent(client, calId, eventId, reservation, nonce, ownerEmail)
+    expect(calMock.updateEvent).toHaveBeenCalledOnce();
+    const args = (calMock.updateEvent as unknown as { mock: { calls: unknown[][] } }).mock.calls[0];
+    expect(args[2]).toBe("evt-123");
+    expect((args[3] as { status: string }).status).toBe("confirmed");
+    expect(args[5]).toBe("bob@example.com");
+
+    const row = db
+      .prepare(
+        "SELECT status, last_known_response_status, last_synced_etag, last_app_write_nonce FROM reservations WHERE google_event_id = 'evt-123'"
+      )
+      .get() as {
+      status: string;
+      last_known_response_status: string;
+      last_synced_etag: string;
+      last_app_write_nonce: string;
+    };
+    expect(row.status).toBe("confirmed");
+    expect(row.last_known_response_status).toBe("accepted");
+    // etag/nonce come from our own push, so the resulting webhook is echo-skipped.
+    expect(row.last_synced_etag).toBe('"new-etag"');
+    expect(row.last_app_write_nonce).toBeTruthy();
+    expect(row.last_app_write_nonce).not.toBe("nonce-abc");
+  });
+
+  it("does not churn an already-confirmed reservation once the owner is uninvited (#337)", async () => {
+    const db = makeDb();
+    // Confirmed + owner already removed as attendee; last known RSVP was accepted.
+    seedWithEvent(db, { status: "confirmed", last_known_response_status: "accepted" });
+    const events: CalendarEvent[] = [
+      {
+        id: "evt-123",
+        etag: '"different-etag"',
+        start: { date: "2026-06-01" },
+        end: { date: "2026-06-04" },
+        attendees: [], // owner no longer an attendee -> would read as needsAction
+        extendedProperties: { private: { appWriteNonce: "other-nonce" } },
+      },
+    ];
+    await processCalendarDelta(db, fakeClient, calendarId, events);
+
+    expect(calMock.updateEvent).not.toHaveBeenCalled();
+    const row = db
+      .prepare(
+        "SELECT status, last_known_response_status FROM reservations WHERE google_event_id = 'evt-123'"
+      )
+      .get() as { status: string; last_known_response_status: string };
+    expect(row.status).toBe("confirmed");
+    expect(row.last_known_response_status).toBe("accepted");
+  });
+
   it("treats cancelled event (owner deleted invite) as declined", async () => {
     const db = makeDb();
     seedWithEvent(db);

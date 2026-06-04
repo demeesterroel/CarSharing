@@ -1,0 +1,53 @@
+// lib/__tests__/google_calendar_build_event.test.ts
+import { describe, it, expect, vi } from "vitest";
+
+vi.mock("@/lib/env", () => ({
+  env: {
+    GOOGLE_CLIENT_ID: "test-client-id",
+    GOOGLE_CLIENT_SECRET: "test-client-secret",
+    NODE_ENV: "test",
+  },
+}));
+
+import { buildEventBody } from "@/lib/google-calendar";
+
+const base = {
+  start_date: "2026-06-01",
+  end_date: "2026-06-03",
+  car_short: "CA",
+  person_name: "Alice",
+  note: null,
+};
+
+type Body = { status: string; attendees: Array<{ email: string }>; end: { date: string } };
+
+describe("buildEventBody attendee rule (#337)", () => {
+  it("invites the owner as attendee while pending (tentative)", () => {
+    const body = buildEventBody({ ...base, status: "pending" }, "n1", "bob@example.com") as Body;
+    expect(body.status).toBe("tentative");
+    expect(body.attendees).toEqual([{ email: "bob@example.com" }]);
+  });
+
+  it("drops the owner attendee once confirmed", () => {
+    const body = buildEventBody({ ...base, status: "confirmed" }, "n1", "bob@example.com") as Body;
+    expect(body.status).toBe("confirmed");
+    expect(body.attendees).toEqual([]);
+  });
+
+  it("marks a rejected reservation as a cancelled event (attendee moot)", () => {
+    // Only the confirmed transition uninvites the owner; a rejected reservation
+    // becomes a cancelled event, which leaves everyone's calendar regardless.
+    const body = buildEventBody({ ...base, status: "rejected" }, "n1", "bob@example.com") as Body;
+    expect(body.status).toBe("cancelled");
+  });
+
+  it("has no attendees when there is no owner email", () => {
+    const body = buildEventBody({ ...base, status: "pending" }, "n1") as Body;
+    expect(body.attendees).toEqual([]);
+  });
+
+  it("sets an exclusive end date (end_date + 1 day)", () => {
+    const body = buildEventBody({ ...base, status: "pending" }, "n1") as Body;
+    expect(body.end.date).toBe("2026-06-04");
+  });
+});

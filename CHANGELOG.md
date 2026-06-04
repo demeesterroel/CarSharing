@@ -1,5 +1,23 @@
 # Changelog
 
+## [1.18.0](https://github.com/demeesterroel/CarSharing/compare/v1.17.2...v1.18.0) (2026-06-04)
+
+
+### ✨ New features
+
+* **auth:** inline request-reset-link on /login ([#281](https://github.com/demeesterroel/CarSharing/issues/281)) ([#335](https://github.com/demeesterroel/CarSharing/issues/335)) ([dcbddb3](https://github.com/demeesterroel/CarSharing/commit/dcbddb39b9fb7fa488423eb7b688f697718cf56e))
+* **expenses:** allow attaching a receipt photo to costs ([#329](https://github.com/demeesterroel/CarSharing/issues/329)) ([75121d1](https://github.com/demeesterroel/CarSharing/commit/75121d1bcb62df85271713d77bb48b8aa397ee0f))
+* **pwa:** elastic pull-to-refresh — gear indicator + fixed header ([#332](https://github.com/demeesterroel/CarSharing/issues/332)) ([#336](https://github.com/demeesterroel/CarSharing/issues/336)) ([5990410](https://github.com/demeesterroel/CarSharing/commit/5990410aa3450ecbe02abfe007b69cf2cac9378e))
+* **pwa:** pull-to-refresh hard reload when installed as a PWA ([#330](https://github.com/demeesterroel/CarSharing/issues/330)) ([ccbcf7d](https://github.com/demeesterroel/CarSharing/commit/ccbcf7dcae600f4c23037d14329bcf3ff94184e9))
+
+
+### 🐛 Bug fixes
+
+* **auth:** issue CSRF token once instead of rotating it on every /api/me ([#334](https://github.com/demeesterroel/CarSharing/issues/334)) ([99d0eb9](https://github.com/demeesterroel/CarSharing/commit/99d0eb9568a0d9c3c77daf1ddc60fca7b6a97888)), closes [#333](https://github.com/demeesterroel/CarSharing/issues/333)
+* **forms:** open native date picker in mono theme date field ([#331](https://github.com/demeesterroel/CarSharing/issues/331)) ([da69e37](https://github.com/demeesterroel/CarSharing/commit/da69e37dec6c1981b03414dc6345759d1c634427)), closes [#328](https://github.com/demeesterroel/CarSharing/issues/328)
+* **location:** robust Leaflet map init in modal (ResizeObserver instead of fixed timeout) ([#327](https://github.com/demeesterroel/CarSharing/issues/327)) ([7fa7c34](https://github.com/demeesterroel/CarSharing/commit/7fa7c34229184b1a20398ee4fdf7d4555b6f1862))
+* **ui:** key edit forms by entity id to prevent stale form on reopen ([#325](https://github.com/demeesterroel/CarSharing/issues/325)) ([a038490](https://github.com/demeesterroel/CarSharing/commit/a0384909b4246ce813c81935b4f6595239e25ea0)), closes [#321](https://github.com/demeesterroel/CarSharing/issues/321)
+
 ## [1.17.2](https://github.com/demeesterroel/CarSharing/compare/v1.17.1...v1.17.2) (2026-06-02)
 
 

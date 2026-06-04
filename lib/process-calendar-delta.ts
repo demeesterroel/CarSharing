@@ -204,11 +204,71 @@ export async function processCalendarDelta(
             eventStatus: event.status,
           },
         });
-      } else {
-        const newStatus: string | null = newResponseStatus === "declined" ? "rejected" : null;
+      } else if (newResponseStatus === "declined") {
+        // Owner declined the invite, or removed it from their own calendar. Flip to
+        // rejected AND converge the calendar: if the shared event is still live,
+        // cancel it so it doesn't linger as a ghost (#350 / #7 / #8bis). If the
+        // event is already cancelled (owner deleted the shared event, #8), there is
+        // nothing to push. The push is nonce-stamped → echo-skipped, no loop.
+        const nonce = crypto.randomUUID();
+        let newEtag: string | null = event.etag ?? null;
+        if (event.status !== "cancelled") {
+          try {
+            const res = await updateEvent(
+              client,
+              calendarId,
+              event.id,
+              {
+                start_date: row.start_date,
+                end_date: row.end_date,
+                note: row.note,
+                status: "rejected",
+                car_short: row.car_short,
+                person_name: row.person_name,
+              },
+              nonce,
+              row.owner_email ?? undefined
+            );
+            newEtag = res.etag;
+            logSync(db, {
+              direction: "outbound",
+              action: "cancel",
+              reservationId: row.id,
+              googleEventId: event.id,
+              detail: { nonce, reason: "declined" },
+            });
+          } catch (e) {
+            console.error("[calendar-delta] cancel push failed", e);
+            logSync(db, {
+              direction: "outbound",
+              action: "cancel",
+              reservationId: row.id,
+              googleEventId: event.id,
+              ok: false,
+              detail: { message: e instanceof Error ? e.message : String(e) },
+            });
+          }
+        }
         db.prepare(
-          "UPDATE reservations SET status=COALESCE(?, status), last_known_response_status=?, last_synced_etag=? WHERE id=?"
-        ).run(newStatus, newResponseStatus, event.etag ?? null, row.id);
+          "UPDATE reservations SET status='rejected', last_known_response_status='declined', last_synced_etag=?, last_app_write_nonce=? WHERE id=?"
+        ).run(newEtag, nonce, row.id);
+        logSync(db, {
+          direction: "inbound",
+          action: "rsvp",
+          reservationId: row.id,
+          googleEventId: event.id,
+          detail: {
+            from: row.last_known_response_status,
+            to: "declined",
+            newStatus: "rejected",
+            eventStatus: event.status,
+          },
+        });
+      } else {
+        // Other transitions (e.g. needsAction) — record the RSVP, leave status.
+        db.prepare(
+          "UPDATE reservations SET last_known_response_status=?, last_synced_etag=? WHERE id=?"
+        ).run(newResponseStatus, event.etag ?? null, row.id);
         logSync(db, {
           direction: "inbound",
           action: "rsvp",
@@ -217,7 +277,7 @@ export async function processCalendarDelta(
           detail: {
             from: row.last_known_response_status,
             to: newResponseStatus,
-            newStatus,
+            newStatus: null,
             eventStatus: event.status,
           },
         });

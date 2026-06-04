@@ -132,6 +132,11 @@ export function useReservations() {
       if (!res.ok) throw new Error("Failed");
       return res.json();
     },
+    // Reservation status can change from outside the app (Google Calendar
+    // accept/decline/cancel → webhook → DB) with no server→client push. Poll so
+    // those changes surface in an open session (inbox, calendar). Background
+    // polling stays off while the tab is hidden. (#350)
+    refetchInterval: 30000,
   });
 }
 

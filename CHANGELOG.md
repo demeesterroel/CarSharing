@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.19.1](https://github.com/demeesterroel/CarSharing/compare/v1.19.0...v1.19.1) (2026-06-04)
+
+
+### 🐛 Bug fixes
+
+* **calendar:** visually mark confirmed events (✓ title + green) ([#344](https://github.com/demeesterroel/CarSharing/issues/344)) ([#345](https://github.com/demeesterroel/CarSharing/issues/345)) ([063b0aa](https://github.com/demeesterroel/CarSharing/commit/063b0aa297df7be4bc1254f0ef25046be424d67b))
+
 ## [1.19.0](https://github.com/demeesterroel/CarSharing/compare/v1.18.0...v1.19.0) (2026-06-04)
 
 

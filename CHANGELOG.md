@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.19.0](https://github.com/demeesterroel/CarSharing/compare/v1.18.0...v1.19.0) (2026-06-04)
+
+
+### ✨ New features
+
+* **calendar:** persistent 2-way sync log + admin viewer ([#338](https://github.com/demeesterroel/CarSharing/issues/338)) ([#342](https://github.com/demeesterroel/CarSharing/issues/342)) ([b3ef5cb](https://github.com/demeesterroel/CarSharing/commit/b3ef5cb55e6e5d4cf7a807758bcd8635fb3f0ec0))
+
+
+### 🐛 Bug fixes
+
+* **calendar:** allow Google webhook through proxy auth ([#339](https://github.com/demeesterroel/CarSharing/issues/339)) ([#340](https://github.com/demeesterroel/CarSharing/issues/340)) ([0da7d30](https://github.com/demeesterroel/CarSharing/commit/0da7d3090b9d0022c452523b400735f79d4f8f9a))
+* **calendar:** converge confirm in both sync directions, uninvite owner ([#337](https://github.com/demeesterroel/CarSharing/issues/337)) ([#343](https://github.com/demeesterroel/CarSharing/issues/343)) ([273d60c](https://github.com/demeesterroel/CarSharing/commit/273d60c63b65ebbff3b4d704fc36af46f544f8df))
+
 ## [1.18.0](https://github.com/demeesterroel/CarSharing/compare/v1.17.2...v1.18.0) (2026-06-04)
 
 

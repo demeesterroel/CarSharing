@@ -28,8 +28,10 @@ vi.mock("@/lib/queries/settings", () => ({
 }));
 
 const mockSyncReservationCreate = vi.fn<(...a: unknown[]) => Promise<void>>();
+const mockSyncReservationUpdate = vi.fn<(...a: unknown[]) => Promise<void>>();
 vi.mock("@/lib/reservation-sync", () => ({
   syncReservationCreate: (...a: unknown[]) => mockSyncReservationCreate(...a),
+  syncReservationUpdate: (...a: unknown[]) => mockSyncReservationUpdate(...a),
 }));
 
 import { POST } from "./route";
@@ -59,6 +61,7 @@ beforeEach(() => {
   });
   mockPrepare.mockReturnValue({ all: vi.fn(() => []) });
   mockSyncReservationCreate.mockResolvedValue(undefined);
+  mockSyncReservationUpdate.mockResolvedValue(undefined);
 });
 
 describe("POST /api/admin/calendar-backfill", () => {
@@ -92,34 +95,62 @@ describe("POST /api/admin/calendar-backfill", () => {
     expect(body).toMatchObject({ ok: false, error: "no_token" });
   });
 
-  it("returns ok with synced=0 when no unsynced reservations", async () => {
+  it("returns ok with synced=0 when no upcoming reservations", async () => {
     const res = await POST(req());
     expect(res.status).toBe(200);
     const body = await res.json();
-    expect(body).toEqual({ ok: true, synced: 0, failed: 0, total: 0 });
+    expect(body).toEqual({ ok: true, synced: 0, created: 0, updated: 0, failed: 0, total: 0 });
     expect(mockSyncReservationCreate).not.toHaveBeenCalled();
+    expect(mockSyncReservationUpdate).not.toHaveBeenCalled();
   });
 
-  it("syncs all unsynced upcoming reservations and reports count", async () => {
-    mockPrepare.mockReturnValue({ all: vi.fn(() => [{ id: 1 }, { id: 2 }, { id: 3 }]) });
+  it("creates events for unsynced upcoming reservations and reports count", async () => {
+    mockPrepare.mockReturnValue({
+      all: vi.fn(() => [
+        { id: 1, google_event_id: null },
+        { id: 2, google_event_id: null },
+        { id: 3, google_event_id: null },
+      ]),
+    });
     const res = await POST(req());
     expect(res.status).toBe(200);
     const body = await res.json();
-    expect(body).toEqual({ ok: true, synced: 3, failed: 0, total: 3 });
+    expect(body).toEqual({ ok: true, synced: 3, created: 3, updated: 0, failed: 0, total: 3 });
     expect(mockSyncReservationCreate).toHaveBeenCalledTimes(3);
-    expect(mockSyncReservationCreate).toHaveBeenCalledWith(mockDb, 1);
-    expect(mockSyncReservationCreate).toHaveBeenCalledWith(mockDb, 2);
-    expect(mockSyncReservationCreate).toHaveBeenCalledWith(mockDb, 3);
+    expect(mockSyncReservationUpdate).not.toHaveBeenCalled();
   });
 
-  it("counts failed reservations when syncReservationCreate throws", async () => {
-    mockPrepare.mockReturnValue({ all: vi.fn(() => [{ id: 10 }, { id: 11 }]) });
-    mockSyncReservationCreate
-      .mockResolvedValueOnce(undefined)
-      .mockRejectedValueOnce(new Error("Google API error"));
+  it("re-pushes already-synced reservations via update (reconcile)", async () => {
+    mockPrepare.mockReturnValue({
+      all: vi.fn(() => [
+        { id: 1, google_event_id: null },
+        { id: 2, google_event_id: "evt-2" },
+        { id: 3, google_event_id: "evt-3" },
+      ]),
+    });
     const res = await POST(req());
     expect(res.status).toBe(200);
     const body = await res.json();
-    expect(body).toEqual({ ok: true, synced: 1, failed: 1, total: 2 });
+    expect(body).toEqual({ ok: true, synced: 3, created: 1, updated: 2, failed: 0, total: 3 });
+    expect(mockSyncReservationCreate).toHaveBeenCalledTimes(1);
+    expect(mockSyncReservationCreate).toHaveBeenCalledWith(mockDb, 1);
+    expect(mockSyncReservationUpdate).toHaveBeenCalledTimes(2);
+    expect(mockSyncReservationUpdate).toHaveBeenCalledWith(mockDb, 2);
+    expect(mockSyncReservationUpdate).toHaveBeenCalledWith(mockDb, 3);
+  });
+
+  it("counts failed reservations when a sync call throws", async () => {
+    mockPrepare.mockReturnValue({
+      all: vi.fn(() => [
+        { id: 10, google_event_id: null },
+        { id: 11, google_event_id: "evt-11" },
+      ]),
+    });
+    mockSyncReservationCreate.mockResolvedValueOnce(undefined);
+    mockSyncReservationUpdate.mockRejectedValueOnce(new Error("Google API error"));
+    const res = await POST(req());
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    expect(body).toEqual({ ok: true, synced: 1, created: 1, updated: 0, failed: 1, total: 2 });
   });
 });

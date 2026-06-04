@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.19.3](https://github.com/demeesterroel/CarSharing/compare/v1.19.2...v1.19.3) (2026-06-04)
+
+
+### 🐛 Bug fixes
+
+* **calendar:** converge reject to GCal + poll reservations for webhook changes ([#350](https://github.com/demeesterroel/CarSharing/issues/350)) ([#351](https://github.com/demeesterroel/CarSharing/issues/351)) ([ab07f88](https://github.com/demeesterroel/CarSharing/commit/ab07f8887fe802debd767cf557d875e362c95c3e))
+
 ## [1.19.2](https://github.com/demeesterroel/CarSharing/compare/v1.19.1...v1.19.2) (2026-06-04)
 
 

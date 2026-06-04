@@ -3,7 +3,7 @@ import { getDb } from "@/lib/db";
 import { json, requireAdmin } from "@/lib/api";
 import { getSetting } from "@/lib/queries/settings";
 import { env } from "@/lib/env";
-import { syncReservationCreate } from "@/lib/reservation-sync";
+import { syncReservationCreate, syncReservationUpdate } from "@/lib/reservation-sync";
 
 export const POST = json(async (req) => {
   await requireAdmin(req);
@@ -20,25 +20,42 @@ export const POST = json(async (req) => {
 
   const today = new Date().toISOString().slice(0, 10);
 
-  // Upcoming reservations not yet synced
+  // Reconcile every upcoming non-rejected reservation: create a calendar event
+  // for ones not yet synced, and re-push the desired state for ones that already
+  // have an event (repaints title/color/attendees/status, e.g. the ✓+green
+  // confirmed marker, and repairs any drift). Updates are nonce-stamped, so the
+  // resulting webhook is skipped by the echo guard — no loop.
   const rows = db
     .prepare(
-      `SELECT id FROM reservations
-       WHERE end_date >= ? AND google_event_id IS NULL AND status != 'rejected'
+      `SELECT id, google_event_id FROM reservations
+       WHERE end_date >= ? AND status != 'rejected'
        ORDER BY start_date`
     )
-    .all(today) as { id: number }[];
+    .all(today) as { id: number; google_event_id: string | null }[];
 
-  let synced = 0;
+  let created = 0;
+  let updated = 0;
   let failed = 0;
   for (const row of rows) {
     try {
-      await syncReservationCreate(db, row.id);
-      synced++;
+      if (row.google_event_id) {
+        await syncReservationUpdate(db, row.id);
+        updated++;
+      } else {
+        await syncReservationCreate(db, row.id);
+        created++;
+      }
     } catch {
       failed++;
     }
   }
 
-  return NextResponse.json({ ok: true, synced, failed, total: rows.length });
+  return NextResponse.json({
+    ok: true,
+    synced: created + updated,
+    created,
+    updated,
+    failed,
+    total: rows.length,
+  });
 });

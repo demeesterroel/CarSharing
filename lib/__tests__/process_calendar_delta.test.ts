@@ -137,7 +137,7 @@ describe("processCalendarDelta", () => {
     expect(row.last_known_response_status).toBe("accepted");
   });
 
-  it("updates reservation to rejected when owner declines", async () => {
+  it("rejects and cancels the live event when owner declines (#350 converge)", async () => {
     const db = makeDb();
     seedWithEvent(db);
     const events: CalendarEvent[] = [
@@ -151,10 +151,26 @@ describe("processCalendarDelta", () => {
       },
     ];
     await processCalendarDelta(db, fakeClient, calendarId, events);
+
+    // Converge: event still live → push a cancel so it doesn't linger as a ghost.
+    expect(calMock.updateEvent).toHaveBeenCalledOnce();
+    const args = (calMock.updateEvent as unknown as { mock: { calls: unknown[][] } }).mock.calls[0];
+    expect((args[3] as { status: string }).status).toBe("rejected"); // -> cancelled event
     const row = db
-      .prepare("SELECT status FROM reservations WHERE google_event_id = 'evt-123'")
-      .get() as { status: string };
+      .prepare(
+        "SELECT status, last_known_response_status, last_synced_etag, last_app_write_nonce FROM reservations WHERE google_event_id = 'evt-123'"
+      )
+      .get() as {
+      status: string;
+      last_known_response_status: string;
+      last_synced_etag: string;
+      last_app_write_nonce: string;
+    };
     expect(row.status).toBe("rejected");
+    expect(row.last_known_response_status).toBe("declined");
+    // nonce/etag from our own cancel push → resulting webhook is echo-skipped
+    expect(row.last_synced_etag).toBe('"new-etag"');
+    expect(row.last_app_write_nonce).not.toBe("nonce-abc");
   });
 
   it("pushes a confirmed event and uninvites the owner when the owner accepts (#337)", async () => {
@@ -223,7 +239,7 @@ describe("processCalendarDelta", () => {
     expect(row.last_known_response_status).toBe("accepted");
   });
 
-  it("treats cancelled event (owner deleted invite) as declined", async () => {
+  it("treats an already-cancelled event as declined without re-pushing (#350)", async () => {
     const db = makeDb();
     seedWithEvent(db);
     const events: CalendarEvent[] = [
@@ -237,6 +253,8 @@ describe("processCalendarDelta", () => {
       },
     ];
     await processCalendarDelta(db, fakeClient, calendarId, events);
+    // Event already gone (owner deleted the shared event, #8) → nothing to push.
+    expect(calMock.updateEvent).not.toHaveBeenCalled();
     const row = db
       .prepare("SELECT status FROM reservations WHERE google_event_id = 'evt-123'")
       .get() as { status: string };

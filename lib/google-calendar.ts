@@ -45,12 +45,18 @@ export function buildEventBody(r: ReservationShape, nonce: string, ownerEmail?: 
   // and stops showing "1 guest, awaiting reply" (#337). An empty array (not
   // undefined) is required for events.update to actually clear an attendee.
   const attendees = ownerEmail && calStatus !== "confirmed" ? [{ email: ownerEmail }] : [];
+  const confirmed = calStatus === "confirmed";
+  // Google has no checkmark UI for status=confirmed, so confirmed and tentative
+  // all-day events look identical. Add an explicit visual cue (#344): a ✓ title
+  // prefix and a green colorId (10 = Basil). Pending/rejected keep the default.
+  const baseSummary = r.car_short ? `[${r.car_short}] ${r.person_name ?? ""}` : "Reservering";
   return {
-    summary: r.car_short ? `[${r.car_short}] ${r.person_name ?? ""}` : "Reservering",
+    summary: confirmed ? `✓ ${baseSummary}` : baseSummary,
     description: r.note ?? undefined,
     start: { date: r.start_date },
     end: { date: addDays(r.end_date, 1) },
     status: calStatus,
+    colorId: confirmed ? "10" : undefined,
     attendees,
     extendedProperties: { private: { appWriteNonce: nonce } },
   };

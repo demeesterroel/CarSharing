@@ -19,7 +19,13 @@ const base = {
   note: null,
 };
 
-type Body = { status: string; attendees: Array<{ email: string }>; end: { date: string } };
+type Body = {
+  status: string;
+  attendees: Array<{ email: string }>;
+  end: { date: string };
+  summary: string;
+  colorId?: string;
+};
 
 describe("buildEventBody attendee rule (#337)", () => {
   it("invites the owner as attendee while pending (tentative)", () => {
@@ -32,6 +38,18 @@ describe("buildEventBody attendee rule (#337)", () => {
     const body = buildEventBody({ ...base, status: "confirmed" }, "n1", "bob@example.com") as Body;
     expect(body.status).toBe("confirmed");
     expect(body.attendees).toEqual([]);
+  });
+
+  it("marks a confirmed event with a ✓ title prefix and green colorId (#344)", () => {
+    const body = buildEventBody({ ...base, status: "confirmed" }, "n1", "bob@example.com") as Body;
+    expect(body.summary).toBe("✓ [CA] Alice");
+    expect(body.colorId).toBe("10");
+  });
+
+  it("leaves a pending event's title and color at default (#344)", () => {
+    const body = buildEventBody({ ...base, status: "pending" }, "n1", "bob@example.com") as Body;
+    expect(body.summary).toBe("[CA] Alice");
+    expect(body.colorId).toBeUndefined();
   });
 
   it("marks a rejected reservation as a cancelled event (attendee moot)", () => {

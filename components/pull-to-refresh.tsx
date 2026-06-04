@@ -9,6 +9,15 @@
 // any waiting worker) before reloading, so a new build is actually fetched —
 // equivalent to Ctrl+Shift+R.
 //
+// Visual behaviour:
+//   • Content ([data-ptr-content]) translates down with the finger (1:1 up to
+//     the threshold, damped above) for an elastic/rubber-band feel.
+//   • The spinner grows and rotates with pull progress; it spins continuously
+//     once the threshold is passed and the refresh is running.
+//   • Release before threshold → eased snap-back, no reload.
+//   • Release past threshold → content settles to a small loading offset while
+//     the hard refresh runs.
+//
 // In a normal browser tab this renders null and attaches no listeners, so the
 // native gesture is left completely untouched.
 
@@ -20,12 +29,37 @@ import {
   decideRefresh,
   isStandalone,
   pullOffset,
+  contentOffset,
   PULL_THRESHOLD_PX,
   PULL_MAX_PX,
+  CONTENT_LOADING_PX,
 } from "@/lib/pwa/pull-to-refresh-logic";
 
 // Ignore horizontal-ish swipes so we don't hijack carousels / back gestures.
 const HORIZONTAL_TOLERANCE = 1.2;
+
+// CSS transition applied to content on release (snap-back or settle).
+const SNAP_TRANSITION = "transform 0.28s cubic-bezier(0.25, 0.46, 0.45, 0.94)";
+
+/**
+ * Returns the [data-ptr-content] element that should follow the finger.
+ * This is the main page wrapper div in app/layout.tsx.
+ */
+function getContentEl(): HTMLElement | null {
+  if (typeof document === "undefined") return null;
+  return document.querySelector<HTMLElement>("[data-ptr-content]");
+}
+
+/**
+ * Imperatively set / clear the content translateY.
+ * `animated` controls whether a CSS transition is applied (true = release/snap).
+ */
+function setContentTranslate(px: number, animated: boolean): void {
+  const el = getContentEl();
+  if (!el) return;
+  el.style.transition = animated ? SNAP_TRANSITION : "none";
+  el.style.transform = px === 0 ? "" : `translateY(${px}px)`;
+}
 
 /**
  * Ask the active Service Worker to update, activate any waiting worker, then
@@ -88,6 +122,13 @@ export default function PullToRefresh() {
     setEnabled(isStandalone());
   }, []);
 
+  // Cleanup: ensure content translate is cleared when component unmounts.
+  useEffect(() => {
+    return () => {
+      setContentTranslate(0, false);
+    };
+  }, []);
+
   useEffect(() => {
     if (!enabled) return;
 
@@ -114,16 +155,24 @@ export default function PullToRefresh() {
       const dx = e.touches[0].clientX - startX;
       // Only react to downward, mostly-vertical drags that begin at the top.
       if (dy <= 0 || Math.abs(dx) > Math.abs(dy) * HORIZONTAL_TOLERANCE) {
-        if (offsetRef.current !== 0) setOffset(0);
+        if (offsetRef.current !== 0) {
+          setOffset(0);
+          setContentTranslate(0, true);
+        }
         return;
       }
       if (!atTop()) {
         tracking = false;
         setOffset(0);
+        setContentTranslate(0, true);
         return;
       }
       triggered = true;
-      setOffset(pullOffset(dy));
+      const indicatorPx = pullOffset(dy);
+      const contentPx = contentOffset(dy);
+      setOffset(indicatorPx);
+      // Live drag: no transition — content follows finger in real time.
+      setContentTranslate(contentPx, false);
       // Prevent the browser/document from also scrolling/over-scrolling.
       if (e.cancelable) e.preventDefault();
     };
@@ -143,15 +192,24 @@ export default function PullToRefresh() {
       });
 
       if (decision.action === "blocked-offline") {
+        // Snap content back, then warn.
+        setContentTranslate(0, true);
         toast.error(t("pwa.refresh_blocked_offline"));
         return;
       }
-      if (decision.action === "refresh") {
-        setRefreshing(true);
-        refreshingRef.current = true;
-        toast.loading(t("pwa.refreshing"));
-        hardRefresh();
+
+      if (decision.action === "cancel") {
+        // Released before threshold — smooth snap-back to zero.
+        setContentTranslate(0, true);
+        return;
       }
+
+      // decision.action === "refresh": settle content to loading offset, then reload.
+      setContentTranslate(CONTENT_LOADING_PX, true);
+      setRefreshing(true);
+      refreshingRef.current = true;
+      toast.loading(t("pwa.refreshing"));
+      hardRefresh();
     };
 
     // passive:false on move so preventDefault works.
@@ -174,6 +232,9 @@ export default function PullToRefresh() {
   const visible = offset > 0 || refreshing;
   const ready = offset >= PULL_THRESHOLD_PX;
 
+  // Spinner grows from 0.4→1 as the user pulls, snapping to full size at threshold.
+  const spinnerScale = refreshing ? 1 : 0.4 + progress * 0.6;
+
   return (
     <div
       aria-hidden={!visible}
@@ -187,7 +248,8 @@ export default function PullToRefresh() {
         pointerEvents: "none",
         zIndex: 1000,
         transform: `translateY(${(refreshing ? PULL_THRESHOLD_PX : offset) - PULL_MAX_PX}px)`,
-        transition: offset === 0 && !refreshing ? "transform 0.2s ease" : "none",
+        // Snap indicator back on release; no transition during live drag.
+        transition: offset === 0 && !refreshing ? "transform 0.28s cubic-bezier(0.25, 0.46, 0.45, 0.94)" : "none",
         opacity: visible ? 1 : 0,
       }}
     >
@@ -203,6 +265,9 @@ export default function PullToRefresh() {
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
+          // Scale the bubble in as the user pulls.
+          transform: `scale(${spinnerScale})`,
+          transition: refreshing ? "none" : "transform 0.1s linear",
         }}
       >
         <span

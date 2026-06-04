@@ -41,6 +41,53 @@ const HORIZONTAL_TOLERANCE = 1.2;
 // CSS transition applied to content on release (snap-back or settle).
 const SNAP_TRANSITION = "transform 0.28s cubic-bezier(0.25, 0.46, 0.45, 0.94)";
 
+// A single cog (Material "settings" gear) for the gear-powered indicator.
+const GEAR_PATH =
+  "M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94L14.4 2.81c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41L9.25 5.35C8.66 5.59 8.12 5.92 7.63 6.29L5.24 5.33c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z";
+
+/** One rotating cog. Rotates proportionally to the pull, or spins while refreshing. */
+function Gear({
+  px,
+  x,
+  y,
+  color,
+  rotateDeg,
+  spin,
+  durationSec,
+  reverse,
+}: {
+  px: number;
+  x: number;
+  y: number;
+  color: string;
+  rotateDeg: number;
+  spin: boolean;
+  durationSec: number;
+  reverse: boolean;
+}) {
+  return (
+    <svg
+      width={px}
+      height={px}
+      viewBox="0 0 24 24"
+      style={{
+        position: "absolute",
+        left: x,
+        top: y,
+        fill: color,
+        transformOrigin: "center",
+        transform: spin ? undefined : `rotate(${rotateDeg}deg)`,
+        animation: spin
+          ? `${reverse ? "ptr-gear-rev" : "ptr-gear"} ${durationSec}s linear infinite`
+          : undefined,
+        transition: spin ? "none" : "transform 0.06s linear, fill 0.15s ease",
+      }}
+    >
+      <path d={GEAR_PATH} />
+    </svg>
+  );
+}
+
 /**
  * Returns the [data-ptr-content] element that should follow the finger.
  * This is the main page wrapper div in app/layout.tsx.
@@ -50,15 +97,29 @@ function getContentEl(): HTMLElement | null {
   return document.querySelector<HTMLElement>("[data-ptr-content]");
 }
 
+/** The sticky page header(s) — kept visually fixed while the content pulls. */
+function getHeaderEls(): HTMLElement[] {
+  if (typeof document === "undefined") return [];
+  return Array.from(document.querySelectorAll<HTMLElement>(".page-header-border"));
+}
+
 /**
- * Imperatively set / clear the content translateY.
+ * Imperatively set / clear the content translateY, and counter-translate the
+ * sticky header by the opposite amount so it stays fixed while the content
+ * below it pulls down (the indicator is revealed from under the header).
  * `animated` controls whether a CSS transition is applied (true = release/snap).
  */
 function setContentTranslate(px: number, animated: boolean): void {
   const el = getContentEl();
-  if (!el) return;
-  el.style.transition = animated ? SNAP_TRANSITION : "none";
-  el.style.transform = px === 0 ? "" : `translateY(${px}px)`;
+  if (el) {
+    el.style.transition = animated ? SNAP_TRANSITION : "none";
+    el.style.transform = px === 0 ? "" : `translateY(${px}px)`;
+  }
+  for (const h of getHeaderEls()) {
+    h.style.transition = animated ? SNAP_TRANSITION : "none";
+    // Cancel the content's downward shift so the header appears pinned.
+    h.style.transform = px === 0 ? "" : `translateY(${-px}px)`;
+  }
 }
 
 /**
@@ -246,45 +307,60 @@ export default function PullToRefresh() {
         display: "flex",
         justifyContent: "center",
         pointerEvents: "none",
-        zIndex: 1000,
+        // Behind the sticky header (z-index 20) so the indicator is revealed
+        // from *under* the fixed header as the content pulls down.
+        zIndex: 10,
         transform: `translateY(${(refreshing ? PULL_THRESHOLD_PX : offset) - PULL_MAX_PX}px)`,
         // Snap indicator back on release; no transition during live drag.
-        transition: offset === 0 && !refreshing ? "transform 0.28s cubic-bezier(0.25, 0.46, 0.45, 0.94)" : "none",
+        transition: offset === 0 && !refreshing ? SNAP_TRANSITION : "none",
         opacity: visible ? 1 : 0,
       }}
     >
       <div
         role="status"
         style={{
-          marginTop: "calc(env(safe-area-inset-top, 0px) + 12px)",
-          width: 32,
-          height: 32,
+          marginTop: "calc(env(safe-area-inset-top, 0px) + 14px)",
+          width: 46,
+          height: 46,
           borderRadius: "50%",
           background: "var(--paper)",
-          boxShadow: "0 1px 6px rgba(0,0,0,0.15)",
+          boxShadow: "0 2px 12px rgba(0,0,0,0.18)",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
           // Scale the bubble in as the user pulls.
           transform: `scale(${spinnerScale})`,
-          transition: refreshing ? "none" : "transform 0.1s linear",
+          transition: refreshing ? "none" : "transform 0.12s ease-out",
         }}
       >
-        <span
-          style={{
-            display: "block",
-            width: 18,
-            height: 18,
-            borderRadius: "50%",
-            border: "2px solid var(--ink-mute)",
-            borderTopColor: ready || refreshing ? "var(--accent)" : "var(--ink-mute)",
-            // Spin while refreshing; otherwise rotate proportionally to the pull.
-            transform: refreshing ? undefined : `rotate(${progress * 270}deg)`,
-            animation: refreshing ? "ptr-spin 0.7s linear infinite" : undefined,
-          }}
-        />
+        {/* Two meshing gears — turn with the pull, spin (opposite ways) on refresh */}
+        <div style={{ position: "relative", width: 30, height: 28 }}>
+          <Gear
+            px={22}
+            x={0}
+            y={1}
+            color={ready || refreshing ? "var(--accent)" : "var(--ink-mute)"}
+            rotateDeg={progress * 200}
+            spin={refreshing}
+            durationSec={1.1}
+            reverse={false}
+          />
+          <Gear
+            px={15}
+            x={16}
+            y={12}
+            color="var(--ink-mute)"
+            rotateDeg={-progress * 330}
+            spin={refreshing}
+            durationSec={0.7}
+            reverse
+          />
+        </div>
       </div>
-      <style>{`@keyframes ptr-spin { to { transform: rotate(360deg); } }`}</style>
+      <style>{`
+        @keyframes ptr-gear { to { transform: rotate(360deg); } }
+        @keyframes ptr-gear-rev { to { transform: rotate(-360deg); } }
+      `}</style>
     </div>
   );
 }

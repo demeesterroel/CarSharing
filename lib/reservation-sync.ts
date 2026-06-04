@@ -2,6 +2,11 @@
 import type Database from "better-sqlite3";
 import { getSetting } from "@/lib/queries/settings";
 import * as cal from "@/lib/google-calendar";
+import { logSync } from "@/lib/calendar-sync-log";
+
+function errMessage(e: unknown): string {
+  return e instanceof Error ? e.message : String(e);
+}
 
 interface ReservationRow {
   id: number;
@@ -57,8 +62,22 @@ export async function syncReservationCreate(db: Database.Database, id: number): 
     db.prepare(
       "UPDATE reservations SET google_event_id=?, last_synced_etag=?, last_app_write_nonce=? WHERE id=?"
     ).run(eventId, etag, nonce, id);
+    logSync(db, {
+      direction: "outbound",
+      action: "create",
+      reservationId: id,
+      googleEventId: eventId,
+      detail: { start: r.start_date, end: r.end_date, status: r.status, ownerEmail: r.owner_email, nonce },
+    });
   } catch (e) {
     console.error("[calendar-sync] createEvent failed", e);
+    logSync(db, {
+      direction: "outbound",
+      action: "create",
+      reservationId: id,
+      ok: false,
+      detail: { message: errMessage(e) },
+    });
   }
 }
 
@@ -82,8 +101,23 @@ export async function syncReservationUpdate(db: Database.Database, id: number): 
       nonce,
       id
     );
+    logSync(db, {
+      direction: "outbound",
+      action: "update",
+      reservationId: id,
+      googleEventId: r.google_event_id,
+      detail: { start: r.start_date, end: r.end_date, status: r.status, nonce },
+    });
   } catch (e) {
     console.error("[calendar-sync] updateEvent failed", e);
+    logSync(db, {
+      direction: "outbound",
+      action: "update",
+      reservationId: id,
+      googleEventId: r.google_event_id,
+      ok: false,
+      detail: { message: errMessage(e) },
+    });
   }
 }
 
@@ -97,7 +131,21 @@ export async function syncReservationDelete(db: Database.Database, id: number): 
     db.prepare(
       "UPDATE reservations SET google_event_id=NULL, last_synced_etag=NULL, last_app_write_nonce=NULL, last_known_response_status=NULL WHERE id=?"
     ).run(id);
+    logSync(db, {
+      direction: "outbound",
+      action: "delete",
+      reservationId: id,
+      googleEventId: r.google_event_id,
+    });
   } catch (e) {
     console.error("[calendar-sync] deleteEvent failed", e);
+    logSync(db, {
+      direction: "outbound",
+      action: "delete",
+      reservationId: id,
+      googleEventId: r.google_event_id,
+      ok: false,
+      detail: { message: errMessage(e) },
+    });
   }
 }

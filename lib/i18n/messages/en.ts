@@ -584,6 +584,7 @@ export const en: Messages = {
     "✗ Read-only access — the app cannot create events. Change the sharing permission to 'Make changes to events'.",
   "settings.test_fail": "✗ Unexpected error: {error}",
   "settings.backfill": "Sync upcoming reservations",
+  "settings.view_sync_log": "View sync log",
 
   // Admin members
   "admin.members_title": "Members",

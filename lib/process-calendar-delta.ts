@@ -3,6 +3,7 @@ import type Database from "better-sqlite3";
 import type { OAuth2Client } from "google-auth-library";
 import { addDays, updateEvent } from "@/lib/google-calendar";
 import type { CalendarEvent } from "@/lib/google-calendar";
+import { logSync } from "@/lib/calendar-sync-log";
 
 interface ReservationRowForDelta {
   id: number;
@@ -48,13 +49,30 @@ export async function processCalendarDelta(
     // Etag is the primary guard. Nonce is a fallback for the rare case where Google
     // returns a delta without an etag — using nonce as primary would suppress external
     // RSVP changes because Google preserves extendedProperties through user edits.
-    if (event.etag != null && event.etag === row.last_synced_etag) continue;
+    if (event.etag != null && event.etag === row.last_synced_etag) {
+      logSync(db, {
+        direction: "inbound",
+        action: "echo-skip",
+        reservationId: row.id,
+        googleEventId: event.id,
+        detail: { reason: "etag", etag: event.etag },
+      });
+      continue;
+    }
     if (
       event.etag == null &&
       event.extendedProperties?.private?.appWriteNonce != null &&
       event.extendedProperties.private.appWriteNonce === row.last_app_write_nonce
-    )
+    ) {
+      logSync(db, {
+        direction: "inbound",
+        action: "echo-skip",
+        reservationId: row.id,
+        googleEventId: event.id,
+        detail: { reason: "nonce" },
+      });
       continue;
+    }
 
     // Time-edit guard — app is authoritative for event times
     // Skip time check for cancelled events (start/end may be absent)
@@ -83,8 +101,29 @@ export async function processCalendarDelta(
         db.prepare(
           "UPDATE reservations SET last_synced_etag=?, last_app_write_nonce=? WHERE id=?"
         ).run(etag, nonce, row.id);
+        logSync(db, {
+          direction: "outbound",
+          action: "time-overwrite",
+          reservationId: row.id,
+          googleEventId: event.id,
+          detail: {
+            eventStart: event.start?.date,
+            eventEnd: event.end?.date,
+            rowStart: row.start_date,
+            rowEnd: expectedEnd,
+            nonce,
+          },
+        });
       } catch (e) {
         console.error("[calendar-delta] overwrite time edit failed", e);
+        logSync(db, {
+          direction: "outbound",
+          action: "time-overwrite",
+          reservationId: row.id,
+          googleEventId: event.id,
+          ok: false,
+          detail: { message: e instanceof Error ? e.message : String(e) },
+        });
       }
       continue;
     }
@@ -109,6 +148,18 @@ export async function processCalendarDelta(
       db.prepare(
         "UPDATE reservations SET status=COALESCE(?, status), last_known_response_status=?, last_synced_etag=? WHERE id=?"
       ).run(newStatus, newResponseStatus, event.etag ?? null, row.id);
+      logSync(db, {
+        direction: "inbound",
+        action: "rsvp",
+        reservationId: row.id,
+        googleEventId: event.id,
+        detail: {
+          from: row.last_known_response_status,
+          to: newResponseStatus,
+          newStatus,
+          eventStatus: event.status,
+        },
+      });
     }
   }
 }

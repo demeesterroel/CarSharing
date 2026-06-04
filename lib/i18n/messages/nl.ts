@@ -117,6 +117,7 @@ export const nl = {
   "form.location_placeholder": "Klik op kaart of gebruik GPS",
   "form.receipt": "Bonnetje",
   "form.receipt_add": "Bonnetje toevoegen",
+  "form.receipt_replace": "Bonnetje vervangen",
   "form.description": "Omschrijving",
   "form.description_placeholder": "bv. Verkeersbelasting",
   "form.note": "Opmerking",

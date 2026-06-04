@@ -43,6 +43,7 @@ describe("migration 0004 — car owner era", () => {
       INSERT INTO _migrations (filename) VALUES ('0020_date_indexes.sql');
       INSERT INTO _migrations (filename) VALUES ('0021_people_session_epoch.sql');
       INSERT INTO _migrations (filename) VALUES ('0022_invite_tokens_purpose.sql');
+      INSERT INTO _migrations (filename) VALUES ('0023_expenses_receipt.sql');
     `);
     runMigrations(db2);
     const car = db2.prepare("SELECT owner_from FROM cars WHERE short = 'XX'").get() as {

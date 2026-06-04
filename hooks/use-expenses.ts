@@ -46,6 +46,7 @@ export function useCreateExpense() {
         amount: input.amount,
         description: input.description ?? null,
         category: input.category ?? null,
+        receipt: input.receipt ?? null,
         settled_outside: input.settled_outside ?? 0,
         updated_at: new Date().toISOString(),
       };

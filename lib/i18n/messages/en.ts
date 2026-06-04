@@ -118,6 +118,7 @@ export const en: Messages = {
   "form.location_placeholder": "Click on map or use GPS",
   "form.receipt": "Receipt",
   "form.receipt_add": "Add receipt",
+  "form.receipt_replace": "Replace receipt",
   "form.description": "Description",
   "form.description_placeholder": "e.g. Road tax",
   "form.note": "Note",

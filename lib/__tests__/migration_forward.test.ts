@@ -41,6 +41,7 @@ const ALL_MIGRATIONS = [
   "0020_date_indexes.sql",
   "0021_people_session_epoch.sql",
   "0022_invite_tokens_purpose.sql",
+  "0023_expenses_receipt.sql",
 ];
 
 const LATER_MIGRATIONS = ALL_MIGRATIONS.slice(10); // 0011–0022
@@ -102,9 +103,12 @@ describe("forward migration — 0001–0010 → 0011–0022", () => {
     ).run(1, 1, "2024-06-05", 60.0, 40.0, 1.5);
 
     // Seed a payment
-    db.prepare(
-      "INSERT INTO payments (person_id, date, amount, year) VALUES (?,?,?,?)"
-    ).run(1, "2024-12-31", 500.0, 2024);
+    db.prepare("INSERT INTO payments (person_id, date, amount, year) VALUES (?,?,?,?)").run(
+      1,
+      "2024-12-31",
+      500.0,
+      2024
+    );
 
     // Now remove the fake _migrations entries so the real 0011–0022 execute.
     for (const f of LATER_MIGRATIONS) {
@@ -129,9 +133,10 @@ describe("forward migration — 0001–0010 → 0011–0022", () => {
     expect(person.bank_account).toBe("BE00000000000001");
 
     // Bob: single name → first_name='Bob', last_name=''
-    const bob = db
-      .prepare("SELECT first_name, last_name FROM people WHERE id = 2")
-      .get() as { first_name: string; last_name: string };
+    const bob = db.prepare("SELECT first_name, last_name FROM people WHERE id = 2").get() as {
+      first_name: string;
+      last_name: string;
+    };
     expect(bob.first_name).toBe("Bob");
     expect(bob.last_name).toBe("");
 
@@ -140,23 +145,23 @@ describe("forward migration — 0001–0010 → 0011–0022", () => {
     expect(peopleCols.map((c) => c.name)).not.toContain("name");
 
     // (b) email defaults to NULL (migration 0011)
-    const emailRow = db
-      .prepare("SELECT email FROM people WHERE id = 1")
-      .get() as { email: string | null };
+    const emailRow = db.prepare("SELECT email FROM people WHERE id = 1").get() as {
+      email: string | null;
+    };
     expect(emailRow.email).toBeNull();
 
     // (b) theme_preference defaulted to 'paper' (0018), then updated to 'mono' (0019)
     // Rows that existed BEFORE 0018 had no theme_preference column; after 0018 they get
     // the column default 'paper'. 0019 then updates all 'paper' → 'mono'.
-    const themeRow = db
-      .prepare("SELECT theme_preference FROM people WHERE id = 1")
-      .get() as { theme_preference: string };
+    const themeRow = db.prepare("SELECT theme_preference FROM people WHERE id = 1").get() as {
+      theme_preference: string;
+    };
     expect(themeRow.theme_preference).toBe("mono");
 
     // (b) session_epoch defaults to 0 (migration 0021)
-    const epochRow = db
-      .prepare("SELECT session_epoch FROM people WHERE id = 1")
-      .get() as { session_epoch: number };
+    const epochRow = db.prepare("SELECT session_epoch FROM people WHERE id = 1").get() as {
+      session_epoch: number;
+    };
     expect(epochRow.session_epoch).toBe(0);
 
     // Seeded trip survived
@@ -194,7 +199,7 @@ describe("forward migration — 0001–0010 → 0011–0022", () => {
       .prepare("SELECT filename FROM _migrations ORDER BY filename")
       .pluck()
       .all() as string[];
-    expect(applied).toHaveLength(22);
+    expect(applied).toHaveLength(23);
     for (const f of ALL_MIGRATIONS) {
       expect(applied).toContain(f);
     }
@@ -205,6 +210,6 @@ describe("forward migration — 0001–0010 → 0011–0022", () => {
       .prepare("SELECT filename FROM _migrations ORDER BY filename")
       .pluck()
       .all() as string[];
-    expect(appliedAfter).toHaveLength(22);
+    expect(appliedAfter).toHaveLength(23);
   });
 });

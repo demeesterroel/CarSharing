@@ -19,7 +19,9 @@ function makeDb() {
 }
 
 function seed(db: Database.Database) {
-  db.exec(`INSERT INTO people (id, first_name, last_name, active) VALUES (1, 'Alice', 'Owner', 1), (2, 'Bob', 'Member', 1)`);
+  db.exec(
+    `INSERT INTO people (id, first_name, last_name, active) VALUES (1, 'Alice', 'Owner', 1), (2, 'Bob', 'Member', 1)`
+  );
   db.exec(
     `INSERT INTO cars (id, short, name, price_per_km, owner_person_id, owner_from, active) VALUES (1, 'CA', 'Car A', 0.2, 1, '2020-01-01', 1)`
   );
@@ -163,6 +165,33 @@ describe("insertExpense", () => {
     expect(getExpenses(db)).toHaveLength(1);
   });
 
+  it("stores receipt when provided", () => {
+    const db = makeDb();
+    seed(db);
+    const id = insertExpense(db, {
+      person_id: 1,
+      car_id: 1,
+      date: "2026-01-01",
+      amount: 100,
+      description: "Insurance",
+      receipt: "/uploads/receipt.jpg",
+    });
+    expect(getExpenseById(db, id)?.receipt).toBe("/uploads/receipt.jpg");
+  });
+
+  it("stores null receipt when not provided", () => {
+    const db = makeDb();
+    seed(db);
+    const id = insertExpense(db, {
+      person_id: 1,
+      car_id: 1,
+      date: "2026-01-01",
+      amount: 40,
+      description: "No receipt",
+    });
+    expect(getExpenseById(db, id)?.receipt).toBeNull();
+  });
+
   it("stores null description when not provided", () => {
     const db = makeDb();
     seed(db);
@@ -196,6 +225,7 @@ describe("updateExpense", () => {
       amount: 99,
       description: "New description",
       category: "onderhoud",
+      receipt: "/uploads/new-receipt.jpg",
       settled_outside: 1,
     });
     const expense = getExpenseById(db, id);
@@ -204,6 +234,7 @@ describe("updateExpense", () => {
     expect(expense?.amount).toBe(99);
     expect(expense?.description).toBe("New description");
     expect(expense?.category).toBe("onderhoud");
+    expect(expense?.receipt).toBe("/uploads/new-receipt.jpg");
     expect(expense?.settled_outside).toBe(1);
   });
 

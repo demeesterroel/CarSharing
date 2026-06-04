@@ -36,16 +36,22 @@ interface ReservationShape {
   person_name?: string | null;
 }
 
-function buildEventBody(r: ReservationShape, nonce: string, ownerEmail?: string): object {
+export function buildEventBody(r: ReservationShape, nonce: string, ownerEmail?: string): object {
   const calStatus =
     r.status === "confirmed" ? "confirmed" : r.status === "rejected" ? "cancelled" : "tentative";
+  // While a reservation is pending, the owner is invited as an attendee so they
+  // can accept/decline from their own calendar. Once confirmed, the decision is
+  // made — drop the owner attendee so the event leaves their personal calendar
+  // and stops showing "1 guest, awaiting reply" (#337). An empty array (not
+  // undefined) is required for events.update to actually clear an attendee.
+  const attendees = ownerEmail && calStatus !== "confirmed" ? [{ email: ownerEmail }] : [];
   return {
     summary: r.car_short ? `[${r.car_short}] ${r.person_name ?? ""}` : "Reservering",
     description: r.note ?? undefined,
     start: { date: r.start_date },
     end: { date: addDays(r.end_date, 1) },
     status: calStatus,
-    attendees: ownerEmail ? [{ email: ownerEmail }] : undefined,
+    attendees,
     extendedProperties: { private: { appWriteNonce: nonce } },
   };
 }

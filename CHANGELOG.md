@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.19.4](https://github.com/demeesterroel/CarSharing/compare/v1.19.3...v1.19.4) (2026-06-05)
+
+
+### 🐛 Bug fixes
+
+* **reservations:** editing re-opens for approval; clear stale GCal RSVP ([#2](https://github.com/demeesterroel/CarSharing/issues/2)) ([#354](https://github.com/demeesterroel/CarSharing/issues/354)) ([a988d2e](https://github.com/demeesterroel/CarSharing/commit/a988d2e0d15b193c2fcac357faba8145de2bc151))
+
 ## [1.19.3](https://github.com/demeesterroel/CarSharing/compare/v1.19.2...v1.19.3) (2026-06-04)
 
 

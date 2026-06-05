@@ -129,6 +129,7 @@ export const en: Messages = {
   "form.driver_locked_hint": "Your name — only admins can log on behalf of others",
   "form.read_only": "Read-only",
   "form.read_only_hint": "Read-only — you cannot edit this",
+  "form.edit_reopens_hint": "Editing re-opens this for approval — it goes back to pending and the owner is re-invited.",
   "form.pick_dates_first": "Pick a period first",
   "form.fill_required": "Fill in required fields",
   "field.car": "car",

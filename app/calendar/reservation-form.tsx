@@ -91,6 +91,12 @@ export function ReservationForm({ defaultValues, onSubmit, onCancel, readOnly = 
   const isAdmin = me?.isAdmin ?? false;
   const today = new Date().toISOString().slice(0, 10);
 
+  // Editing a decided reservation re-opens it for approval (→ pending): the
+  // calendar event reverts to tentative and the owner is re-invited. Warn so the
+  // revert isn't a surprise. (#2)
+  const reopensForApproval =
+    Boolean(defaultValues?.id) && (defaultValues?.status ?? "pending") !== "pending";
+
   const { register, handleSubmit, control, setValue, getValues } = useForm<
     FormInput,
     unknown,
@@ -325,6 +331,23 @@ export function ReservationForm({ defaultValues, onSubmit, onCancel, readOnly = 
             }}
           >
             🔒 {t("form.read_only_hint")}
+          </div>
+        )}
+        {!readOnly && reopensForApproval && (
+          <div
+            style={{
+              padding: "8px 14px",
+              fontFamily: fontMono,
+              fontSize: 9,
+              fontWeight: 700,
+              letterSpacing: 1,
+              color: paper.amber,
+              borderBottom: mono
+                ? `1px solid ${paper.paperDark}`
+                : `1.5px dashed ${paper.paperDark}`,
+            }}
+          >
+            ⚠ {t("form.edit_reopens_hint")}
           </div>
         )}
 

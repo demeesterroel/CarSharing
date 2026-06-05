@@ -77,17 +77,18 @@ export function updateReservation(
       throw new ConflictError("Reservation was modified after this offline edit");
     }
   }
+  const status = input.status ?? "pending";
   db.prepare(
     "UPDATE reservations SET person_id=?,car_id=?,start_date=?,end_date=?,status=?,note=? WHERE id=?"
-  ).run(
-    input.person_id,
-    input.car_id,
-    input.start_date,
-    input.end_date,
-    input.status ?? "pending",
-    input.note ?? null,
-    id
-  );
+  ).run(input.person_id, input.car_id, input.start_date, input.end_date, status, input.note ?? null, id);
+
+  // Editing re-opens a reservation for approval (status → pending). Clear any
+  // stale Google Calendar RSVP so a fresh owner accept/decline on the re-issued
+  // invite is detected again (otherwise "accepted" would still equal the last
+  // known value and the re-accept would be ignored). (#2)
+  if (status === "pending") {
+    db.prepare("UPDATE reservations SET last_known_response_status=NULL WHERE id=?").run(id);
+  }
 }
 
 export function updateReservationStatus(db: Database.Database, id: number, status: string): void {

@@ -198,6 +198,38 @@ describe("updateReservation", () => {
     expect(res?.note).toBe("Updated note");
   });
 
+  it("resets a confirmed reservation to pending when edited without a status (#2)", () => {
+    // The reservation edit form submits car/date/driver/note but no status, so
+    // editing any reservation re-opens it for approval: a confirmed booking
+    // reverts to pending (→ event becomes tentative + owner re-invited).
+    const db = makeDb();
+    seed(db);
+    const id = insertReservation(db, {
+      person_id: 1,
+      car_id: 1,
+      start_date: "2026-06-01",
+      end_date: "2026-06-03",
+      status: "confirmed",
+    });
+    // Simulate a prior GCal accept that confirmed it.
+    db.prepare("UPDATE reservations SET last_known_response_status='accepted' WHERE id=?").run(id);
+    expect(getReservationById(db, id)?.status).toBe("confirmed");
+
+    updateReservation(db, id, {
+      person_id: 1,
+      car_id: 1,
+      start_date: "2026-06-05",
+      end_date: "2026-06-07",
+      // no status field — mirrors the edit form payload
+    });
+    const after = db
+      .prepare("SELECT status, last_known_response_status FROM reservations WHERE id=?")
+      .get(id) as { status: string; last_known_response_status: string | null };
+    expect(after.status).toBe("pending");
+    // Stale RSVP cleared so a re-accept in GCal is detected again.
+    expect(after.last_known_response_status).toBeNull();
+  });
+
   it("with expectedUpdatedAt: succeeds when timestamp matches", () => {
     const db = makeDb();
     seed(db);

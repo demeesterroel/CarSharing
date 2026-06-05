@@ -128,6 +128,7 @@ export const nl = {
   "form.driver_locked_hint": "Jouw naam — enkel admins kunnen voor anderen loggen",
   "form.read_only": "Alleen-lezen",
   "form.read_only_hint": "Alleen-lezen — je kan dit niet bewerken",
+  "form.edit_reopens_hint": "Bewerken heropent de aanvraag — ze gaat terug naar 'in afwachting' en de eigenaar wordt opnieuw uitgenodigd.",
   "form.pick_dates_first": "Kies eerst een periode",
   "form.fill_required": "Vul verplichte velden in",
   "field.car": "wagen",

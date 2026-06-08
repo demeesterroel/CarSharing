@@ -154,3 +154,53 @@ test.describe("members add via FAB", () => {
     });
   });
 });
+
+test.describe("members invite link", () => {
+  test("invite link activates on username entry and persists before inviting", async ({
+    page,
+  }) => {
+    const firstName = `E2EInvite${Date.now()}`;
+    const lastName = "Member";
+
+    // Create a member WITHOUT a username via the admin API.
+    const session = await loginAndGetSession(page.request, "admin", "admin");
+    const api = makeApi(page.request, session.csrf);
+    const { id } = await api.post<{ id: number }>("/api/people", {
+      first_name: firstName,
+      last_name: lastName,
+      discount: 0,
+      discount_long: 0,
+      active: 1,
+      bank_account: "",
+    });
+
+    await page.goto("/admin/members");
+    await page.waitForLoadState("networkidle");
+    await scrollToLoadAll(page);
+
+    // Expand the member's row (fullNameOf uppercases the last name).
+    await page.getByText(`${firstName} ${lastName.toUpperCase()}`, { exact: true }).click();
+
+    // No saved username yet → invite button disabled.
+    const inviteBtn = page.getByRole("button", { name: "Kopieer uitnodigingslink" });
+    await expect(inviteBtn).toBeDisabled();
+
+    // Typing a username enables the invite button (even before saving).
+    const newUsername = `e2elogin${Date.now()}`;
+    await page.getByPlaceholder("Nog geen login").fill(newUsername);
+    await expect(inviteBtn).toBeEnabled();
+
+    // Clicking saves the form first (persisting the username), then invites.
+    await inviteBtn.click();
+
+    // The username is persisted as a direct result of the click — proving the
+    // save-before-invite behaviour (the invite endpoint 400s otherwise). Poll
+    // because the save fires asynchronously from the click handler.
+    await expect
+      .poll(
+        async () => (await api.get<{ username: string | null }>(`/api/people/${id}`)).username,
+        { timeout: 10_000 }
+      )
+      .toBe(newUsername);
+  });
+});

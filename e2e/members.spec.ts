@@ -10,7 +10,7 @@ import { loginAndGetSession, loginAndGetCsrf, makeApi, scrollToLoadAll } from ".
  * - Admin creates a person via API in beforeEach with a unique per-test name
  *   (timestamp suffix) so tests that run sequentially never see each other's
  *   rows in the people list.
- * - Deactivate via PUT (active=0), verify absence from /people list.
+ * - Deactivate via PUT (active=0), verify presence in the inactive section on /admin/members.
  * - Reactivate in afterEach (active=1) to avoid low-contrast a11y failures on
  *   /admin/members.  No DELETE endpoint exists, so the row remains — but
  *   globalSetup reseeds data/e2e.db before every run, so no row accumulates
@@ -36,7 +36,7 @@ test.describe("members deactivate", () => {
   let api: ReturnType<typeof makeApi>;
   let personId: number;
   let personData: ReturnType<typeof buildPersonData>;
-  // Unique suffix per test so the /people list can identify this specific row.
+  // Unique suffix per test so the /admin/members list can identify this specific row.
   let uniqueFirstName: string;
 
   function buildPersonData(firstName: string) {
@@ -51,8 +51,8 @@ test.describe("members deactivate", () => {
   }
 
   test.beforeEach(async ({ request }, testInfo) => {
-    // Make the name unique per test (index + title hash) so the /people list
-    // never shows a sibling test's member when we assert HaveCount(0).
+    // Make the name unique per test (index + title hash) so the /admin/members list
+    // never shows a sibling test's member when we assert visibility.
     uniqueFirstName = `${FIRST_NAME_PREFIX}${testInfo.workerIndex}${Date.now()}`;
 
     const session = await loginAndGetSession(request, "admin", "admin");
@@ -80,20 +80,20 @@ test.describe("members deactivate", () => {
     }
   });
 
-  test("new member appears in the people list", async ({ page }) => {
+  test("new member appears in the admin members list", async ({ page }) => {
     await page.request.post("/api/auth/login", {
       data: { username: "admin", password: "admin" },
     });
 
-    await page.goto("/people");
+    await page.goto("/admin/members");
     await page.waitForLoadState("networkidle");
     await scrollToLoadAll(page);
 
     await expect(page.locator(`text=${uniqueFirstName}`).first()).toBeVisible({ timeout: 10_000 });
   });
 
-  test("deactivated member no longer appears in people list", async ({ page }) => {
-    // Deactivate via API
+  test("deactivated member shows in the inactive section on admin members", async ({ page }) => {
+    // Deactivate via API.
     await api.put<{ ok: boolean }>(`/api/people/${personId}`, {
       ...personData,
       active: 0,
@@ -103,13 +103,14 @@ test.describe("members deactivate", () => {
       data: { username: "admin", password: "admin" },
     });
 
-    await page.goto("/people");
+    await page.goto("/admin/members");
     await page.waitForLoadState("networkidle");
     await scrollToLoadAll(page);
 
-    // Active members list should not show the deactivated test member.
-    // The unique name guarantees no other test's member matches this assertion.
-    await expect(page.getByText(`${uniqueFirstName} ${LAST_NAME}`, { exact: true })).toHaveCount(0);
+    // The inactive ("Anderen") section is shown and the member is listed under it.
+    // fullNameOf() uppercases the last name, so match accordingly.
+    await expect(page.getByText("Anderen", { exact: true })).toBeVisible({ timeout: 10_000 });
+    await expect(page.getByText(`${uniqueFirstName} ${LAST_NAME.toUpperCase()}`, { exact: true })).toBeVisible();
   });
 
   test("deactivated member still retrievable via API", async () => {

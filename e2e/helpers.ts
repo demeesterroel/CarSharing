@@ -44,16 +44,19 @@ export async function loginAndGetSession(
   }
 
   const meRes = await request.get("/api/me");
-  const meBody = await meRes.json() as { personId?: number | null };
-  const cookies = await meRes.headersArray();
-  for (const h of cookies) {
-    if (h.name.toLowerCase() === "set-cookie") {
-      const m = h.value.match(/csrf-token=([^;]+)/);
-      if (m) return { csrf: decodeURIComponent(m[1]), personId: meBody.personId ?? null };
-    }
-  }
+  const meBody = (await meRes.json()) as { personId?: number | null };
 
-  throw new Error("csrf-token cookie not found after login + /api/me");
+  // Read the csrf-token from the context cookie jar, not the /api/me Set-Cookie
+  // header. /api/me only emits that header when the cookie is absent (#333 — it
+  // must not rotate the token mid-session), so a context that already has one
+  // (e.g. a second login as a different user within the same test) would
+  // otherwise spuriously fail with "csrf-token cookie not found".
+  const { cookies } = await request.storageState();
+  const csrf = cookies.find((c) => c.name === "csrf-token")?.value;
+  if (!csrf) {
+    throw new Error("csrf-token cookie not found after login + /api/me");
+  }
+  return { csrf, personId: meBody.personId ?? null };
 }
 
 /**

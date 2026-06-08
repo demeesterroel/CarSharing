@@ -2,6 +2,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getDb } from "@/lib/db";
 import { env } from "@/lib/env";
+import { resolveBaseUrl } from "@/lib/base-url";
 import { handleCalendarRenew } from "@/lib/calendar-renew";
 
 export async function GET(req: NextRequest): Promise<NextResponse> {
@@ -10,7 +11,7 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const baseUrl = env.NEXT_PUBLIC_BASE_URL ?? new URL(req.url).origin;
+  const baseUrl = resolveBaseUrl(req);
   try {
     const result = await handleCalendarRenew(getDb(), baseUrl);
     return NextResponse.json(result);

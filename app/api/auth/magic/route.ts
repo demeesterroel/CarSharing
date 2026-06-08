@@ -4,7 +4,7 @@ import { randomBytes } from "crypto";
 import { getDb } from "@/lib/db";
 import { getPersonByEmail, createAuthToken } from "@/lib/queries/people";
 import { sendMail } from "@/lib/mailer";
-import { env } from "@/lib/env";
+import { resolveBaseUrl } from "@/lib/base-url";
 import { checkRateLimit } from "@/lib/rate-limit";
 
 const Schema = z.object({ email: z.string().email() });
@@ -36,7 +36,7 @@ export async function POST(req: Request) {
     const token = randomBytes(24).toString("hex");
     const expiresAt = new Date(Date.now() + 15 * 60 * 1000).toISOString(); // 15 min
     createAuthToken(db, person.id, token, expiresAt, "magic");
-    const baseUrl = env.NEXT_PUBLIC_BASE_URL ?? new URL(req.url).origin;
+    const baseUrl = resolveBaseUrl(req);
     const url = `${baseUrl}/api/auth/magic/${token}`;
     await sendMail({
       to: email,

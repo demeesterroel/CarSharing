@@ -62,8 +62,12 @@ export async function GET(req: Request) {
   // cookie's epoch is stale, destroy it and report as logged out.
   if (session.epoch !== undefined && session.personId !== undefined) {
     if (getSessionEpoch(getDb(), session.personId) !== session.epoch) {
+      // Persist the destroy to the bound response (`out`) — returning a fresh
+      // NextResponse would drop the cleared-cookie header, leaving the client a
+      // "valid" cookie that the Edge proxy keeps treating as authenticated (#284).
       session.destroy();
-      return withCsrfCookie(req, NextResponse.json(null));
+      await session.save();
+      return withCsrfCookie(req, out);
     }
   }
 

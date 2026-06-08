@@ -143,6 +143,9 @@ describe("GET /api/me", () => {
     const body = await res.json();
     expect(body).toBeNull();
     expect(mockSession.destroy).toHaveBeenCalledOnce();
+    // The destroyed cookie must actually be persisted to the response, or the
+    // client keeps a "valid" cookie and the Edge proxy never logs it out (#284).
+    expect(mockSession.save).toHaveBeenCalledOnce();
   });
 
   it("returns identity when epoch matches", async () => {

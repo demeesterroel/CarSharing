@@ -123,3 +123,33 @@ test.describe("members deactivate", () => {
     expect(person.first_name).toBe(uniqueFirstName);
   });
 });
+
+test.describe("members add via FAB", () => {
+  test("admin creates a member from the /admin/members FAB", async ({ page }) => {
+    const firstName = `E2EFab${Date.now()}`;
+    const lastName = "Member";
+
+    // Authenticate the page context.
+    await page.request.post("/api/auth/login", {
+      data: { username: "admin", password: "admin" },
+    });
+
+    await page.goto("/admin/members");
+    await page.waitForLoadState("networkidle");
+
+    // Open the add-member sheet via the FAB (nl aria-label).
+    await page.getByRole("button", { name: "Persoon toevoegen" }).click();
+
+    // Fill the form (inputs targeted by name attribute — locale-independent).
+    await page.locator('input[name="first_name"]').fill(firstName);
+    await page.locator('input[name="last_name"]').fill(lastName);
+
+    // Submit.
+    await page.locator('button[type="submit"]').click();
+
+    // New member appears in the active list.
+    await expect(page.getByText(`${firstName} ${lastName}`).first()).toBeVisible({
+      timeout: 10_000,
+    });
+  });
+});

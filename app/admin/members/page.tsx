@@ -12,6 +12,10 @@ import { usePeople } from "../_shared";
 import { toast } from "sonner";
 import { apiFetch } from "@/lib/api/client";
 import { fullNameOf } from "@/lib/person-utils";
+import { Fab } from "@/components/fab";
+import { ModalSheet } from "@/components/modal-sheet";
+import { useCreatePerson } from "@/hooks/use-people";
+import { MemberForm } from "./member-form";
 
 // ── Person Row (accordion) ────────────────────────────────────
 function PersonRow({
@@ -519,6 +523,8 @@ export default function AdminLedenPage() {
   const router = useRouter();
   const [expanded, setExpanded] = useState<number | null>(null);
   const [savingId, setSavingId] = useState<number | null>(null);
+  const [adding, setAdding] = useState(false);
+  const createPerson = useCreatePerson();
 
   useEffect(() => {
     if (me && !me.isAdmin) router.replace("/admin");
@@ -631,6 +637,45 @@ export default function AdminLedenPage() {
           ))}
         </>
       )}
+      <ModalSheet open={adding} onClose={() => setAdding(false)} title={t("page.person_add")}>
+        <div
+          style={{
+            padding: "16px 20px 0",
+            fontFamily: fontSerif,
+            fontSize: 20,
+            fontWeight: 700,
+            color: paper.ink,
+          }}
+        >
+          {t("page.person_add")}
+        </div>
+        <MemberForm
+          onSubmit={(data) => {
+            createPerson.mutate(
+              {
+                ...data,
+                last_name: data.last_name ?? "",
+                username: null,
+                password_hash: null,
+                is_admin: 0,
+                bank_account: "",
+                email: null,
+                theme_preference: "mono",
+                updated_at: "",
+              },
+              {
+                onSuccess: () => {
+                  setAdding(false);
+                  toast.success(t("toast.person_added"));
+                },
+                onError: (e) => toast.error(e.message),
+              }
+            );
+          }}
+          onCancel={() => setAdding(false)}
+        />
+      </ModalSheet>
+      <Fab onClick={() => setAdding(true)} label={t("page.person_add")} />
     </div>
   );
 }

@@ -41,4 +41,30 @@ test.describe("cloak owner access (#179)", () => {
 
     await ctx.close();
   });
+
+  test("admin cloaked as a non-owner member is kept out of the owner/admin area", async ({
+    browser,
+  }) => {
+    const ctx = await browser.newContext({ baseURL });
+    const page = await ctx.newPage();
+
+    const session = await loginAndGetSession(page.request, "admin", "admin");
+    const api = makeApi(page.request, session.csrf);
+
+    // Pick a non-admin member who owns no car — they have no admin area at all.
+    const people = await api.get<Array<{ id: number; is_admin: number }>>("/api/people");
+    const cars = await api.get<Array<{ owner_person_id: number }>>("/api/vehicles");
+    const ownerIds = new Set(cars.map((c) => c.owner_person_id));
+    const member = people.find((p) => p.is_admin === 0 && !ownerIds.has(p.id));
+    test.skip(!member, "Seed has no non-admin non-owner member");
+
+    await api.post("/api/auth/cloak", { personId: member!.id });
+
+    // Owner/admin pages must be off-limits to a cloaked plain member — including
+    // /admin/settlement, which today renders its chrome instead of bouncing.
+    await page.goto("/admin/settlement");
+    await page.waitForURL((u) => new URL(u).pathname === "/", { timeout: 15_000 });
+
+    await ctx.close();
+  });
 });

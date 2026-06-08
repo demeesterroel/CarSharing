@@ -152,6 +152,14 @@ const EXPENSE_DESCRIPTIONS: Record<string, string[]> = {
 
 console.log("Seeding people...");
 
+// Purge leftover automated-test members that earlier runs may have written into
+// this DB (e.g. the E2E* fixtures from the Playwright suite). They are never part
+// of the demo set, carry no trips/fuel/expenses/payments, and — being created in
+// triplicate — collide on shortName, which trips the settlement annotation
+// warning. Username-less E2E rows are unambiguously test debris; drop them so
+// reseeds stay clean.
+db.prepare("DELETE FROM people WHERE first_name LIKE 'E2E%' AND username IS NULL").run();
+
 const insertPerson = db.prepare(`
   INSERT OR IGNORE INTO people
     (first_name, last_name, username, password_hash, is_admin, discount, discount_long, bank_account, email, active)

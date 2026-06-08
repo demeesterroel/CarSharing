@@ -12,6 +12,10 @@ import { usePeople } from "../_shared";
 import { toast } from "sonner";
 import { apiFetch } from "@/lib/api/client";
 import { fullNameOf } from "@/lib/person-utils";
+import { Fab } from "@/components/fab";
+import { ModalSheet } from "@/components/modal-sheet";
+import { useCreatePerson } from "@/hooks/use-people";
+import { MemberForm } from "./member-form";
 
 // ── Person Row (accordion) ────────────────────────────────────
 function PersonRow({
@@ -33,12 +37,10 @@ function PersonRow({
 }) {
   const t = useT();
   const { data: me } = useMe();
+  const qc = useQueryClient();
   // Send the invite by email when a mail transport is configured AND this member
   // has an email; otherwise fall back to copying the link to the clipboard.
   const canSendInvite = Boolean(me?.mailEnabled && person.email);
-  // Inviting requires a username — the invite flow only sets a password, so
-  // without one the member could never log in.
-  const hasUsername = Boolean(person.username);
   const [disc, setDisc] = useState(person.discount);
   const [discLong, setDiscLong] = useState(person.discount_long);
   const [username, setUsername] = useState(person.username ?? "");
@@ -61,6 +63,11 @@ function PersonRow({
     username !== (person.username ?? "") ||
     isAdmin !== (person.is_admin === 1);
 
+  // The invite link unlocks as soon as a username is typed — even before saving.
+  // Any pending edit is persisted first (see handleInvite) because the invite
+  // endpoint rejects members whose username isn't saved yet (400 no_username).
+  const hasUsername = Boolean(username.trim());
+
   const reset = () => {
     setDisc(person.discount);
     setDiscLong(person.discount_long);
@@ -74,6 +81,25 @@ function PersonRow({
   const handleInvite = async () => {
     try {
       const csrfToken = document.cookie.match(/csrf-token=([^;]+)/)?.[1] ?? "";
+      // Persist any unsaved edits first so the invite targets the entered
+      // username — the invite endpoint 400s when the username isn't saved yet.
+      if (dirty) {
+        const saveRes = await fetch(`/api/people/${person.id}`, {
+          method: "PUT",
+          headers: { "x-csrf-token": csrfToken, "Content-Type": "application/json" },
+          body: JSON.stringify({
+            first_name: person.first_name,
+            last_name: person.last_name,
+            discount: disc,
+            discount_long: discLong,
+            active: person.active,
+            username: username || null,
+            is_admin: isAdmin ? 1 : 0,
+          }),
+        });
+        if (!saveRes.ok) throw new Error();
+        qc.invalidateQueries({ queryKey: ["people"] });
+      }
       const res = await fetch(`/api/people/${person.id}/invite`, {
         method: "POST",
         headers: { "x-csrf-token": csrfToken, "Content-Type": "application/json" },
@@ -519,6 +545,8 @@ export default function AdminLedenPage() {
   const router = useRouter();
   const [expanded, setExpanded] = useState<number | null>(null);
   const [savingId, setSavingId] = useState<number | null>(null);
+  const [adding, setAdding] = useState(false);
+  const createPerson = useCreatePerson();
 
   useEffect(() => {
     if (me && !me.isAdmin) router.replace("/admin");
@@ -631,6 +659,46 @@ export default function AdminLedenPage() {
           ))}
         </>
       )}
+      <ModalSheet open={adding} onClose={() => setAdding(false)} title={t("page.person_add")}>
+        <div
+          style={{
+            padding: "16px 20px 0",
+            fontFamily: fontSerif,
+            fontSize: 20,
+            fontWeight: 700,
+            color: paper.ink,
+          }}
+        >
+          {t("page.person_add")}
+        </div>
+        <MemberForm
+          onSubmit={(data) => {
+            createPerson.mutate(
+              {
+                ...data,
+                last_name: data.last_name ?? "",
+                username: null,
+                password_hash: null,
+                is_admin: 0,
+                bank_account: "",
+                email: null,
+                theme_preference: "mono",
+                updated_at: "",
+              },
+              {
+                onSuccess: () => {
+                  setAdding(false);
+                  toast.success(t("toast.person_added"));
+                },
+                onError: (e) => toast.error(e.message),
+              }
+            );
+          }}
+          onCancel={() => setAdding(false)}
+          isPending={createPerson.isPending}
+        />
+      </ModalSheet>
+      <Fab onClick={() => setAdding(true)} label={t("page.person_add")} />
     </div>
   );
 }

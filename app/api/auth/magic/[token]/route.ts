@@ -9,7 +9,7 @@ import {
 } from "@/lib/queries/people";
 import { getIronSession } from "iron-session";
 import { sessionOptions, type SessionData } from "@/lib/session";
-import { env } from "@/lib/env";
+import { resolveBaseUrl } from "@/lib/base-url";
 
 /**
  * Consumes a magic-link token (the URL emailed to the user) and establishes a
@@ -19,7 +19,7 @@ import { env } from "@/lib/env";
 export async function GET(req: Request, ctx: { params: Promise<{ token: string }> }) {
   const { token } = await ctx.params;
   const db = getDb();
-  const baseUrl = env.NEXT_PUBLIC_BASE_URL ?? new URL(req.url).origin;
+  const baseUrl = resolveBaseUrl(req);
 
   const record = getAuthToken(db, token);
   const invalid = !record || record.purpose !== "magic" || new Date(record.expires_at) < new Date();

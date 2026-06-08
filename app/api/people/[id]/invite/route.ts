@@ -5,7 +5,7 @@ import { getPersonById, createInviteToken } from "@/lib/queries/people";
 import { getIronSession } from "iron-session";
 import { sessionOptions, type SessionData } from "@/lib/session";
 import { json, readId } from "@/lib/api";
-import { env } from "@/lib/env";
+import { resolveBaseUrl } from "@/lib/base-url";
 import { sendMail, isMailEnabled } from "@/lib/mailer";
 
 export const POST = json(async (req, ctx) => {
@@ -40,7 +40,7 @@ export const POST = json(async (req, ctx) => {
   const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
   createInviteToken(getDb(), id, token, expiresAt);
 
-  const baseUrl = env.NEXT_PUBLIC_BASE_URL ?? `${new URL(req.url).origin}`;
+  const baseUrl = resolveBaseUrl(req);
   const url = `${baseUrl}/invite/${token}`;
 
   if (send) {

@@ -48,13 +48,15 @@ export function insertReservation(db: Database.Database, input: ReservationInput
   }
   const result = db
     .prepare(
-      "INSERT INTO reservations (person_id,car_id,start_date,end_date,status,note,client_id,updated_at) VALUES (?,?,?,?,?,?,?,datetime('now'))"
+      "INSERT INTO reservations (person_id,car_id,start_date,end_date,start_time,end_time,status,note,client_id,updated_at) VALUES (?,?,?,?,?,?,?,?,?,datetime('now'))"
     )
     .run(
       input.person_id,
       input.car_id,
       input.start_date,
       input.end_date,
+      input.start_time ?? null,
+      input.end_time ?? null,
       input.status ?? "pending",
       input.note ?? null,
       input.client_id ?? null
@@ -79,8 +81,18 @@ export function updateReservation(
   }
   const status = input.status ?? "pending";
   db.prepare(
-    "UPDATE reservations SET person_id=?,car_id=?,start_date=?,end_date=?,status=?,note=? WHERE id=?"
-  ).run(input.person_id, input.car_id, input.start_date, input.end_date, status, input.note ?? null, id);
+    "UPDATE reservations SET person_id=?,car_id=?,start_date=?,end_date=?,start_time=?,end_time=?,status=?,note=? WHERE id=?"
+  ).run(
+    input.person_id,
+    input.car_id,
+    input.start_date,
+    input.end_date,
+    input.start_time ?? null,
+    input.end_time ?? null,
+    status,
+    input.note ?? null,
+    id
+  );
 
   // Editing re-opens a reservation for approval (status → pending). Clear any
   // stale Google Calendar RSVP so a fresh owner accept/decline on the re-issued

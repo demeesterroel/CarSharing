@@ -9,6 +9,7 @@ interface ReservationRowForDelta {
   id: number;
   start_date: string;
   end_date: string;
+  start_time: string | null;
   note: string | null;
   status: string;
   car_short: string;
@@ -30,7 +31,7 @@ export async function processCalendarDelta(
 
     const row = db
       .prepare(
-        `SELECT r.id, r.start_date, r.end_date, r.note, r.status, r.last_synced_etag,
+        `SELECT r.id, r.start_date, r.end_date, r.start_time, r.note, r.status, r.last_synced_etag,
                 r.last_app_write_nonce, r.last_known_response_status,
                 c.short AS car_short,
                 TRIM(rq.first_name || ' ' || rq.last_name) AS person_name,
@@ -74,11 +75,14 @@ export async function processCalendarDelta(
       continue;
     }
 
-    // Time-edit guard — app is authoritative for event times
-    // Skip time check for cancelled events (start/end may be absent)
+    // Time-edit guard — app is authoritative for all-day event dates.
+    // Skip cancelled events (start/end may be absent). Skip TIMED reservations
+    // (#191): their times are push-only and not reconciled from GCal, and the
+    // all-day date comparison below doesn't apply to dateTime events.
     const expectedEnd = addDays(row.end_date, 1);
     if (
       event.status !== "cancelled" &&
+      row.start_time == null &&
       (event.start?.date !== row.start_date || event.end?.date !== expectedEnd)
     ) {
       const nonce = crypto.randomUUID();

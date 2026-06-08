@@ -12,6 +12,8 @@ interface ReservationRow {
   id: number;
   start_date: string;
   end_date: string;
+  start_time: string | null;
+  end_time: string | null;
   note: string | null;
   status: string;
   car_short: string;
@@ -32,7 +34,7 @@ function getCalendarCtx(
 function getReservationForSync(db: Database.Database, id: number): ReservationRow | undefined {
   return db
     .prepare(
-      `SELECT r.id, r.start_date, r.end_date, r.note, r.status, r.google_event_id,
+      `SELECT r.id, r.start_date, r.end_date, r.start_time, r.end_time, r.note, r.status, r.google_event_id,
               c.short AS car_short,
               TRIM(rq.first_name || ' ' || rq.last_name) AS person_name,
               own.email AS owner_email

@@ -1,5 +1,5 @@
 "use client";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { useForm, useWatch, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -17,6 +17,7 @@ import { buildMissingLabel } from "@/lib/i18n";
 import { paper, fontMono, fontSerif, fmtDate } from "@/lib/paper-theme";
 import { useTheme } from "@/lib/theme-context";
 import { PickCalendar } from "@/components/pick-calendar";
+import { TimePicker } from "@/components/time-picker";
 import { fullNameOf } from "@/lib/person-utils";
 
 const schema = z
@@ -25,6 +26,16 @@ const schema = z
     car_id: z.number({ error: "Wagen vereist" }),
     start_date: z.string().min(1),
     end_date: z.string().min(1),
+    start_time: z
+      .string()
+      .nullable()
+      .optional()
+      .transform((v) => v || null),
+    end_time: z
+      .string()
+      .nullable()
+      .optional()
+      .transform((v) => v || null),
     note: z
       .string()
       .nullable()
@@ -76,6 +87,7 @@ const monoLabel: React.CSSProperties = {
   marginBottom: 4,
 };
 
+
 export function ReservationForm({ defaultValues, onSubmit, onCancel, readOnly = false }: Props) {
   const t = useT();
   const { locale } = useLocale();
@@ -106,11 +118,17 @@ export function ReservationForm({ defaultValues, onSubmit, onCancel, readOnly = 
     defaultValues: {
       start_date: defaultValues?.start_date ?? "",
       end_date: defaultValues?.end_date ?? "",
+      start_time: defaultValues?.start_time ?? null,
+      end_time: defaultValues?.end_time ?? null,
       person_id: defaultValues?.person_id,
       car_id: defaultValues?.car_id,
       note: defaultValues?.note ?? null,
     },
   });
+
+  // Optional reservation times (#191). All-day is the default; unchecking reveals
+  // start/end time pickers and collapses the reservation to a single day.
+  const [allDay, setAllDay] = useState(() => !defaultValues?.start_time);
 
   useEffect(() => {
     if (!defaultValues?.person_id && me?.personId && !getValues("person_id")) {
@@ -126,13 +144,20 @@ export function ReservationForm({ defaultValues, onSubmit, onCancel, readOnly = 
     return Math.max(0, Math.floor(ms / (7 * 86400000)));
   })();
 
-  const [startDate, endDate, carId, personId] = useWatch({
+  const [startDate, endDate, carId, personId, startTime, endTime] = useWatch({
     control,
-    name: ["start_date", "end_date", "car_id", "person_id"],
+    name: ["start_date", "end_date", "car_id", "person_id", "start_time", "end_time"],
   });
   const person = people.find((p) => p.id === personId);
   const datesSelected = !!(startDate && endDate && endDate >= startDate);
-  const canSubmit = datesSelected && !!(carId && personId);
+  // When timed (not all-day), both times must be set; end_time need only be after
+  // start_time on a single-day reservation (multi-day ends on a later date).
+  const timesValid =
+    allDay || (!!startTime && !!endTime && (startDate !== endDate || endTime > startTime));
+  const canSubmit = datesSelected && !!(carId && personId) && timesValid;
+  // Visible error for the single-day case where end_time isn't after start_time.
+  const timeOrderError =
+    !allDay && !!startTime && !!endTime && startDate === endDate && endTime <= startTime;
   const missingLabel = buildMissingLabel([
     !carId && t("field.car"),
     isAdmin && !personId && t("field.driver"),
@@ -148,11 +173,14 @@ export function ReservationForm({ defaultValues, onSubmit, onCancel, readOnly = 
   });
 
   function handleFormSubmit(data: FormData) {
+    const timed = !allDay && !!data.start_time && !!data.end_time;
     onSubmit({
       person_id: data.person_id,
       car_id: data.car_id,
       start_date: data.start_date,
-      end_date: data.end_date,
+      end_date: data.end_date, // times may span the whole date range
+      start_time: timed ? data.start_time : null,
+      end_time: timed ? data.end_time : null,
       note: data.note,
     });
   }
@@ -781,6 +809,81 @@ export function ReservationForm({ defaultValues, onSubmit, onCancel, readOnly = 
               }}
             />
           </div>
+        </div>
+
+        {/* Optional times (#191) — all-day default; unchecking reveals time pickers.
+            Placed last so the clock-timepicker popup opens into the space below. */}
+        <div style={{ padding: "10px 14px 16px" }}>
+          <label
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 8,
+              cursor: readOnly ? "default" : "pointer",
+            }}
+          >
+            <input
+              type="checkbox"
+              checked={allDay}
+              disabled={readOnly}
+              onChange={(e) => {
+                const checked = e.target.checked;
+                setAllDay(checked);
+                // Switching to all-day clears the times; the date range is kept
+                // either way (timed reservations may span multiple days, #191).
+                if (checked) {
+                  setValue("start_time", null);
+                  setValue("end_time", null);
+                }
+              }}
+            />
+            <span style={lbl}>{t("form.all_day")}</span>
+          </label>
+          {!allDay && (
+            <div style={{ display: "flex", gap: 12, marginTop: 10 }}>
+              <div style={{ flex: 1 }}>
+                <span style={lbl}>{t("form.time_from")}</span>
+                <Controller
+                  name="start_time"
+                  control={control}
+                  render={({ field }) => (
+                    <TimePicker
+                      value={field.value ?? null}
+                      onChange={(v) => field.onChange(v)}
+                      disabled={readOnly}
+                    />
+                  )}
+                />
+              </div>
+              <div style={{ flex: 1 }}>
+                <span style={lbl}>{t("form.time_to")}</span>
+                <Controller
+                  name="end_time"
+                  control={control}
+                  render={({ field }) => (
+                    <TimePicker
+                      value={field.value ?? null}
+                      onChange={(v) => field.onChange(v)}
+                      disabled={readOnly}
+                    />
+                  )}
+                />
+              </div>
+            </div>
+          )}
+          {timeOrderError && (
+            <div
+              style={{
+                marginTop: 8,
+                fontFamily: fontMono,
+                fontSize: 10,
+                color: paper.accent,
+                letterSpacing: 0.5,
+              }}
+            >
+              {t("form.time_order_error")}
+            </div>
+          )}
         </div>
       </fieldset>
 

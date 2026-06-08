@@ -109,6 +109,9 @@ export interface Reservation {
   car_id: number;
   start_date: string;
   end_date: string;
+  /** HH:MM, or null for an all-day reservation. Set ⇒ single day (start_date == end_date). (#191) */
+  start_time: string | null;
+  end_time: string | null;
   status: ReservationStatus;
   note: string | null;
   client_id: string | null;
@@ -215,7 +218,13 @@ export type FuelFillupInput = Pick<
 export type ReservationInput = Pick<
   Reservation,
   "person_id" | "car_id" | "start_date" | "end_date"
-> & { note?: string | null; status?: ReservationStatus; client_id?: string | null };
+> & {
+  note?: string | null;
+  status?: ReservationStatus;
+  client_id?: string | null;
+  start_time?: string | null;
+  end_time?: string | null;
+};
 export type PaymentInput = Pick<Payment, "person_id" | "date" | "amount" | "note">;
 
 // Derived "last known" state for a car, used to prefill trip/fuel forms on car selection.

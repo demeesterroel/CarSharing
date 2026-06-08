@@ -114,6 +114,27 @@ describe("processCalendarDelta", () => {
     expect(row.last_app_write_nonce).toBeTruthy();
   });
 
+  it("does NOT time-overwrite a timed reservation (times are push-only, #191)", async () => {
+    const db = makeDb();
+    seedWithEvent(db);
+    db.prepare(
+      "UPDATE reservations SET start_time='09:00', end_time='12:30' WHERE google_event_id='evt-123'"
+    ).run();
+    const events: CalendarEvent[] = [
+      {
+        id: "evt-123",
+        etag: '"different-etag"',
+        // GCal reports a (timed) date that won't match the all-day comparison;
+        // for a timed reservation we must NOT push an overwrite.
+        start: { date: "2026-07-01" },
+        end: { date: "2026-07-04" },
+        extendedProperties: { private: { appWriteNonce: "other-nonce" } },
+      },
+    ];
+    await processCalendarDelta(db, fakeClient, calendarId, events);
+    expect(calMock.updateEvent).not.toHaveBeenCalled();
+  });
+
   it("updates reservation to confirmed when owner accepts", async () => {
     const db = makeDb();
     seedWithEvent(db);

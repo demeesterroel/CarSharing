@@ -604,11 +604,12 @@ const carolId = personIdByUsername["carol"];
 db.prepare("DELETE FROM reservations WHERE status IN ('pending', 'confirmed')").run();
 db.prepare(
   `
-  INSERT INTO reservations (person_id, car_id, start_date, end_date, status, note)
+  INSERT INTO reservations (person_id, car_id, start_date, end_date, start_time, end_time, status, note)
   VALUES
-    (?, ?, '2026-05-15', '2026-05-17', 'pending',   'Weekend trip to Ghent'),
-    (?, ?, '2026-05-20', '2026-05-25', 'confirmed', 'Family visit'),
-    (?, ?, '2026-06-01', '2026-06-04', 'confirmed', 'School run week')
+    (?, ?, '2026-05-15', '2026-05-17', NULL,    NULL,    'pending',   'Weekend trip to Ghent'),
+    (?, ?, '2026-05-20', '2026-05-25', NULL,    NULL,    'confirmed', 'Family visit'),
+    (?, ?, '2026-06-01', '2026-06-04', NULL,    NULL,    'confirmed', 'School run week'),
+    (?, ?, '2026-05-18', '2026-05-18', '09:00', '12:30', 'pending',   'Morning errands (half day)')
 `
 ).run(
   aliceId,
@@ -616,7 +617,9 @@ db.prepare(
   personIdByUsername["bob"],
   carIdByShort["BB"],
   carolId,
-  carIdByShort["CC"]
+  carIdByShort["CC"],
+  aliceId,
+  carIdByShort["AA"]
 );
 
 // ── Summary ───────────────────────────────────────────────────────────────────

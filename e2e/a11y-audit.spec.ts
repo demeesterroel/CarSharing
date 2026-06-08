@@ -22,18 +22,33 @@ type AxeViolation = {
 };
 
 async function runAxe(page: Page): Promise<AxeViolation[]> {
-  await page.addScriptTag({ path: AXE_PATH });
-  await page.waitForFunction(() => typeof (window as any).axe !== "undefined");
-  return page.evaluate(async () => {
-    const results = await (window as any).axe.run();
-    return results.violations.map((v: any) => ({
-      id: v.id,
-      impact: v.impact,
-      description: v.description,
-      nodes: v.nodes.length,
-      selector: v.nodes[0]?.target?.join(" ") ?? "",
-    }));
-  });
+  // A late client-side navigation (hydration/redirect) can destroy the page's
+  // execution context just as axe is injected ("Execution context was destroyed,
+  // most likely because of a navigation"). Re-settle and retry once.
+  for (let attempt = 0; attempt < 2; attempt++) {
+    try {
+      await page.addScriptTag({ path: AXE_PATH });
+      await page.waitForFunction(() => typeof (window as any).axe !== "undefined");
+      return await page.evaluate(async () => {
+        const results = await (window as any).axe.run();
+        return results.violations.map((v: any) => ({
+          id: v.id,
+          impact: v.impact,
+          description: v.description,
+          nodes: v.nodes.length,
+          selector: v.nodes[0]?.target?.join(" ") ?? "",
+        }));
+      });
+    } catch (e) {
+      if (attempt === 0 && /Execution context was destroyed/.test(String(e))) {
+        await page.waitForLoadState("networkidle");
+        continue;
+      }
+      throw e;
+    }
+  }
+  // Unreachable — the loop either returns or throws.
+  return [];
 }
 
 async function loginAs(

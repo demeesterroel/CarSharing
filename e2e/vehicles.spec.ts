@@ -13,24 +13,32 @@ import { loginAndGetSession, loginAndGetCsrf, makeApi, scrollToLoadAll } from ".
  * Uses unique "short" code (E2ET) to avoid collisions with demo data.
  */
 
-const CAR_SHORT = "E2ET";
-const CAR_NAME = "E2E-Test-Vehicle";
-const CAR_NAME_UPDATED = "E2E-Test-Vehicle-Updated";
 const PRICE_PER_KM = 0.25;
 
 test.describe("vehicles CRUD", () => {
   let csrf: string;
   let api: ReturnType<typeof makeApi>;
   let carId: number;
+  // Unique per test so a failed cleanup never collides on the UNIQUE cars.short
+  // constraint (short is capped at 10 chars). A car with reservations/trips also
+  // can't be hard-deleted, so unique values keep the tests independent regardless.
+  let carShort: string;
+  let carName: string;
+  let carNameUpdated: string;
 
   test.beforeEach(async ({ request }) => {
     const session = await loginAndGetSession(request, "admin", "admin");
     csrf = session.csrf;
     api = makeApi(request, csrf);
 
+    const suffix = `${Date.now() % 100000}`;
+    carShort = `E2E${suffix}`; // ≤ 8 chars, within the 10-char limit
+    carName = `E2E-Test-Vehicle-${suffix}`;
+    carNameUpdated = `${carName}-Updated`;
+
     const res = await api.post<{ id: number }>("/api/vehicles", {
-      short: CAR_SHORT,
-      name: CAR_NAME,
+      short: carShort,
+      name: carName,
       price_per_km: PRICE_PER_KM,
     });
     carId = res.id;
@@ -56,14 +64,14 @@ test.describe("vehicles CRUD", () => {
     await page.waitForLoadState("networkidle");
     await scrollToLoadAll(page);
 
-    await expect(page.locator(`text=${CAR_NAME}`).first()).toBeVisible({ timeout: 10_000 });
+    await expect(page.locator(`text=${carName}`).first()).toBeVisible({ timeout: 10_000 });
   });
 
   test("vehicle name updates via PUT and change appears in list", async ({ page }) => {
     // Update via API
     await api.put<{ ok: boolean }>(`/api/vehicles/${carId}`, {
-      short: CAR_SHORT,
-      name: CAR_NAME_UPDATED,
+      short: carShort,
+      name: carNameUpdated,
       price_per_km: PRICE_PER_KM,
     });
 
@@ -75,8 +83,8 @@ test.describe("vehicles CRUD", () => {
     await page.waitForLoadState("networkidle");
     await scrollToLoadAll(page);
 
-    await expect(page.locator(`text=${CAR_NAME_UPDATED}`).first()).toBeVisible({ timeout: 10_000 });
-    await expect(page.getByText(CAR_NAME, { exact: true })).toHaveCount(0);
+    await expect(page.locator(`text=${carNameUpdated}`).first()).toBeVisible({ timeout: 10_000 });
+    await expect(page.getByText(carName, { exact: true })).toHaveCount(0);
   });
 
   test("vehicle disappears from list after deletion", async ({ page }) => {
@@ -88,13 +96,13 @@ test.describe("vehicles CRUD", () => {
     await page.waitForLoadState("networkidle");
     await scrollToLoadAll(page);
 
-    await expect(page.locator(`text=${CAR_NAME}`).first()).toBeVisible({ timeout: 10_000 });
+    await expect(page.locator(`text=${carName}`).first()).toBeVisible({ timeout: 10_000 });
 
     await api.delete(`/api/vehicles/${carId}`);
     carId = 0;
 
     await page.reload();
     await page.waitForLoadState("networkidle");
-    await expect(page.getByText(CAR_NAME, { exact: true })).toHaveCount(0);
+    await expect(page.getByText(carName, { exact: true })).toHaveCount(0);
   });
 });

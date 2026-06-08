@@ -33,10 +33,16 @@ export default defineConfig({
   webServer: process.env.TEST_BASE_URL
     ? undefined
     : {
-        command: "npm run dev",
+        // Run e2e against a PRODUCTION build, not `next dev`. The dev server
+        // compiles routes on demand, and the first browser request to an
+        // uncompiled route can stall — which produced flaky `csrf-token cookie
+        // not found` and `toBeVisible` timeouts (issue #360). A prebuilt server
+        // has no on-demand compilation, so these disappear.
+        command: "npm run build && npm run start",
         url: "http://localhost:3000",
         reuseExistingServer: !process.env.CI,
-        timeout: 60_000,
+        // Building can take a couple of minutes on a cold cache.
+        timeout: 240_000,
         // Pin the env the suite depends on so it doesn't rely on a local
         // .env.local. Kept identical across the e2e branches so the file never
         // conflicts on merge:

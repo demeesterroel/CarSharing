@@ -14,14 +14,15 @@ const PASSWORD = process.env.TEST_PASSWORD ?? "alice";
  */
 
 test.describe("Account recovery", () => {
-  test("login page links to the forgot-password page", async ({ page }) => {
+  test("login page offers inline password recovery (mail enabled)", async ({ page }) => {
     await page.goto("/login");
-    const link = page.getByRole("link", { name: /forgot|vergeten/i });
-    await expect(link).toBeVisible();
-    await link.click();
-    await page.waitForURL(/\/forgot/);
-    // The email field is focused and present.
-    await expect(page.locator("#forgot-email")).toBeVisible();
+    // With a mail transport configured (the e2e default sets MAIL_WEBHOOK_URL),
+    // the login page shows an inline "forgot password" toggle *button* — not a
+    // link to /forgot. Clicking it reveals the reset-email field in place.
+    const resetToggle = page.getByRole("button", { name: /forgot|vergeten/i });
+    await expect(resetToggle).toBeVisible();
+    await resetToggle.click();
+    await expect(page.locator("#login-reset-email")).toBeVisible();
   });
 
   test("submitting the forgot form shows a neutral confirmation", async ({ page }) => {

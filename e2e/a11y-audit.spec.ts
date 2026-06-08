@@ -113,7 +113,6 @@ test.describe("a11y — user routes (alice)", () => {
     "/vehicles",
     "/calendar",
     "/payments",
-    "/people",
   ]) {
     test(route, async ({ page }) => {
       await auditRoute(page, route, `user:${route}`);

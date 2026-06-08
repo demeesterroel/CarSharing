@@ -673,6 +673,7 @@ export default function AdminLedenPage() {
             );
           }}
           onCancel={() => setAdding(false)}
+          isPending={createPerson.isPending}
         />
       </ModalSheet>
       <Fab onClick={() => setAdding(true)} label={t("page.person_add")} />

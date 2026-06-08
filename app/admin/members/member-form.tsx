@@ -44,9 +44,10 @@ const inputStyle: React.CSSProperties = {
 interface Props {
   onSubmit: (data: MemberFormData) => void;
   onCancel: () => void;
+  isPending?: boolean;
 }
 
-export function MemberForm({ onSubmit, onCancel }: Props) {
+export function MemberForm({ onSubmit, onCancel, isPending }: Props) {
   const {
     register,
     handleSubmit,
@@ -141,13 +142,14 @@ export function MemberForm({ onSubmit, onCancel }: Props) {
         </button>
         <button
           type="submit"
+          disabled={isPending}
           style={{
             flex: 2,
             padding: "9px",
-            background: paper.ink,
-            color: paper.paper,
+            background: isPending ? paper.paperDark : paper.ink,
+            color: isPending ? paper.inkMute : paper.paper,
             border: "none",
-            cursor: "pointer",
+            cursor: isPending ? "default" : "pointer",
             fontFamily: fontMono,
             fontSize: 9,
             fontWeight: 700,
@@ -155,7 +157,7 @@ export function MemberForm({ onSubmit, onCancel }: Props) {
             textTransform: "uppercase",
           }}
         >
-          {t("action.save")}
+          {isPending ? "…" : t("action.save")}
         </button>
       </div>
     </form>

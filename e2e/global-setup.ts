@@ -16,6 +16,15 @@ import path from "path";
 import fs from "fs";
 
 export default async function globalSetup(): Promise<void> {
+  // Skip when reusing an already-seeded server (e.g. running specs one file at a
+  // time against a persistent prod server to exercise a randomized file order).
+  // Wiping data/e2e.db here would pull the rug out from under that server's open
+  // (cached) SQLite connection.
+  if (process.env.E2E_REUSE_DB === "1") {
+    console.log("[e2e globalSetup] E2E_REUSE_DB=1 — skipping reseed.");
+    return;
+  }
+
   const root = path.resolve(__dirname, "..");
   const e2eDb = path.join(root, "data", "e2e.db");
 

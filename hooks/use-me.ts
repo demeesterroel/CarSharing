@@ -20,6 +20,11 @@ export function useMe() {
         if (err instanceof ApiError) return null;
         throw err;
       }),
-    staleTime: 5 * 60 * 1000,
+    // Short stale window + refetch on mount/focus so a server-side session
+    // revocation (#284) is noticed promptly — on the next navigation or when the
+    // user returns to the tab — and the SessionGuard can act on the null result.
+    staleTime: 30 * 1000,
+    refetchOnMount: true,
+    refetchOnWindowFocus: true,
   });
 }

@@ -43,6 +43,12 @@ export async function apiFetch<T>(path: string, options?: RequestInit): Promise<
 
   if (!res.ok) {
     const body = await res.json().catch(() => ({ error: res.statusText }));
+    // A revoked session (epoch bump from an admin revoke, deactivation, or
+    // "log out everywhere") 403s every API call. Broadcast it so the app-wide
+    // SessionGuard can bounce the user to /login immediately, mid-session.
+    if (res.status === 403 && body?.error === "Session revoked" && typeof window !== "undefined") {
+      window.dispatchEvent(new Event("session-revoked"));
+    }
     throw new ApiError(res.status, body.error ?? "Request failed");
   }
 

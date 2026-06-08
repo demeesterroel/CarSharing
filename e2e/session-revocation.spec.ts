@@ -108,3 +108,56 @@ test.describe("Session revocation", () => {
     await ctx.dispose();
   });
 });
+
+/**
+ * Client-side guard for server-side revocation (issue #284).
+ *
+ * The data layer revokes correctly (a stale-epoch cookie 403s on every API
+ * call), but the SPA must also *react*: a revoked-but-undestroyed cookie still
+ * passes the Edge proxy's cookie-only auth gate, so page navigation succeeds and
+ * the user keeps seeing app shells instead of being bounced to /login.
+ *
+ * Repro: device A is a real browser session; device B (same user) triggers
+ * "log out everywhere", bumping the shared session epoch — which revokes A's
+ * still-present cookie without destroying it. A fresh navigation in A must end
+ * up on /login.
+ */
+test.describe("Session revocation — client guard (#284)", () => {
+  test("a browser whose cookie was revoked elsewhere is bounced to /login", async ({
+    browser,
+    playwright,
+  }) => {
+    // Device A — a real browser tab, logged in as the dedicated revoke user.
+    const ctxA = await browser.newContext({ baseURL });
+    const pageA = await ctxA.newPage();
+    const loginA = await pageA.request.post("/api/auth/login", {
+      data: { username: EMAIL, password: PASSWORD },
+    });
+    test.skip(!loginA.ok(), "Test account not available — needs seeded demo data");
+
+    await pageA.goto("/trips");
+    await pageA.waitForLoadState("networkidle");
+    // Sanity: device A is authenticated (not already sitting on /login).
+    expect(new URL(pageA.url()).pathname).not.toBe("/login");
+
+    // Device B — a second session for the same user that triggers "log out
+    // everywhere". This bumps the user's session epoch, revoking device A's
+    // still-present cookie while only destroying device B's own cookie.
+    const ctxB = await playwright.request.newContext({ baseURL });
+    await ctxB.post("/api/auth/login", { data: { username: EMAIL, password: PASSWORD } });
+    await ctxB.get("/api/me"); // primes csrf-token
+    const csrf = (await ctxB.storageState()).cookies.find((c) => c.name === "csrf-token")?.value;
+    const revokeStatus = await ctxB
+      .post("/api/auth/logout-all", { headers: csrf ? { "x-csrf-token": csrf } : {} })
+      .then((r) => r.status());
+    expect(revokeStatus).toBe(200);
+    await ctxB.dispose();
+
+    // Device A's cookie is now revoked-but-present. The SPA must bounce it to
+    // /login on the next navigation (today it stays on /trips — the bug).
+    await pageA.goto("/trips");
+    await pageA.waitForURL(/\/login/, { timeout: 15_000 });
+
+    await ctxA.close();
+  });
+});

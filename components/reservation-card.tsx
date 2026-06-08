@@ -75,6 +75,9 @@ export function ReservationCard({ reservation, onClick }: ReservationCardProps) 
           {reservation.start_date !== reservation.end_date
             ? ` → ${fmtDate(reservation.end_date, locale)}`
             : ""}
+          {reservation.start_time && reservation.end_time
+            ? ` · ${reservation.start_time}–${reservation.end_time}`
+            : ""}
         </div>
         {reservation.note && (
           <div style={{ fontFamily: fontMono, fontSize: 10, color: paper.inkDim, marginTop: 2 }}>

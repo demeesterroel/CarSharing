@@ -62,6 +62,7 @@
     "bcryptjs": "^3.0.3",
     "better-sqlite3": "^12.9.0",
     "class-variance-authority": "^0.7.1",
+    "clock-timepicker": "^1.0.8",
     "clsx": "^2.1.1",
     "googleapis": "^171.4.0",
     "idb": "^8.0.3",

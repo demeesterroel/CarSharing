@@ -9,11 +9,14 @@ export interface CalendarEvent {
   id?: string | null;
   etag?: string | null;
   status?: string | null;
-  start?: { date?: string | null };
-  end?: { date?: string | null };
+  start?: { date?: string | null; dateTime?: string | null };
+  end?: { date?: string | null; dateTime?: string | null };
   attendees?: Array<{ email?: string | null; responseStatus?: string | null }>;
   extendedProperties?: { private?: { appWriteNonce?: string | null } };
 }
+
+// All-day events use floating local dates; timed events are pinned to this zone.
+const EVENT_TIME_ZONE = "Europe/Brussels";
 
 export function addDays(dateStr: string, days: number): string {
   const d = new Date(dateStr + "T00:00:00Z");
@@ -30,6 +33,9 @@ export function getOAuthClient(refreshToken: string): OAuth2Client {
 interface ReservationShape {
   start_date: string;
   end_date: string;
+  /** HH:MM; when both set the event is timed (single day), else all-day. (#191) */
+  start_time?: string | null;
+  end_time?: string | null;
   note?: string | null;
   status?: string;
   car_short?: string | null;
@@ -50,11 +56,20 @@ export function buildEventBody(r: ReservationShape, nonce: string, ownerEmail?: 
   // all-day events look identical. Add an explicit visual cue (#344): a ✓ title
   // prefix and a green colorId (10 = Basil). Pending/rejected keep the default.
   const baseSummary = r.car_short ? `[${r.car_short}] ${r.person_name ?? ""}` : "Reservering";
+  // Timed reservation (#191): start_time is on start_date, end_time on end_date
+  // (may span multiple days). Otherwise an all-day event (end exclusive, +1 day).
+  const timed = !!r.start_time && !!r.end_time;
+  const start = timed
+    ? { dateTime: `${r.start_date}T${r.start_time}:00`, timeZone: EVENT_TIME_ZONE }
+    : { date: r.start_date };
+  const end = timed
+    ? { dateTime: `${r.end_date}T${r.end_time}:00`, timeZone: EVENT_TIME_ZONE }
+    : { date: addDays(r.end_date, 1) };
   return {
     summary: confirmed ? `✓ ${baseSummary}` : baseSummary,
     description: r.note ?? undefined,
-    start: { date: r.start_date },
-    end: { date: addDays(r.end_date, 1) },
+    start,
+    end,
     status: calStatus,
     colorId: confirmed ? "10" : undefined,
     attendees,

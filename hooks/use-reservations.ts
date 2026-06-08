@@ -43,6 +43,8 @@ export function useCreateReservation() {
         car_id: input.car_id,
         start_date: input.start_date,
         end_date: input.end_date,
+        start_time: input.start_time ?? null,
+        end_time: input.end_time ?? null,
         status: input.status ?? "pending",
         note: input.note ?? null,
         updated_at: new Date().toISOString(),

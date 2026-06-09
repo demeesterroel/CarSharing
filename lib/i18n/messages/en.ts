@@ -601,6 +601,10 @@ export const en: Messages = {
   "admin.invite_sent": "Invite sent!",
   "admin.invite_needs_username":
     "Set a username first — the invite lets the member set a password, not a username.",
+  "admin.invite_msg_intro": "Hi! You've been added to CarSharing.",
+  "admin.invite_msg_username": "Your username: {username}",
+  "admin.invite_msg_cta":
+    "Open this link to set your password and sign in (valid for 7 days):",
   "admin.username_label": "Username",
   "admin.is_admin_label": "Admin",
   "admin.no_username": "No login yet",

@@ -600,6 +600,10 @@ export const nl = {
   "admin.invite_sent": "Uitnodiging verstuurd!",
   "admin.invite_needs_username":
     "Stel eerst een gebruikersnaam in — via de uitnodiging stelt het lid een wachtwoord in, geen gebruikersnaam.",
+  "admin.invite_msg_intro": "Hallo! Je bent toegevoegd aan Autodelen.",
+  "admin.invite_msg_username": "Jouw gebruikersnaam: {username}",
+  "admin.invite_msg_cta":
+    "Open deze link om je wachtwoord in te stellen en in te loggen (geldig voor 7 dagen):",
   "admin.username_label": "Gebruikersnaam",
   "admin.is_admin_label": "Admin",
   "admin.no_username": "Nog geen login",

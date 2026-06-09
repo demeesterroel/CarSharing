@@ -15,6 +15,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { usePeople } from "../_shared";
+import { buildInviteMessage } from "./invite-message";
 import { MemberForm } from "./member-form";
 
 // ── Person Row (accordion) ────────────────────────────────────
@@ -110,7 +111,7 @@ function PersonRow({
         setInviteBanner(t("admin.invite_sent"));
       } else {
         const { url } = await res.json();
-        await navigator.clipboard.writeText(url);
+        await navigator.clipboard.writeText(buildInviteMessage(person.username, url, t));
         setInviteBanner(t("admin.invite_copied"));
       }
       setTimeout(() => setInviteBanner(null), 3000);

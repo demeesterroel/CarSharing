@@ -663,6 +663,7 @@ export const en: Messages = {
   // In-app notifications
   "notif.new_reservation": "New reservation for {car} from {start} to {end}",
   "notif.reservation_update": "Reservation for {car} from {start} to {end} {status}",
+  "notif.reservation_update_self": "Your reservation for {car} from {start} to {end} {status}",
   "notif.new_trip": "New trip with {car} on {date}",
   "notif.status_confirmed": "approved",
   "notif.status_rejected": "rejected",

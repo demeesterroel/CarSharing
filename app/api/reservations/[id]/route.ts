@@ -76,6 +76,12 @@ export const DELETE = json(async (req, ctx) => {
       end: existing.end_date,
       status: t("notif.status_deleted"),
     }),
+    alwaysNotifyMessage: t("notif.reservation_update_self", {
+      car: existing.car_short ?? String(existing.car_id),
+      start: existing.start_date,
+      end: existing.end_date,
+      status: t("notif.status_deleted"),
+    }),
   }).catch(() => {});
   notifyAdminOfChange({
     db,

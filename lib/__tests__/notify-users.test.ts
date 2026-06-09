@@ -354,3 +354,36 @@ describe("notifyUsersOfEvent — alwaysNotifyPersonId (reserver outcome)", () =>
     expect(listNotifications(db, reserverId)).toHaveLength(1);
   });
 });
+
+describe("notifyUsersOfEvent — per-recipient message", () => {
+  it("uses alwaysNotifyMessage for the reserver and message for others", async () => {
+    const db = makeDb();
+    const watcherId = insertPerson(db, {
+      ...basePerson,
+      first_name: "Watcher",
+      notify_reservation_updates: "all",
+    });
+    const reserverId = insertPerson(db, {
+      ...basePerson,
+      first_name: "Reserver",
+      notify_reservation_updates: "off",
+    });
+    const actorId = insertPerson(db, { ...basePerson, first_name: "Owner" });
+    const carId = insertCar(db, actorId);
+
+    await notifyUsersOfEvent({
+      db,
+      trigger: "reservation_update",
+      entityType: "reservation",
+      entityId: 11,
+      carId,
+      actorPersonId: actorId,
+      alwaysNotifyPersonId: reserverId,
+      message: "generic",
+      alwaysNotifyMessage: "yours",
+    });
+
+    expect(listNotifications(db, reserverId)[0].message).toBe("yours");
+    expect(listNotifications(db, watcherId)[0].message).toBe("generic");
+  });
+});

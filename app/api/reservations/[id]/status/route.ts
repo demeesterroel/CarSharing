@@ -37,6 +37,12 @@ export const PATCH = json(async (req, ctx) => {
       end: reservation.end_date,
       status: t(statusWordKey),
     }),
+    alwaysNotifyMessage: t("notif.reservation_update_self", {
+      car: reservation.car_short ?? String(reservation.car_id),
+      start: reservation.start_date,
+      end: reservation.end_date,
+      status: t(statusWordKey),
+    }),
   }).catch(() => {});
   return { ok: true };
 });

@@ -663,6 +663,7 @@ export const nl = {
   // In-app notifications
   "notif.new_reservation": "Nieuwe reservering voor {car} van {start} tot {end}",
   "notif.reservation_update": "Reservering voor {car} van {start} tot {end} {status}",
+  "notif.reservation_update_self": "Jouw reservering voor {car} van {start} tot {end} {status}",
   "notif.new_trip": "Nieuwe rit met {car} op {date}",
   "notif.status_confirmed": "goedgekeurd",
   "notif.status_rejected": "geweigerd",

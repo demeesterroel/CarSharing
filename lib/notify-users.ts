@@ -38,6 +38,11 @@ export interface NotifyUsersOptions {
    */
   alwaysNotifyPersonId?: number | null;
   message: string;
+  /**
+   * Message for `alwaysNotifyPersonId` only (e.g. "Your reservation …" addressed
+   * to the reserver). Falls back to `message` when not set.
+   */
+  alwaysNotifyMessage?: string;
 }
 
 /**
@@ -90,12 +95,16 @@ export async function notifyUsersOfEvent(opts: NotifyUsersOptions): Promise<void
     }
 
     for (const recipientPersonId of recipientIds) {
+      const message =
+        opts.alwaysNotifyMessage != null && recipientPersonId === opts.alwaysNotifyPersonId
+          ? opts.alwaysNotifyMessage
+          : opts.message;
       insertNotification(opts.db, {
         recipientPersonId,
         type: opts.trigger,
         entityType: opts.entityType,
         entityId: opts.entityId,
-        message: opts.message,
+        message,
       });
     }
   } catch {

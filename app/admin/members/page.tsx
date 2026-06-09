@@ -685,6 +685,9 @@ export default function AdminLedenPage() {
                 email: null,
                 theme_preference: "mono",
                 updated_at: "",
+                notify_new_reservations: "off",
+                notify_reservation_updates: "off",
+                notify_new_trips: "off",
               },
               {
                 onSuccess: () => {

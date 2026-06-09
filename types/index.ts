@@ -14,6 +14,20 @@ export interface Person {
   /** Bumped to revoke all of a user's existing sessions ("log out everywhere"). */
   session_epoch?: number;
   updated_at: string;
+  notify_new_reservations: "off" | "all" | "own";
+  notify_reservation_updates: "off" | "all" | "own";
+  notify_new_trips: "off" | "all" | "own";
+}
+
+export interface Notification {
+  id: number;
+  recipient_person_id: number;
+  type: string;
+  entity_type: string;
+  entity_id: number;
+  message: string;
+  read_at: string | null;
+  created_at: string;
 }
 
 export interface Car {

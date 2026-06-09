@@ -93,9 +93,9 @@ export default function ForgotForm({ mailEnabled }: { mailEnabled: boolean }) {
               style={{
                 fontFamily: fontMono,
                 fontSize: 11,
-                color: "#8a6d3b",
-                background: "#fcf3e3",
-                border: "1px solid #e8d9b5",
+                color: paper.amber,
+                background: paper.amberBg,
+                border: `1px solid ${paper.amberBorder}`,
                 padding: "10px 12px",
                 marginBottom: 20,
                 lineHeight: 1.5,
@@ -137,7 +137,7 @@ export default function ForgotForm({ mailEnabled }: { mailEnabled: boolean }) {
               </div>
               {error && (
                 <p
-                  style={{ fontFamily: fontMono, fontSize: 11, color: "#c0392b", marginBottom: 16 }}
+                  style={{ fontFamily: fontMono, fontSize: 11, color: paper.accent, marginBottom: 16 }}
                 >
                   {error}
                 </p>

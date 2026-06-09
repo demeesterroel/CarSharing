@@ -175,9 +175,9 @@ export default function AdminSettingsPage() {
               style={{
                 fontFamily: fontMono,
                 fontSize: 10,
-                color: "#b45309",
-                background: "#fffbeb",
-                border: "1px solid #fde68a",
+                color: paper.amber,
+                background: paper.amberBg,
+                border: `1px solid ${paper.amberBorder}`,
                 padding: "8px 10px",
                 marginBottom: 12,
                 lineHeight: 1.5,
@@ -358,7 +358,7 @@ export default function AdminSettingsPage() {
                     marginTop: 8,
                     fontFamily: fontMono,
                     fontSize: 10,
-                    color: testStatus.ok ? "#2d7a2d" : paper.accent,
+                    color: testStatus.ok ? paper.green : paper.accent,
                     letterSpacing: 0.5,
                     lineHeight: 1.5,
                   }}
@@ -418,7 +418,7 @@ export default function AdminSettingsPage() {
                     marginTop: 8,
                     fontFamily: fontMono,
                     fontSize: 10,
-                    color: backfillStatus.ok ? "#2d7a2d" : paper.accent,
+                    color: backfillStatus.ok ? paper.green : paper.accent,
                     letterSpacing: 0.5,
                     lineHeight: 1.5,
                   }}

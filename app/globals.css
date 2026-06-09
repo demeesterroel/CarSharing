@@ -13,6 +13,10 @@
   --green: #4d6e35;
   --blue: #3d5a7a;
   --amber: #8a5a00;
+  /* Warning/notice surface (banners); text uses --amber */
+  --amber-bg: #fcf3e3;
+  --amber-border: #e8d9b5;
+  --amber-tint: rgba(138, 90, 0, 0.06);
 
   --font-mono: var(--font-courier-prime, "Courier Prime", "IBM Plex Mono", ui-monospace, monospace);
   --font-serif: var(--font-fraunces, "Fraunces", "Playfair Display", Georgia, serif);
@@ -343,6 +347,9 @@ body {
   --green: #15803d;
   --blue: #1d4ed8;
   --amber: #b45309;
+  --amber-bg: #fffbeb;
+  --amber-border: #fde68a;
+  --amber-tint: rgba(180, 83, 9, 0.06);
 
   /* Typography — Inter Tight for display, Inter for body */
   --font-mono: var(--font-inter, "Inter", system-ui, sans-serif);

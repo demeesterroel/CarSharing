@@ -256,7 +256,7 @@ export default function LoginForm({ mailEnabled }: { mailEnabled: boolean }) {
                   style={{
                     fontFamily: fontMono,
                     fontSize: 11,
-                    color: "#c0392b",
+                    color: paper.accent,
                     marginBottom: 16,
                     marginTop: 0,
                   }}
@@ -496,7 +496,7 @@ export default function LoginForm({ mailEnabled }: { mailEnabled: boolean }) {
                       style={{
                         fontFamily: fontMono,
                         fontSize: 11,
-                        color: "#c0392b",
+                        color: paper.accent,
                         marginBottom: 16,
                         marginTop: 0,
                       }}

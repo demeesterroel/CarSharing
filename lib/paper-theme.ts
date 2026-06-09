@@ -11,6 +11,9 @@ export const paper = {
   green: "var(--green)",
   blue: "var(--blue)",
   amber: "var(--amber)",
+  amberBg: "var(--amber-bg)",
+  amberBorder: "var(--amber-border)",
+  amberTint: "var(--amber-tint)",
 } as const;
 
 export const fontMono = "var(--font-mono)";

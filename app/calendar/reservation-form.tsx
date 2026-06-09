@@ -674,7 +674,7 @@ export function ReservationForm({ defaultValues, onSubmit, onCancel, readOnly = 
                     border: `1px solid ${paper.amber}`,
                     borderRadius: "var(--radius-md, 10px)",
                     padding: "10px 14px",
-                    background: "rgba(180, 83, 9, 0.05)",
+                    background: paper.amberTint,
                   }
                 : {
                     margin: "0 14px 12px",

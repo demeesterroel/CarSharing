@@ -660,6 +660,11 @@ export const nl = {
   "pwa.refresh_blocked_offline":
     "Verversen kan niet — je bent offline met niet-gesynchroniseerde wijzigingen.",
 
+  // In-app notifications
+  "notif.new_reservation": "Nieuwe reservering voor {car} op {date}",
+  "notif.reservation_update": "Reservering voor {car} op {date} bijgewerkt",
+  "notif.new_trip": "Nieuwe rit met {car} op {date}",
+
   // Owner dashboard
   "owner.title": "Mijn wagens",
   "owner.subtitle": "Economische gezondheid · {year}",

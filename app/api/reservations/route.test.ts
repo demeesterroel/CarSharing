@@ -29,6 +29,11 @@ vi.mock("@/lib/reservation-sync", () => ({
   syncReservationCreate: vi.fn(() => Promise.resolve()),
 }));
 
+const mockNotifyUsersOfEvent = vi.fn(() => Promise.resolve());
+vi.mock("@/lib/notify-users", () => ({
+  notifyUsersOfEvent: (...a: unknown[]) => mockNotifyUsersOfEvent(...a),
+}));
+
 import { GET, POST } from "./route";
 
 const CSRF = "test-csrf-token";
@@ -120,5 +125,30 @@ describe("POST /api/reservations", () => {
     expect(res.status).toBe(403);
     expect(await res.json()).toMatchObject({ error: "invalid_csrf" });
     expect(mockInsertReservation).not.toHaveBeenCalled();
+  });
+
+  it("fires notifyUsersOfEvent with trigger=new_reservation after a successful insert", async () => {
+    mockSession.personId = 1;
+    mockGetReservationById.mockReturnValue({
+      id: 7,
+      person_id: 2,
+      car_id: 3,
+      car_short: "JF",
+      start_date: "2025-06-01",
+    });
+    const res = await POST(postReq(validReservation), ctx);
+    expect(res.status).toBe(201);
+    // notifyUsersOfEvent is fire-and-forget; allow the microtask queue to flush
+    await Promise.resolve();
+    expect(mockNotifyUsersOfEvent).toHaveBeenCalledWith(
+      expect.objectContaining({
+        trigger: "new_reservation",
+        entityType: "reservation",
+        entityId: 7,
+        carId: 3,
+        actorPersonId: 1,
+        message: expect.stringContaining("JF"),
+      })
+    );
   });
 });

@@ -660,6 +660,11 @@ export const en: Messages = {
   "pwa.refreshing": "Refreshing…",
   "pwa.refresh_blocked_offline": "Can't refresh — you're offline with unsynced changes.",
 
+  // In-app notifications
+  "notif.new_reservation": "New reservation for {car} on {date}",
+  "notif.reservation_update": "Reservation for {car} on {date} updated",
+  "notif.new_trip": "New trip with {car} on {date}",
+
   // Owner dashboard
   "owner.title": "My cars",
   "owner.subtitle": "Fleet economics · {year}",

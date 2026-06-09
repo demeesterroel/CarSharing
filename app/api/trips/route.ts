@@ -1,7 +1,9 @@
 import { json, requireSession } from "@/lib/api";
 import { listHandler } from "@/lib/api/crud-handler";
 import { getDb } from "@/lib/db";
+import { t } from "@/lib/i18n";
 import { notifyAdminOfChange } from "@/lib/notify-admin";
+import { notifyUsersOfEvent } from "@/lib/notify-users";
 import { getTripById, getTrips, insertTrip } from "@/lib/queries/trips";
 import { tripSchema } from "@/lib/schemas/trip";
 import { NextResponse } from "next/server";
@@ -31,5 +33,17 @@ export const POST = json(async (req: Request) => {
       ].join("\n"),
     }).catch(() => {});
   }
+  notifyUsersOfEvent({
+    db,
+    trigger: "new_trip",
+    entityType: "trip",
+    entityId: id,
+    carId: data.car_id,
+    actorPersonId: session.personId!,
+    message: t("notif.new_trip", {
+      car: trip?.car_short ?? String(data.car_id),
+      date: trip?.date ?? data.date,
+    }),
+  }).catch(() => {});
   return NextResponse.json(trip, { status: 201 });
 });

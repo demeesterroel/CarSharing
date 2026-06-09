@@ -6,6 +6,7 @@ import pkg from "@/package.json";
 import { Power } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { LangSwitcher } from "./lang-switcher";
+import { NotificationBell } from "./notification-bell";
 import { OfflineBadge } from "./offline-badge";
 
 const version = pkg.version;
@@ -83,6 +84,7 @@ export function PageHeader({ title, subtitle, right, titleSize = 26 }: Props) {
         >
           <OfflineBadge />
           {right}
+          <NotificationBell />
           <LangSwitcher />
           <button
             onClick={handleLogout}

@@ -14,7 +14,7 @@ import { useCreateTrip, useDeleteTrip, useTrips, useUpdateTrip } from "@/hooks/u
 import { useCars } from "@/hooks/use-vehicles";
 import { fmtYearMonth, fontMono, paper } from "@/lib/paper-theme";
 import { canEdit } from "@/lib/permissions";
-import { Suspense } from "react";
+import { Suspense, useEffect } from "react";
 import { toast } from "sonner";
 import { TripForm } from "./trip-form";
 
@@ -30,8 +30,21 @@ function TripsContent() {
   const [mineParam, setMineParam] = useQueryParam("mine", "");
   const [carFilter, setCarFilter] = useQueryParam("car", "");
   const [yearFilter, setYearFilter] = useQueryParam("year", "");
+  const [tripParam] = useQueryParam("trip", "");
 
   const { adding, editingId, modalClosed, openAdd, openEdit, closeModal } = useEditModal();
+
+  // Deep-link from notification bell: ?trip=<id> opens the edit modal
+  useEffect(() => {
+    if (tripParam && !isLoading) {
+      const id = Number(tripParam);
+      if (id > 0) {
+        openEdit(id);
+      }
+    }
+    // Only run when tripParam changes or data loads — not on every openEdit re-render
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tripParam, isLoading]);
 
   const editing =
     !isLoading && editingId ? (trips.find((tr) => tr.id === editingId) ?? null) : null;

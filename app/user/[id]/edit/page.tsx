@@ -9,6 +9,7 @@ import { useTheme, type Theme } from "@/lib/theme-context";
 import type { Person } from "@/types";
 import { useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import { useEffect, useState } from "react";
 
 export default function EditProfilePage({ params }: { params: Promise<{ id: string }> }) {
@@ -24,7 +25,6 @@ export default function EditProfilePage({ params }: { params: Promise<{ id: stri
   const [bankAccount, setBankAccount] = useState("");
   const [email, setEmail] = useState("");
   const [saving, setSaving] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
   const { theme: _theme, setTheme } = useTheme();
   const [themePreference, setThemePreference] = useState<Theme>("mono");
@@ -103,7 +103,6 @@ export default function EditProfilePage({ params }: { params: Promise<{ id: stri
   async function saveProfile() {
     if (saving) return;
     setSaving(true);
-    setError(null);
     try {
       await apiFetch(`/api/people/${id}/profile`, {
         method: "PATCH",
@@ -135,7 +134,7 @@ export default function EditProfilePage({ params }: { params: Promise<{ id: stri
       setTimeout(() => setSaved(false), 1500);
       await queryClient.invalidateQueries({ queryKey: ["me"] });
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : "Fout bij opslaan");
+      toast.error(err instanceof Error ? err.message : t("toast.error"));
     } finally {
       setSaving(false);
     }
@@ -175,6 +174,7 @@ export default function EditProfilePage({ params }: { params: Promise<{ id: stri
       });
       await queryClient.invalidateQueries({ queryKey: ["me"] });
     } catch {
+      toast.error(t("toast.error"));
       // revert
       if (field === "notify_new_reservations")
         setNotifyNewReservations(person!.notify_new_reservations ?? "off");
@@ -215,6 +215,7 @@ export default function EditProfilePage({ params }: { params: Promise<{ id: stri
       setTimeout(() => setThemeSaved(false), 1500);
       await queryClient.invalidateQueries({ queryKey: ["me"] });
     } catch {
+      toast.error(t("toast.error"));
       // revert local
       setThemePreference(themePreference);
       setTheme(themePreference);
@@ -449,18 +450,6 @@ export default function EditProfilePage({ params }: { params: Promise<{ id: stri
               </p>
             </div>
 
-            {error && (
-              <div
-                style={{
-                  fontFamily: fontMono,
-                  fontSize: 10,
-                  color: paper.accent,
-                  marginBottom: 10,
-                }}
-              >
-                {error}
-              </div>
-            )}
 
           </form>
 

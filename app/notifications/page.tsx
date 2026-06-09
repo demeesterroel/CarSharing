@@ -29,6 +29,8 @@ export default function NotificationsPage() {
     queryFn: () => apiFetch("/api/notifications"),
   });
 
+  const unreadCount = notifications.filter((n) => n.read_at === null).length;
+
   async function handleMarkAllRead() {
     try {
       await apiFetch("/api/notifications/read", {
@@ -52,6 +54,7 @@ export default function NotificationsPage() {
             <button
               type="button"
               onClick={handleMarkAllRead}
+              disabled={unreadCount === 0}
               style={{
                 padding: "4px 8px",
                 fontFamily: fontMono,
@@ -60,12 +63,13 @@ export default function NotificationsPage() {
                 fontWeight: 700,
                 textTransform: "uppercase",
                 background: "transparent",
-                border: `1.5px solid ${paper.paperDark}`,
-                color: paper.inkDim,
-                cursor: "pointer",
+                border: `1.5px solid ${unreadCount > 0 ? paper.ink : paper.paperDark}`,
+                color: unreadCount > 0 ? paper.ink : paper.inkMute,
+                cursor: unreadCount > 0 ? "pointer" : "default",
+                opacity: unreadCount > 0 ? 1 : 0.55,
               }}
             >
-              {t("notif.mark_all_read")}
+              {unreadCount > 0 ? `${t("notif.mark_all_read")} (${unreadCount})` : t("notif.mark_all_read")}
             </button>
           ) : undefined
         }

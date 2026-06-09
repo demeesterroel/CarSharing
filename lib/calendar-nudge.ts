@@ -19,17 +19,13 @@ export const CALENDAR_NUDGE_DURATION = 8_000;
  * Pure predicate — returns true when the nudge has not been seen yet.
  * Accepts a storage stub so it can be tested without a real browser.
  */
-export function shouldShowCalendarNudge(
-  storage: Pick<Storage, "getItem">
-): boolean {
+export function shouldShowCalendarNudge(storage: Pick<Storage, "getItem">): boolean {
   return storage.getItem(CALENDAR_NUDGE_KEY) === null;
 }
 
 /**
  * Marks the nudge as seen so it will not be shown again.
  */
-export function markCalendarNudgeSeen(
-  storage: Pick<Storage, "getItem" | "setItem">
-): void {
+export function markCalendarNudgeSeen(storage: Pick<Storage, "getItem" | "setItem">): void {
   storage.setItem(CALENDAR_NUDGE_KEY, "1");
 }

@@ -12,10 +12,7 @@ export interface InsertNotificationInput {
 /**
  * Inserts a new notification record and returns the new row's id.
  */
-export function insertNotification(
-  db: Database.Database,
-  input: InsertNotificationInput
-): number {
+export function insertNotification(db: Database.Database, input: InsertNotificationInput): number {
   const result = db
     .prepare(
       `INSERT INTO notifications (recipient_person_id, type, entity_type, entity_id, message)

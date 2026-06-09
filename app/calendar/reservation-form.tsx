@@ -7,11 +7,12 @@ import { useMe } from "@/hooks/use-me";
 import { usePeople } from "@/hooks/use-people";
 import { useReservations } from "@/hooks/use-reservations";
 import { useCars } from "@/hooks/use-vehicles";
+import { monoLabel, paperLabel } from "@/lib/form-styles";
 import { buildMissingLabel } from "@/lib/i18n";
 import { useOnlineState } from "@/lib/offline/online-state";
-import { fmtDate, fontMono, fontSerif, tokens } from "@/lib/theme-tokens";
 import { fullNameOf } from "@/lib/person-utils";
 import { useTheme } from "@/lib/theme-context";
+import { fmtDate, fontMono, fontSerif, tokens } from "@/lib/theme-tokens";
 import type { Reservation, ReservationInput } from "@/types";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Lock } from "lucide-react";
@@ -67,25 +68,6 @@ const fieldsetReset: React.CSSProperties = {
 function diffDays(start: string, end: string): number {
   return Math.round((new Date(end).getTime() - new Date(start).getTime()) / 86400000) + 1;
 }
-
-const paperLabel: React.CSSProperties = {
-  fontFamily: fontMono,
-  fontSize: 9,
-  fontWeight: 700,
-  letterSpacing: 2,
-  textTransform: "uppercase",
-  color: tokens.inkMute,
-  display: "block",
-  marginBottom: 4,
-};
-
-const monoLabel: React.CSSProperties = {
-  fontFamily: fontMono,
-  fontSize: 11,
-  color: tokens.inkMute,
-  display: "block",
-  marginBottom: 4,
-};
 
 export function ReservationForm({ defaultValues, onSubmit, onCancel, readOnly = false }: Props) {
   const t = useT();
@@ -391,7 +373,9 @@ export function ReservationForm({ defaultValues, onSubmit, onCancel, readOnly = 
         <div
           style={{
             padding: "10px 14px",
-            borderBottom: mono ? `1px solid ${tokens.paperDark}` : `1.5px dashed ${tokens.paperDark}`,
+            borderBottom: mono
+              ? `1px solid ${tokens.paperDark}`
+              : `1.5px dashed ${tokens.paperDark}`,
             background: tokens.paper,
           }}
         >
@@ -535,7 +519,9 @@ export function ReservationForm({ defaultValues, onSubmit, onCancel, readOnly = 
               justifyContent: "space-between",
               alignItems: "center",
               padding: "8px 14px",
-              borderBottom: mono ? `1px solid ${tokens.paperDark}` : `1px dashed ${tokens.paperDark}`,
+              borderBottom: mono
+                ? `1px solid ${tokens.paperDark}`
+                : `1px dashed ${tokens.paperDark}`,
             }}
           >
             <div>

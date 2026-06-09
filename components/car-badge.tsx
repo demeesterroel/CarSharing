@@ -1,6 +1,6 @@
 "use client";
-import { fontMono, tokens } from "@/lib/theme-tokens";
 import { useTheme } from "@/lib/theme-context";
+import { fontMono, tokens } from "@/lib/theme-tokens";
 
 export function CarBadge({ short, active = true }: { short: string; active?: boolean }) {
   const { theme } = useTheme();

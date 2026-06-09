@@ -5,11 +5,12 @@ import { ReceiptUpload } from "@/components/receipt-upload";
 import { useMe } from "@/hooks/use-me";
 import { usePeople } from "@/hooks/use-people";
 import { useCars } from "@/hooks/use-vehicles";
+import { monoLabel, paperLabel } from "@/lib/form-styles";
 import { buildMissingLabel } from "@/lib/i18n";
 import { useOnlineState } from "@/lib/offline/online-state";
-import { fmtDate, fontMono, fontSerif, tokens } from "@/lib/theme-tokens";
 import { fullNameOf } from "@/lib/person-utils";
 import { useTheme } from "@/lib/theme-context";
+import { fmtDate, fontMono, fontSerif, tokens } from "@/lib/theme-tokens";
 import type { Expense, ExpenseCategory, ExpenseInput } from "@/types";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { FileText, Lock, MoreHorizontal, Search, Shield, Wrench } from "lucide-react";
@@ -70,25 +71,6 @@ const fieldsetReset: React.CSSProperties = {
   margin: 0,
   padding: 0,
   minInlineSize: "auto",
-};
-
-const paperLabel: React.CSSProperties = {
-  fontFamily: fontMono,
-  fontSize: 9,
-  fontWeight: 700,
-  letterSpacing: 2,
-  textTransform: "uppercase",
-  color: tokens.inkMute,
-  display: "block",
-  marginBottom: 4,
-};
-
-const monoLabel: React.CSSProperties = {
-  fontFamily: fontMono,
-  fontSize: 11,
-  color: tokens.inkMute,
-  display: "block",
-  marginBottom: 4,
 };
 
 const dashedBox: React.CSSProperties = {
@@ -351,7 +333,9 @@ export function ExpenseForm({
         <div
           style={{
             display: "flex",
-            borderBottom: mono ? `1px solid ${tokens.paperDark}` : `1.5px dashed ${tokens.paperDark}`,
+            borderBottom: mono
+              ? `1px solid ${tokens.paperDark}`
+              : `1.5px dashed ${tokens.paperDark}`,
           }}
         >
           <div
@@ -593,7 +577,8 @@ export function ExpenseForm({
                           borderTop: "none",
                           borderLeft: "none",
                           borderBottom: "none",
-                          borderRight: i < arr.length - 1 ? `1px solid ${tokens.paperDark}` : "none",
+                          borderRight:
+                            i < arr.length - 1 ? `1px solid ${tokens.paperDark}` : "none",
                           cursor: "pointer",
                           textAlign: "center" as const,
                         }

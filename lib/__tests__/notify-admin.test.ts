@@ -1,5 +1,5 @@
 // lib/__tests__/notify-admin.test.ts
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 // ── Mock @/lib/mailer ─────────────────────────────────────────────────────
 // Use a factory that references only module-level vi helpers (no outer vars).

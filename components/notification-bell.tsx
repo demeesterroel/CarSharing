@@ -20,8 +20,16 @@ export function NotificationBell() {
   return (
     <Link
       href="/notifications"
-      title={count > 0 ? t("notif.unread_badge").replace("{count}", String(count)) : t("notif.page_title")}
-      aria-label={count > 0 ? t("notif.unread_badge").replace("{count}", String(count)) : t("notif.page_title")}
+      title={
+        count > 0
+          ? t("notif.unread_badge").replace("{count}", String(count))
+          : t("notif.page_title")
+      }
+      aria-label={
+        count > 0
+          ? t("notif.unread_badge").replace("{count}", String(count))
+          : t("notif.page_title")
+      }
       style={{
         position: "relative",
         display: "flex",

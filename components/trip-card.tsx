@@ -2,8 +2,8 @@
 import { CarBadge } from "@/components/car-badge";
 import { useLocale } from "@/components/locale-provider";
 import { PendingBadge } from "@/components/pending-badge";
-import { fmtDate, fmtMoney, fontMono, fontSerif, tokens } from "@/lib/theme-tokens";
 import { useTheme } from "@/lib/theme-context";
+import { fmtDate, fmtMoney, fontMono, fontSerif, tokens } from "@/lib/theme-tokens";
 import type { Trip } from "@/types";
 
 export interface TripCardProps {

@@ -14,9 +14,9 @@
  * response path is unaffected.
  */
 
-import type Database from "better-sqlite3";
 import { isMailEnabled, sendMail } from "@/lib/mailer";
 import { getAdminEmails } from "@/lib/queries/people";
+import type Database from "better-sqlite3";
 
 export interface NotifyAdminOptions {
   db: Database.Database;

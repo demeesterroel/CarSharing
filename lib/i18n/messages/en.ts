@@ -285,7 +285,8 @@ export const en: Messages = {
   "calendar.all_filter": "All",
   "calendar.mine_filter": "Mine",
   "calendar.subscribe": "Add to calendar app",
-  "calendar.nudge_message": "Add the CarSharing calendar to your own calendar app to stay up to date.",
+  "calendar.nudge_message":
+    "Add the CarSharing calendar to your own calendar app to stay up to date.",
   "calendar.nudge_action": "Add calendar",
   "calendar.prev_weeks": "Previous weeks",
   "calendar.next_weeks": "Next weeks",
@@ -605,8 +606,7 @@ export const en: Messages = {
     "Set a username first — the invite lets the member set a password, not a username.",
   "admin.invite_msg_intro": "Hi! You've been added to CarSharing.",
   "admin.invite_msg_username": "Your username: {username}",
-  "admin.invite_msg_cta":
-    "Open this link to set your password and sign in (valid for 7 days):",
+  "admin.invite_msg_cta": "Open this link to set your password and sign in (valid for 7 days):",
   "admin.username_label": "Username",
   "admin.is_admin_label": "Admin",
   "admin.no_username": "No login yet",

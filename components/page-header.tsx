@@ -1,7 +1,7 @@
 "use client";
 import { useT } from "@/components/locale-provider";
-import { fontMono, fontSerif, tokens } from "@/lib/theme-tokens";
 import { useTheme } from "@/lib/theme-context";
+import { fontMono, fontSerif, tokens } from "@/lib/theme-tokens";
 import pkg from "@/package.json";
 import { Power } from "lucide-react";
 import { useRouter } from "next/navigation";

@@ -2,7 +2,6 @@
 import { Card, Row } from "@/app/admin/_shared";
 import { useT } from "@/components/locale-provider";
 import { useUpdateCar } from "@/hooks/use-vehicles";
-import { fmtMoney, fmtMoneyOut, fontMono, fontSerif, tokens } from "@/lib/theme-tokens";
 import type {
   CarOwnerSplit,
   CarPnL,
@@ -10,6 +9,7 @@ import type {
   CarYearExpenses,
   CarYearKm,
 } from "@/lib/queries/admin";
+import { fmtMoney, fmtMoneyOut, fontMono, fontSerif, tokens } from "@/lib/theme-tokens";
 import type { Car } from "@/types";
 import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";

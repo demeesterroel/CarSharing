@@ -1,7 +1,7 @@
 "use client";
 import { useLocale, useT } from "@/components/locale-provider";
-import { fmtDate, fontMono, tokens } from "@/lib/theme-tokens";
 import { useTheme } from "@/lib/theme-context";
+import { fmtDate, fontMono, tokens } from "@/lib/theme-tokens";
 import type { Reservation } from "@/types";
 import { useState } from "react";
 

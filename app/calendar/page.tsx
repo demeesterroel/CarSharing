@@ -21,8 +21,8 @@ import {
   shouldShowCalendarNudge,
 } from "@/lib/calendar-nudge";
 import { useOnlineState } from "@/lib/offline/online-state";
-import { fontMono, fontSerif, tokens } from "@/lib/theme-tokens";
 import { canEdit } from "@/lib/permissions";
+import { fontMono, fontSerif, tokens } from "@/lib/theme-tokens";
 import type { Car, Reservation } from "@/types";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { CalendarPlus } from "lucide-react";

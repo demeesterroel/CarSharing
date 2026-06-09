@@ -10,8 +10,8 @@
  * path is always unaffected.
  */
 
-import type Database from "better-sqlite3";
 import { insertNotification } from "@/lib/queries/notifications";
+import type Database from "better-sqlite3";
 
 export type NotifyTrigger = "new_reservation" | "reservation_update" | "new_trip";
 

@@ -2,8 +2,8 @@
 import { CarBadge } from "@/components/car-badge";
 import { useLocale, useT } from "@/components/locale-provider";
 import { PendingBadge } from "@/components/pending-badge";
-import { fmtDate, fmtMoney, fontMono, fontSerif, tokens } from "@/lib/theme-tokens";
 import { useTheme } from "@/lib/theme-context";
+import { fmtDate, fmtMoney, fontMono, fontSerif, tokens } from "@/lib/theme-tokens";
 import type { FuelFillup } from "@/types";
 
 export interface FuelCardProps {

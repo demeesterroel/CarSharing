@@ -8,16 +8,16 @@ import {
   useUpdatePayment,
 } from "@/hooks/use-payments";
 import { usePeople } from "@/hooks/use-people";
+import { fullNameOf } from "@/lib/person-utils";
 import {
   amtColor,
   fmtDate,
   fmtMoney,
   fontMono,
   fontSerif,
-  tokens,
   signPrefix,
+  tokens,
 } from "@/lib/theme-tokens";
-import { fullNameOf } from "@/lib/person-utils";
 import type { Payment } from "@/types";
 import * as Dialog from "@radix-ui/react-dialog";
 import { useState } from "react";

@@ -4,9 +4,9 @@ import { useT } from "@/components/locale-provider";
 import { ShimmerBar, shimmerKeyframes } from "@/components/shimmer";
 import { useCreateTrip } from "@/hooks/use-trips";
 import { apiFetch } from "@/lib/api/client";
-import { fontMono, fontSerif, tokens } from "@/lib/theme-tokens";
 import { shortNameOf } from "@/lib/person-utils";
 import type { KmGap } from "@/lib/queries/admin";
+import { fontMono, fontSerif, tokens } from "@/lib/theme-tokens";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -270,7 +270,12 @@ export default function AdminInboxPage() {
               <CarBadge short={r.car_short ?? "?"} />
               <div style={{ flex: 1 }}>
                 <div
-                  style={{ fontFamily: fontSerif, fontSize: 16, fontWeight: 700, color: tokens.ink }}
+                  style={{
+                    fontFamily: fontSerif,
+                    fontSize: 16,
+                    fontWeight: 700,
+                    color: tokens.ink,
+                  }}
                 >
                   {r.person_name}
                 </div>

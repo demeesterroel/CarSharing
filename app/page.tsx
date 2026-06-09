@@ -22,6 +22,7 @@ import { useReservations } from "@/hooks/use-reservations";
 import { useSettlement } from "@/hooks/use-settlement";
 import { useTrips } from "@/hooks/use-trips";
 import { useCars } from "@/hooks/use-vehicles";
+import { useTheme } from "@/lib/theme-context";
 import {
   amtColor,
   fmtDate,
@@ -29,10 +30,9 @@ import {
   fmtMoney,
   fontMono,
   fontSerif,
-  tokens,
   signPrefix,
+  tokens,
 } from "@/lib/theme-tokens";
-import { useTheme } from "@/lib/theme-context";
 import type { CarDashboardBreakdown, Expense, FuelFillup, Reservation, Trip } from "@/types";
 import * as Dialog from "@radix-ui/react-dialog";
 import { Fuel as FuelIcon, Navigation, Receipt as ReceiptIcon } from "lucide-react";
@@ -93,7 +93,8 @@ function Perf({ margin = "12px 0" }: { margin?: string }) {
     <div
       style={{
         height: 0,
-        borderTop: theme === "mono" ? `1px solid ${tokens.paperDark}` : `1.5px dashed ${tokens.ink}`,
+        borderTop:
+          theme === "mono" ? `1px solid ${tokens.paperDark}` : `1.5px dashed ${tokens.ink}`,
         margin,
       }}
     />
@@ -995,7 +996,9 @@ function CarLocations({
                 gap: 12,
                 paddingTop: 10,
                 paddingBottom: 10,
-                borderTop: mono ? `1px solid ${tokens.paperDark}` : `1px dashed ${tokens.paperDark}`,
+                borderTop: mono
+                  ? `1px solid ${tokens.paperDark}`
+                  : `1px dashed ${tokens.paperDark}`,
                 cursor: "pointer",
               }}
             >

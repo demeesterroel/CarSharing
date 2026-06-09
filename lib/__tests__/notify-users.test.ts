@@ -1,10 +1,10 @@
 // lib/__tests__/notify-users.test.ts
 import Database from "better-sqlite3";
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it } from "vitest";
 import { runMigrations } from "../db/migrate";
-import { insertNotification, listNotifications } from "../queries/notifications";
-import { insertPerson } from "../queries/people";
 import { notifyUsersOfEvent } from "../notify-users";
+import { listNotifications } from "../queries/notifications";
+import { insertPerson } from "../queries/people";
 
 function makeDb() {
   const db = new Database(":memory:");
@@ -30,11 +30,7 @@ const basePerson = {
 /**
  * Helper: insert a car owned by ownerPersonId and return the car id.
  */
-function insertCar(
-  db: Database.Database,
-  ownerPersonId: number,
-  short = "AA"
-): number {
+function insertCar(db: Database.Database, ownerPersonId: number, short = "AA"): number {
   const result = db
     .prepare(
       `INSERT INTO cars (short, name, price_per_km, owner_person_id, owner_from, active)

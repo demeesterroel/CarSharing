@@ -137,7 +137,12 @@ export default function ForgotForm({ mailEnabled }: { mailEnabled: boolean }) {
               </div>
               {error && (
                 <p
-                  style={{ fontFamily: fontMono, fontSize: 11, color: tokens.accent, marginBottom: 16 }}
+                  style={{
+                    fontFamily: fontMono,
+                    fontSize: 11,
+                    color: tokens.accent,
+                    marginBottom: 16,
+                  }}
                 >
                   {error}
                 </p>

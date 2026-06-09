@@ -7,13 +7,14 @@ import { useMe } from "@/hooks/use-me";
 import { usePeople } from "@/hooks/use-people";
 import { useLastCarState } from "@/hooks/use-vehicle-state";
 import { useCars } from "@/hooks/use-vehicles";
+import { monoLabel, paperLabel } from "@/lib/form-styles";
 import { parseDecimalInput } from "@/lib/form-utils";
 import { calcPricePerLiter } from "@/lib/formulas";
 import { buildMissingLabel, t } from "@/lib/i18n";
 import { useOnlineState } from "@/lib/offline/online-state";
-import { fmtDate, fontMono, fontSerif, tokens } from "@/lib/theme-tokens";
 import { fullNameOf } from "@/lib/person-utils";
 import { useTheme } from "@/lib/theme-context";
+import { fmtDate, fontMono, fontSerif, tokens } from "@/lib/theme-tokens";
 import type { FuelFillup, FuelFillupInput } from "@/types";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Lock } from "lucide-react";
@@ -71,23 +72,6 @@ const fieldsetReset: React.CSSProperties = {
   minInlineSize: "auto",
 };
 
-const paperLabel: React.CSSProperties = {
-  fontFamily: fontMono,
-  fontSize: 9,
-  fontWeight: 700,
-  letterSpacing: 2,
-  textTransform: "uppercase",
-  color: tokens.inkMute,
-  display: "block",
-  marginBottom: 4,
-};
-const monoLabel: React.CSSProperties = {
-  fontFamily: fontMono,
-  fontSize: 11,
-  color: tokens.inkMute,
-  display: "block",
-  marginBottom: 4,
-};
 const dashedBox: React.CSSProperties = {
   border: `1.5px dashed ${tokens.paperDark}`,
   padding: "12px 14px",
@@ -401,7 +385,12 @@ export function FuelForm({ defaultValues, onSubmit, onCancel, onDelete, readOnly
             ) : (
               <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
                 <span
-                  style={{ fontFamily: fontSerif, fontSize: 17, fontWeight: 600, color: tokens.ink }}
+                  style={{
+                    fontFamily: fontSerif,
+                    fontSize: 17,
+                    fontWeight: 600,
+                    color: tokens.ink,
+                  }}
                 >
                   {person ? fullNameOf(person) : (me?.shortName ?? "—")}
                 </span>

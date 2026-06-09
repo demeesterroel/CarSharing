@@ -3,14 +3,14 @@ import { useT } from "@/components/locale-provider";
 import { PageHeader } from "@/components/page-header";
 import { useMe } from "@/hooks/use-me";
 import { apiFetch } from "@/lib/api/client";
-import { fontMono, fontSerif, tokens } from "@/lib/theme-tokens";
 import { fullNameOf } from "@/lib/person-utils";
 import { useTheme, type Theme } from "@/lib/theme-context";
+import { fontMono, fontSerif, tokens } from "@/lib/theme-tokens";
 import type { Person } from "@/types";
 import { useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
-import { toast } from "sonner";
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 
 export default function EditProfilePage({ params }: { params: Promise<{ id: string }> }) {
   const router = useRouter();
@@ -312,8 +312,14 @@ export default function EditProfilePage({ params }: { params: Promise<{ id: stri
               marginBottom: 16,
             }}
           >
-            <div style={{ fontFamily: fontSerif, fontSize: 14, fontWeight: 700, color: tokens.ink }}>
-              {fullNameOf({ first_name: firstName, last_name: lastName, username: person.username })}
+            <div
+              style={{ fontFamily: fontSerif, fontSize: 14, fontWeight: 700, color: tokens.ink }}
+            >
+              {fullNameOf({
+                first_name: firstName,
+                last_name: lastName,
+                username: person.username,
+              })}
             </div>
             <div
               aria-live="polite"
@@ -518,11 +524,11 @@ export default function EditProfilePage({ params }: { params: Promise<{ id: stri
                 {t("form.email_hint")}
               </p>
             </div>
-
-
           </form>
 
-          <div style={{ marginTop: 20, paddingTop: 16, borderTop: `1px solid ${tokens.paperDark}` }}>
+          <div
+            style={{ marginTop: 20, paddingTop: 16, borderTop: `1px solid ${tokens.paperDark}` }}
+          >
             <div
               style={{
                 fontFamily: fontMono,
@@ -562,7 +568,9 @@ export default function EditProfilePage({ params }: { params: Promise<{ id: stri
           </div>
 
           {/* Notification preferences — driver/member block (all users) */}
-          <div style={{ marginTop: 20, paddingTop: 16, borderTop: `1px solid ${tokens.paperDark}` }}>
+          <div
+            style={{ marginTop: 20, paddingTop: 16, borderTop: `1px solid ${tokens.paperDark}` }}
+          >
             <div style={notifySectionStyle}>{t("notif.pref_section")}</div>
 
             {notifyCheckbox(
@@ -629,11 +637,8 @@ export default function EditProfilePage({ params }: { params: Promise<{ id: stri
               )}
             </div>
 
-            {notifyCheckbox(
-              "new_trips",
-              t("notif.pref_new_trips"),
-              notifyNewTrips === "all",
-              (c) => handleNotifyChange("notify_new_trips", c ? "all" : "off")
+            {notifyCheckbox("new_trips", t("notif.pref_new_trips"), notifyNewTrips === "all", (c) =>
+              handleNotifyChange("notify_new_trips", c ? "all" : "off")
             )}
           </div>
 

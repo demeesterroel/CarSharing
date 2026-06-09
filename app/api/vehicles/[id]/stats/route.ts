@@ -1,23 +1,16 @@
 import { getCarStats } from "@/lib/queries/cars";
 import { getDb } from "@/lib/db";
-import { NextResponse } from "next/server";
+import { json, readId } from "@/lib/api";
 
-export async function GET(
-  request: Request,
-  { params }: { params: { id: string } }
-) {
-  const id = parseInt(params.id, 10);
-  const { searchParams } = new URL(request.url);
+export const GET = json(async (_req, ctx) => {
+  const id = await readId(ctx);
+  const { searchParams } = new URL(_req.url);
   const yearParam = searchParams.get("year");
-  
-  if (isNaN(id)) {
-    return NextResponse.json({ error: "Invalid car ID" }, { status: 400 });
-  }
   
   const year = yearParam ? parseInt(yearParam, 10) : new Date().getFullYear();
   
   const db = getDb();
   const stats = getCarStats(db, id, year);
   
-  return NextResponse.json(stats);
-}
+  return stats;
+});

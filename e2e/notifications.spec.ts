@@ -62,9 +62,13 @@ test.describe("in-app notifications (#358)", () => {
     await scrollToLoadAll(page);
     const row = page.getByRole("link").filter({ hasText: /reserv/i }).first();
     await expect(row).toBeVisible({ timeout: 10_000 });
+    // Still unread on view (no auto-mark) — the unread count holds.
+    expect(
+      (await aliceApi.get<{ count: number }>("/api/notifications/unread-count")).count
+    ).toBe(1);
 
-    // Viewing /notifications marks everything read (assert before navigating away,
-    // so we don't race the mark-read-on-mount against the row click).
+    // The "mark all read" button clears the unread count.
+    await page.getByRole("button", { name: "Alles gelezen" }).click();
     await expect
       .poll(
         async () =>
@@ -73,7 +77,7 @@ test.describe("in-app notifications (#358)", () => {
       )
       .toBe(0);
 
-    // Clicking the notification deep-links to the reservation on the calendar.
+    // Clicking the notification still deep-links to the reservation on the calendar.
     await row.click();
     await page.waitForURL(new RegExp(`/calendar\\?reservation=${resv.id}`));
 

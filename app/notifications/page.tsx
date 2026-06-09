@@ -7,7 +7,6 @@ import { fontMono, fontSerif, paper } from "@/lib/paper-theme";
 import type { Notification } from "@/types";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
-import { useEffect } from "react";
 
 function relativeTime(isoString: string): string {
   const diffMs = Date.now() - new Date(isoString).getTime();
@@ -29,22 +28,6 @@ export default function NotificationsPage() {
     queryKey: ["notifications"],
     queryFn: () => apiFetch("/api/notifications"),
   });
-
-  // Mark all read on mount
-  useEffect(() => {
-    apiFetch("/api/notifications/read", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({}),
-    })
-      .then(() => {
-        void queryClient.invalidateQueries({ queryKey: ["notifications", "unread"] });
-        void queryClient.invalidateQueries({ queryKey: ["notifications"] });
-      })
-      .catch(() => {
-        // non-critical — ignore
-      });
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   async function handleMarkAllRead() {
     try {

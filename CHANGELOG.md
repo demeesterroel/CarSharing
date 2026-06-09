@@ -1,5 +1,19 @@
 # Changelog
 
+## [1.20.0](https://github.com/demeesterroel/CarSharing/compare/v1.19.4...v1.20.0) (2026-06-09)
+
+
+### ✨ New features
+
+* **admin:** add-member FAB on /admin/members ([#361](https://github.com/demeesterroel/CarSharing/issues/361)) ([9a25fc4](https://github.com/demeesterroel/CarSharing/commit/9a25fc4d8df1fcb8570b69e70bac5f397feebcdb))
+* **reservations:** optional start/end times (half/multi-day) ([#191](https://github.com/demeesterroel/CarSharing/issues/191)) ([#363](https://github.com/demeesterroel/CarSharing/issues/363)) ([c72110a](https://github.com/demeesterroel/CarSharing/commit/c72110a9c3f9a57363d35cc433b66685297da6a3))
+
+
+### 🐛 Bug fixes
+
+* **auth:** log revoked sessions out client-side ([#284](https://github.com/demeesterroel/CarSharing/issues/284)) ([#365](https://github.com/demeesterroel/CarSharing/issues/365)) ([ec5e64d](https://github.com/demeesterroel/CarSharing/commit/ec5e64d20cfb8aec479a3560383c4e8bdc64f554))
+* **cloak:** correct admin-area access for cloaked sessions ([#179](https://github.com/demeesterroel/CarSharing/issues/179)) ([#366](https://github.com/demeesterroel/CarSharing/issues/366)) ([708f79a](https://github.com/demeesterroel/CarSharing/commit/708f79a10fb5297be36470f990dfe1a30921ec5a))
+
 ## [1.19.4](https://github.com/demeesterroel/CarSharing/compare/v1.19.3...v1.19.4) (2026-06-05)
 
 ### 🐛 Bug fixes

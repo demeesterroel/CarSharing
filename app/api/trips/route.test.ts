@@ -119,12 +119,12 @@ describe("POST /api/trips", () => {
     expect(mockInsertTrip).not.toHaveBeenCalled();
   });
 
-  it("inserts even without a session (POST has no auth guard beyond CSRF)", async () => {
-    // The trips POST handler uses json() only — no requireSession call.
-    // CSRF is enforced; session is not.
+  it("returns 403 for an unauthenticated request (POST now requires a session)", async () => {
+    // The trips POST handler calls requireSession to get session data for
+    // admin-change notifications. An unauthenticated request returns 403.
     mockSession.personId = undefined as unknown as number;
     const res = await POST(postReq(validTrip), ctx);
-    expect(res.status).toBe(201);
-    expect(mockInsertTrip).toHaveBeenCalledOnce();
+    expect(res.status).toBe(403);
+    expect(mockInsertTrip).not.toHaveBeenCalled();
   });
 });

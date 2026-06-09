@@ -120,19 +120,21 @@ export async function requireSession(req: Request) {
 /**
  * Throws 403 if the session user may not edit/delete the record.
  * Allowed: admin, record creator (person_id), or car owner (owner_person_id).
+ * Returns the session so callers can use it (e.g. to send notifications).
  */
 export async function requireCanEdit(
   req: Request,
   record: { person_id: number; car_id: number },
   db: import("better-sqlite3").Database
-): Promise<void> {
+): Promise<SessionData> {
   const session = await requireSession(req);
-  if (session.isAdmin) return;
+  if (session.isAdmin) return session;
   const { getCarById } = await import("./queries/cars");
   const car = getCarById(db, record.car_id);
   if (!canEdit(session.personId!, false, record, car?.owner_person_id ?? null)) {
     forbidden("Not allowed to edit this record");
   }
+  return session;
 }
 
 type Handler<T> = (

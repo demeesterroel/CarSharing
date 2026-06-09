@@ -1,5 +1,6 @@
 import { json, requireSession } from "@/lib/api";
 import { getDb } from "@/lib/db";
+import { notifyAdminOfChange } from "@/lib/notify-admin";
 import { getReservationById, getReservations, insertReservation } from "@/lib/queries/reservations";
 import { syncReservationCreate } from "@/lib/reservation-sync";
 import { reservationSchema } from "@/lib/schemas/reservation";
@@ -11,7 +12,7 @@ export const GET = json(async (req) => {
 });
 
 export const POST = json(async (req) => {
-  await requireSession(req);
+  const session = await requireSession(req);
   const raw = await req.json();
   const body = reservationSchema.parse(raw);
   const client_id = typeof raw.client_id === "string" ? raw.client_id : null;
@@ -19,5 +20,17 @@ export const POST = json(async (req) => {
   const id = insertReservation(db, { ...body, client_id });
   syncReservationCreate(db, id).catch(() => {});
   const reservation = getReservationById(db, id);
+  notifyAdminOfChange({
+    db,
+    actor: session,
+    action: "created",
+    entity: "reservation",
+    details: [
+      `Car ID: ${body.car_id}`,
+      `From: ${body.start_date}${body.start_time ? ` ${body.start_time}` : ""}`,
+      `To: ${body.end_date}${body.end_time ? ` ${body.end_time}` : ""}`,
+      ...(body.note ? [`Note: ${body.note}`] : []),
+    ].join("\n"),
+  }).catch(() => {});
   return NextResponse.json(reservation, { status: 201 });
 });

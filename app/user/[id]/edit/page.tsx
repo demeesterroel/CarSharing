@@ -97,8 +97,11 @@ export default function EditProfilePage({ params }: { params: Promise<{ id: stri
     bankAccount !== (person.bank_account ?? "") ||
     email !== (person.email ?? "");
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
+  // Auto-save the text fields: persist whenever a dirty field loses focus, the
+  // same immediate-save behaviour the theme and notification controls already
+  // use. No explicit Save button, no redirect.
+  async function saveProfile() {
+    if (saving) return;
     setSaving(true);
     setError(null);
     try {
@@ -115,14 +118,36 @@ export default function EditProfilePage({ params }: { params: Promise<{ id: stri
           notify_new_trips: notifyNewTrips,
         }),
       });
+      // Advance the local baseline so the form is no longer dirty (prevents the
+      // next blur from re-saving unchanged values).
+      setPerson((p) =>
+        p
+          ? {
+              ...p,
+              first_name: firstName,
+              last_name: lastName,
+              bank_account: bankAccount,
+              email: email || null,
+            }
+          : p
+      );
       setSaved(true);
+      setTimeout(() => setSaved(false), 1500);
       await queryClient.invalidateQueries({ queryKey: ["me"] });
-      setTimeout(() => router.push("/"), 800);
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Fout bij opslaan");
     } finally {
       setSaving(false);
     }
+  }
+
+  function handleFieldBlur() {
+    if (dirty && !saving) void saveProfile();
+  }
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (dirty) await saveProfile();
   }
 
   async function handleNotifyChange(
@@ -220,6 +245,20 @@ export default function EditProfilePage({ params }: { params: Promise<{ id: stri
             {fullNameOf({ first_name: firstName, last_name: lastName, username: person.username })}
           </div>
 
+          <div
+            aria-live="polite"
+            style={{
+              fontFamily: fontMono,
+              fontSize: 9,
+              letterSpacing: 1,
+              minHeight: 12,
+              marginBottom: 12,
+              color: saving ? paper.inkMute : paper.green,
+            }}
+          >
+            {saving ? t("action.saving") : saved ? t("action.saved") : ""}
+          </div>
+
           <form id="profile-form" onSubmit={handleSubmit}>
             <div style={{ marginBottom: 12 }}>
               <label
@@ -275,6 +314,7 @@ export default function EditProfilePage({ params }: { params: Promise<{ id: stri
                   type="text"
                   value={firstName}
                   onChange={(e) => setFirstName(e.target.value)}
+                  onBlur={handleFieldBlur}
                   required
                   style={{
                     width: "100%",
@@ -308,6 +348,7 @@ export default function EditProfilePage({ params }: { params: Promise<{ id: stri
                   type="text"
                   value={lastName}
                   onChange={(e) => setLastName(e.target.value)}
+                  onBlur={handleFieldBlur}
                   style={{
                     width: "100%",
                     padding: "8px 10px",
@@ -342,6 +383,7 @@ export default function EditProfilePage({ params }: { params: Promise<{ id: stri
                 type="text"
                 value={bankAccount}
                 onChange={(e) => setBankAccount(e.target.value)}
+                onBlur={handleFieldBlur}
                 placeholder="BE00 0000 0000 0000"
                 style={{
                   width: "100%",
@@ -377,6 +419,7 @@ export default function EditProfilePage({ params }: { params: Promise<{ id: stri
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+                onBlur={handleFieldBlur}
                 placeholder="naam@voorbeeld.be"
                 style={{
                   width: "100%",
@@ -587,29 +630,6 @@ export default function EditProfilePage({ params }: { params: Promise<{ id: stri
                 </div>
               );
             })}
-          </div>
-
-          <div style={{ marginTop: 20 }}>
-            <button
-              type="submit"
-              form="profile-form"
-              disabled={!dirty || saving}
-              style={{
-                width: "100%",
-                padding: "8px",
-                fontFamily: fontMono,
-                fontSize: 9,
-                fontWeight: 700,
-                letterSpacing: 2,
-                textTransform: "uppercase",
-                background: saved ? paper.green : dirty ? paper.ink : paper.paperDark,
-                color: dirty || saved ? paper.paper : paper.inkMute,
-                border: "none",
-                cursor: dirty && !saving ? "pointer" : "default",
-              }}
-            >
-              {saved ? t("action.saved") : saving ? t("action.saving") : t("action.save")}
-            </button>
           </div>
 
           {me?.personId === id && (

@@ -17,7 +17,7 @@ import Database from "better-sqlite3";
 import { describe, expect, it } from "vitest";
 import { runMigrations } from "../db/migrate";
 
-// All 22 migration filenames in order
+// All migration filenames in order
 const ALL_MIGRATIONS = [
   "0001_initial_schema.sql",
   "0002_data_corrections_trips.sql",
@@ -44,6 +44,7 @@ const ALL_MIGRATIONS = [
   "0023_expenses_receipt.sql",
   "0024_calendar_sync_log.sql",
   "0025_reservation_times.sql",
+  "0026_notifications.sql",
 ];
 
 const LATER_MIGRATIONS = ALL_MIGRATIONS.slice(10); // 0011–0022
@@ -201,7 +202,7 @@ describe("forward migration — 0001–0010 → 0011–0022", () => {
       .prepare("SELECT filename FROM _migrations ORDER BY filename")
       .pluck()
       .all() as string[];
-    expect(applied).toHaveLength(25);
+    expect(applied).toHaveLength(26);
     for (const f of ALL_MIGRATIONS) {
       expect(applied).toContain(f);
     }
@@ -212,6 +213,6 @@ describe("forward migration — 0001–0010 → 0011–0022", () => {
       .prepare("SELECT filename FROM _migrations ORDER BY filename")
       .pluck()
       .all() as string[];
-    expect(appliedAfter).toHaveLength(25);
+    expect(appliedAfter).toHaveLength(26);
   });
 });

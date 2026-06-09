@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import { runMigrations } from "../db/migrate";
 
 describe("runMigrations", () => {
-  it("creates all 14 tables", () => {
+  it("creates all 15 tables", () => {
     const db = new Database(":memory:");
     runMigrations(db);
     const tables = db
@@ -21,6 +21,7 @@ describe("runMigrations", () => {
       "expenses",
       "fuel_fillups",
       "invite_tokens",
+      "notifications",
       "payments",
       "people",
       "reservations",

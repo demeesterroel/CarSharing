@@ -37,12 +37,12 @@ export function PageHeader({ title, subtitle, right, titleSize = 26 }: Props) {
     <>
       {/* Scrolls away: org name — hidden in mono */}
       {!mono && (
-        <div style={{ background: paper.paper, padding: "18px 20px 4px" }}>
+        <div style={{ background: paper.background.primary, padding: "18px 20px 4px" }}>
           <div
             style={{
               fontFamily: fontMono,
               fontSize: 9,
-              color: paper.inkDim,
+              color: paper.text.secondary,
               letterSpacing: 2,
               textTransform: "uppercase" as const,
             }}
@@ -59,8 +59,8 @@ export function PageHeader({ title, subtitle, right, titleSize = 26 }: Props) {
           position: "sticky",
           top: 0,
           zIndex: 20,
-          background: paper.paper,
-          borderBottom: mono ? `1px solid ${paper.paperDark}` : `1.5px dashed ${paper.ink}`,
+          background: paper.background.primary,
+          borderBottom: mono ? `1px solid ${paper.background.tertiary}` : `1.5px dashed ${paper.text.primary}`,
           padding: "6px 20px 10px",
           display: "flex",
           alignItems: "baseline",
@@ -72,7 +72,7 @@ export function PageHeader({ title, subtitle, right, titleSize = 26 }: Props) {
             fontFamily: fontSerif,
             fontSize: titleSize,
             fontWeight: 700,
-            color: paper.ink,
+            color: paper.text.primary,
             letterSpacing: "var(--title-tracking, -0.5px)",
             lineHeight: 1.1,
           }}
@@ -93,8 +93,8 @@ export function PageHeader({ title, subtitle, right, titleSize = 26 }: Props) {
             style={{
               padding: "4px 7px",
               background: "transparent",
-              color: paper.inkDim,
-              border: `1.5px solid ${paper.paperDark}`,
+              color: paper.text.secondary,
+              border: `1.5px solid ${paper.background.tertiary}`,
               borderRadius: mono ? "var(--radius-sm, 6px)" : 0,
               cursor: "pointer",
               display: "flex",
@@ -113,7 +113,7 @@ export function PageHeader({ title, subtitle, right, titleSize = 26 }: Props) {
                 ? "var(--font-jetbrains-mono, 'JetBrains Mono', monospace)"
                 : fontMono,
               fontSize: 8,
-              color: paper.inkDim,
+              color: paper.text.secondary,
               letterSpacing: mono ? 0 : 1,
               textDecoration: "none",
             }}
@@ -125,12 +125,12 @@ export function PageHeader({ title, subtitle, right, titleSize = 26 }: Props) {
 
       {/* Scrolls away: subtitle (admin only) */}
       {subtitle && (
-        <div style={{ background: paper.paper, padding: "6px 20px 10px" }}>
+        <div style={{ background: paper.background.primary, padding: "6px 20px 10px" }}>
           <div
             style={{
               fontFamily: fontMono,
               fontSize: 10,
-              color: paper.inkDim,
+              color: paper.text.secondary,
               letterSpacing: 1.5,
               textTransform: "uppercase" as const,
             }}

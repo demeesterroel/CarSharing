@@ -3,16 +3,16 @@
 
 /* ── Paper palette ─────────────────────────────────────────── */
 :root {
-  --paper: #f5f0e6;
-  --paper-deep: #ebe3d2;
-  --paper-dark: #d9ceb2;
-  --ink: #1a1a1a;
-  --ink-dim: #555047;
-  --ink-mute: #8a8273;
-  --accent: #a83929;
-  --green: #4d6e35;
-  --blue: #3d5a7a;
-  --amber: #8a5a00;
+  --paper-background-primary: #f5f0e6;
+  --paper-background-secondary: #ebe3d2;
+  --paper-background-tertiary: #d9ceb2;
+  --paper-text-primary: #1a1a1a;
+  --paper-text-secondary: #555047;
+  --paper-text-tertiary: #8a8273;
+  --paper-accent-primary: #a83929;
+  --paper-accent-success: #4d6e35;
+  --paper-accent-info: #3d5a7a;
+  --paper-accent-warning: #8a5a00;
 
   --font-mono: var(--font-courier-prime, "Courier Prime", "IBM Plex Mono", ui-monospace, monospace);
   --font-serif: var(--font-fraunces, "Fraunces", "Playfair Display", Georgia, serif);
@@ -37,31 +37,31 @@ body {
 
 /* ── Paper utilities ───────────────────────────────────────── */
 .paper-bg {
-  background-color: var(--paper);
+  background-color: var(--paper-background-primary);
 }
 .paper-deep-bg {
-  background-color: var(--paper-deep);
+  background-color: var(--paper-background-secondary);
 }
 .ink-text {
-  color: var(--ink);
+  color: var(--paper-text-primary);
 }
 .ink-dim-text {
-  color: var(--ink-dim);
+  color: var(--paper-text-secondary);
 }
 .ink-mute-text {
-  color: var(--ink-mute);
+  color: var(--paper-text-tertiary);
 }
 .accent-text {
-  color: var(--accent);
+  color: var(--paper-accent-primary);
 }
 .green-text {
-  color: var(--green);
+  color: var(--paper-accent-success);
 }
 .blue-text {
-  color: var(--blue);
+  color: var(--paper-accent-info);
 }
 .amber-text {
-  color: var(--amber);
+  color: var(--paper-accent-warning);
 }
 
 .font-mono-paper {
@@ -163,7 +163,7 @@ body {
 
 /* Receipt card shadow */
 .receipt-card {
-  background: var(--paper);
+  background: var(--paper-background-primary);
   box-shadow:
     0 1px 2px rgba(0, 0, 0, 0.05),
     0 8px 24px rgba(0, 0, 0, 0.07);
@@ -171,7 +171,7 @@ body {
 
 /* Trip / fuel strip */
 .activity-strip {
-  background: var(--paper);
+  background: var(--paper-background-primary);
   padding: 12px 14px;
   margin-bottom: 8px;
   display: flex;
@@ -182,10 +182,10 @@ body {
 
 /* Bottom nav paper style */
 .bottom-nav-paper {
-  background: var(--paper);
+  background: var(--paper-background-primary);
   border-top-width: 1.5px;
   border-top-style: var(--border-style, dashed);
-  border-top-color: var(--ink);
+  border-top-color: var(--paper-text-primary);
   transform: translateZ(0);
   will-change: transform;
 }
@@ -332,17 +332,17 @@ body {
 /* ── Mono theme overrides ──────────────────────────────────── */
 [data-theme="mono"] {
   /* Palette — refined: warm whites + warm darks */
-  --paper: #fafaf9;
-  --paper-deep: #f5f5f4;
-  --paper-dark: #e7e5e4;
+  --paper-background-primary: #fafaf9;
+  --paper-background-secondary: #f5f5f4;
+  --paper-background-tertiary: #e7e5e4;
   --paper-border-soft: #f0eeec;
-  --ink: #1c1917;
-  --ink-dim: #57534e;
-  --ink-mute: #a8a29e;
-  --accent: #b91c1c;
-  --green: #15803d;
-  --blue: #1d4ed8;
-  --amber: #b45309;
+  --paper-text-primary: #1c1917;
+  --paper-text-secondary: #57534e;
+  --paper-text-tertiary: #a8a29e;
+  --paper-accent-primary: #b91c1c;
+  --paper-accent-success: #15803d;
+  --paper-accent-info: #1d4ed8;
+  --paper-accent-warning: #b45309;
 
   /* Typography — Inter Tight for display, Inter for body */
   --font-mono: var(--font-inter, "Inter", system-ui, sans-serif);

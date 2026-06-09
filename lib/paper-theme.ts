@@ -13,6 +13,26 @@ export const paper = {
   amber: "var(--amber)",
 } as const;
 
+// Semantic alias mappings for improved clarity (maintains backwards compatibility)
+export const semanticPaper = {
+  background: {
+    primary: "var(--paper)",
+    secondary: "var(--paper-deep)",
+    tertiary: "var(--paper-dark)",
+  },
+  text: {
+    primary: "var(--ink)",
+    secondary: "var(--ink-dim)",
+    tertiary: "var(--ink-mute)",
+  },
+  accent: {
+    primary: "var(--accent)",
+    success: "var(--green)",
+    info: "var(--blue)",
+    warning: "var(--amber)",
+  },
+} as const;
+
 export const fontMono = "var(--font-mono)";
 export const fontSerif = "var(--font-serif)";
 export const fontSans = "var(--font-sans)";

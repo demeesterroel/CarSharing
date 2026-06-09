@@ -1,6 +1,8 @@
 import { json, requireSession } from "@/lib/api";
 import { getDb } from "@/lib/db";
+import { t } from "@/lib/i18n";
 import { notifyAdminOfChange } from "@/lib/notify-admin";
+import { notifyUsersOfEvent } from "@/lib/notify-users";
 import { getReservationById, getReservations, insertReservation } from "@/lib/queries/reservations";
 import { syncReservationCreate } from "@/lib/reservation-sync";
 import { reservationSchema } from "@/lib/schemas/reservation";
@@ -31,6 +33,19 @@ export const POST = json(async (req) => {
       `To: ${body.end_date}${body.end_time ? ` ${body.end_time}` : ""}`,
       ...(body.note ? [`Note: ${body.note}`] : []),
     ].join("\n"),
+  }).catch(() => {});
+  notifyUsersOfEvent({
+    db,
+    trigger: "new_reservation",
+    entityType: "reservation",
+    entityId: id,
+    carId: body.car_id,
+    actorPersonId: session.personId!,
+    message: t("notif.new_reservation", {
+      car: reservation?.car_short ?? String(body.car_id),
+      start: body.start_date,
+      end: body.end_date,
+    }),
   }).catch(() => {});
   return NextResponse.json(reservation, { status: 201 });
 });

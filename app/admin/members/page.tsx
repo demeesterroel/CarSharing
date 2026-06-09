@@ -685,6 +685,11 @@ export default function AdminLedenPage() {
                 email: null,
                 theme_preference: "mono",
                 updated_at: "",
+                notify_new_reservations: "off",
+                notify_reservation_updates: "mine",
+                notify_new_trips: "off",
+                notify_my_car_reservations: "off",
+                notify_my_car_trips: "off",
               },
               {
                 onSuccess: () => {

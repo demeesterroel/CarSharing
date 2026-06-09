@@ -1,6 +1,8 @@
 import { json, notFound, readBody, readId, requireCanEdit, requireSession } from "@/lib/api";
 import { getDb } from "@/lib/db";
+import { t } from "@/lib/i18n";
 import { notifyAdminOfChange } from "@/lib/notify-admin";
+import { notifyUsersOfEvent } from "@/lib/notify-users";
 import {
   ConflictError,
   deleteReservation,
@@ -60,6 +62,27 @@ export const DELETE = json(async (req, ctx) => {
   const session = await requireCanEdit(req, existing, db);
   await syncReservationDelete(db, id).catch(() => {});
   deleteReservation(db, id);
+  notifyUsersOfEvent({
+    db,
+    trigger: "reservation_update",
+    entityType: "reservation",
+    entityId: id,
+    carId: existing.car_id,
+    actorPersonId: session.personId!,
+    alwaysNotifyPersonId: existing.person_id,
+    message: t("notif.reservation_update", {
+      car: existing.car_short ?? String(existing.car_id),
+      start: existing.start_date,
+      end: existing.end_date,
+      status: t("notif.status_deleted"),
+    }),
+    alwaysNotifyMessage: t("notif.reservation_update_self", {
+      car: existing.car_short ?? String(existing.car_id),
+      start: existing.start_date,
+      end: existing.end_date,
+      status: t("notif.status_deleted"),
+    }),
+  }).catch(() => {});
   notifyAdminOfChange({
     db,
     actor: session,

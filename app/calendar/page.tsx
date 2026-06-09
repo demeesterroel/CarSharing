@@ -158,11 +158,16 @@ function CalendarContent() {
 
   const actionParam = searchParams.get("action");
   const editIdParam = searchParams.get("edit");
+  // ?reservation=<id> deep-link from notification bell
+  const reservationParam = searchParams.get("reservation");
+  // Resolve notification deep-link: treat ?reservation=<id> the same as ?edit=<id>
+  const resolvedEditId = editIdParam ?? reservationParam;
 
-  const sheet: "add" | "edit" | null = actionParam === "add" ? "add" : editIdParam ? "edit" : null;
+  const sheet: "add" | "edit" | null =
+    actionParam === "add" ? "add" : resolvedEditId ? "edit" : null;
   const editing =
-    !isLoading && editIdParam
-      ? (reservations.find((r) => r.id === Number(editIdParam)) ?? null)
+    !isLoading && resolvedEditId
+      ? (reservations.find((r) => r.id === Number(resolvedEditId)) ?? null)
       : null;
 
   const editingReadOnly =
@@ -180,7 +185,7 @@ function CalendarContent() {
   const [sheetClosed, setSheetClosed] = useState(false);
   useEffect(() => {
     setSheetClosed(false);
-  }, [editIdParam, actionParam]);
+  }, [editIdParam, actionParam, reservationParam]);
 
   // Refetch reservations whenever the new-reservation sheet opens online —
   // the conflict warning needs to see the freshest server state.

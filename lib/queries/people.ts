@@ -57,13 +57,32 @@ export function getPersonByEmail(db: Database.Database, email: string): Person |
   );
 }
 
-export function insertPerson(
-  db: Database.Database,
-  data: Omit<Person, "id" | "updated_at"> & { password_hash?: string | null }
-): number {
+export type PersonWriteData = Omit<
+  Person,
+  | "id"
+  | "updated_at"
+  | "notify_new_reservations"
+  | "notify_reservation_updates"
+  | "notify_new_trips"
+  | "notify_my_car_reservations"
+  | "notify_my_car_trips"
+> & {
+  password_hash?: string | null;
+  notify_new_reservations?: Person["notify_new_reservations"];
+  notify_reservation_updates?: Person["notify_reservation_updates"];
+  notify_new_trips?: Person["notify_new_trips"];
+  notify_my_car_reservations?: Person["notify_my_car_reservations"];
+  notify_my_car_trips?: Person["notify_my_car_trips"];
+};
+
+export function insertPerson(db: Database.Database, data: PersonWriteData): number {
   const result = db
     .prepare(
-      "INSERT INTO people (first_name,last_name,discount,discount_long,active,username,is_admin,bank_account,email,theme_preference) VALUES (?,?,?,?,?,?,?,?,?,?)"
+      `INSERT INTO people
+         (first_name,last_name,discount,discount_long,active,username,is_admin,bank_account,
+          email,theme_preference,notify_new_reservations,notify_reservation_updates,notify_new_trips,
+          notify_my_car_reservations,notify_my_car_trips)
+       VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`
     )
     .run(
       data.first_name,
@@ -75,18 +94,25 @@ export function insertPerson(
       data.is_admin ?? 0,
       data.bank_account ?? "",
       data.email ?? null,
-      data.theme_preference ?? "mono"
+      data.theme_preference ?? "mono",
+      data.notify_new_reservations ?? "off",
+      data.notify_reservation_updates ?? "mine",
+      data.notify_new_trips ?? "off",
+      data.notify_my_car_reservations ?? "off",
+      data.notify_my_car_trips ?? "off"
     );
   return result.lastInsertRowid as number;
 }
 
-export function updatePerson(
-  db: Database.Database,
-  id: number,
-  data: Omit<Person, "id" | "updated_at"> & { password_hash?: string | null }
-): void {
+export function updatePerson(db: Database.Database, id: number, data: PersonWriteData): void {
   db.prepare(
-    "UPDATE people SET first_name=?,last_name=?,discount=?,discount_long=?,active=?,username=?,is_admin=?,bank_account=?,email=?,theme_preference=?,updated_at=datetime('now') WHERE id=?"
+    `UPDATE people
+     SET first_name=?,last_name=?,discount=?,discount_long=?,active=?,username=?,is_admin=?,
+         bank_account=?,email=?,theme_preference=?,
+         notify_new_reservations=?,notify_reservation_updates=?,notify_new_trips=?,
+         notify_my_car_reservations=?,notify_my_car_trips=?,
+         updated_at=datetime('now')
+     WHERE id=?`
   ).run(
     data.first_name,
     data.last_name,
@@ -98,6 +124,11 @@ export function updatePerson(
     data.bank_account ?? "",
     data.email ?? null,
     data.theme_preference ?? "mono",
+    data.notify_new_reservations ?? "off",
+    data.notify_reservation_updates ?? "mine",
+    data.notify_new_trips ?? "off",
+    data.notify_my_car_reservations ?? "off",
+    data.notify_my_car_trips ?? "off",
     id
   );
 }

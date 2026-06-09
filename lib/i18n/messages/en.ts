@@ -660,6 +660,34 @@ export const en: Messages = {
   "pwa.refreshing": "Refreshing…",
   "pwa.refresh_blocked_offline": "Can't refresh — you're offline with unsynced changes.",
 
+  // In-app notifications
+  "notif.new_reservation": "New reservation for {car} from {start} to {end}",
+  "notif.reservation_update": "Reservation for {car} from {start} to {end} {status}",
+  "notif.reservation_update_self": "Your reservation for {car} from {start} to {end} {status}",
+  "notif.new_trip": "New trip with {car} on {date}",
+  "notif.status_confirmed": "approved",
+  "notif.status_rejected": "rejected",
+  "notif.status_pending": "set to pending",
+  "notif.status_deleted": "deleted",
+
+  // Notification preferences (profile page) — driver block (all members)
+  "notif.pref_section": "Notifications",
+  "notif.pref_new_reservations": "New reservations by others",
+  "notif.pref_reservation_updates": "Reservation updates",
+  "notif.pref_updates_all": "All reservations",
+  "notif.pref_updates_mine": "Only my reservations",
+  "notif.pref_new_trips": "New trips by others",
+  // Owner block (only people who own a car)
+  "notif.pref_section_owner": "Notifications for my car",
+  "notif.pref_my_car_reservations": "Reservations for my car",
+  "notif.pref_my_car_trips": "Trips with my car",
+
+  // Notifications page
+  "notif.page_title": "Notifications",
+  "notif.empty": "No notifications",
+  "notif.mark_all_read": "Mark all read",
+  "notif.unread_badge": "{count} unread",
+
   // Owner dashboard
   "owner.title": "My cars",
   "owner.subtitle": "Fleet economics · {year}",

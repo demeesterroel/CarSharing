@@ -660,6 +660,34 @@ export const nl = {
   "pwa.refresh_blocked_offline":
     "Verversen kan niet — je bent offline met niet-gesynchroniseerde wijzigingen.",
 
+  // In-app notifications
+  "notif.new_reservation": "Nieuwe reservering voor {car} van {start} tot {end}",
+  "notif.reservation_update": "Reservering voor {car} van {start} tot {end} {status}",
+  "notif.reservation_update_self": "Jouw reservering voor {car} van {start} tot {end} {status}",
+  "notif.new_trip": "Nieuwe rit met {car} op {date}",
+  "notif.status_confirmed": "goedgekeurd",
+  "notif.status_rejected": "geweigerd",
+  "notif.status_pending": "opnieuw in behandeling",
+  "notif.status_deleted": "verwijderd",
+
+  // Notification preferences (profile page) — driver block (all members)
+  "notif.pref_section": "Meldingen",
+  "notif.pref_new_reservations": "Nieuwe reserveringen van anderen",
+  "notif.pref_reservation_updates": "Reserveringsupdates",
+  "notif.pref_updates_all": "Alle reserveringen",
+  "notif.pref_updates_mine": "Enkel mijn reserveringen",
+  "notif.pref_new_trips": "Nieuwe ritten van anderen",
+  // Owner block (only people who own a car)
+  "notif.pref_section_owner": "Meldingen voor mijn wagen(s)",
+  "notif.pref_my_car_reservations": "Reserveringen op mijn wagen",
+  "notif.pref_my_car_trips": "Ritten met mijn wagen",
+
+  // Notifications page
+  "notif.page_title": "Meldingen",
+  "notif.empty": "Geen meldingen",
+  "notif.mark_all_read": "Alles gelezen",
+  "notif.unread_badge": "{count} ongelezen",
+
   // Owner dashboard
   "owner.title": "Mijn wagens",
   "owner.subtitle": "Economische gezondheid · {year}",

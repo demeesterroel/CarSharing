@@ -9,6 +9,7 @@ import { useTheme, type Theme } from "@/lib/theme-context";
 import type { Person } from "@/types";
 import { useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import { useEffect, useState } from "react";
 
 export default function EditProfilePage({ params }: { params: Promise<{ id: string }> }) {
@@ -24,11 +25,18 @@ export default function EditProfilePage({ params }: { params: Promise<{ id: stri
   const [bankAccount, setBankAccount] = useState("");
   const [email, setEmail] = useState("");
   const [saving, setSaving] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
   const { theme: _theme, setTheme } = useTheme();
   const [themePreference, setThemePreference] = useState<Theme>("mono");
-  const [themeSaved, setThemeSaved] = useState(false);
+  // Driver/member prefs (all users)
+  const [notifyNewReservations, setNotifyNewReservations] = useState<"off" | "all">("off");
+  const [notifyReservationUpdates, setNotifyReservationUpdates] = useState<"off" | "all" | "mine">(
+    "mine"
+  );
+  const [notifyNewTrips, setNotifyNewTrips] = useState<"off" | "all">("off");
+  // Owner prefs (only people who own a car)
+  const [notifyMyCarReservations, setNotifyMyCarReservations] = useState<"off" | "on">("off");
+  const [notifyMyCarTrips, setNotifyMyCarTrips] = useState<"off" | "on">("off");
 
   useEffect(() => {
     params.then(({ id: rawId }) => {
@@ -58,6 +66,17 @@ export default function EditProfilePage({ params }: { params: Promise<{ id: stri
   useEffect(() => {
     if (person) {
       setThemePreference((person.theme_preference as Theme) ?? "mono");
+      setNotifyNewReservations(person.notify_new_reservations === "all" ? "all" : "off");
+      setNotifyReservationUpdates(
+        person.notify_reservation_updates === "all"
+          ? "all"
+          : person.notify_reservation_updates === "off"
+            ? "off"
+            : "mine"
+      );
+      setNotifyNewTrips(person.notify_new_trips === "all" ? "all" : "off");
+      setNotifyMyCarReservations(person.notify_my_car_reservations === "on" ? "on" : "off");
+      setNotifyMyCarTrips(person.notify_my_car_trips === "on" ? "on" : "off");
     }
   }, [person]);
 
@@ -90,10 +109,12 @@ export default function EditProfilePage({ params }: { params: Promise<{ id: stri
     bankAccount !== (person.bank_account ?? "") ||
     email !== (person.email ?? "");
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
+  // Auto-save the text fields: persist whenever a dirty field loses focus, the
+  // same immediate-save behaviour the theme and notification controls already
+  // use. No explicit Save button, no redirect.
+  async function saveProfile() {
+    if (saving) return;
     setSaving(true);
-    setError(null);
     try {
       await apiFetch(`/api/people/${id}/profile`, {
         method: "PATCH",
@@ -103,15 +124,91 @@ export default function EditProfilePage({ params }: { params: Promise<{ id: stri
           last_name: lastName,
           bank_account: bankAccount,
           email: email || null,
+          notify_new_reservations: notifyNewReservations,
+          notify_reservation_updates: notifyReservationUpdates,
+          notify_new_trips: notifyNewTrips,
+          notify_my_car_reservations: notifyMyCarReservations,
+          notify_my_car_trips: notifyMyCarTrips,
         }),
       });
+      // Advance the local baseline so the form is no longer dirty (prevents the
+      // next blur from re-saving unchanged values).
+      setPerson((p) =>
+        p
+          ? {
+              ...p,
+              first_name: firstName,
+              last_name: lastName,
+              bank_account: bankAccount,
+              email: email || null,
+            }
+          : p
+      );
       setSaved(true);
+      setTimeout(() => setSaved(false), 1500);
       await queryClient.invalidateQueries({ queryKey: ["me"] });
-      setTimeout(() => router.push("/"), 800);
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : "Fout bij opslaan");
+      toast.error(err instanceof Error ? err.message : t("toast.error"));
     } finally {
       setSaving(false);
+    }
+  }
+
+  function handleFieldBlur() {
+    if (dirty && !saving) void saveProfile();
+  }
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (dirty) await saveProfile();
+  }
+
+  async function handleNotifyChange(
+    field:
+      | "notify_new_reservations"
+      | "notify_reservation_updates"
+      | "notify_new_trips"
+      | "notify_my_car_reservations"
+      | "notify_my_car_trips",
+    value: string
+  ) {
+    const current = {
+      notify_new_reservations: notifyNewReservations,
+      notify_reservation_updates: notifyReservationUpdates,
+      notify_new_trips: notifyNewTrips,
+      notify_my_car_reservations: notifyMyCarReservations,
+      notify_my_car_trips: notifyMyCarTrips,
+    };
+    const next = { ...current, [field]: value };
+    // Optimistic update — re-applies every value so the changed one wins.
+    setNotifyNewReservations(next.notify_new_reservations as "off" | "all");
+    setNotifyReservationUpdates(next.notify_reservation_updates as "off" | "all" | "mine");
+    setNotifyNewTrips(next.notify_new_trips as "off" | "all");
+    setNotifyMyCarReservations(next.notify_my_car_reservations as "off" | "on");
+    setNotifyMyCarTrips(next.notify_my_car_trips as "off" | "on");
+    try {
+      await apiFetch(`/api/people/${id}/profile`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          first_name: firstName,
+          last_name: lastName,
+          bank_account: bankAccount,
+          email: email || null,
+          ...next,
+        }),
+      });
+      await queryClient.invalidateQueries({ queryKey: ["me"] });
+      setSaved(true);
+      setTimeout(() => setSaved(false), 1500);
+    } catch {
+      toast.error(t("toast.error"));
+      // Revert to the pre-change values.
+      setNotifyNewReservations(current.notify_new_reservations);
+      setNotifyReservationUpdates(current.notify_reservation_updates);
+      setNotifyNewTrips(current.notify_new_trips);
+      setNotifyMyCarReservations(current.notify_my_car_reservations);
+      setNotifyMyCarTrips(current.notify_my_car_trips);
     }
   }
 
@@ -129,7 +226,6 @@ export default function EditProfilePage({ params }: { params: Promise<{ id: stri
   async function handleThemeToggle(newTheme: Theme) {
     setThemePreference(newTheme);
     setTheme(newTheme);
-    setThemeSaved(false);
     try {
       await apiFetch(`/api/people/${id}/profile`, {
         method: "PATCH",
@@ -142,15 +238,58 @@ export default function EditProfilePage({ params }: { params: Promise<{ id: stri
           theme_preference: newTheme,
         }),
       });
-      setThemeSaved(true);
-      setTimeout(() => setThemeSaved(false), 1500);
+      setSaved(true);
+      setTimeout(() => setSaved(false), 1500);
       await queryClient.invalidateQueries({ queryKey: ["me"] });
     } catch {
+      toast.error(t("toast.error"));
       // revert local
       setThemePreference(themePreference);
       setTheme(themePreference);
     }
   }
+
+  const notifySectionStyle: React.CSSProperties = {
+    fontFamily: fontMono,
+    fontSize: 9,
+    color: paper.inkMute,
+    letterSpacing: 1,
+    marginBottom: 12,
+    textTransform: "uppercase",
+  };
+  const notifyRowStyle: React.CSSProperties = {
+    marginBottom: 10,
+    padding: "8px 10px",
+    background: paper.paperDark,
+  };
+  const notifyCheckbox = (
+    key: string,
+    label: string,
+    checked: boolean,
+    onToggle: (checked: boolean) => void
+  ) => (
+    <div key={key} style={notifyRowStyle}>
+      <label
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: 8,
+          cursor: "pointer",
+          fontFamily: fontMono,
+          fontSize: 11,
+          color: paper.ink,
+        }}
+      >
+        <input
+          type="checkbox"
+          checked={checked}
+          onChange={(e) => onToggle(e.target.checked)}
+          style={{ accentColor: paper.ink }}
+        />
+        {label}
+      </label>
+    </div>
+  );
 
   return (
     <div style={{ background: paper.paperDeep, minHeight: "100dvh" }}>
@@ -166,17 +305,32 @@ export default function EditProfilePage({ params }: { params: Promise<{ id: stri
         >
           <div
             style={{
-              fontFamily: fontSerif,
-              fontSize: 14,
-              fontWeight: 700,
-              color: paper.ink,
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "baseline",
+              gap: 8,
               marginBottom: 16,
             }}
           >
-            {fullNameOf({ first_name: firstName, last_name: lastName, username: person.username })}
+            <div style={{ fontFamily: fontSerif, fontSize: 14, fontWeight: 700, color: paper.ink }}>
+              {fullNameOf({ first_name: firstName, last_name: lastName, username: person.username })}
+            </div>
+            <div
+              aria-live="polite"
+              style={{
+                fontFamily: fontMono,
+                fontSize: 9,
+                letterSpacing: 1,
+                textTransform: "uppercase",
+                whiteSpace: "nowrap",
+                color: saving ? paper.inkMute : paper.green,
+              }}
+            >
+              {saving ? t("action.saving") : saved ? t("action.saved") : ""}
+            </div>
           </div>
 
-          <form onSubmit={handleSubmit}>
+          <form id="profile-form" onSubmit={handleSubmit}>
             <div style={{ marginBottom: 12 }}>
               <label
                 htmlFor="edit-username"
@@ -231,6 +385,7 @@ export default function EditProfilePage({ params }: { params: Promise<{ id: stri
                   type="text"
                   value={firstName}
                   onChange={(e) => setFirstName(e.target.value)}
+                  onBlur={handleFieldBlur}
                   required
                   style={{
                     width: "100%",
@@ -264,6 +419,7 @@ export default function EditProfilePage({ params }: { params: Promise<{ id: stri
                   type="text"
                   value={lastName}
                   onChange={(e) => setLastName(e.target.value)}
+                  onBlur={handleFieldBlur}
                   style={{
                     width: "100%",
                     padding: "8px 10px",
@@ -298,6 +454,7 @@ export default function EditProfilePage({ params }: { params: Promise<{ id: stri
                 type="text"
                 value={bankAccount}
                 onChange={(e) => setBankAccount(e.target.value)}
+                onBlur={handleFieldBlur}
                 placeholder="BE00 0000 0000 0000"
                 style={{
                   width: "100%",
@@ -333,6 +490,7 @@ export default function EditProfilePage({ params }: { params: Promise<{ id: stri
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+                onBlur={handleFieldBlur}
                 placeholder="naam@voorbeeld.be"
                 style={{
                   width: "100%",
@@ -361,38 +519,7 @@ export default function EditProfilePage({ params }: { params: Promise<{ id: stri
               </p>
             </div>
 
-            {error && (
-              <div
-                style={{
-                  fontFamily: fontMono,
-                  fontSize: 10,
-                  color: paper.accent,
-                  marginBottom: 10,
-                }}
-              >
-                {error}
-              </div>
-            )}
 
-            <button
-              type="submit"
-              disabled={!dirty || saving}
-              style={{
-                width: "100%",
-                padding: "8px",
-                fontFamily: fontMono,
-                fontSize: 9,
-                fontWeight: 700,
-                letterSpacing: 2,
-                textTransform: "uppercase",
-                background: saved ? paper.green : dirty ? paper.ink : paper.paperDark,
-                color: dirty || saved ? paper.paper : paper.inkMute,
-                border: "none",
-                cursor: dirty && !saving ? "pointer" : "default",
-              }}
-            >
-              {saved ? t("action.saved") : saving ? t("action.saving") : t("action.save")}
-            </button>
           </form>
 
           <div style={{ marginTop: 20, paddingTop: 16, borderTop: `1px solid ${paper.paperDark}` }}>
@@ -432,20 +559,104 @@ export default function EditProfilePage({ params }: { params: Promise<{ id: stri
                 </button>
               ))}
             </div>
-            {themeSaved && (
-              <div
+          </div>
+
+          {/* Notification preferences — driver/member block (all users) */}
+          <div style={{ marginTop: 20, paddingTop: 16, borderTop: `1px solid ${paper.paperDark}` }}>
+            <div style={notifySectionStyle}>{t("notif.pref_section")}</div>
+
+            {notifyCheckbox(
+              "new_reservations",
+              t("notif.pref_new_reservations"),
+              notifyNewReservations === "all",
+              (c) => handleNotifyChange("notify_new_reservations", c ? "all" : "off")
+            )}
+
+            {/* Reservation updates: unchecking turns off ALL update notifications
+                (not even your own outcome). Checked reveals the all/mine choice. */}
+            <div style={notifyRowStyle}>
+              <label
                 style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 8,
+                  cursor: "pointer",
                   fontFamily: fontMono,
-                  fontSize: 9,
-                  color: paper.green,
-                  marginTop: 6,
-                  letterSpacing: 1,
+                  fontSize: 11,
+                  color: paper.ink,
                 }}
               >
-                {t("action.saved")}
-              </div>
+                <input
+                  type="checkbox"
+                  checked={notifyReservationUpdates !== "off"}
+                  onChange={(e) =>
+                    handleNotifyChange(
+                      "notify_reservation_updates",
+                      e.target.checked ? "mine" : "off"
+                    )
+                  }
+                  style={{ accentColor: paper.ink }}
+                />
+                {t("notif.pref_reservation_updates")}
+              </label>
+              {notifyReservationUpdates !== "off" && (
+                <div style={{ display: "flex", gap: 16, marginTop: 8, marginLeft: 24 }}>
+                  {(["all", "mine"] as const).map((scope) => (
+                    <label
+                      key={scope}
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 4,
+                        fontFamily: fontMono,
+                        fontSize: 10,
+                        color: paper.ink,
+                        cursor: "pointer",
+                      }}
+                    >
+                      <input
+                        type="radio"
+                        name="reservation-updates-scope"
+                        value={scope}
+                        checked={notifyReservationUpdates === scope}
+                        onChange={() => handleNotifyChange("notify_reservation_updates", scope)}
+                        style={{ accentColor: paper.ink }}
+                      />
+                      {scope === "all" ? t("notif.pref_updates_all") : t("notif.pref_updates_mine")}
+                    </label>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {notifyCheckbox(
+              "new_trips",
+              t("notif.pref_new_trips"),
+              notifyNewTrips === "all",
+              (c) => handleNotifyChange("notify_new_trips", c ? "all" : "off")
             )}
           </div>
+
+          {/* Owner block — only shown to people who own a car */}
+          {me?.isOwner && (
+            <div
+              style={{ marginTop: 20, paddingTop: 16, borderTop: `1px solid ${paper.paperDark}` }}
+            >
+              <div style={notifySectionStyle}>{t("notif.pref_section_owner")}</div>
+              {notifyCheckbox(
+                "my_car_reservations",
+                t("notif.pref_my_car_reservations"),
+                notifyMyCarReservations === "on",
+                (c) => handleNotifyChange("notify_my_car_reservations", c ? "on" : "off")
+              )}
+              {notifyCheckbox(
+                "my_car_trips",
+                t("notif.pref_my_car_trips"),
+                notifyMyCarTrips === "on",
+                (c) => handleNotifyChange("notify_my_car_trips", c ? "on" : "off")
+              )}
+            </div>
+          )}
 
           {me?.personId === id && (
             <div

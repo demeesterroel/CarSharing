@@ -17,6 +17,13 @@ const profileSchema = z.object({
     .optional()
     .transform((v) => v ?? null),
   theme_preference: z.enum(["paper", "mono"]).optional(),
+  // Driver/member prefs
+  notify_new_reservations: z.enum(["off", "all"]).optional(),
+  notify_reservation_updates: z.enum(["off", "all", "mine"]).optional(),
+  notify_new_trips: z.enum(["off", "all"]).optional(),
+  // Owner prefs (events on cars I own)
+  notify_my_car_reservations: z.enum(["off", "on"]).optional(),
+  notify_my_car_trips: z.enum(["off", "on"]).optional(),
 });
 
 export const PATCH = json(async (req, ctx) => {
@@ -35,6 +42,13 @@ export const PATCH = json(async (req, ctx) => {
     bank_account: data.bank_account,
     email: data.email ?? null,
     theme_preference: data.theme_preference ?? existing.theme_preference,
+    notify_new_reservations: data.notify_new_reservations ?? existing.notify_new_reservations,
+    notify_reservation_updates:
+      data.notify_reservation_updates ?? existing.notify_reservation_updates,
+    notify_new_trips: data.notify_new_trips ?? existing.notify_new_trips,
+    notify_my_car_reservations:
+      data.notify_my_car_reservations ?? existing.notify_my_car_reservations,
+    notify_my_car_trips: data.notify_my_car_trips ?? existing.notify_my_car_trips,
   });
   return { ok: true };
 });

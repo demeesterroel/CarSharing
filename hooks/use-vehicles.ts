@@ -1,5 +1,6 @@
 import type { Car } from "@/types";
 import type { CarStats } from "@/lib/queries/cars";
+import { useQuery } from "@tanstack/react-query";
 import { createResourceHooks } from "./use-resource";
 
 const hooks = createResourceHooks<Car, Omit<Car, "id">>("cars", "/api/vehicles", {
@@ -11,7 +12,7 @@ export const useUpdateCar = hooks.useUpdate;
 export const useDeleteCar = hooks.useDelete;
 
 export function useCarStats(carId: number | null) {
-  return useQuery<{ year: number; tripCount: number; totalKm: number; totalFuelLiters: number; totalFuelCost: number; avgConsumptionLper100km: number | null; avgFuelCostPerKm: number | null }>({
+  return useQuery<CarStats | null>({
     queryKey: ["car-stats", carId],
     queryFn: async () => {
       if (!carId) return null;

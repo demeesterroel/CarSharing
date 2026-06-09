@@ -6,7 +6,7 @@ import { useT } from "@/components/locale-provider";
 import { useEarliestDashboardYear } from "@/hooks/use-dashboard";
 import { useMe } from "@/hooks/use-me";
 import { usePeople } from "@/hooks/use-people";
-import { useCars, useCreateCar, useDeleteCar, useUpdateCar } from "@/hooks/use-vehicles";
+import { useCars, useCarStats, useCreateCar, useDeleteCar, useUpdateCar } from "@/hooks/use-vehicles";
 import { fontMono, fontSerif, paper } from "@/lib/paper-theme";
 import { shortNameOf } from "@/lib/person-utils";
 import type { CarPnL, CarPriceHistory } from "@/lib/queries/admin";
@@ -95,6 +95,35 @@ function Toggle({ value, onChange }: { value: boolean; onChange: (v: boolean) =>
   );
 }
 
+// ── Stat tile helper ──────────────────────────────────────────
+function StatTile({ label, value }: { label: string; value: string }) {
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 0 }}>
+      <span
+        style={{
+          fontFamily: fontMono,
+          fontSize: 8,
+          color: paper.inkDim,
+          letterSpacing: 1,
+          textTransform: "uppercase",
+        }}
+      >
+        {label}
+      </span>
+      <span
+        style={{
+          fontFamily: fontMono,
+          fontSize: 11,
+          fontWeight: 700,
+          color: paper.ink,
+        }}
+      >
+        {value}
+      </span>
+    </div>
+  );
+}
+
 // ── Car accordion (tile + edit form) ─────────────────────────
 function CarAccordion({
   car,
@@ -117,6 +146,7 @@ function CarAccordion({
   const deleteCar = useDeleteCar();
   const { data: me } = useMe();
   const { data: people = [] } = usePeople();
+  const { data: stats } = useCarStats(car.id);
   const currentYear = new Date().getFullYear();
   const [name, setName] = useState(car.name);
   const [price, setPrice] = useState(car.price_per_km);
@@ -354,6 +384,26 @@ function CarAccordion({
               </div>
             )}
           </div>
+          {stats && (
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "1fr 1fr",
+                gap: 4,
+                marginBottom: 12,
+                padding: "8px 10px",
+                background: paper.paperDeep,
+                border: `1px solid ${paper.paperDark}`,
+              }}
+            >
+              <StatTile label="Ritten" value={stats.tripCount.toString()} />
+              <StatTile label="Totaal km" value={stats.totalKm.toLocaleString("nl-BE")} />
+              <StatTile label="L brandstof" value={stats.totalFuelLiters.toLocaleString("nl-BE", { maximumFractionDigits: 0 })} />
+              <StatTile label="€ brandstof" value={stats.totalFuelCost != null ? `€ ${stats.totalFuelCost.toLocaleString("nl-BE", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : "-"} />
+              <StatTile label="L/100km" value={stats.avgConsumptionLper100km != null ? stats.avgConsumptionLper100km.toLocaleString("nl-BE", { maximumFractionDigits: 1 }) : "-"} />
+              <StatTile label="€/km" value={stats.avgFuelCostPerKm != null ? `€ ${stats.avgFuelCostPerKm.toFixed(3)}` : "-"} />
+            </div>
+          )}
           <div style={{ display: "flex", gap: 8, marginBottom: 8 }}>
             <button
               onClick={() => {

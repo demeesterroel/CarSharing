@@ -1,5 +1,6 @@
 "use client";
 import { CarBadge } from "@/components/car-badge";
+import { CarStatsCard } from "@/components/car-stats-card";
 import { CostCoverageScreen } from "@/components/cost-coverage-screen";
 import { Fab } from "@/components/fab";
 import { useT } from "@/components/locale-provider";
@@ -266,7 +267,10 @@ function CarAccordion({
       {/* Expanded edit form */}
       {expanded && (
         <div style={{ padding: "0 14px 14px", borderTop: `1px dashed ${paper.paperDark}` }}>
-          <div style={{ paddingTop: 12, marginBottom: 8 }}>
+          <div style={{ paddingTop: 12 }}>
+            <CarStatsCard carId={car.id} year={year} />
+          </div>
+          <div style={{ marginBottom: 8 }}>
             <label style={labelStyle}>{t("form.name")}</label>
             <input value={name} onChange={(e) => setName(e.target.value)} style={inputStyle} />
           </div>

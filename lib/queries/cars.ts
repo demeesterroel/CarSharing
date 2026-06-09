@@ -77,3 +77,57 @@ export function carHasHistory(db: Database.Database, id: number): boolean {
 export function deleteCar(db: Database.Database, id: number): void {
   db.prepare("DELETE FROM cars WHERE id = ?").run(id);
 }
+
+// ── Per-car efficiency & usage stats (#374) ───────────────────
+export interface CarStats {
+  carId: number;
+  year: number;
+  tripCount: number;
+  totalKm: number;
+  totalFuelLiters: number;
+  totalFuelCost: number;
+  avgConsumptionLper100km: number | null;
+  avgFuelCostPerKm: number | null;
+}
+
+/** Most recent year that has any trip or fuel data (falls back to current year). */
+export function getLatestDataYear(db: Database.Database): number {
+  const row = db
+    .prepare(
+      `SELECT MAX(y) AS year FROM (
+         SELECT MAX(CAST(strftime('%Y', date) AS INTEGER)) AS y FROM trips
+         UNION ALL
+         SELECT MAX(CAST(strftime('%Y', date) AS INTEGER)) FROM fuel_fillups
+       )`
+    )
+    .get() as { year: number | null };
+  return row.year ?? new Date().getFullYear();
+}
+
+export function getCarStats(db: Database.Database, carId: number, year: number): CarStats {
+  const yearStr = String(year);
+  const trip = db
+    .prepare(
+      `SELECT COUNT(*) AS tripCount, COALESCE(SUM(km), 0) AS totalKm
+       FROM trips WHERE car_id = ? AND strftime('%Y', date) = ?`
+    )
+    .get(carId, yearStr) as { tripCount: number; totalKm: number };
+  const fuel = db
+    .prepare(
+      `SELECT COALESCE(SUM(liters), 0) AS totalFuelLiters, COALESCE(SUM(amount), 0) AS totalFuelCost
+       FROM fuel_fillups WHERE car_id = ? AND strftime('%Y', date) = ?`
+    )
+    .get(carId, yearStr) as { totalFuelLiters: number; totalFuelCost: number };
+
+  const totalKm = trip.totalKm;
+  return {
+    carId,
+    year,
+    tripCount: trip.tripCount,
+    totalKm,
+    totalFuelLiters: fuel.totalFuelLiters,
+    totalFuelCost: fuel.totalFuelCost,
+    avgConsumptionLper100km: totalKm > 0 ? (fuel.totalFuelLiters / totalKm) * 100 : null,
+    avgFuelCostPerKm: totalKm > 0 ? fuel.totalFuelCost / totalKm : null,
+  };
+}

@@ -52,6 +52,15 @@ export interface Car {
   updated_at: string;
 }
 
+export interface CarStats {
+  tripCount: number;
+  totalKm: number;
+  totalFuelLiters: number;
+  totalFuelCost: number;
+  avgConsumptionLper100km: number | null;
+  avgFuelCostPerKm: number | null;
+}
+
 export type ExpenseCategory = "onderhoud" | "keuring" | "belasting" | "verzekering" | "diversen";
 
 export interface Trip {

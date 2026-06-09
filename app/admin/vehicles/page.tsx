@@ -7,6 +7,7 @@ import { useEarliestDashboardYear } from "@/hooks/use-dashboard";
 import { useMe } from "@/hooks/use-me";
 import { usePeople } from "@/hooks/use-people";
 import { useCars, useCreateCar, useDeleteCar, useUpdateCar } from "@/hooks/use-vehicles";
+import { useCarStats } from "@/hooks/use-car-stats";
 import { fontMono, fontSerif, paper } from "@/lib/paper-theme";
 import { shortNameOf } from "@/lib/person-utils";
 import type { CarPnL, CarPriceHistory } from "@/lib/queries/admin";
@@ -301,9 +302,9 @@ function CarAccordion({
                     flexShrink: 0,
                   }}
                 >
-                  ✦
-                </button>
-              )}
+✦
+</button>
+                )}
             </div>
           </div>
           <div
@@ -350,9 +351,9 @@ function CarAccordion({
                         username: null,
                       }
                     )
-                  : "—"}
-              </div>
-            )}
+                   : "—"}
+</div>
+                )}
           </div>
           <div style={{ display: "flex", gap: 8, marginBottom: 8 }}>
             <button
@@ -775,10 +776,10 @@ function OwnerFleet() {
           marginLeft: -1.5,
           marginRight: -1.5,
         }}
-      >
-        {year}
-      </div>
-      <button
+       >
+         {year}
+       </div>
+       <button
         onClick={() => setYear(year + 1)}
         disabled={year >= currentYear}
         style={{
@@ -797,6 +798,28 @@ function OwnerFleet() {
       </button>
     </div>
   );
+  // Stats cards per car
+  const statsCards = myCars.map((car) => {
+    const { data: stats } = useCarStats(car.id, year);
+    const format = (n: number) => n.toLocaleString(undefined, { maximumFractionDigits: 2 });
+    return (
+      <div key={car.id} style={{
+        background: paper.paper,
+        padding: "8px 12px",
+        marginBottom: 6,
+        border: `1px solid ${paper.paperDark}`,
+        fontFamily: fontMono,
+        fontSize: 10,
+      }}>
+        <div>{car.short} – {car.name}</div>
+        <div>Trips: {stats?.tripCount ?? "-"}, km: {stats?.totalKm ?? "-"}</div>
+        <div>Fuel: {stats?.totalFuelLiters ?? "-"} L, €{stats?.totalFuelCost ?? "-"}</div>
+        <div>Avg cons.: {stats?.avgConsumptionLper100km != null ? format(stats.avgConsumptionLper100km) + " L/100km" : "-"}</div>
+        <div>Avg cost/km: {stats?.avgFuelCostPerKm != null ? "€" + format(stats.avgFuelCostPerKm) : "-"}</div>
+      </div>
+    );
+  });
+
 
   if (viewParam === "detail" && screenCarId) {
     const pnlCar = allPnL.find((c) => c.car_id === screenCarId);
@@ -887,9 +910,11 @@ function OwnerFleet() {
 
   return (
     <div style={{ padding: "16px" }}>
-      {yearSelector}
+{yearSelector}
 
-      <Fab onClick={openAdd} label={t("owner.add_car")} />
+       {statsCards}
+
+       <Fab onClick={openAdd} label={t("owner.add_car")} />
 
       {activeCars.map((car) => (
         <CarAccordion

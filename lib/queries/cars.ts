@@ -1,8 +1,31 @@
-import type { Car, CarInput } from "@/types";
+import type { Car, CarInput, CarStats } from "@/types";
 import type Database from "better-sqlite3";
 
 export function getCars(db: Database.Database): Car[] {
   return db.prepare("SELECT * FROM cars ORDER BY short").all() as Car[];
+}
+
+export function getCarStats(db: Database.Database, carId: number, year: number): CarStats {
+  const yearStr = String(year);
+  const tripRow = db.prepare(
+    `SELECT COUNT(*) AS tripCount, COALESCE(SUM(km),0) AS totalKm FROM trips WHERE car_id = ? AND strftime('%Y', date) = ?`
+  ).get(carId, yearStr) as { tripCount: number; totalKm: number };
+
+  const fuelRow = db.prepare(
+    `SELECT COALESCE(SUM(liters),0) AS totalFuelLiters, COALESCE(SUM(amount),0) AS totalFuelCost FROM fuel_fillups WHERE car_id = ? AND strftime('%Y', date) = ?`
+  ).get(carId, yearStr) as { totalFuelLiters: number; totalFuelCost: number };
+
+  const avgConsumption = tripRow.totalKm > 0 ? (fuelRow.totalFuelLiters / tripRow.totalKm) * 100 : null;
+  const avgFuelCost = tripRow.totalKm > 0 ? fuelRow.totalFuelCost / tripRow.totalKm : null;
+
+  return {
+    tripCount: tripRow.tripCount,
+    totalKm: tripRow.totalKm,
+    totalFuelLiters: fuelRow.totalFuelLiters,
+    totalFuelCost: fuelRow.totalFuelCost,
+    avgConsumptionLper100km: avgConsumption,
+    avgFuelCostPerKm: avgFuelCost,
+  };
 }
 
 export function getCarById(db: Database.Database, id: number): Car | null {

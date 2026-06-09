@@ -57,16 +57,22 @@ export function getPersonByEmail(db: Database.Database, email: string): Person |
   );
 }
 
-type NotifyPref = "off" | "all" | "own";
-
 export type PersonWriteData = Omit<
   Person,
-  "id" | "updated_at" | "notify_new_reservations" | "notify_reservation_updates" | "notify_new_trips"
+  | "id"
+  | "updated_at"
+  | "notify_new_reservations"
+  | "notify_reservation_updates"
+  | "notify_new_trips"
+  | "notify_my_car_reservations"
+  | "notify_my_car_trips"
 > & {
   password_hash?: string | null;
-  notify_new_reservations?: NotifyPref;
-  notify_reservation_updates?: NotifyPref;
-  notify_new_trips?: NotifyPref;
+  notify_new_reservations?: Person["notify_new_reservations"];
+  notify_reservation_updates?: Person["notify_reservation_updates"];
+  notify_new_trips?: Person["notify_new_trips"];
+  notify_my_car_reservations?: Person["notify_my_car_reservations"];
+  notify_my_car_trips?: Person["notify_my_car_trips"];
 };
 
 export function insertPerson(db: Database.Database, data: PersonWriteData): number {
@@ -74,8 +80,9 @@ export function insertPerson(db: Database.Database, data: PersonWriteData): numb
     .prepare(
       `INSERT INTO people
          (first_name,last_name,discount,discount_long,active,username,is_admin,bank_account,
-          email,theme_preference,notify_new_reservations,notify_reservation_updates,notify_new_trips)
-       VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)`
+          email,theme_preference,notify_new_reservations,notify_reservation_updates,notify_new_trips,
+          notify_my_car_reservations,notify_my_car_trips)
+       VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`
     )
     .run(
       data.first_name,
@@ -89,8 +96,10 @@ export function insertPerson(db: Database.Database, data: PersonWriteData): numb
       data.email ?? null,
       data.theme_preference ?? "mono",
       data.notify_new_reservations ?? "off",
-      data.notify_reservation_updates ?? "off",
-      data.notify_new_trips ?? "off"
+      data.notify_reservation_updates ?? "mine",
+      data.notify_new_trips ?? "off",
+      data.notify_my_car_reservations ?? "off",
+      data.notify_my_car_trips ?? "off"
     );
   return result.lastInsertRowid as number;
 }
@@ -101,6 +110,7 @@ export function updatePerson(db: Database.Database, id: number, data: PersonWrit
      SET first_name=?,last_name=?,discount=?,discount_long=?,active=?,username=?,is_admin=?,
          bank_account=?,email=?,theme_preference=?,
          notify_new_reservations=?,notify_reservation_updates=?,notify_new_trips=?,
+         notify_my_car_reservations=?,notify_my_car_trips=?,
          updated_at=datetime('now')
      WHERE id=?`
   ).run(
@@ -115,8 +125,10 @@ export function updatePerson(db: Database.Database, id: number, data: PersonWrit
     data.email ?? null,
     data.theme_preference ?? "mono",
     data.notify_new_reservations ?? "off",
-    data.notify_reservation_updates ?? "off",
+    data.notify_reservation_updates ?? "mine",
     data.notify_new_trips ?? "off",
+    data.notify_my_car_reservations ?? "off",
+    data.notify_my_car_trips ?? "off",
     id
   );
 }

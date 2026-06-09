@@ -6,8 +6,6 @@ import { getIronSession } from "iron-session";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
-const notifyPref = z.enum(["off", "all", "own"]).optional();
-
 const profileSchema = z.object({
   first_name: z.string().min(1),
   last_name: z.string().default(""),
@@ -19,9 +17,13 @@ const profileSchema = z.object({
     .optional()
     .transform((v) => v ?? null),
   theme_preference: z.enum(["paper", "mono"]).optional(),
-  notify_new_reservations: notifyPref,
-  notify_reservation_updates: notifyPref,
-  notify_new_trips: notifyPref,
+  // Driver/member prefs
+  notify_new_reservations: z.enum(["off", "all"]).optional(),
+  notify_reservation_updates: z.enum(["off", "all", "mine"]).optional(),
+  notify_new_trips: z.enum(["off", "all"]).optional(),
+  // Owner prefs (events on cars I own)
+  notify_my_car_reservations: z.enum(["off", "on"]).optional(),
+  notify_my_car_trips: z.enum(["off", "on"]).optional(),
 });
 
 export const PATCH = json(async (req, ctx) => {
@@ -44,6 +46,9 @@ export const PATCH = json(async (req, ctx) => {
     notify_reservation_updates:
       data.notify_reservation_updates ?? existing.notify_reservation_updates,
     notify_new_trips: data.notify_new_trips ?? existing.notify_new_trips,
+    notify_my_car_reservations:
+      data.notify_my_car_reservations ?? existing.notify_my_car_reservations,
+    notify_my_car_trips: data.notify_my_car_trips ?? existing.notify_my_car_trips,
   });
   return { ok: true };
 });

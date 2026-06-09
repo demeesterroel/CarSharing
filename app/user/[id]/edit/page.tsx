@@ -28,10 +28,15 @@ export default function EditProfilePage({ params }: { params: Promise<{ id: stri
   const [saved, setSaved] = useState(false);
   const { theme: _theme, setTheme } = useTheme();
   const [themePreference, setThemePreference] = useState<Theme>("mono");
-  type NotifyPref = "off" | "all" | "own";
-  const [notifyNewReservations, setNotifyNewReservations] = useState<NotifyPref>("off");
-  const [notifyReservationUpdates, setNotifyReservationUpdates] = useState<NotifyPref>("off");
-  const [notifyNewTrips, setNotifyNewTrips] = useState<NotifyPref>("off");
+  // Driver/member prefs (all users)
+  const [notifyNewReservations, setNotifyNewReservations] = useState<"off" | "all">("off");
+  const [notifyReservationUpdates, setNotifyReservationUpdates] = useState<"off" | "all" | "mine">(
+    "mine"
+  );
+  const [notifyNewTrips, setNotifyNewTrips] = useState<"off" | "all">("off");
+  // Owner prefs (only people who own a car)
+  const [notifyMyCarReservations, setNotifyMyCarReservations] = useState<"off" | "on">("off");
+  const [notifyMyCarTrips, setNotifyMyCarTrips] = useState<"off" | "on">("off");
 
   useEffect(() => {
     params.then(({ id: rawId }) => {
@@ -61,9 +66,17 @@ export default function EditProfilePage({ params }: { params: Promise<{ id: stri
   useEffect(() => {
     if (person) {
       setThemePreference((person.theme_preference as Theme) ?? "mono");
-      setNotifyNewReservations(person.notify_new_reservations ?? "off");
-      setNotifyReservationUpdates(person.notify_reservation_updates ?? "off");
-      setNotifyNewTrips(person.notify_new_trips ?? "off");
+      setNotifyNewReservations(person.notify_new_reservations === "all" ? "all" : "off");
+      setNotifyReservationUpdates(
+        person.notify_reservation_updates === "all"
+          ? "all"
+          : person.notify_reservation_updates === "off"
+            ? "off"
+            : "mine"
+      );
+      setNotifyNewTrips(person.notify_new_trips === "all" ? "all" : "off");
+      setNotifyMyCarReservations(person.notify_my_car_reservations === "on" ? "on" : "off");
+      setNotifyMyCarTrips(person.notify_my_car_trips === "on" ? "on" : "off");
     }
   }, [person]);
 
@@ -114,6 +127,8 @@ export default function EditProfilePage({ params }: { params: Promise<{ id: stri
           notify_new_reservations: notifyNewReservations,
           notify_reservation_updates: notifyReservationUpdates,
           notify_new_trips: notifyNewTrips,
+          notify_my_car_reservations: notifyMyCarReservations,
+          notify_my_car_trips: notifyMyCarTrips,
         }),
       });
       // Advance the local baseline so the form is no longer dirty (prevents the
@@ -149,39 +164,51 @@ export default function EditProfilePage({ params }: { params: Promise<{ id: stri
   }
 
   async function handleNotifyChange(
-    field: "notify_new_reservations" | "notify_reservation_updates" | "notify_new_trips",
-    value: NotifyPref
+    field:
+      | "notify_new_reservations"
+      | "notify_reservation_updates"
+      | "notify_new_trips"
+      | "notify_my_car_reservations"
+      | "notify_my_car_trips",
+    value: string
   ) {
-    const patch: Record<string, string> = {
-      first_name: firstName,
-      last_name: lastName,
-      bank_account: bankAccount,
-      email: email || "",
+    const current = {
       notify_new_reservations: notifyNewReservations,
       notify_reservation_updates: notifyReservationUpdates,
       notify_new_trips: notifyNewTrips,
-      [field]: value,
+      notify_my_car_reservations: notifyMyCarReservations,
+      notify_my_car_trips: notifyMyCarTrips,
     };
-    if (field === "notify_new_reservations") setNotifyNewReservations(value);
-    if (field === "notify_reservation_updates") setNotifyReservationUpdates(value);
-    if (field === "notify_new_trips") setNotifyNewTrips(value);
+    const next = { ...current, [field]: value };
+    // Optimistic update — re-applies every value so the changed one wins.
+    setNotifyNewReservations(next.notify_new_reservations as "off" | "all");
+    setNotifyReservationUpdates(next.notify_reservation_updates as "off" | "all" | "mine");
+    setNotifyNewTrips(next.notify_new_trips as "off" | "all");
+    setNotifyMyCarReservations(next.notify_my_car_reservations as "off" | "on");
+    setNotifyMyCarTrips(next.notify_my_car_trips as "off" | "on");
     try {
       await apiFetch(`/api/people/${id}/profile`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...patch, email: email || null }),
+        body: JSON.stringify({
+          first_name: firstName,
+          last_name: lastName,
+          bank_account: bankAccount,
+          email: email || null,
+          ...next,
+        }),
       });
       await queryClient.invalidateQueries({ queryKey: ["me"] });
       setSaved(true);
       setTimeout(() => setSaved(false), 1500);
     } catch {
       toast.error(t("toast.error"));
-      // revert
-      if (field === "notify_new_reservations")
-        setNotifyNewReservations(person!.notify_new_reservations ?? "off");
-      if (field === "notify_reservation_updates")
-        setNotifyReservationUpdates(person!.notify_reservation_updates ?? "off");
-      if (field === "notify_new_trips") setNotifyNewTrips(person!.notify_new_trips ?? "off");
+      // Revert to the pre-change values.
+      setNotifyNewReservations(current.notify_new_reservations);
+      setNotifyReservationUpdates(current.notify_reservation_updates);
+      setNotifyNewTrips(current.notify_new_trips);
+      setNotifyMyCarReservations(current.notify_my_car_reservations);
+      setNotifyMyCarTrips(current.notify_my_car_trips);
     }
   }
 
@@ -221,6 +248,48 @@ export default function EditProfilePage({ params }: { params: Promise<{ id: stri
       setTheme(themePreference);
     }
   }
+
+  const notifySectionStyle: React.CSSProperties = {
+    fontFamily: fontMono,
+    fontSize: 9,
+    color: paper.inkMute,
+    letterSpacing: 1,
+    marginBottom: 12,
+    textTransform: "uppercase",
+  };
+  const notifyRowStyle: React.CSSProperties = {
+    marginBottom: 10,
+    padding: "8px 10px",
+    background: paper.paperDark,
+  };
+  const notifyCheckbox = (
+    key: string,
+    label: string,
+    checked: boolean,
+    onToggle: (checked: boolean) => void
+  ) => (
+    <div key={key} style={notifyRowStyle}>
+      <label
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: 8,
+          cursor: "pointer",
+          fontFamily: fontMono,
+          fontSize: 11,
+          color: paper.ink,
+        }}
+      >
+        <input
+          type="checkbox"
+          checked={checked}
+          onChange={(e) => onToggle(e.target.checked)}
+          style={{ accentColor: paper.ink }}
+        />
+        {label}
+      </label>
+    </div>
+  );
 
   return (
     <div style={{ background: paper.paperDeep, minHeight: "100dvh" }}>
@@ -492,122 +561,102 @@ export default function EditProfilePage({ params }: { params: Promise<{ id: stri
             </div>
           </div>
 
-          {/* Notification preferences */}
+          {/* Notification preferences — driver/member block (all users) */}
           <div style={{ marginTop: 20, paddingTop: 16, borderTop: `1px solid ${paper.paperDark}` }}>
-            <div
-              style={{
-                fontFamily: fontMono,
-                fontSize: 9,
-                color: paper.inkMute,
-                letterSpacing: 1,
-                marginBottom: 12,
-                textTransform: "uppercase",
-              }}
-            >
-              {t("notif.pref_section")}
-            </div>
-            {(
-              [
-                {
-                  field: "notify_new_reservations" as const,
-                  label: t("notif.pref_new_reservations"),
-                  value: notifyNewReservations,
-                },
-                {
-                  field: "notify_reservation_updates" as const,
-                  label: t("notif.pref_reservation_updates"),
-                  value: notifyReservationUpdates,
-                },
-                {
-                  field: "notify_new_trips" as const,
-                  label: t("notif.pref_new_trips"),
-                  value: notifyNewTrips,
-                },
-              ] as {
-                field:
-                  | "notify_new_reservations"
-                  | "notify_reservation_updates"
-                  | "notify_new_trips";
-                label: string;
-                value: NotifyPref;
-              }[]
-            ).map(({ field, label, value }) => {
-              const isOwner = me?.isOwner ?? false;
-              const enabled = value !== "off";
-              return (
-                <div
-                  key={field}
-                  style={{
-                    marginBottom: 12,
-                    padding: "8px 10px",
-                    background: paper.paperDark,
-                  }}
-                >
-                  <label
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 8,
-                      cursor: "pointer",
-                      fontFamily: fontMono,
-                      fontSize: 11,
-                      color: paper.ink,
-                    }}
-                  >
-                    <input
-                      type="checkbox"
-                      checked={enabled}
-                      onChange={(e) => {
-                        if (!e.target.checked) {
-                          handleNotifyChange(field, "off");
-                        } else {
-                          handleNotifyChange(field, isOwner ? "all" : "all");
-                        }
-                      }}
-                      style={{ accentColor: paper.ink }}
-                    />
-                    {label}
-                  </label>
-                  {enabled && isOwner && (
-                    <div
+            <div style={notifySectionStyle}>{t("notif.pref_section")}</div>
+
+            {notifyCheckbox(
+              "new_reservations",
+              t("notif.pref_new_reservations"),
+              notifyNewReservations === "all",
+              (c) => handleNotifyChange("notify_new_reservations", c ? "all" : "off")
+            )}
+
+            {/* Reservation updates: unchecking turns off ALL update notifications
+                (not even your own outcome). Checked reveals the all/mine choice. */}
+            <div style={notifyRowStyle}>
+              <label
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 8,
+                  cursor: "pointer",
+                  fontFamily: fontMono,
+                  fontSize: 11,
+                  color: paper.ink,
+                }}
+              >
+                <input
+                  type="checkbox"
+                  checked={notifyReservationUpdates !== "off"}
+                  onChange={(e) =>
+                    handleNotifyChange(
+                      "notify_reservation_updates",
+                      e.target.checked ? "mine" : "off"
+                    )
+                  }
+                  style={{ accentColor: paper.ink }}
+                />
+                {t("notif.pref_reservation_updates")}
+              </label>
+              {notifyReservationUpdates !== "off" && (
+                <div style={{ display: "flex", gap: 16, marginTop: 8, marginLeft: 24 }}>
+                  {(["all", "mine"] as const).map((scope) => (
+                    <label
+                      key={scope}
                       style={{
-                        marginTop: 6,
-                        marginLeft: 20,
                         display: "flex",
-                        gap: 16,
+                        alignItems: "center",
+                        gap: 4,
+                        fontFamily: fontMono,
+                        fontSize: 10,
+                        color: paper.ink,
+                        cursor: "pointer",
                       }}
                     >
-                      {(["all", "own"] as const).map((scope) => (
-                        <label
-                          key={scope}
-                          style={{
-                            display: "flex",
-                            alignItems: "center",
-                            gap: 4,
-                            fontFamily: fontMono,
-                            fontSize: 9,
-                            color: paper.inkMute,
-                            cursor: "pointer",
-                            letterSpacing: 0.5,
-                          }}
-                        >
-                          <input
-                            type="radio"
-                            name={`${field}-scope`}
-                            value={scope}
-                            checked={value === scope}
-                            onChange={() => handleNotifyChange(field, scope)}
-                            style={{ accentColor: paper.ink }}
-                          />
-                          {scope === "all" ? t("notif.pref_scope_all") : t("notif.pref_scope_own")}
-                        </label>
-                      ))}
-                    </div>
-                  )}
+                      <input
+                        type="radio"
+                        name="reservation-updates-scope"
+                        value={scope}
+                        checked={notifyReservationUpdates === scope}
+                        onChange={() => handleNotifyChange("notify_reservation_updates", scope)}
+                        style={{ accentColor: paper.ink }}
+                      />
+                      {scope === "all" ? t("notif.pref_updates_all") : t("notif.pref_updates_mine")}
+                    </label>
+                  ))}
                 </div>
-              );
-            })}
+              )}
+            </div>
+
+            {notifyCheckbox(
+              "new_trips",
+              t("notif.pref_new_trips"),
+              notifyNewTrips === "all",
+              (c) => handleNotifyChange("notify_new_trips", c ? "all" : "off")
+            )}
           </div>
+
+          {/* Owner block — only shown to people who own a car */}
+          {me?.isOwner && (
+            <div
+              style={{ marginTop: 20, paddingTop: 16, borderTop: `1px solid ${paper.paperDark}` }}
+            >
+              <div style={notifySectionStyle}>{t("notif.pref_section_owner")}</div>
+              {notifyCheckbox(
+                "my_car_reservations",
+                t("notif.pref_my_car_reservations"),
+                notifyMyCarReservations === "on",
+                (c) => handleNotifyChange("notify_my_car_reservations", c ? "on" : "off")
+              )}
+              {notifyCheckbox(
+                "my_car_trips",
+                t("notif.pref_my_car_trips"),
+                notifyMyCarTrips === "on",
+                (c) => handleNotifyChange("notify_my_car_trips", c ? "on" : "off")
+              )}
+            </div>
+          )}
 
           {me?.personId === id && (
             <div

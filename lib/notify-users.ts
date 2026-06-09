@@ -15,11 +15,18 @@ import { insertNotification } from "@/lib/queries/notifications";
 
 export type NotifyTrigger = "new_reservation" | "reservation_update" | "new_trip";
 
-/** Maps a trigger to the people.notify_* column name. */
-const TRIGGER_TO_COLUMN: Record<NotifyTrigger, string> = {
+/** Driver/member pref column per trigger ('all' = notify about others' events). */
+const DRIVER_COLUMN: Record<NotifyTrigger, string> = {
   new_reservation: "notify_new_reservations",
   reservation_update: "notify_reservation_updates",
   new_trip: "notify_new_trips",
+};
+
+/** Owner toggle column per trigger ('on' = notify about events on cars I own). */
+const OWNER_COLUMN: Record<NotifyTrigger, string> = {
+  new_reservation: "notify_my_car_reservations",
+  reservation_update: "notify_my_car_reservations",
+  new_trip: "notify_my_car_trips",
 };
 
 export interface NotifyUsersOptions {
@@ -49,49 +56,52 @@ export interface NotifyUsersOptions {
  * Determines which active people should receive an in-app notification for
  * the event and inserts one row per recipient.
  *
- * Recipient rules:
- *  - pref = 'all'  → always included (unless they are the actor)
- *  - pref = 'own'  → only if they own `carId` (via cars.owner_person_id)
- *  - pref = 'off'  → never included
- *  - inactive people → never included
- *  - actorPersonId → always excluded
+ * Recipient rules (active people only, actor always excluded):
+ *  - driver pref = 'all' → notified about everyone's events of this type
+ *  - owner toggle = 'on' AND owns `carId` → notified about events on their car
+ *  - alwaysNotifyPersonId (e.g. the reserver) → notified regardless of prefs
+ *  Recipients are de-duplicated; the reserver gets `alwaysNotifyMessage`.
  */
 export async function notifyUsersOfEvent(opts: NotifyUsersOptions): Promise<void> {
   try {
-    const prefColumn = TRIGGER_TO_COLUMN[opts.trigger];
+    const driverColumn = DRIVER_COLUMN[opts.trigger];
+    const ownerColumn = OWNER_COLUMN[opts.trigger];
 
-    // Recipients with pref = 'all' (active, not the actor)
-    const allRecipients = opts.db
+    // Driver/member recipients: opted into all events of this type (self excluded).
+    const driverRecipients = opts.db
       .prepare(
         `SELECT id FROM people
-         WHERE active = 1
-           AND id != ?
-           AND ${prefColumn} = 'all'`
+         WHERE active = 1 AND id != ? AND ${driverColumn} = 'all'`
       )
       .all(opts.actorPersonId) as { id: number }[];
 
-    // Recipients with pref = 'own' who own the car (active, not the actor)
-    const ownRecipients = opts.db
+    // Owner recipients: own the car AND opted into events on their car (self excluded).
+    const ownerRecipients = opts.db
       .prepare(
         `SELECT p.id FROM people p
          INNER JOIN cars c ON c.owner_person_id = p.id
-         WHERE p.active = 1
-           AND p.id != ?
-           AND p.${prefColumn} = 'own'
-           AND c.id = ?`
+         WHERE p.active = 1 AND p.id != ? AND p.${ownerColumn} = 'on' AND c.id = ?`
       )
       .all(opts.actorPersonId, opts.carId) as { id: number }[];
 
-    // De-duplicate (a person can't appear in both since pref is a single value)
     const recipientIds = new Set<number>([
-      ...allRecipients.map((r) => r.id),
-      ...ownRecipients.map((r) => r.id),
+      ...driverRecipients.map((r) => r.id),
+      ...ownerRecipients.map((r) => r.id),
     ]);
 
-    // Always-notify recipient (e.g. the reserver) — regardless of prefs, but not
-    // when they are the actor; the Set de-duplicates against opt-in recipients.
+    // Always-notify recipient (e.g. the reserver, told their own reservation was
+    // approved/rejected/deleted). Sent regardless of the 'mine'/'all' choice, but
+    // NOT when they are the actor, and NOT when they fully opted out ('off' on the
+    // trigger's driver column — e.g. notify_reservation_updates='off' means no
+    // reservation-update notifications at all, not even your own outcome).
+    // The Set de-duplicates against opt-in recipients.
     if (opts.alwaysNotifyPersonId != null && opts.alwaysNotifyPersonId !== opts.actorPersonId) {
-      recipientIds.add(opts.alwaysNotifyPersonId);
+      const pref = opts.db
+        .prepare(`SELECT ${driverColumn} AS v FROM people WHERE id = ? AND active = 1`)
+        .get(opts.alwaysNotifyPersonId) as { v: string } | undefined;
+      if (pref && pref.v !== "off") {
+        recipientIds.add(opts.alwaysNotifyPersonId);
+      }
     }
 
     for (const recipientPersonId of recipientIds) {

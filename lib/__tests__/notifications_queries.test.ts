@@ -326,13 +326,17 @@ describe("markRead", () => {
 });
 
 describe("person notify preference columns", () => {
-  it("returns default 'off' values for new person", () => {
+  it("returns default opt-out values for new person", () => {
     const db = makeDb();
     const aliceId = insertPerson(db, { ...basePerson, first_name: "Alice" });
     const row = db.prepare("SELECT * FROM people WHERE id=?").get(aliceId) as any;
     expect(row.notify_new_reservations).toBe("off");
-    expect(row.notify_reservation_updates).toBe("off");
+    // Reservation updates default to 'mine': your own outcome is always sent,
+    // but you don't see other people's updates unless you opt in.
+    expect(row.notify_reservation_updates).toBe("mine");
     expect(row.notify_new_trips).toBe("off");
+    expect(row.notify_my_car_reservations).toBe("off");
+    expect(row.notify_my_car_trips).toBe("off");
   });
 
   it("updatePerson persists notify preference columns", () => {

@@ -94,17 +94,19 @@ describe("notifyUsersOfEvent — new_reservation trigger", () => {
     expect(listNotifications(db, aliceId)).toHaveLength(0);
   });
 
-  it("inserts for pref='own' only if they own the car", async () => {
+  it("owner toggle notifies only the person who owns the car", async () => {
     const db = makeDb();
+    // Alice owns Car AA and opted into reservations on her car.
     const ownerAliceId = insertPerson(db, {
       ...basePerson,
       first_name: "Alice",
-      notify_new_reservations: "own",
+      notify_my_car_reservations: "on",
     });
+    // Bob has the same toggle on but owns no car → must not be notified.
     const nonOwnerBobId = insertPerson(db, {
       ...basePerson,
       first_name: "Bob",
-      notify_new_reservations: "own",
+      notify_my_car_reservations: "on",
     });
     const actorId = insertPerson(db, { ...basePerson, first_name: "Actor" });
 
@@ -123,6 +125,31 @@ describe("notifyUsersOfEvent — new_reservation trigger", () => {
 
     expect(listNotifications(db, ownerAliceId)).toHaveLength(1);
     expect(listNotifications(db, nonOwnerBobId)).toHaveLength(0);
+  });
+
+  it("owner toggle does NOT notify for events on a car they do not own", async () => {
+    const db = makeDb();
+    const ownerAliceId = insertPerson(db, {
+      ...basePerson,
+      first_name: "Alice",
+      notify_my_car_reservations: "on",
+    });
+    const actorId = insertPerson(db, { ...basePerson, first_name: "Actor" });
+    // Alice owns Car AA, but the event is on Car BB (owned by the actor).
+    insertCar(db, ownerAliceId, "AA");
+    const otherCarId = insertCar(db, actorId, "BB");
+
+    await notifyUsersOfEvent({
+      db,
+      trigger: "new_reservation",
+      entityType: "reservation",
+      entityId: 1,
+      carId: otherCarId,
+      actorPersonId: actorId,
+      message: "Reservation on Car BB",
+    });
+
+    expect(listNotifications(db, ownerAliceId)).toHaveLength(0);
   });
 
   it("always excludes the actor, even if they have pref='all'", async () => {
@@ -198,6 +225,30 @@ describe("notifyUsersOfEvent — new_trip trigger", () => {
     });
 
     expect(listNotifications(db, aliceId)).toHaveLength(1);
+  });
+
+  it("owner toggle notify_my_car_trips notifies the car owner", async () => {
+    const db = makeDb();
+    const ownerAliceId = insertPerson(db, {
+      ...basePerson,
+      first_name: "Alice",
+      notify_my_car_trips: "on",
+      notify_new_trips: "off",
+    });
+    const actorId = insertPerson(db, { ...basePerson, first_name: "Actor" });
+    const carId = insertCar(db, ownerAliceId);
+
+    await notifyUsersOfEvent({
+      db,
+      trigger: "new_trip",
+      entityType: "trip",
+      entityId: 12,
+      carId,
+      actorPersonId: actorId,
+      message: "Trip on Alice's car",
+    });
+
+    expect(listNotifications(db, ownerAliceId)).toHaveLength(1);
   });
 });
 
@@ -283,7 +334,31 @@ describe("notifyUsersOfEvent — error swallowing", () => {
 });
 
 describe("notifyUsersOfEvent — alwaysNotifyPersonId (reserver outcome)", () => {
-  it("notifies the always-notify person even when their pref is 'off'", async () => {
+  it("notifies the always-notify person even when their pref is 'mine'", async () => {
+    const db = makeDb();
+    const reserverId = insertPerson(db, {
+      ...basePerson,
+      first_name: "Reserver",
+      notify_reservation_updates: "mine",
+    });
+    const actorId = insertPerson(db, { ...basePerson, first_name: "Owner" });
+    const carId = insertCar(db, actorId);
+
+    await notifyUsersOfEvent({
+      db,
+      trigger: "reservation_update",
+      entityType: "reservation",
+      entityId: 7,
+      carId,
+      actorPersonId: actorId,
+      alwaysNotifyPersonId: reserverId,
+      message: "approved",
+    });
+
+    expect(listNotifications(db, reserverId)).toHaveLength(1);
+  });
+
+  it("does NOT notify the always-notify person when they opted fully out ('off')", async () => {
     const db = makeDb();
     const reserverId = insertPerson(db, {
       ...basePerson,
@@ -304,7 +379,7 @@ describe("notifyUsersOfEvent — alwaysNotifyPersonId (reserver outcome)", () =>
       message: "approved",
     });
 
-    expect(listNotifications(db, reserverId)).toHaveLength(1);
+    expect(listNotifications(db, reserverId)).toHaveLength(0);
   });
 
   it("does not notify the always-notify person when they are the actor", async () => {
@@ -312,7 +387,7 @@ describe("notifyUsersOfEvent — alwaysNotifyPersonId (reserver outcome)", () =>
     const actorId = insertPerson(db, {
       ...basePerson,
       first_name: "Owner",
-      notify_reservation_updates: "off",
+      notify_reservation_updates: "mine",
     });
     const carId = insertCar(db, actorId);
 
@@ -366,7 +441,7 @@ describe("notifyUsersOfEvent — per-recipient message", () => {
     const reserverId = insertPerson(db, {
       ...basePerson,
       first_name: "Reserver",
-      notify_reservation_updates: "off",
+      notify_reservation_updates: "mine",
     });
     const actorId = insertPerson(db, { ...basePerson, first_name: "Owner" });
     const carId = insertCar(db, actorId);

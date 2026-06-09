@@ -14,9 +14,15 @@ export interface Person {
   /** Bumped to revoke all of a user's existing sessions ("log out everywhere"). */
   session_epoch?: number;
   updated_at: string;
-  notify_new_reservations: "off" | "all" | "own";
-  notify_reservation_updates: "off" | "all" | "own";
-  notify_new_trips: "off" | "all" | "own";
+  // Driver/member prefs: notifications about activity by others (self excluded).
+  notify_new_reservations: "off" | "all";
+  // 'off' = no reservation-update notifications at all (not even your own outcome).
+  // 'mine' = only your own reservation outcome. 'all' = yours + everyone else's.
+  notify_reservation_updates: "off" | "all" | "mine";
+  notify_new_trips: "off" | "all";
+  // Owner prefs: events on cars this person owns.
+  notify_my_car_reservations: "off" | "on";
+  notify_my_car_trips: "off" | "on";
 }
 
 export interface Notification {

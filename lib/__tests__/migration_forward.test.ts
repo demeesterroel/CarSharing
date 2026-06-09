@@ -45,6 +45,7 @@ const ALL_MIGRATIONS = [
   "0024_calendar_sync_log.sql",
   "0025_reservation_times.sql",
   "0026_notifications.sql",
+  "0027_owner_notify_prefs.sql",
 ];
 
 const LATER_MIGRATIONS = ALL_MIGRATIONS.slice(10); // 0011–0022
@@ -202,7 +203,7 @@ describe("forward migration — 0001–0010 → 0011–0022", () => {
       .prepare("SELECT filename FROM _migrations ORDER BY filename")
       .pluck()
       .all() as string[];
-    expect(applied).toHaveLength(26);
+    expect(applied).toHaveLength(27);
     for (const f of ALL_MIGRATIONS) {
       expect(applied).toContain(f);
     }
@@ -213,6 +214,6 @@ describe("forward migration — 0001–0010 → 0011–0022", () => {
       .prepare("SELECT filename FROM _migrations ORDER BY filename")
       .pluck()
       .all() as string[];
-    expect(appliedAfter).toHaveLength(26);
+    expect(appliedAfter).toHaveLength(27);
   });
 });

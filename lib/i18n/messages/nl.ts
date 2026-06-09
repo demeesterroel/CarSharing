@@ -670,14 +670,17 @@ export const nl = {
   "notif.status_pending": "opnieuw in behandeling",
   "notif.status_deleted": "verwijderd",
 
-  // Notification preferences (profile page)
+  // Notification preferences (profile page) — driver block (all members)
   "notif.pref_section": "Meldingen",
-  "notif.pref_new_reservations": "Nieuwe reserveringen",
+  "notif.pref_new_reservations": "Nieuwe reserveringen van anderen",
   "notif.pref_reservation_updates": "Reserveringsupdates",
-  "notif.pref_new_trips": "Nieuwe ritten",
-  "notif.pref_scope_all": "Alle wagens",
-  "notif.pref_scope_own": "Alleen mijn wagens",
-  "notif.pref_enabled": "Ingeschakeld",
+  "notif.pref_updates_all": "Alle reserveringen",
+  "notif.pref_updates_mine": "Enkel mijn reserveringen",
+  "notif.pref_new_trips": "Nieuwe ritten van anderen",
+  // Owner block (only people who own a car)
+  "notif.pref_section_owner": "Meldingen voor mijn wagen(s)",
+  "notif.pref_my_car_reservations": "Reserveringen op mijn wagen",
+  "notif.pref_my_car_trips": "Ritten met mijn wagen",
 
   // Notifications page
   "notif.page_title": "Meldingen",

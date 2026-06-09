@@ -670,14 +670,17 @@ export const en: Messages = {
   "notif.status_pending": "set to pending",
   "notif.status_deleted": "deleted",
 
-  // Notification preferences (profile page)
+  // Notification preferences (profile page) — driver block (all members)
   "notif.pref_section": "Notifications",
-  "notif.pref_new_reservations": "New reservations",
+  "notif.pref_new_reservations": "New reservations by others",
   "notif.pref_reservation_updates": "Reservation updates",
-  "notif.pref_new_trips": "New trips",
-  "notif.pref_scope_all": "All cars",
-  "notif.pref_scope_own": "Only my cars",
-  "notif.pref_enabled": "Enabled",
+  "notif.pref_updates_all": "All reservations",
+  "notif.pref_updates_mine": "Only my reservations",
+  "notif.pref_new_trips": "New trips by others",
+  // Owner block (only people who own a car)
+  "notif.pref_section_owner": "Notifications for my car",
+  "notif.pref_my_car_reservations": "Reservations for my car",
+  "notif.pref_my_car_trips": "Trips with my car",
 
   // Notifications page
   "notif.page_title": "Notifications",

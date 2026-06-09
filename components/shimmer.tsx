@@ -1,4 +1,4 @@
-import { paper } from "@/lib/paper-theme";
+import { tokens } from "@/lib/theme-tokens";
 
 export const shimmerKeyframes = `
 @keyframes shimmer {
@@ -22,7 +22,7 @@ export function ShimmerBar({
         width,
         height,
         borderRadius: 2,
-        background: paper.paperDark,
+        background: tokens.paperDark,
         animation: "shimmer 1.4s ease-in-out infinite",
         marginBottom,
       }}

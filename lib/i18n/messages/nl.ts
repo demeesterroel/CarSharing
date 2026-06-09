@@ -284,7 +284,8 @@ export const nl = {
   "calendar.all_filter": "Alles",
   "calendar.mine_filter": "Mijn",
   "calendar.subscribe": "Voeg toe aan kalender-app",
-  "calendar.nudge_message": "Voeg de Autodelen-kalender toe aan je eigen kalender-app om altijd op de hoogte te blijven.",
+  "calendar.nudge_message":
+    "Voeg de Autodelen-kalender toe aan je eigen kalender-app om altijd op de hoogte te blijven.",
   "calendar.nudge_action": "Kalender toevoegen",
   "calendar.prev_weeks": "Vorige weken",
   "calendar.next_weeks": "Volgende weken",

@@ -1,6 +1,6 @@
 "use client";
 import { useMe } from "@/hooks/use-me";
-import { fontMono, paper } from "@/lib/paper-theme";
+import { fontMono, tokens } from "@/lib/theme-tokens";
 
 export function CloakBanner() {
   const { data: me } = useMe();
@@ -21,7 +21,7 @@ export function CloakBanner() {
     <div
       role="alert"
       style={{
-        background: paper.amber,
+        background: tokens.amber,
         color: "#fff",
         display: "flex",
         alignItems: "center",

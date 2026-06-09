@@ -1,8 +1,8 @@
 "use client";
 import { t } from "@/lib/i18n";
 import { useOnlineState } from "@/lib/offline/online-state";
-import { fontMono, paper } from "@/lib/paper-theme";
 import { useTheme } from "@/lib/theme-context";
+import { fontMono, tokens } from "@/lib/theme-tokens";
 import { CalendarPlus, Fuel, Navigation, Receipt } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -59,8 +59,8 @@ export function Fab({ onClick, label }: Props) {
           bottom: 0,
           width: 56,
           height: 56,
-          background: online ? (mono ? paper.accent : paper.ink) : paper.inkMute,
-          color: paper.paper,
+          background: online ? (mono ? tokens.accent : tokens.ink) : tokens.inkMute,
+          color: tokens.paper,
           border: "none",
           borderRadius: mono ? "50%" : 0,
           cursor: online ? "pointer" : "default",
@@ -145,15 +145,15 @@ export function MultiFab({ onPick }: { onPick: (action: string) => void }) {
                   alignItems: "center",
                   gap: 8,
                   padding: "9px 16px",
-                  background: hovered ? paper.ink : paper.paper,
-                  border: `1px solid ${paper.paperDark}`,
+                  background: hovered ? tokens.ink : tokens.paper,
+                  border: `1px solid ${tokens.paperDark}`,
                   borderRadius: "var(--radius-pill, 999px)",
                   cursor: "pointer",
                   fontFamily: "var(--font-inter, 'Inter', system-ui, sans-serif)",
                   fontSize: 13,
                   fontWeight: 500,
                   letterSpacing: 0,
-                  color: hovered ? paper.paper : paper.ink,
+                  color: hovered ? tokens.paper : tokens.ink,
                   boxShadow: "0 2px 8px rgba(0,0,0,0.12)",
                   transition: "background 0.1s, color 0.1s",
                   whiteSpace: "nowrap",
@@ -177,15 +177,15 @@ export function MultiFab({ onPick }: { onPick: (action: string) => void }) {
                   alignItems: "center",
                   gap: 10,
                   padding: "10px 14px",
-                  background: hovered ? paper.ink : paper.paper,
-                  border: `1.5px solid ${paper.ink}`,
+                  background: hovered ? tokens.ink : tokens.paper,
+                  border: `1.5px solid ${tokens.ink}`,
                   cursor: "pointer",
                   fontFamily: fontMono,
                   fontSize: 11,
                   letterSpacing: 2,
                   textTransform: "uppercase" as const,
                   fontWeight: 700,
-                  color: hovered ? paper.paper : paper.ink,
+                  color: hovered ? tokens.paper : tokens.ink,
                   transform: `rotate(${chit.rotate}deg)`,
                   boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
                   transition: "background 0.1s, color 0.1s",
@@ -210,8 +210,8 @@ export function MultiFab({ onPick }: { onPick: (action: string) => void }) {
           style={{
             width: 56,
             height: 56,
-            background: online ? (mono ? paper.accent : paper.ink) : paper.inkMute,
-            color: paper.paper,
+            background: online ? (mono ? tokens.accent : tokens.ink) : tokens.inkMute,
+            color: tokens.paper,
             border: "none",
             borderRadius: mono ? "50%" : 0,
             cursor: online ? "pointer" : "default",

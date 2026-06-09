@@ -1,7 +1,7 @@
 "use client";
 
 import { useT } from "@/components/locale-provider";
-import { fontMono, fontSerif, paper } from "@/lib/paper-theme";
+import { fontMono, fontSerif, tokens } from "@/lib/theme-tokens";
 import { useQueryClient } from "@tanstack/react-query";
 import { Eye, EyeOff } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
@@ -22,11 +22,11 @@ export default function ResetPasswordPage() {
   const inputStyle: React.CSSProperties = {
     width: "100%",
     padding: "10px 12px",
-    border: `1.5px solid ${paper.inkDim}`,
-    background: paper.paper,
+    border: `1.5px solid ${tokens.inkDim}`,
+    background: tokens.paper,
     fontFamily: fontMono,
     fontSize: 14,
-    color: paper.ink,
+    color: tokens.ink,
     outline: "none",
   };
 
@@ -65,7 +65,7 @@ export default function ResetPasswordPage() {
     <div
       style={{
         minHeight: "100dvh",
-        background: paper.paperDeep,
+        background: tokens.paperDeep,
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
@@ -79,7 +79,7 @@ export default function ResetPasswordPage() {
               fontFamily: fontSerif,
               fontSize: 26,
               fontWeight: 600,
-              color: paper.ink,
+              color: tokens.ink,
               letterSpacing: -0.5,
               marginBottom: 6,
             }}
@@ -90,7 +90,7 @@ export default function ResetPasswordPage() {
             style={{
               fontFamily: fontMono,
               fontSize: 11,
-              color: paper.inkDim,
+              color: tokens.inkDim,
               letterSpacing: 0.5,
             }}
           >
@@ -101,7 +101,7 @@ export default function ResetPasswordPage() {
         <form
           onSubmit={handleSubmit}
           style={{
-            background: paper.paper,
+            background: tokens.paper,
             padding: "24px 20px",
             boxShadow: "0 4px 24px rgba(0,0,0,0.1)",
           }}
@@ -153,7 +153,7 @@ export default function ResetPasswordPage() {
               style={{
                 fontFamily: fontMono,
                 fontSize: 11,
-                color: paper.accent,
+                color: tokens.accent,
                 marginBottom: 16,
                 letterSpacing: 0.5,
               }}
@@ -168,8 +168,8 @@ export default function ResetPasswordPage() {
             style={{
               width: "100%",
               padding: "12px",
-              background: loading ? paper.inkDim : paper.ink,
-              color: paper.paper,
+              background: loading ? tokens.inkDim : tokens.ink,
+              color: tokens.paper,
               border: "none",
               fontFamily: fontMono,
               fontSize: 11,
@@ -192,7 +192,7 @@ const labelStyle: React.CSSProperties = {
   fontSize: 9,
   letterSpacing: 1.5,
   textTransform: "uppercase",
-  color: paper.inkDim,
+  color: tokens.inkDim,
   marginBottom: 6,
 };
 
@@ -205,6 +205,6 @@ const eyeButtonStyle: React.CSSProperties = {
   border: "none",
   cursor: "pointer",
   padding: 0,
-  color: paper.inkMute,
+  color: tokens.inkMute,
   display: "flex",
 };

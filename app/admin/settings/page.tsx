@@ -1,7 +1,7 @@
 "use client";
 import { useT } from "@/components/locale-provider";
 import { useAdminSettings, useSaveAdminSettings } from "@/hooks/use-admin-settings";
-import { fontMono, fontSerif, paper } from "@/lib/paper-theme";
+import { fontMono, fontSerif, tokens } from "@/lib/theme-tokens";
 import { Eye, EyeOff } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
@@ -42,8 +42,8 @@ export default function AdminSettingsPage() {
     padding: "8px 10px",
     fontFamily: fontMono,
     fontSize: 12,
-    background: paper.paperDark,
-    color: paper.ink,
+    background: tokens.paperDark,
+    color: tokens.ink,
     outline: "none",
     boxSizing: "border-box" as const,
     letterSpacing: 1,
@@ -52,7 +52,7 @@ export default function AdminSettingsPage() {
   const labelStyle = {
     fontFamily: fontMono,
     fontSize: 9,
-    color: paper.inkDim,
+    color: tokens.inkDim,
     letterSpacing: 1,
     marginBottom: 4,
   };
@@ -63,7 +63,7 @@ export default function AdminSettingsPage() {
         style={{
           fontFamily: fontMono,
           fontSize: 9,
-          color: paper.inkDim,
+          color: tokens.inkDim,
           letterSpacing: 2,
           textTransform: "uppercase",
           marginBottom: 12,
@@ -78,7 +78,7 @@ export default function AdminSettingsPage() {
             fontFamily: fontSerif,
             fontSize: 14,
             fontWeight: 700,
-            color: paper.ink,
+            color: tokens.ink,
             marginBottom: 12,
           }}
         >
@@ -88,7 +88,7 @@ export default function AdminSettingsPage() {
           style={{
             fontFamily: fontMono,
             fontSize: 9,
-            color: paper.inkDim,
+            color: tokens.inkDim,
             letterSpacing: 1,
             marginBottom: 8,
           }}
@@ -99,7 +99,7 @@ export default function AdminSettingsPage() {
         <Perf margin="0 0 12px" />
 
         {isLoading ? (
-          <div style={{ fontFamily: fontMono, fontSize: 10, color: paper.inkDim }}>…</div>
+          <div style={{ fontFamily: fontMono, fontSize: 10, color: tokens.inkDim }}>…</div>
         ) : (
           <>
             <input
@@ -109,7 +109,7 @@ export default function AdminSettingsPage() {
               placeholder="BE12 3456 7890 1234"
               style={{
                 ...inputStyle,
-                border: `1.5px solid ${dirty ? paper.ink : paper.paperDark}`,
+                border: `1.5px solid ${dirty ? tokens.ink : tokens.paperDark}`,
               }}
             />
             <button
@@ -129,8 +129,8 @@ export default function AdminSettingsPage() {
                 fontWeight: 700,
                 letterSpacing: 2,
                 textTransform: "uppercase",
-                background: dirty ? paper.ink : paper.paperDark,
-                color: dirty ? paper.paper : paper.inkMute,
+                background: dirty ? tokens.ink : tokens.paperDark,
+                color: dirty ? tokens.paper : tokens.inkMute,
                 border: "none",
                 cursor: dirty ? "pointer" : "default",
               }}
@@ -152,7 +152,7 @@ export default function AdminSettingsPage() {
               fontFamily: fontSerif,
               fontSize: 14,
               fontWeight: 700,
-              color: paper.ink,
+              color: tokens.ink,
               marginBottom: 12,
             }}
           >
@@ -162,7 +162,7 @@ export default function AdminSettingsPage() {
             style={{
               fontFamily: fontMono,
               fontSize: 9,
-              color: paper.inkDim,
+              color: tokens.inkDim,
               letterSpacing: 1,
               marginBottom: 8,
             }}
@@ -175,9 +175,9 @@ export default function AdminSettingsPage() {
               style={{
                 fontFamily: fontMono,
                 fontSize: 10,
-                color: "#b45309",
-                background: "#fffbeb",
-                border: "1px solid #fde68a",
+                color: tokens.amber,
+                background: tokens.amberBg,
+                border: `1px solid ${tokens.amberBorder}`,
                 padding: "8px 10px",
                 marginBottom: 12,
                 lineHeight: 1.5,
@@ -188,7 +188,7 @@ export default function AdminSettingsPage() {
           )}
 
           {isLoading ? (
-            <div style={{ fontFamily: fontMono, fontSize: 10, color: paper.inkDim }}>…</div>
+            <div style={{ fontFamily: fontMono, fontSize: 10, color: tokens.inkDim }}>…</div>
           ) : (
             <>
               <div style={{ marginBottom: 12 }}>
@@ -207,7 +207,7 @@ export default function AdminSettingsPage() {
                   data-form-type="other"
                   style={{
                     ...inputStyle,
-                    border: `1.5px solid ${calendarDirty ? paper.ink : paper.paperDark}`,
+                    border: `1.5px solid ${calendarDirty ? tokens.ink : tokens.paperDark}`,
                   }}
                 />
               </div>
@@ -233,7 +233,7 @@ export default function AdminSettingsPage() {
                     style={{
                       ...inputStyle,
                       paddingRight: 32,
-                      border: `1.5px solid ${calendarDirty ? paper.ink : paper.paperDark}`,
+                      border: `1.5px solid ${calendarDirty ? tokens.ink : tokens.paperDark}`,
                     }}
                   />
                   <button
@@ -249,7 +249,7 @@ export default function AdminSettingsPage() {
                       border: "none",
                       cursor: "pointer",
                       padding: 0,
-                      color: paper.inkDim,
+                      color: tokens.inkDim,
                       display: "flex",
                     }}
                   >
@@ -282,8 +282,8 @@ export default function AdminSettingsPage() {
                   fontWeight: 700,
                   letterSpacing: 2,
                   textTransform: "uppercase",
-                  background: calendarDirty ? paper.ink : paper.paperDark,
-                  color: calendarDirty ? paper.paper : paper.inkMute,
+                  background: calendarDirty ? tokens.ink : tokens.paperDark,
+                  color: calendarDirty ? tokens.paper : tokens.inkMute,
                   border: "none",
                   cursor: calendarDirty ? "pointer" : "default",
                 }}
@@ -345,8 +345,8 @@ export default function AdminSettingsPage() {
                   letterSpacing: 2,
                   textTransform: "uppercase",
                   background: "none",
-                  color: testing ? paper.inkMute : paper.inkDim,
-                  border: `1px solid ${paper.paperDark}`,
+                  color: testing ? tokens.inkMute : tokens.inkDim,
+                  border: `1px solid ${tokens.paperDark}`,
                   cursor: testing ? "not-allowed" : "pointer",
                 }}
               >
@@ -358,7 +358,7 @@ export default function AdminSettingsPage() {
                     marginTop: 8,
                     fontFamily: fontMono,
                     fontSize: 10,
-                    color: testStatus.ok ? "#2d7a2d" : paper.accent,
+                    color: testStatus.ok ? tokens.green : tokens.accent,
                     letterSpacing: 0.5,
                     lineHeight: 1.5,
                   }}
@@ -405,8 +405,8 @@ export default function AdminSettingsPage() {
                   letterSpacing: 2,
                   textTransform: "uppercase",
                   background: "none",
-                  color: backfilling ? paper.inkMute : paper.inkDim,
-                  border: `1px solid ${paper.paperDark}`,
+                  color: backfilling ? tokens.inkMute : tokens.inkDim,
+                  border: `1px solid ${tokens.paperDark}`,
                   cursor: backfilling ? "not-allowed" : "pointer",
                 }}
               >
@@ -418,7 +418,7 @@ export default function AdminSettingsPage() {
                     marginTop: 8,
                     fontFamily: fontMono,
                     fontSize: 10,
-                    color: backfillStatus.ok ? "#2d7a2d" : paper.accent,
+                    color: backfillStatus.ok ? tokens.green : tokens.accent,
                     letterSpacing: 0.5,
                     lineHeight: 1.5,
                   }}
@@ -438,8 +438,8 @@ export default function AdminSettingsPage() {
                   fontWeight: 700,
                   letterSpacing: 2,
                   textTransform: "uppercase",
-                  color: paper.inkDim,
-                  border: `1px solid ${paper.paperDark}`,
+                  color: tokens.inkDim,
+                  border: `1px solid ${tokens.paperDark}`,
                   textDecoration: "none",
                 }}
               >

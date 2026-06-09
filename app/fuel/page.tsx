@@ -17,8 +17,8 @@ import {
 import { useMe } from "@/hooks/use-me";
 import { useQueryParam } from "@/hooks/use-query-param";
 import { useCars } from "@/hooks/use-vehicles";
-import { fmtYearMonth, fontMono, paper } from "@/lib/paper-theme";
 import { canEdit } from "@/lib/permissions";
+import { fmtYearMonth, fontMono, tokens } from "@/lib/theme-tokens";
 import { Suspense } from "react";
 import { toast } from "sonner";
 import { FuelForm } from "./fuel-form";
@@ -74,14 +74,14 @@ function FuelContent() {
 
   if (isLoading)
     return (
-      <div style={{ background: paper.paperDeep, minHeight: "100dvh" }}>
+      <div style={{ background: tokens.paperDeep, minHeight: "100dvh" }}>
         <PageHeader title={t("page.fuel")} />
         <div
           style={{
             padding: "32px 20px",
             fontFamily: fontMono,
             fontSize: 11,
-            color: paper.inkDim,
+            color: tokens.inkDim,
             letterSpacing: 1,
           }}
         >
@@ -91,7 +91,7 @@ function FuelContent() {
     );
 
   return (
-    <div style={{ background: paper.paperDeep, minHeight: "100dvh", paddingBottom: 80 }}>
+    <div style={{ background: tokens.paperDeep, minHeight: "100dvh", paddingBottom: 80 }}>
       <PageHeader title={t("page.fuel")} />
 
       <ListFilterBar
@@ -122,7 +122,7 @@ function FuelContent() {
             textAlign: "center",
             fontFamily: fontMono,
             fontSize: 11,
-            color: paper.inkDim,
+            color: tokens.inkDim,
             letterSpacing: 1,
           }}
         >

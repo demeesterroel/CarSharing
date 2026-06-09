@@ -2,8 +2,8 @@
 import { CarBadge } from "@/components/car-badge";
 import { useLocale, useT } from "@/components/locale-provider";
 import { PendingBadge } from "@/components/pending-badge";
-import { fmtDate, fmtMoney, fontMono, fontSerif, paper } from "@/lib/paper-theme";
 import { useTheme } from "@/lib/theme-context";
+import { fmtDate, fmtMoney, fontMono, fontSerif, tokens } from "@/lib/theme-tokens";
 import type { FuelFillup } from "@/types";
 
 export interface FuelCardProps {
@@ -24,7 +24,7 @@ export function FuelCard({ fuel, onClick }: FuelCardProps) {
         width: "100%",
         textAlign: "left",
         appearance: "none",
-        background: mono ? "transparent" : paper.paper,
+        background: mono ? "transparent" : tokens.paper,
         padding: "12px 14px",
         marginBottom: mono ? 0 : 8,
         display: "flex",
@@ -32,8 +32,8 @@ export function FuelCard({ fuel, onClick }: FuelCardProps) {
         gap: 12,
         borderTop: "none",
         borderRight: "none",
-        borderBottom: mono ? `1px solid ${paper.paperDark}` : "none",
-        borderLeft: mono ? "none" : `3px solid ${paper.green}`,
+        borderBottom: mono ? `1px solid ${tokens.paperDark}` : "none",
+        borderLeft: mono ? "none" : `3px solid ${tokens.green}`,
         boxShadow: mono ? "none" : "0 1px 2px rgba(0,0,0,0.04)",
         cursor: onClick ? "pointer" : "default",
       }}
@@ -44,7 +44,7 @@ export function FuelCard({ fuel, onClick }: FuelCardProps) {
           style={{
             fontFamily: fontSerif,
             fontSize: mono ? 14.5 : 15,
-            color: paper.ink,
+            color: tokens.ink,
             fontWeight: mono ? 500 : 600,
             lineHeight: 1.2,
             whiteSpace: "nowrap",
@@ -60,7 +60,7 @@ export function FuelCard({ fuel, onClick }: FuelCardProps) {
           style={{
             fontFamily: fontMono,
             fontSize: mono ? 11.5 : 10,
-            color: paper.inkDim,
+            color: tokens.inkDim,
             letterSpacing: mono ? 0 : 1,
             marginTop: 2,
           }}
@@ -74,7 +74,7 @@ export function FuelCard({ fuel, onClick }: FuelCardProps) {
             fontFamily: fontMono,
             fontSize: 14,
             fontWeight: 700,
-            color: fuel.settled_outside === 1 ? paper.inkMute : paper.green,
+            color: fuel.settled_outside === 1 ? tokens.inkMute : tokens.green,
             whiteSpace: "nowrap",
           }}
         >
@@ -88,8 +88,8 @@ export function FuelCard({ fuel, onClick }: FuelCardProps) {
                 fontSize: 8,
                 letterSpacing: 1,
                 textTransform: "uppercase",
-                color: paper.inkMute,
-                border: `1px solid ${paper.paperDark}`,
+                color: tokens.inkMute,
+                border: `1px solid ${tokens.paperDark}`,
                 marginLeft: 5,
                 verticalAlign: "middle",
               }}
@@ -99,7 +99,7 @@ export function FuelCard({ fuel, onClick }: FuelCardProps) {
           )}
         </div>
         {fuel.price_per_liter && (
-          <div style={{ fontFamily: fontMono, fontSize: mono ? 11.5 : 10, color: paper.inkDim }}>
+          <div style={{ fontFamily: fontMono, fontSize: mono ? 11.5 : 10, color: tokens.inkDim }}>
             €{fuel.price_per_liter.toFixed(3)}/L
           </div>
         )}

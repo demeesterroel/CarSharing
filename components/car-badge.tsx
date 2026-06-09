@@ -1,6 +1,6 @@
 "use client";
-import { fontMono, paper } from "@/lib/paper-theme";
 import { useTheme } from "@/lib/theme-context";
+import { fontMono, tokens } from "@/lib/theme-tokens";
 
 export function CarBadge({ short, active = true }: { short: string; active?: boolean }) {
   const { theme } = useTheme();
@@ -8,8 +8,8 @@ export function CarBadge({ short, active = true }: { short: string; active?: boo
     <div
       style={{
         padding: "6px 8px",
-        background: active ? paper.ink : paper.inkDim,
-        color: paper.paper,
+        background: active ? tokens.ink : tokens.inkDim,
+        color: tokens.paper,
         fontFamily: fontMono,
         fontSize: 11,
         fontWeight: 700,

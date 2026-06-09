@@ -1,6 +1,6 @@
 "use client";
 import { t } from "@/lib/i18n";
-import { fontMono, paper } from "@/lib/paper-theme";
+import { fontMono, tokens } from "@/lib/theme-tokens";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, useWatch } from "react-hook-form";
 import { z } from "zod";
@@ -23,7 +23,7 @@ type FormInput = z.input<typeof schema>;
 const labelStyle: React.CSSProperties = {
   fontFamily: fontMono,
   fontSize: 9,
-  color: paper.inkDim,
+  color: tokens.inkDim,
   letterSpacing: 1.5,
   textTransform: "uppercase",
   marginBottom: 4,
@@ -33,11 +33,11 @@ const labelStyle: React.CSSProperties = {
 const inputStyle: React.CSSProperties = {
   width: "100%",
   padding: "6px 8px",
-  border: `1px solid ${paper.paperDark}`,
-  background: paper.paperDeep,
+  border: `1px solid ${tokens.paperDark}`,
+  background: tokens.paperDeep,
   fontFamily: fontMono,
   fontSize: 12,
-  color: paper.ink,
+  color: tokens.ink,
   outline: "none",
 };
 
@@ -69,7 +69,7 @@ export function MemberForm({ onSubmit, onCancel, isPending }: Props) {
         </label>
         <input id="mf-first-name" {...register("first_name")} style={inputStyle} />
         {errors.first_name && (
-          <p style={{ color: paper.accent, fontFamily: fontMono, fontSize: 10, marginTop: 4 }}>
+          <p style={{ color: tokens.accent, fontFamily: fontMono, fontSize: 10, marginTop: 4 }}>
             {errors.first_name.message}
           </p>
         )}
@@ -121,7 +121,7 @@ export function MemberForm({ onSubmit, onCancel, isPending }: Props) {
           type="checkbox"
           checked={activeValue === 1}
           onChange={(e) => setValue("active", e.target.checked ? 1 : 0)}
-          style={{ accentColor: paper.blue, width: 14, height: 14 }}
+          style={{ accentColor: tokens.blue, width: 14, height: 14 }}
         />
         <span style={{ ...labelStyle, marginBottom: 0 }}>{t("form.active_member")}</span>
       </label>
@@ -134,8 +134,8 @@ export function MemberForm({ onSubmit, onCancel, isPending }: Props) {
             flex: 1,
             padding: "9px",
             background: "transparent",
-            color: paper.inkDim,
-            border: `1px solid ${paper.paperDark}`,
+            color: tokens.inkDim,
+            border: `1px solid ${tokens.paperDark}`,
             cursor: "pointer",
             fontFamily: fontMono,
             fontSize: 9,
@@ -152,8 +152,8 @@ export function MemberForm({ onSubmit, onCancel, isPending }: Props) {
           style={{
             flex: 2,
             padding: "9px",
-            background: isPending ? paper.paperDark : paper.ink,
-            color: isPending ? paper.inkMute : paper.paper,
+            background: isPending ? tokens.paperDark : tokens.ink,
+            color: isPending ? tokens.inkMute : tokens.paper,
             border: "none",
             cursor: isPending ? "default" : "pointer",
             fontFamily: fontMono,

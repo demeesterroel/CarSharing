@@ -7,11 +7,12 @@ import { useMe } from "@/hooks/use-me";
 import { usePeople } from "@/hooks/use-people";
 import { useReservations } from "@/hooks/use-reservations";
 import { useCars } from "@/hooks/use-vehicles";
+import { monoLabel, paperLabel } from "@/lib/form-styles";
 import { buildMissingLabel } from "@/lib/i18n";
 import { useOnlineState } from "@/lib/offline/online-state";
-import { fmtDate, fontMono, fontSerif, paper } from "@/lib/paper-theme";
 import { fullNameOf } from "@/lib/person-utils";
 import { useTheme } from "@/lib/theme-context";
+import { fmtDate, fontMono, fontSerif, tokens } from "@/lib/theme-tokens";
 import type { Reservation, ReservationInput } from "@/types";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Lock } from "lucide-react";
@@ -67,25 +68,6 @@ const fieldsetReset: React.CSSProperties = {
 function diffDays(start: string, end: string): number {
   return Math.round((new Date(end).getTime() - new Date(start).getTime()) / 86400000) + 1;
 }
-
-const paperLabel: React.CSSProperties = {
-  fontFamily: fontMono,
-  fontSize: 9,
-  fontWeight: 700,
-  letterSpacing: 2,
-  textTransform: "uppercase",
-  color: paper.inkMute,
-  display: "block",
-  marginBottom: 4,
-};
-
-const monoLabel: React.CSSProperties = {
-  fontFamily: fontMono,
-  fontSize: 11,
-  color: paper.inkMute,
-  display: "block",
-  marginBottom: 4,
-};
 
 export function ReservationForm({ defaultValues, onSubmit, onCancel, readOnly = false }: Props) {
   const t = useT();
@@ -198,7 +180,7 @@ export function ReservationForm({ defaultValues, onSubmit, onCancel, readOnly = 
         }
         handleSubmit(handleFormSubmit)(e);
       }}
-      style={{ background: paper.paperDeep }}
+      style={{ background: tokens.paperDeep }}
     >
       {/* Top bar */}
       <div
@@ -208,8 +190,8 @@ export function ReservationForm({ defaultValues, onSubmit, onCancel, readOnly = 
           justifyContent: "space-between",
           padding: "0 16px",
           height: 52,
-          borderBottom: mono ? `1px solid ${paper.paperDark}` : `1.5px solid ${paper.paperDark}`,
-          background: paper.paper,
+          borderBottom: mono ? `1px solid ${tokens.paperDark}` : `1.5px solid ${tokens.paperDark}`,
+          background: tokens.paper,
           position: "sticky",
           top: 0,
           zIndex: 10,
@@ -227,7 +209,7 @@ export function ReservationForm({ defaultValues, onSubmit, onCancel, readOnly = 
             background: "transparent",
             border: "none",
             cursor: "pointer",
-            color: paper.ink,
+            color: tokens.ink,
             padding: "0 4px",
             lineHeight: 1,
           }}
@@ -242,14 +224,14 @@ export function ReservationForm({ defaultValues, onSubmit, onCancel, readOnly = 
                     "var(--font-inter-tight, 'Inter Tight', 'Inter', system-ui, sans-serif)",
                   fontSize: 16,
                   fontWeight: 700,
-                  color: paper.ink,
+                  color: tokens.ink,
                 }
               : {
                   fontFamily: fontMono,
                   fontSize: 10,
                   fontWeight: 700,
                   letterSpacing: 3,
-                  color: paper.inkDim,
+                  color: tokens.inkDim,
                   textTransform: "uppercase" as const,
                 }
           }
@@ -267,10 +249,10 @@ export function ReservationForm({ defaultValues, onSubmit, onCancel, readOnly = 
               fontWeight: 700,
               letterSpacing: 2,
               textTransform: "uppercase",
-              color: paper.inkMute,
+              color: tokens.inkMute,
             }}
           >
-            <Lock size={13} color={paper.inkMute} strokeWidth={1.75} />
+            <Lock size={13} color={tokens.inkMute} strokeWidth={1.75} />
             {t("form.read_only")}
           </div>
         ) : (
@@ -284,7 +266,7 @@ export function ReservationForm({ defaultValues, onSubmit, onCancel, readOnly = 
                       fontFamily: "var(--font-inter, 'Inter', system-ui, sans-serif)",
                       fontSize: 14,
                       fontWeight: 600,
-                      background: paper.accent,
+                      background: tokens.accent,
                       color: "#fff",
                       border: "none",
                       padding: "8px 18px",
@@ -299,7 +281,7 @@ export function ReservationForm({ defaultValues, onSubmit, onCancel, readOnly = 
                       fontWeight: 700,
                       letterSpacing: 2,
                       textTransform: "uppercase" as const,
-                      background: isAdmin ? paper.blue : paper.accent,
+                      background: isAdmin ? tokens.blue : tokens.accent,
                       color: "#fff",
                       border: "none",
                       padding: "8px 14px",
@@ -321,8 +303,8 @@ export function ReservationForm({ defaultValues, onSubmit, onCancel, readOnly = 
                   position: "absolute",
                   right: 0,
                   top: "calc(100% + 6px)",
-                  background: paper.ink,
-                  color: paper.paper,
+                  background: tokens.ink,
+                  color: tokens.paper,
                   fontFamily: fontMono,
                   fontSize: 9,
                   letterSpacing: 1,
@@ -351,10 +333,10 @@ export function ReservationForm({ defaultValues, onSubmit, onCancel, readOnly = 
               fontSize: 9,
               fontWeight: 700,
               letterSpacing: 1,
-              color: paper.amber,
+              color: tokens.amber,
               borderBottom: mono
-                ? `1px solid ${paper.paperDark}`
-                : `1.5px dashed ${paper.paperDark}`,
+                ? `1px solid ${tokens.paperDark}`
+                : `1.5px dashed ${tokens.paperDark}`,
             }}
           >
             🔒 {t("form.read_only_hint")}
@@ -368,10 +350,10 @@ export function ReservationForm({ defaultValues, onSubmit, onCancel, readOnly = 
               fontSize: 9,
               fontWeight: 700,
               letterSpacing: 1,
-              color: paper.amber,
+              color: tokens.amber,
               borderBottom: mono
-                ? `1px solid ${paper.paperDark}`
-                : `1.5px dashed ${paper.paperDark}`,
+                ? `1px solid ${tokens.paperDark}`
+                : `1.5px dashed ${tokens.paperDark}`,
             }}
           >
             ⚠ {t("form.edit_reopens_hint")}
@@ -391,8 +373,10 @@ export function ReservationForm({ defaultValues, onSubmit, onCancel, readOnly = 
         <div
           style={{
             padding: "10px 14px",
-            borderBottom: mono ? `1px solid ${paper.paperDark}` : `1.5px dashed ${paper.paperDark}`,
-            background: paper.paper,
+            borderBottom: mono
+              ? `1px solid ${tokens.paperDark}`
+              : `1.5px dashed ${tokens.paperDark}`,
+            background: tokens.paper,
           }}
         >
           {mono ? (
@@ -406,7 +390,7 @@ export function ReservationForm({ defaultValues, onSubmit, onCancel, readOnly = 
                     fontFamily: fontSerif,
                     fontSize: 17,
                     fontWeight: 600,
-                    color: paper.ink,
+                    color: tokens.ink,
                     background: "transparent",
                     border: "none",
                     outline: "none",
@@ -435,12 +419,12 @@ export function ReservationForm({ defaultValues, onSubmit, onCancel, readOnly = 
                       "var(--font-inter-tight, 'Inter Tight', 'Inter', system-ui, sans-serif)",
                     fontSize: 19,
                     fontWeight: 700,
-                    color: paper.ink,
+                    color: tokens.ink,
                   }}
                 >
                   {person ? fullNameOf(person) : (me?.shortName ?? "—")}
                 </span>
-                <Lock size={14} color={paper.inkMute} strokeWidth={1.75} />
+                <Lock size={14} color={tokens.inkMute} strokeWidth={1.75} />
               </div>
             )
           ) : (
@@ -454,7 +438,7 @@ export function ReservationForm({ defaultValues, onSubmit, onCancel, readOnly = 
                     fontFamily: fontSerif,
                     fontSize: 17,
                     fontWeight: 600,
-                    color: paper.ink,
+                    color: tokens.ink,
                     background: "transparent",
                     border: "none",
                     outline: "none",
@@ -481,7 +465,7 @@ export function ReservationForm({ defaultValues, onSubmit, onCancel, readOnly = 
                       fontFamily: fontSerif,
                       fontSize: 17,
                       fontWeight: 600,
-                      color: paper.ink,
+                      color: tokens.ink,
                     }}
                   >
                     {person ? fullNameOf(person) : (me?.shortName ?? "—")}
@@ -498,7 +482,7 @@ export function ReservationForm({ defaultValues, onSubmit, onCancel, readOnly = 
               padding: "6px 14px",
               fontFamily: fontMono,
               fontSize: 9,
-              color: paper.amber,
+              color: tokens.amber,
               letterSpacing: 1,
             }}
           >
@@ -516,15 +500,15 @@ export function ReservationForm({ defaultValues, onSubmit, onCancel, readOnly = 
             mono
               ? {
                   margin: "12px 14px",
-                  background: paper.paper,
-                  border: `1px solid ${paper.paperDark}`,
+                  background: tokens.paper,
+                  border: `1px solid ${tokens.paperDark}`,
                   borderRadius: "var(--radius-md, 10px)",
                   overflow: "hidden",
                 }
               : {
                   margin: "12px 14px",
-                  background: paper.paper,
-                  border: `1.5px solid ${paper.paperDark}`,
+                  background: tokens.paper,
+                  border: `1.5px solid ${tokens.paperDark}`,
                 }
           }
         >
@@ -535,7 +519,9 @@ export function ReservationForm({ defaultValues, onSubmit, onCancel, readOnly = 
               justifyContent: "space-between",
               alignItems: "center",
               padding: "8px 14px",
-              borderBottom: mono ? `1px solid ${paper.paperDark}` : `1px dashed ${paper.paperDark}`,
+              borderBottom: mono
+                ? `1px solid ${tokens.paperDark}`
+                : `1px dashed ${tokens.paperDark}`,
             }}
           >
             <div>
@@ -546,7 +532,7 @@ export function ReservationForm({ defaultValues, onSubmit, onCancel, readOnly = 
                     fontSize: 10,
                     fontWeight: 700,
                     letterSpacing: 2,
-                    color: paper.blue,
+                    color: tokens.blue,
                   }}
                 >
                   ● {t("page.reservation_request")}
@@ -561,13 +547,13 @@ export function ReservationForm({ defaultValues, onSubmit, onCancel, readOnly = 
                             "var(--font-inter-tight, 'Inter Tight', 'Inter', system-ui, sans-serif)",
                           fontSize: 15,
                           fontWeight: 700,
-                          color: paper.ink,
+                          color: tokens.ink,
                         }
                       : {
                           fontFamily: fontSerif,
                           fontSize: 13,
                           fontWeight: 600,
-                          color: paper.inkDim,
+                          color: tokens.inkDim,
                           marginTop: 2,
                         }
                   }
@@ -585,13 +571,13 @@ export function ReservationForm({ defaultValues, onSubmit, onCancel, readOnly = 
                             "var(--font-inter-tight, 'Inter Tight', 'Inter', system-ui, sans-serif)",
                           fontSize: 15,
                           fontWeight: 700,
-                          color: paper.ink,
+                          color: tokens.ink,
                         }
                       : {
                           fontFamily: fontSerif,
                           fontSize: 13,
                           fontWeight: 600,
-                          color: paper.inkDim,
+                          color: tokens.inkDim,
                           marginTop: 2,
                         }
                   }
@@ -604,7 +590,7 @@ export function ReservationForm({ defaultValues, onSubmit, onCancel, readOnly = 
                     style={{
                       fontFamily: fontMono,
                       fontSize: 12,
-                      color: paper.inkMute,
+                      color: tokens.inkMute,
                     }}
                   >
                     {t("field.dates")}
@@ -618,7 +604,7 @@ export function ReservationForm({ defaultValues, onSubmit, onCancel, readOnly = 
                   fontFamily: fontSerif,
                   fontSize: 24,
                   fontWeight: 700,
-                  color: datesSelected ? paper.ink : paper.inkMute,
+                  color: datesSelected ? tokens.ink : tokens.inkMute,
                   lineHeight: 1,
                 }}
               >
@@ -630,12 +616,12 @@ export function ReservationForm({ defaultValues, onSubmit, onCancel, readOnly = 
                     ? {
                         fontFamily: fontMono,
                         fontSize: 9,
-                        color: paper.inkMute,
+                        color: tokens.inkMute,
                       }
                     : {
                         fontFamily: fontMono,
                         fontSize: 7,
-                        color: paper.inkMute,
+                        color: tokens.inkMute,
                         letterSpacing: 1.5,
                         textTransform: "uppercase" as const,
                       }
@@ -671,15 +657,15 @@ export function ReservationForm({ defaultValues, onSubmit, onCancel, readOnly = 
               mono
                 ? {
                     margin: "0 14px 12px",
-                    border: `1px solid ${paper.amber}`,
+                    border: `1px solid ${tokens.amber}`,
                     borderRadius: "var(--radius-md, 10px)",
                     padding: "10px 14px",
-                    background: "rgba(180, 83, 9, 0.05)",
+                    background: tokens.amberTint,
                   }
                 : {
                     margin: "0 14px 12px",
                     background: "transparent",
-                    border: `1.5px solid ${paper.accent}`,
+                    border: `1.5px solid ${tokens.accent}`,
                     padding: "10px 14px",
                   }
             }
@@ -692,14 +678,14 @@ export function ReservationForm({ defaultValues, onSubmit, onCancel, readOnly = 
                         "var(--font-inter-tight, 'Inter Tight', 'Inter', system-ui, sans-serif)",
                       fontSize: 13,
                       fontWeight: 600,
-                      color: paper.amber,
+                      color: tokens.amber,
                       marginBottom: 6,
                     }
                   : {
                       fontFamily: fontMono,
                       fontSize: 9,
                       fontWeight: 700,
-                      color: paper.accent,
+                      color: tokens.accent,
                       letterSpacing: 1.5,
                       textTransform: "uppercase" as const,
                       marginBottom: 6,
@@ -718,13 +704,13 @@ export function ReservationForm({ defaultValues, onSubmit, onCancel, readOnly = 
                           fontFamily: "var(--font-inter, 'Inter', system-ui, sans-serif)",
                           fontSize: 13,
                           fontWeight: 600,
-                          color: paper.ink,
+                          color: tokens.ink,
                         }
                       : {
                           fontFamily: fontSerif,
                           fontSize: 13,
                           fontWeight: 600,
-                          color: paper.ink,
+                          color: tokens.ink,
                         }
                   }
                 >
@@ -734,7 +720,7 @@ export function ReservationForm({ defaultValues, onSubmit, onCancel, readOnly = 
                   style={{
                     fontFamily: fontMono,
                     fontSize: 9,
-                    color: paper.inkDim,
+                    color: tokens.inkDim,
                     letterSpacing: mono ? 0 : 1,
                   }}
                 >
@@ -746,7 +732,7 @@ export function ReservationForm({ defaultValues, onSubmit, onCancel, readOnly = 
               style={{
                 fontFamily: mono ? "var(--font-inter, 'Inter', system-ui, sans-serif)" : fontMono,
                 fontSize: mono ? 11 : 9,
-                color: paper.inkMute,
+                color: tokens.inkMute,
                 letterSpacing: mono ? 0 : 1,
                 marginTop: 6,
                 fontStyle: "italic",
@@ -769,7 +755,7 @@ export function ReservationForm({ defaultValues, onSubmit, onCancel, readOnly = 
                     fontWeight: 700,
                     letterSpacing: 2,
                     textTransform: "uppercase" as const,
-                    color: paper.inkMute,
+                    color: tokens.inkMute,
                     display: "block",
                     marginBottom: 4,
                   }
@@ -781,12 +767,12 @@ export function ReservationForm({ defaultValues, onSubmit, onCancel, readOnly = 
             style={
               mono
                 ? {
-                    border: `1px solid ${paper.paperDark}`,
+                    border: `1px solid ${tokens.paperDark}`,
                     borderRadius: "var(--radius-md, 10px)",
                     padding: "8px 14px",
                   }
                 : {
-                    border: `1.5px dashed ${paper.paperDark}`,
+                    border: `1.5px dashed ${tokens.paperDark}`,
                     padding: "8px 14px",
                   }
             }
@@ -799,7 +785,7 @@ export function ReservationForm({ defaultValues, onSubmit, onCancel, readOnly = 
                 fontFamily: fontSerif,
                 fontSize: 15,
                 fontWeight: 600,
-                color: paper.ink,
+                color: tokens.ink,
                 background: "transparent",
                 border: "none",
                 outline: "none",
@@ -876,7 +862,7 @@ export function ReservationForm({ defaultValues, onSubmit, onCancel, readOnly = 
                 marginTop: 8,
                 fontFamily: fontMono,
                 fontSize: 10,
-                color: paper.accent,
+                color: tokens.accent,
                 letterSpacing: 0.5,
               }}
             >

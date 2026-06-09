@@ -1,7 +1,7 @@
 "use client";
 import { useLocale, type Locale } from "@/components/locale-provider";
-import { fontMono, paper } from "@/lib/paper-theme";
 import { useTheme } from "@/lib/theme-context";
+import { fontMono, tokens } from "@/lib/theme-tokens";
 
 export function LangSwitcher() {
   const { locale, setLocale } = useLocale();
@@ -12,7 +12,7 @@ export function LangSwitcher() {
     <div
       style={{
         display: "flex",
-        border: mono ? `1px solid ${paper.paperDark}` : `1.5px solid ${paper.ink}`,
+        border: mono ? `1px solid ${tokens.paperDark}` : `1.5px solid ${tokens.ink}`,
         borderRadius: "var(--radius-pill, 999px)",
         padding: 2,
         gap: 1,
@@ -29,8 +29,8 @@ export function LangSwitcher() {
             fontWeight: 600,
             letterSpacing: mono ? 0 : 1.5,
             textTransform: "uppercase" as const,
-            background: locale === lang ? paper.ink : "transparent",
-            color: locale === lang ? paper.paper : mono ? paper.inkDim : paper.ink,
+            background: locale === lang ? tokens.ink : "transparent",
+            color: locale === lang ? tokens.paper : mono ? tokens.inkDim : tokens.ink,
             border: "none",
             borderRadius: "var(--radius-pill, 999px)",
             cursor: "pointer",

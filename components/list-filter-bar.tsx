@@ -1,8 +1,8 @@
 "use client";
 import { useT } from "@/components/locale-provider";
 import { YearSelect } from "@/components/year-select";
-import { fontMono, paper } from "@/lib/paper-theme";
 import { useTheme } from "@/lib/theme-context";
+import { fontMono, tokens } from "@/lib/theme-tokens";
 
 interface ListFilterBarProps {
   canFilter: boolean;
@@ -35,8 +35,8 @@ export function ListFilterBar({
     mono
       ? {
           padding: "5px 11px",
-          background: active ? paper.ink : "transparent",
-          color: active ? paper.paper : paper.inkDim,
+          background: active ? tokens.ink : "transparent",
+          color: active ? tokens.paper : tokens.inkDim,
           border: "none",
           borderRadius: "var(--radius-pill, 999px)",
           fontFamily: "var(--font-inter, 'Inter', system-ui, sans-serif)",
@@ -48,9 +48,9 @@ export function ListFilterBar({
         }
       : {
           padding: "5px 12px",
-          background: active ? paper.ink : "transparent",
-          color: active ? paper.paper : paper.inkDim,
-          border: `1.5px solid ${paper.ink}`,
+          background: active ? tokens.ink : "transparent",
+          color: active ? tokens.paper : tokens.inkDim,
+          border: `1.5px solid ${tokens.ink}`,
           fontFamily: fontMono,
           fontSize: 9,
           fontWeight: 700,
@@ -63,7 +63,7 @@ export function ListFilterBar({
     ? {
         display: "inline-flex",
         alignSelf: "flex-start",
-        border: `1px solid ${paper.paperDark}`,
+        border: `1px solid ${tokens.paperDark}`,
         borderRadius: "var(--radius-pill, 999px)",
         padding: 2,
         gap: 1,
@@ -76,7 +76,7 @@ export function ListFilterBar({
     <div
       style={{
         padding: "10px 16px 8px",
-        borderBottom: mono ? "none" : `1px solid ${paper.paperDark}`,
+        borderBottom: mono ? "none" : `1px solid ${tokens.paperDark}`,
         display: "flex",
         flexDirection: "column",
         gap: 6,
@@ -94,7 +94,7 @@ export function ListFilterBar({
                     ...btnStyle(v === "mine" ? isMine : !isMine),
                     ...(mono
                       ? {}
-                      : { borderRight: i < arr.length - 1 ? "none" : `1.5px solid ${paper.ink}` }),
+                      : { borderRight: i < arr.length - 1 ? "none" : `1.5px solid ${tokens.ink}` }),
                   }}
                 >
                   {v === "all" ? t("filter.all") : t("filter.mine")}
@@ -124,7 +124,7 @@ export function ListFilterBar({
                 ...btnStyle(carFilter === (car ?? "")),
                 ...(mono
                   ? {}
-                  : { borderRight: i < arr.length - 1 ? "none" : `1.5px solid ${paper.ink}` }),
+                  : { borderRight: i < arr.length - 1 ? "none" : `1.5px solid ${tokens.ink}` }),
               }}
             >
               {car ?? t("filter.all")}

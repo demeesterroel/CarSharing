@@ -7,9 +7,9 @@ import { useEarliestDashboardYear } from "@/hooks/use-dashboard";
 import { useMe } from "@/hooks/use-me";
 import { usePeople } from "@/hooks/use-people";
 import { useCars, useCreateCar, useDeleteCar, useUpdateCar } from "@/hooks/use-vehicles";
-import { fontMono, fontSerif, paper } from "@/lib/paper-theme";
 import { shortNameOf } from "@/lib/person-utils";
 import type { CarPnL, CarPriceHistory } from "@/lib/queries/admin";
+import { fontMono, fontSerif, tokens } from "@/lib/theme-tokens";
 import type { Car } from "@/types";
 import * as Dialog from "@radix-ui/react-dialog";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
@@ -32,7 +32,7 @@ const sheetStyle: React.CSSProperties = {
   width: "min(100%, 480px)",
   maxHeight: "92dvh",
   borderRadius: "14px 14px 0 0",
-  background: paper.paperDeep,
+  background: tokens.paperDeep,
   zIndex: 50,
   overflowY: "auto",
 };
@@ -42,16 +42,16 @@ const sharedInputStyle: React.CSSProperties = {
   padding: "6px 8px",
   fontFamily: fontMono,
   fontSize: 11,
-  border: `1px solid ${paper.paperDark}`,
-  background: paper.paperDeep,
-  color: paper.ink,
+  border: `1px solid ${tokens.paperDark}`,
+  background: tokens.paperDeep,
+  color: tokens.ink,
   outline: "none",
   boxSizing: "border-box",
 };
 const sharedLabelStyle: React.CSSProperties = {
   fontFamily: fontMono,
   fontSize: 9,
-  color: paper.inkDim,
+  color: tokens.inkDim,
   letterSpacing: 1.5,
   textTransform: "uppercase",
   display: "block",
@@ -71,7 +71,7 @@ function Toggle({ value, onChange }: { value: boolean; onChange: (v: boolean) =>
         width: 44,
         height: 24,
         borderRadius: 12,
-        background: value ? paper.green : paper.paperDark,
+        background: value ? tokens.green : tokens.paperDark,
         position: "relative",
         cursor: "pointer",
         flexShrink: 0,
@@ -86,7 +86,7 @@ function Toggle({ value, onChange }: { value: boolean; onChange: (v: boolean) =>
           width: 20,
           height: 20,
           borderRadius: "50%",
-          background: paper.paper,
+          background: tokens.paper,
           boxShadow: "0 1px 3px rgba(0,0,0,0.25)",
           transition: "left 0.18s",
         }}
@@ -145,16 +145,16 @@ function CarAccordion({
     padding: "6px 8px",
     fontFamily: fontMono,
     fontSize: 11,
-    border: `1px solid ${paper.paperDark}`,
-    background: paper.paperDeep,
-    color: paper.ink,
+    border: `1px solid ${tokens.paperDark}`,
+    background: tokens.paperDeep,
+    color: tokens.ink,
     outline: "none",
     boxSizing: "border-box",
   };
   const labelStyle: React.CSSProperties = {
     fontFamily: fontMono,
     fontSize: 9,
-    color: paper.inkDim,
+    color: tokens.inkDim,
     letterSpacing: 1.5,
     textTransform: "uppercase",
     display: "block",
@@ -205,10 +205,10 @@ function CarAccordion({
   return (
     <div
       style={{
-        background: car.active !== 0 ? paper.paper : paper.paperDeep,
+        background: car.active !== 0 ? tokens.paper : tokens.paperDeep,
         marginBottom: 6,
         boxShadow: "0 1px 2px rgba(0,0,0,0.05), 0 4px 16px rgba(0,0,0,0.06)",
-        borderLeft: expanded ? `3px solid ${paper.blue}` : "3px solid transparent",
+        borderLeft: expanded ? `3px solid ${tokens.blue}` : "3px solid transparent",
       }}
     >
       {/* Collapsed header — click to toggle */}
@@ -233,7 +233,7 @@ function CarAccordion({
             fontFamily: fontSerif,
             fontSize: 14,
             fontWeight: 600,
-            color: paper.ink,
+            color: tokens.ink,
             overflow: "hidden",
             textOverflow: "ellipsis",
             whiteSpace: "nowrap",
@@ -247,7 +247,7 @@ function CarAccordion({
               }
             )
           ) : (
-            <span style={{ color: paper.inkDim, fontStyle: "italic" }}>—</span>
+            <span style={{ color: tokens.inkDim, fontStyle: "italic" }}>—</span>
           )}
         </div>
         <div
@@ -255,7 +255,7 @@ function CarAccordion({
             fontFamily: fontMono,
             fontSize: 11,
             fontWeight: 700,
-            color: paper.ink,
+            color: tokens.ink,
             flexShrink: 0,
           }}
         >
@@ -265,7 +265,7 @@ function CarAccordion({
 
       {/* Expanded edit form */}
       {expanded && (
-        <div style={{ padding: "0 14px 14px", borderTop: `1px dashed ${paper.paperDark}` }}>
+        <div style={{ padding: "0 14px 14px", borderTop: `1px dashed ${tokens.paperDark}` }}>
           <div style={{ paddingTop: 12, marginBottom: 8 }}>
             <label style={labelStyle}>{t("form.name")}</label>
             <input value={name} onChange={(e) => setName(e.target.value)} style={inputStyle} />
@@ -294,8 +294,8 @@ function CarAccordion({
                     fontSize: 10,
                     fontWeight: 700,
                     padding: "0 10px",
-                    background: paper.blue,
-                    color: paper.paper,
+                    background: tokens.blue,
+                    color: tokens.paper,
                     border: "none",
                     cursor: "pointer",
                     flexShrink: 0,
@@ -338,8 +338,8 @@ function CarAccordion({
               <div
                 style={{
                   ...inputStyle,
-                  color: paper.inkDim,
-                  background: paper.paperDark,
+                  color: tokens.inkDim,
+                  background: tokens.paperDark,
                   cursor: "default",
                 }}
               >
@@ -364,8 +364,8 @@ function CarAccordion({
                 flex: 1,
                 padding: "9px",
                 background: "transparent",
-                color: paper.inkDim,
-                border: `1px solid ${paper.paperDark}`,
+                color: tokens.inkDim,
+                border: `1px solid ${tokens.paperDark}`,
                 cursor: "pointer",
                 fontFamily: fontMono,
                 fontSize: 9,
@@ -382,8 +382,8 @@ function CarAccordion({
               style={{
                 flex: 2,
                 padding: "9px",
-                background: dirty && !updateCar.isPending ? paper.ink : paper.paperDark,
-                color: dirty && !updateCar.isPending ? paper.paper : paper.inkMute,
+                background: dirty && !updateCar.isPending ? tokens.ink : tokens.paperDark,
+                color: dirty && !updateCar.isPending ? tokens.paper : tokens.inkMute,
                 border: "none",
                 cursor: dirty && !updateCar.isPending ? "pointer" : "default",
                 fontFamily: fontMono,
@@ -402,9 +402,9 @@ function CarAccordion({
             style={{
               width: "100%",
               padding: "9px",
-              background: deleteConfirm ? paper.accent : "transparent",
-              color: deleteConfirm ? paper.paper : paper.accent,
-              border: `1px solid ${paper.accent}`,
+              background: deleteConfirm ? tokens.accent : "transparent",
+              color: deleteConfirm ? tokens.paper : tokens.accent,
+              border: `1px solid ${tokens.accent}`,
               cursor: "pointer",
               fontFamily: fontMono,
               fontSize: 9,
@@ -427,8 +427,8 @@ function CarAccordion({
                 marginTop: 4,
                 padding: "6px",
                 background: "transparent",
-                color: paper.inkDim,
-                border: `1px solid ${paper.paperDark}`,
+                color: tokens.inkDim,
+                border: `1px solid ${tokens.paperDark}`,
                 cursor: "pointer",
                 fontFamily: fontMono,
                 fontSize: 8,
@@ -476,7 +476,7 @@ function AddCarForm({ onBack }: { onBack: () => void }) {
   }
 
   return (
-    <div style={{ background: paper.paperDeep }}>
+    <div style={{ background: tokens.paperDeep }}>
       <div
         style={{
           display: "flex",
@@ -484,8 +484,8 @@ function AddCarForm({ onBack }: { onBack: () => void }) {
           justifyContent: "space-between",
           padding: "0 16px",
           height: 52,
-          borderBottom: `1.5px solid ${paper.paperDark}`,
-          background: paper.paper,
+          borderBottom: `1.5px solid ${tokens.paperDark}`,
+          background: tokens.paper,
           position: "sticky",
           top: 0,
           zIndex: 10,
@@ -502,7 +502,7 @@ function AddCarForm({ onBack }: { onBack: () => void }) {
             background: "transparent",
             border: "none",
             cursor: "pointer",
-            color: paper.ink,
+            color: tokens.ink,
             padding: "0 4px",
             lineHeight: 1,
           }}
@@ -515,7 +515,7 @@ function AddCarForm({ onBack }: { onBack: () => void }) {
             fontSize: 10,
             fontWeight: 700,
             letterSpacing: 3,
-            color: paper.inkDim,
+            color: tokens.inkDim,
             textTransform: "uppercase",
           }}
         >
@@ -531,8 +531,8 @@ function AddCarForm({ onBack }: { onBack: () => void }) {
             fontWeight: 700,
             letterSpacing: 2,
             textTransform: "uppercase",
-            background: valid && !createCar.isPending ? paper.accent : paper.paperDark,
-            color: valid && !createCar.isPending ? "#fff" : paper.inkMute,
+            background: valid && !createCar.isPending ? tokens.accent : tokens.paperDark,
+            color: valid && !createCar.isPending ? "#fff" : tokens.inkMute,
             border: "none",
             padding: "8px 14px",
             cursor: valid && !createCar.isPending ? "pointer" : "default",
@@ -586,8 +586,8 @@ function AddCarForm({ onBack }: { onBack: () => void }) {
             <div
               style={{
                 ...inputStyle,
-                color: paper.inkDim,
-                background: paper.paperDark,
+                color: tokens.inkDim,
+                background: tokens.paperDark,
                 cursor: "default",
               }}
             >
@@ -751,11 +751,11 @@ function OwnerFleet() {
         style={{
           padding: "6px 14px",
           background: "transparent",
-          border: `1.5px solid ${paper.ink}`,
+          border: `1.5px solid ${tokens.ink}`,
           fontFamily: fontMono,
           fontSize: 10,
           fontWeight: 700,
-          color: year <= earliestYear ? paper.inkMute : paper.ink,
+          color: year <= earliestYear ? tokens.inkMute : tokens.ink,
           cursor: year <= earliestYear ? "default" : "pointer",
           letterSpacing: 1,
         }}
@@ -765,13 +765,13 @@ function OwnerFleet() {
       <div
         style={{
           padding: "6px 18px",
-          background: paper.ink,
-          color: paper.paper,
+          background: tokens.ink,
+          color: tokens.paper,
           fontFamily: fontMono,
           fontSize: 10,
           fontWeight: 700,
           letterSpacing: 2,
-          border: `1.5px solid ${paper.ink}`,
+          border: `1.5px solid ${tokens.ink}`,
           marginLeft: -1.5,
           marginRight: -1.5,
         }}
@@ -784,11 +784,11 @@ function OwnerFleet() {
         style={{
           padding: "6px 14px",
           background: "transparent",
-          border: `1.5px solid ${paper.ink}`,
+          border: `1.5px solid ${tokens.ink}`,
           fontFamily: fontMono,
           fontSize: 10,
           fontWeight: 700,
-          color: year >= currentYear ? paper.inkMute : paper.ink,
+          color: year >= currentYear ? tokens.inkMute : tokens.ink,
           cursor: year >= currentYear ? "default" : "pointer",
           letterSpacing: 1,
         }}
@@ -804,7 +804,7 @@ function OwnerFleet() {
       return (
         <div style={{ padding: 16 }}>
           {yearSelector}
-          <div style={{ fontFamily: fontMono, fontSize: 11, color: paper.inkDim }}>
+          <div style={{ fontFamily: fontMono, fontSize: 11, color: tokens.inkDim }}>
             geen data voor dit jaar
           </div>
         </div>
@@ -832,8 +832,8 @@ function OwnerFleet() {
               top: 0,
               padding: "6px 10px",
               background: "transparent",
-              border: `1.5px solid ${paper.ink}`,
-              color: paper.ink,
+              border: `1.5px solid ${tokens.ink}`,
+              color: tokens.ink,
               cursor: "pointer",
               fontFamily: fontMono,
               fontSize: 12,
@@ -851,8 +851,8 @@ function OwnerFleet() {
               top: 0,
               padding: "6px 10px",
               background: "transparent",
-              border: `1.5px solid ${paper.ink}`,
-              color: paper.ink,
+              border: `1.5px solid ${tokens.ink}`,
+              color: tokens.ink,
               cursor: "pointer",
               fontFamily: fontMono,
               fontSize: 12,
@@ -906,7 +906,7 @@ function OwnerFleet() {
         <>
           <div
             style={{
-              borderTop: `1.5px dashed ${paper.ink}`,
+              borderTop: `1.5px dashed ${tokens.ink}`,
               margin: "12px 0 10px",
             }}
           />
@@ -917,7 +917,7 @@ function OwnerFleet() {
               fontWeight: 700,
               letterSpacing: 1.5,
               textTransform: "uppercase",
-              color: paper.inkDim,
+              color: tokens.inkDim,
               marginBottom: 8,
             }}
           >
@@ -937,7 +937,7 @@ function OwnerFleet() {
         </>
       )}
       {myCars.length === 0 && (
-        <div style={{ fontFamily: fontMono, fontSize: 11, color: paper.inkDim }}>
+        <div style={{ fontFamily: fontMono, fontSize: 11, color: tokens.inkDim }}>
           {t("owner.no_cars")}
         </div>
       )}

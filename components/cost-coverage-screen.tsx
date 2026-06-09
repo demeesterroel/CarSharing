@@ -2,7 +2,6 @@
 import { Card, Row } from "@/app/admin/_shared";
 import { useT } from "@/components/locale-provider";
 import { useUpdateCar } from "@/hooks/use-vehicles";
-import { fmtMoney, fmtMoneyOut, fontMono, fontSerif, paper } from "@/lib/paper-theme";
 import type {
   CarOwnerSplit,
   CarPnL,
@@ -10,6 +9,7 @@ import type {
   CarYearExpenses,
   CarYearKm,
 } from "@/lib/queries/admin";
+import { fmtMoney, fmtMoneyOut, fontMono, fontSerif, tokens } from "@/lib/theme-tokens";
 import type { Car } from "@/types";
 import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
@@ -64,10 +64,10 @@ function ZoneBar({
           marginBottom: 20,
         }}
       >
-        <div style={{ width: zone1W, background: paper.accent }} />
-        <div style={{ width: zone2W, background: paper.amber }} />
-        <div style={{ width: zone3W, background: paper.green, opacity: 0.55 }} />
-        <div style={{ width: zone4W, background: paper.green }} />
+        <div style={{ width: zone1W, background: tokens.accent }} />
+        <div style={{ width: zone2W, background: tokens.amber }} />
+        <div style={{ width: zone3W, background: tokens.green, opacity: 0.55 }} />
+        <div style={{ width: zone4W, background: tokens.green }} />
         <div
           style={{
             position: "absolute",
@@ -79,13 +79,13 @@ function ZoneBar({
             alignItems: "center",
           }}
         >
-          <div style={{ width: 2, height: 20, background: paper.ink }} />
+          <div style={{ width: 2, height: 20, background: tokens.ink }} />
           <div
             style={{
               fontFamily: fontMono,
               fontSize: 7,
               fontWeight: 700,
-              color: paper.ink,
+              color: tokens.ink,
               whiteSpace: "nowrap",
               marginTop: 2,
             }}
@@ -100,7 +100,7 @@ function ZoneBar({
           justifyContent: "space-between",
           fontFamily: fontMono,
           fontSize: 7,
-          color: paper.inkMute,
+          color: tokens.inkMute,
           letterSpacing: 0.5,
         }}
       >
@@ -144,13 +144,13 @@ function SliderRow({
           justifyContent: "space-between",
           fontFamily: fontMono,
           fontSize: 8,
-          color: paper.inkMute,
+          color: tokens.inkMute,
           letterSpacing: 0.8,
           marginBottom: 3,
         }}
       >
         <span style={{ textTransform: "uppercase", letterSpacing: 1 }}>{label}</span>
-        <span style={{ color: paper.inkDim }}>{hint}</span>
+        <span style={{ color: tokens.inkDim }}>{hint}</span>
       </div>
       {readOnly ? (
         <div
@@ -159,7 +159,7 @@ function SliderRow({
             fontSize: 11,
             fontWeight: 700,
             textAlign: "center",
-            color: paper.ink,
+            color: tokens.ink,
             padding: "6px 0",
           }}
         >
@@ -174,7 +174,7 @@ function SliderRow({
             step={step}
             value={value}
             onChange={(e) => onChange(parseFloat(e.target.value))}
-            style={{ width: "100%", accentColor: paper.ink, marginBottom: 2 }}
+            style={{ width: "100%", accentColor: tokens.ink, marginBottom: 2 }}
           />
           <div
             style={{
@@ -182,7 +182,7 @@ function SliderRow({
               fontSize: 11,
               fontWeight: 700,
               textAlign: "center",
-              color: paper.ink,
+              color: tokens.ink,
             }}
           >
             {format(value)}
@@ -198,9 +198,9 @@ function SliderRow({
 type Zone = "red" | "orange" | "light_green" | "dark_green";
 
 function zoneColor(zone: Zone): string {
-  if (zone === "red") return paper.accent;
-  if (zone === "orange") return paper.amber;
-  return paper.green;
+  if (zone === "red") return tokens.accent;
+  if (zone === "orange") return tokens.amber;
+  return tokens.green;
 }
 
 type ZoneKey =
@@ -408,7 +408,7 @@ export function CostCoverageScreen({
                 background: "transparent",
                 border: "none",
                 cursor: "pointer",
-                color: paper.inkDim,
+                color: tokens.inkDim,
                 fontFamily: fontMono,
                 fontSize: 13,
                 lineHeight: 1,
@@ -425,7 +425,7 @@ export function CostCoverageScreen({
           style={{
             fontFamily: fontMono,
             fontSize: 9,
-            color: paper.inkDim,
+            color: tokens.inkDim,
             letterSpacing: 1,
             textTransform: "uppercase",
           }}
@@ -447,7 +447,7 @@ export function CostCoverageScreen({
               justifyContent: "space-between",
               fontFamily: fontMono,
               fontSize: 9,
-              color: paper.inkDim,
+              color: tokens.inkDim,
               marginBottom: 1,
             };
             const head: React.CSSProperties = {
@@ -456,14 +456,14 @@ export function CostCoverageScreen({
               fontFamily: fontMono,
               fontSize: 11,
               fontWeight: 700,
-              color: paper.ink,
+              color: tokens.ink,
               marginBottom: 2,
             };
             return (
               <div
                 style={{
                   marginTop: 10,
-                  borderTop: `1px dashed ${paper.paperDark}`,
+                  borderTop: `1px dashed ${tokens.paperDark}`,
                   paddingTop: 10,
                 }}
               >
@@ -533,25 +533,25 @@ export function CostCoverageScreen({
           })()}
 
         {/* YTD / year actuals — NET always visible; revenue & costs only when expanded */}
-        <div style={{ marginTop: 10, borderTop: `1px dashed ${paper.paperDark}`, paddingTop: 10 }}>
+        <div style={{ marginTop: 10, borderTop: `1px dashed ${tokens.paperDark}`, paddingTop: 10 }}>
           {expanded && (
             <>
               <Row
                 label={t("breakeven.revenue")}
                 value={fmtMoney(othersRevenue)}
-                color={paper.green}
+                color={tokens.green}
               />
               <Row
                 label={t("breakeven.expenses")}
                 value={fmtMoneyOut(car.variable_total)}
-                color={paper.accent}
+                color={tokens.accent}
               />
             </>
           )}
           <Row
             label={t("breakeven.net")}
             value={fmtMoney(Math.abs(ytdNet))}
-            color={ytdNet >= 0 ? paper.green : paper.accent}
+            color={ytdNet >= 0 ? tokens.green : tokens.accent}
             big
           />
         </div>
@@ -565,7 +565,7 @@ export function CostCoverageScreen({
             fontSize: 9,
             letterSpacing: 2,
             textTransform: "uppercase",
-            color: paper.inkDim,
+            color: tokens.inkDim,
             fontWeight: 700,
             marginBottom: 12,
           }}
@@ -638,7 +638,7 @@ export function CostCoverageScreen({
 
         {/* Projection / actuals summary */}
         <div
-          style={{ background: paper.paperDeep, padding: "12px", marginTop: 8, marginBottom: 12 }}
+          style={{ background: tokens.paperDeep, padding: "12px", marginTop: 8, marginBottom: 12 }}
         >
           <div
             style={{
@@ -646,7 +646,7 @@ export function CostCoverageScreen({
               fontSize: 8,
               letterSpacing: 1.5,
               textTransform: "uppercase",
-              color: paper.inkDim,
+              color: tokens.inkDim,
               fontWeight: 700,
               marginBottom: 8,
             }}
@@ -656,23 +656,23 @@ export function CostCoverageScreen({
           <Row
             label={t("coverage.projection.others_contribution")}
             value={fmtMoney(nonOwnerMarkup)}
-            color={nonOwnerMarkup >= 0 ? paper.green : paper.accent}
+            color={nonOwnerMarkup >= 0 ? tokens.green : tokens.accent}
           />
           <Row
             label={t("coverage.projection.expenses")}
             value={fmtMoneyOut(expectedExpenses)}
-            color={paper.accent}
+            color={tokens.accent}
           />
           <Row
             label={t("coverage.projection.owner_fuel")}
             value={fmtMoneyOut(ownerFuelCost)}
-            color={paper.accent}
+            color={tokens.accent}
           />
-          <div style={{ height: 0, borderTop: `1px dashed ${paper.inkMute}`, margin: "6px 0" }} />
+          <div style={{ height: 0, borderTop: `1px dashed ${tokens.inkMute}`, margin: "6px 0" }} />
           <Row
             label={t("coverage.projection.net")}
             value={fmtMoney(Math.abs(ownerNet))}
-            color={ownerNet >= 0 ? paper.green : paper.accent}
+            color={ownerNet >= 0 ? tokens.green : tokens.accent}
             big
           />
         </div>
@@ -685,8 +685,8 @@ export function CostCoverageScreen({
             style={{
               width: "100%",
               padding: "11px",
-              background: paper.ink,
-              color: paper.paper,
+              background: tokens.ink,
+              color: tokens.paper,
               border: "none",
               cursor: !fullCar || updateCar.isPending ? "default" : "pointer",
               opacity: !fullCar || updateCar.isPending ? 0.6 : 1,

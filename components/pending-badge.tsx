@@ -1,6 +1,6 @@
 "use client";
 import { useT } from "@/components/locale-provider";
-import { fontMono, paper } from "@/lib/paper-theme";
+import { fontMono, tokens } from "@/lib/theme-tokens";
 
 export function PendingBadge() {
   const t = useT();
@@ -14,8 +14,8 @@ export function PendingBadge() {
         fontSize: 8,
         letterSpacing: 1.5,
         textTransform: "uppercase",
-        color: paper.amber,
-        border: `1px dashed ${paper.amber}`,
+        color: tokens.amber,
+        border: `1px dashed ${tokens.amber}`,
         marginLeft: 6,
         verticalAlign: "middle",
       }}

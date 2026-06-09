@@ -6,13 +6,13 @@ import { useMe } from "@/hooks/use-me";
 import { usePeople } from "@/hooks/use-people";
 import { useSettlement } from "@/hooks/use-settlement";
 import { apiFetch } from "@/lib/api/client";
-import { amtColor, fmtMoney, fontMono, fontSerif, paper, signPrefix } from "@/lib/paper-theme";
 import { fullNameOf } from "@/lib/person-utils";
 import {
   buildSettlementLines,
   buildSettlementMessage,
   type SettlementLine,
 } from "@/lib/settlement-message";
+import { amtColor, fmtMoney, fontMono, fontSerif, signPrefix, tokens } from "@/lib/theme-tokens";
 import type { AnnotatedTransfer, MemberStatement } from "@/types";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
@@ -63,7 +63,7 @@ function SettledNote({
   const noteStyle: React.CSSProperties = {
     fontFamily: fontMono,
     fontSize: 8,
-    color: paper.inkDim,
+    color: tokens.inkDim,
     paddingLeft: 16,
     marginTop: 4,
     fontStyle: "italic",
@@ -99,7 +99,7 @@ function SectionLabel({
       style={{
         fontFamily: fontMono,
         fontSize: 9,
-        color: paper.inkDim,
+        color: tokens.inkDim,
         letterSpacing: 2,
         textTransform: "uppercase",
         marginBottom: 8,
@@ -129,7 +129,7 @@ function YearPicker({
     fontSize: 10,
     fontWeight: 700,
     letterSpacing: 1,
-    border: `1.5px solid ${paper.ink}`,
+    border: `1.5px solid ${tokens.ink}`,
     cursor: "pointer",
   };
   return (
@@ -140,7 +140,7 @@ function YearPicker({
         style={{
           ...btnBase,
           borderRight: "none",
-          color: year <= earliest ? paper.inkDim : paper.ink,
+          color: year <= earliest ? tokens.inkDim : tokens.ink,
           cursor: year <= earliest ? "default" : "pointer",
         }}
       >
@@ -149,13 +149,13 @@ function YearPicker({
       <div
         style={{
           padding: "6px 18px",
-          background: paper.ink,
-          color: paper.paper,
+          background: tokens.ink,
+          color: tokens.paper,
           fontFamily: fontMono,
           fontSize: 10,
           fontWeight: 700,
           letterSpacing: 2,
-          border: `1.5px solid ${paper.ink}`,
+          border: `1.5px solid ${tokens.ink}`,
         }}
       >
         {year}
@@ -166,7 +166,7 @@ function YearPicker({
         style={{
           ...btnBase,
           borderLeft: "none",
-          color: year >= current ? paper.inkDim : paper.ink,
+          color: year >= current ? tokens.inkDim : tokens.ink,
           cursor: year >= current ? "default" : "pointer",
         }}
       >
@@ -199,7 +199,7 @@ function BreakdownSection({
             letterSpacing: 1.5,
             textTransform: "uppercase" as const,
             fontWeight: 700,
-            color: paper.inkDim,
+            color: tokens.inkDim,
           }}
         >
           {label}
@@ -243,7 +243,7 @@ function BreakdownCarRow({
         paddingLeft: 16,
       }}
     >
-      <span style={{ fontFamily: fontMono, fontSize: 10, color: paper.inkDim, letterSpacing: 1 }}>
+      <span style={{ fontFamily: fontMono, fontSize: 10, color: tokens.inkDim, letterSpacing: 1 }}>
         {car}
         {detail ? ` (${detail})` : ""}
       </span>
@@ -263,12 +263,12 @@ function TransferPaymentRow({ transfer }: { transfer: AnnotatedTransfer }) {
   const pct = transfer.amount > 0 ? Math.max(0, Math.min(1, ps.paid / transfer.amount)) : 1;
   const barFilled = Math.round(pct * 10);
   const statusColor = overpaid
-    ? paper.accent
+    ? tokens.accent
     : ps.open < 0.005
-      ? paper.green
+      ? tokens.green
       : ps.paid > 0.005
-        ? paper.blue
-        : paper.accent;
+        ? tokens.blue
+        : tokens.accent;
   const statusLabel = overpaid
     ? `+${fmtMoney(ps.paid - transfer.amount)} ${t("settlement.overpaid")}`
     : ps.open < 0.005
@@ -281,8 +281,8 @@ function TransferPaymentRow({ transfer }: { transfer: AnnotatedTransfer }) {
     <div
       style={{
         padding: "6px 14px 10px",
-        borderTop: `1px dashed ${paper.paperDark}`,
-        background: paper.paperDeep,
+        borderTop: `1px dashed ${tokens.paperDark}`,
+        background: tokens.paperDeep,
       }}
     >
       {/* Row 1: Te betalen | Openstaand */}
@@ -292,7 +292,7 @@ function TransferPaymentRow({ transfer }: { transfer: AnnotatedTransfer }) {
           justifyContent: "space-between",
           fontFamily: fontMono,
           fontSize: 9,
-          color: paper.inkDim,
+          color: tokens.inkDim,
           letterSpacing: 1,
           marginBottom: 4,
         }}
@@ -302,7 +302,7 @@ function TransferPaymentRow({ transfer }: { transfer: AnnotatedTransfer }) {
         </span>
         <span
           style={{
-            color: overpaid ? paper.accent : ps.open > 0.005 ? paper.accent : paper.inkDim,
+            color: overpaid ? tokens.accent : ps.open > 0.005 ? tokens.accent : tokens.inkDim,
           }}
         >
           {overpaid
@@ -318,7 +318,7 @@ function TransferPaymentRow({ transfer }: { transfer: AnnotatedTransfer }) {
           alignItems: "center",
           fontFamily: fontMono,
           fontSize: 9,
-          color: paper.inkDim,
+          color: tokens.inkDim,
           letterSpacing: 0.5,
           marginBottom: 4,
         }}
@@ -343,7 +343,7 @@ function TransferPaymentRow({ transfer }: { transfer: AnnotatedTransfer }) {
                 gridTemplateColumns: "16px 90px 1fr",
                 fontFamily: fontMono,
                 fontSize: 9,
-                color: paper.inkDim,
+                color: tokens.inkDim,
                 letterSpacing: 0.5,
               }}
             >
@@ -381,8 +381,8 @@ function PaymentSummaryBanner({
     <div
       style={{
         padding: "10px 14px",
-        background: isAllPaid ? paper.green : paper.accent,
-        color: paper.paper,
+        background: isAllPaid ? tokens.green : tokens.accent,
+        color: tokens.paper,
         marginBottom: 12,
         display: "flex",
         alignItems: "center",
@@ -420,7 +420,7 @@ function CarSectionHeader({ label, saldo }: { label: string; saldo: number }) {
           fontSize: 9,
           letterSpacing: 1.5,
           textTransform: "uppercase" as const,
-          color: paper.inkDim,
+          color: tokens.inkDim,
           fontWeight: 700,
         }}
       >
@@ -448,7 +448,7 @@ function renderLineJsx(line: SettlementLine, key: number): React.ReactNode {
       return (
         <div
           key={key}
-          style={{ marginTop: 14, borderTop: `1px dashed ${paper.paperDark}`, paddingTop: 10 }}
+          style={{ marginTop: 14, borderTop: `1px dashed ${tokens.paperDark}`, paddingTop: 10 }}
         />
       );
     case "car_header":
@@ -466,7 +466,7 @@ function renderLineJsx(line: SettlementLine, key: number): React.ReactNode {
           car={line.label}
           detail={null}
           amount={`${line.sign} ${fmtMoney(line.amount)}`}
-          amountColor={line.sign === "−" ? paper.accent : paper.green}
+          amountColor={line.sign === "−" ? tokens.accent : tokens.green}
         />
       );
     case "row_zero":
@@ -476,7 +476,7 @@ function renderLineJsx(line: SettlementLine, key: number): React.ReactNode {
           car={line.label}
           detail={null}
           amount={fmtMoney(0)}
-          amountColor={paper.inkDim}
+          amountColor={tokens.inkDim}
         />
       );
     case "note":
@@ -486,7 +486,7 @@ function renderLineJsx(line: SettlementLine, key: number): React.ReactNode {
           style={{
             fontFamily: fontMono,
             fontSize: 8,
-            color: paper.inkDim,
+            color: tokens.inkDim,
             paddingLeft: 16,
             marginTop: 4,
             fontStyle: "italic",
@@ -499,7 +499,7 @@ function renderLineJsx(line: SettlementLine, key: number): React.ReactNode {
       return (
         <div
           key={key}
-          style={{ borderTop: `1px dashed ${paper.paperDark}`, marginTop: 10, paddingTop: 8 }}
+          style={{ borderTop: `1px dashed ${tokens.paperDark}`, marginTop: 10, paddingTop: 8 }}
         />
       );
     case "summary": {
@@ -520,7 +520,7 @@ function renderLineJsx(line: SettlementLine, key: number): React.ReactNode {
               fontSize: 9,
               letterSpacing: 1.5,
               textTransform: "uppercase" as const,
-              color: paper.inkDim,
+              color: tokens.inkDim,
               fontWeight: line.emphasis ? 700 : 400,
             }}
           >
@@ -579,14 +579,14 @@ function MemberCard({
   const isCredit = net > 0;
   const borderColor =
     settlementTransfer == null
-      ? paper.ink
+      ? tokens.ink
       : ps == null
         ? isCredit
-          ? paper.blue
-          : paper.accent
+          ? tokens.blue
+          : tokens.accent
         : ps.open < 0.005
-          ? paper.green
-          : paper.accent;
+          ? tokens.green
+          : tokens.accent;
   const exactMatch =
     settlementTransfer == null ||
     (ps != null && Math.abs(ps.paid - settlementTransfer.amount) < 0.05);
@@ -617,7 +617,7 @@ function MemberCard({
     return (
       <div
         style={{
-          background: paper.paper,
+          background: tokens.paper,
           marginBottom: 2,
           borderLeft: `3px solid ${borderColor}`,
           display: "flex",
@@ -627,7 +627,7 @@ function MemberCard({
         }}
       >
         <span
-          style={{ fontFamily: fontSerif, fontSize: 11, color: paper.inkDim, flex: "1 1 auto" }}
+          style={{ fontFamily: fontSerif, fontSize: 11, color: tokens.inkDim, flex: "1 1 auto" }}
         >
           {m.person_name}
         </span>
@@ -642,7 +642,7 @@ function MemberCard({
   return (
     <div
       style={{
-        background: paper.paper,
+        background: tokens.paper,
         marginBottom: 6,
         boxShadow: "0 1px 4px rgba(0,0,0,0.07)",
         borderLeft: `3px solid ${borderColor}`,
@@ -655,7 +655,7 @@ function MemberCard({
             fontFamily: fontSerif,
             fontSize: 16,
             fontWeight: 700,
-            color: paper.ink,
+            color: tokens.ink,
             background: "transparent",
             border: "none",
             cursor: "pointer",
@@ -690,9 +690,9 @@ function MemberCard({
             fontWeight: 700,
             letterSpacing: 1,
             textTransform: "uppercase",
-            background: msgCopied ? paper.green : "transparent",
-            color: msgCopied ? paper.paper : paper.inkDim,
-            border: `1px solid ${msgCopied ? paper.green : paper.paperDark}`,
+            background: msgCopied ? tokens.green : "transparent",
+            color: msgCopied ? tokens.paper : tokens.inkDim,
+            border: `1px solid ${msgCopied ? tokens.green : tokens.paperDark}`,
             cursor: "pointer",
             whiteSpace: "nowrap",
             flex: "0 0 auto",
@@ -703,7 +703,7 @@ function MemberCard({
       </div>
 
       {open && (
-        <div style={{ borderTop: `1px dashed ${paper.paperDark}`, padding: "10px 14px 14px" }}>
+        <div style={{ borderTop: `1px dashed ${tokens.paperDark}`, padding: "10px 14px 14px" }}>
           {buildSettlementLines({
             m,
             year,
@@ -720,7 +720,7 @@ function MemberCard({
               style={{
                 fontFamily: fontMono,
                 fontSize: 9,
-                color: paper.inkDim,
+                color: tokens.inkDim,
                 marginTop: 4,
                 paddingLeft: 16,
               }}
@@ -738,7 +738,7 @@ function MemberCard({
                 style={{
                   fontFamily: fontMono,
                   fontSize: 9,
-                  color: paper.inkDim,
+                  color: tokens.inkDim,
                   letterSpacing: 1.5,
                   textTransform: "uppercase",
                   marginBottom: 4,
@@ -941,7 +941,7 @@ function AdminSettlementPageContent() {
               title={showAll ? t("settlement.show_problems") : t("settlement.show_all")}
               data-testid="settlement-expand-all"
               onMouseEnter={(e) => {
-                (e.currentTarget as HTMLButtonElement).style.background = paper.paperDark;
+                (e.currentTarget as HTMLButtonElement).style.background = tokens.paperDark;
               }}
               onMouseLeave={(e) => {
                 (e.currentTarget as HTMLButtonElement).style.background = "transparent";
@@ -955,8 +955,8 @@ function AdminSettlementPageContent() {
                 letterSpacing: 1,
                 textTransform: "uppercase",
                 background: "transparent",
-                color: paper.inkDim,
-                border: `1px solid ${paper.paperDark}`,
+                color: tokens.inkDim,
+                border: `1px solid ${tokens.paperDark}`,
                 cursor: "pointer",
                 padding: "4px 10px",
               }}
@@ -968,20 +968,20 @@ function AdminSettlementPageContent() {
               title={t("settlement.download")}
               data-testid="settlement-download"
               onMouseEnter={(e) => {
-                (e.currentTarget as HTMLButtonElement).style.background = paper.paperDark;
-                (e.currentTarget as HTMLButtonElement).style.borderColor = paper.paperDark;
+                (e.currentTarget as HTMLButtonElement).style.background = tokens.paperDark;
+                (e.currentTarget as HTMLButtonElement).style.borderColor = tokens.paperDark;
               }}
               onMouseLeave={(e) => {
                 (e.currentTarget as HTMLButtonElement).style.background = "transparent";
-                (e.currentTarget as HTMLButtonElement).style.borderColor = paper.ink;
+                (e.currentTarget as HTMLButtonElement).style.borderColor = tokens.ink;
               }}
               style={{
                 position: "absolute",
                 right: 0,
                 padding: "6px 10px",
                 background: "transparent",
-                border: `1.5px solid ${paper.ink}`,
-                color: paper.ink,
+                border: `1.5px solid ${tokens.ink}`,
+                color: tokens.ink,
                 cursor: "pointer",
                 fontFamily: fontMono,
                 fontSize: 12,
@@ -1000,8 +1000,8 @@ function AdminSettlementPageContent() {
             style={{
               display: "inline-block",
               padding: "4px 14px",
-              background: paper.green,
-              color: paper.paper,
+              background: tokens.green,
+              color: tokens.paper,
               fontFamily: fontMono,
               fontSize: 9,
               fontWeight: 700,
@@ -1012,7 +1012,7 @@ function AdminSettlementPageContent() {
             {t("settlement.frozen_badge")}
           </span>
           {data.settled_by && (
-            <div style={{ fontFamily: fontMono, fontSize: 9, color: paper.inkDim, marginTop: 4 }}>
+            <div style={{ fontFamily: fontMono, fontSize: 9, color: tokens.inkDim, marginTop: 4 }}>
               {t("settlement.frozen_by", {
                 date: data.settled_at?.slice(0, 10) ?? "",
                 name: data.settled_by,
@@ -1027,7 +1027,7 @@ function AdminSettlementPageContent() {
           style={{
             fontFamily: fontMono,
             fontSize: 10,
-            color: paper.inkDim,
+            color: tokens.inkDim,
             textAlign: "center",
             padding: 32,
           }}
@@ -1041,7 +1041,7 @@ function AdminSettlementPageContent() {
           style={{
             fontFamily: fontMono,
             fontSize: 10,
-            color: paper.inkDim,
+            color: tokens.inkDim,
             textAlign: "center",
             padding: 32,
           }}
@@ -1116,8 +1116,8 @@ function AdminSettlementPageContent() {
                   style={{
                     marginTop: 16,
                     padding: "9px 14px",
-                    background: data.verify_ok ? paper.green : paper.accent,
-                    color: paper.paper,
+                    background: data.verify_ok ? tokens.green : tokens.accent,
+                    color: tokens.paper,
                     display: "flex",
                     alignItems: "center",
                     gap: 8,
@@ -1178,8 +1178,8 @@ function AdminSettlementPageContent() {
                 fontWeight: 700,
                 letterSpacing: 2,
                 textTransform: "uppercase",
-                background: data.frozen ? paper.paperDark : paper.ink,
-                color: data.frozen ? paper.inkDim : paper.paper,
+                background: data.frozen ? tokens.paperDark : tokens.ink,
+                color: data.frozen ? tokens.inkDim : tokens.paper,
                 border: "none",
                 cursor: lock.isPending ? "default" : "pointer",
               }}

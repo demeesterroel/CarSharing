@@ -1,4 +1,4 @@
-// lib/__tests__/paper_theme.test.ts
+// lib/__tests__/theme_tokens.test.ts
 import { describe, expect, it } from "vitest";
 import {
   amtColor,
@@ -9,17 +9,17 @@ import {
   fmtYearMonth,
   fontMono,
   fontSerif,
-  paper,
   signPrefix,
-} from "../paper-theme";
+  tokens,
+} from "../theme-tokens";
 
-describe("paper CSS variable refs", () => {
-  it("paper.ink is a CSS var reference, not a hex", () => {
-    expect(paper.ink).toBe("var(--ink)");
+describe("theme token CSS variable refs", () => {
+  it("tokens.ink is a CSS var reference, not a hex", () => {
+    expect(tokens.ink).toBe("var(--ink)");
   });
 
-  it("paper.paper references --paper", () => {
-    expect(paper.paper).toBe("var(--paper)");
+  it("tokens.paper references --paper", () => {
+    expect(tokens.paper).toBe("var(--paper)");
   });
 
   it("fontMono references --font-mono CSS variable", () => {
@@ -129,17 +129,17 @@ describe("fmtYearMonth", () => {
 
 describe("amtColor", () => {
   it("returns green for positive amounts", () => {
-    expect(amtColor(10)).toBe(paper.green);
-    expect(amtColor(0.01)).toBe(paper.green);
+    expect(amtColor(10)).toBe(tokens.green);
+    expect(amtColor(0.01)).toBe(tokens.green);
   });
 
   it("returns accent (red) for negative amounts", () => {
-    expect(amtColor(-10)).toBe(paper.accent);
-    expect(amtColor(-0.01)).toBe(paper.accent);
+    expect(amtColor(-10)).toBe(tokens.accent);
+    expect(amtColor(-0.01)).toBe(tokens.accent);
   });
 
   it("returns inkMute for zero", () => {
-    expect(amtColor(0)).toBe(paper.inkMute);
+    expect(amtColor(0)).toBe(tokens.inkMute);
   });
 });
 

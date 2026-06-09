@@ -12,8 +12,8 @@ import { useMe } from "@/hooks/use-me";
 import { useQueryParam } from "@/hooks/use-query-param";
 import { useCreateTrip, useDeleteTrip, useTrips, useUpdateTrip } from "@/hooks/use-trips";
 import { useCars } from "@/hooks/use-vehicles";
-import { fmtYearMonth, fontMono, paper } from "@/lib/paper-theme";
 import { canEdit } from "@/lib/permissions";
+import { fmtYearMonth, fontMono, tokens } from "@/lib/theme-tokens";
 import { Suspense, useEffect } from "react";
 import { toast } from "sonner";
 import { TripForm } from "./trip-form";
@@ -82,14 +82,14 @@ function TripsContent() {
 
   if (isLoading)
     return (
-      <div style={{ background: paper.paperDeep, minHeight: "100dvh" }}>
+      <div style={{ background: tokens.paperDeep, minHeight: "100dvh" }}>
         <PageHeader title={t("page.trips")} />
         <div
           style={{
             padding: "32px 20px",
             fontFamily: fontMono,
             fontSize: 11,
-            color: paper.inkDim,
+            color: tokens.inkDim,
             letterSpacing: 1,
           }}
         >
@@ -99,7 +99,7 @@ function TripsContent() {
     );
 
   return (
-    <div style={{ background: paper.paperDeep, minHeight: "100dvh", paddingBottom: 80 }}>
+    <div style={{ background: tokens.paperDeep, minHeight: "100dvh", paddingBottom: 80 }}>
       <PageHeader title={t("page.trips")} />
 
       <ListFilterBar
@@ -132,7 +132,7 @@ function TripsContent() {
             textAlign: "center",
             fontFamily: fontMono,
             fontSize: 11,
-            color: paper.inkDim,
+            color: tokens.inkDim,
             letterSpacing: 1,
           }}
         >

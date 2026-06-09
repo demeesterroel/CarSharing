@@ -1,14 +1,14 @@
 "use client";
-import { fontSerif, paper } from "@/lib/paper-theme";
+import { fontSerif, tokens } from "@/lib/theme-tokens";
 import { createElement, useEffect, useRef } from "react";
 
 const innerInputStyle: React.CSSProperties = {
   fontFamily: fontSerif,
   fontSize: 15,
   fontWeight: 600,
-  color: paper.ink,
-  background: paper.paper,
-  border: `1.5px solid ${paper.paperDark}`,
+  color: tokens.ink,
+  background: tokens.paper,
+  border: `1.5px solid ${tokens.paperDark}`,
   borderRadius: "var(--radius-md, 8px)",
   padding: "7px 8px",
   width: "100%",

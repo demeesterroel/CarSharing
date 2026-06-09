@@ -2,13 +2,13 @@
 import Database from "better-sqlite3";
 import { describe, expect, it } from "vitest";
 import { runMigrations } from "../db/migrate";
-import { insertPerson, updatePerson } from "../queries/people";
 import {
   insertNotification,
   listNotifications,
   markRead,
   unreadCount,
 } from "../queries/notifications";
+import { insertPerson, updatePerson } from "../queries/people";
 
 function makeDb() {
   const db = new Database(":memory:");

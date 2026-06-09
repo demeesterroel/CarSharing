@@ -2,7 +2,7 @@
 import { useT } from "@/components/locale-provider";
 import { PageHeader, TITLE_BAR_HEIGHT } from "@/components/page-header";
 import { useMe } from "@/hooks/use-me";
-import { fontMono, paper } from "@/lib/paper-theme";
+import { fontMono, tokens } from "@/lib/theme-tokens";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { Suspense, useEffect } from "react";
@@ -41,8 +41,8 @@ function SubNav() {
           display: "flex",
           overflowX: "auto",
           gap: 0,
-          borderBottom: `1.5px dashed ${paper.ink}`,
-          background: paper.paper,
+          borderBottom: `1.5px dashed ${tokens.ink}`,
+          background: tokens.paper,
           position: "sticky",
           top: TITLE_BAR_HEIGHT,
           zIndex: 19,
@@ -62,8 +62,8 @@ function SubNav() {
                 fontWeight: 700,
                 letterSpacing: 1.5,
                 textTransform: "uppercase",
-                background: active ? paper.ink : "transparent",
-                color: active ? paper.paper : paper.ink,
+                background: active ? tokens.ink : "transparent",
+                color: active ? tokens.paper : tokens.ink,
                 border: "none",
                 cursor: "pointer",
                 whiteSpace: "nowrap",
@@ -98,7 +98,7 @@ function AdminAccessGuard() {
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div style={{ background: paper.paperDeep, minHeight: "100dvh", paddingBottom: 80 }}>
+    <div style={{ background: tokens.paperDeep, minHeight: "100dvh", paddingBottom: 80 }}>
       <AdminAccessGuard />
       <Suspense>
         <SubNav />

@@ -1,7 +1,7 @@
 "use client";
 import { t } from "@/lib/i18n";
-import { fontMono, fontSerif, paper } from "@/lib/paper-theme";
 import { useTheme } from "@/lib/theme-context";
+import { fontMono, fontSerif, tokens } from "@/lib/theme-tokens";
 import { MapPin } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
@@ -43,8 +43,8 @@ function makeIcon(L: any) {
   return L.divIcon({
     className: "",
     html: `<svg viewBox="0 0 24 32" fill="none" xmlns="http://www.w3.org/2000/svg" style="width:24px;height:32px;display:block">
-      <path d="M12 0C5.373 0 0 5.373 0 12c0 8.5 12 20 12 20S24 20.5 24 12C24 5.373 18.627 0 12 0z" fill="${paper.ink}"/>
-      <circle cx="12" cy="12" r="5" fill="${paper.paper}"/>
+      <path d="M12 0C5.373 0 0 5.373 0 12c0 8.5 12 20 12 20S24 20.5 24 12C24 5.373 18.627 0 12 0z" fill="${tokens.ink}"/>
+      <circle cx="12" cy="12" r="5" fill="${tokens.paper}"/>
     </svg>`,
     iconSize: [24, 32],
     iconAnchor: [12, 32],
@@ -261,17 +261,17 @@ export function LocationPicker({
                 display: "flex",
                 alignItems: "center",
                 gap: 8,
-                border: `1px solid ${paper.paperDark}`,
+                border: `1px solid ${tokens.paperDark}`,
                 borderRadius: "var(--radius-md, 10px)",
                 padding: "10px 14px",
                 marginBottom: 8,
-                background: paper.paper,
+                background: tokens.paper,
               }
             : {
                 display: "flex",
                 alignItems: "center",
                 gap: 8,
-                border: `1.5px dashed ${paper.paperDark}`,
+                border: `1.5px dashed ${tokens.paperDark}`,
                 padding: "10px 14px",
                 marginBottom: 8,
               }
@@ -280,7 +280,7 @@ export function LocationPicker({
         {mono && (
           <MapPin
             size={16}
-            color={paper.inkMute}
+            color={tokens.inkMute}
             strokeWidth={1.75}
             style={{ flexShrink: 0, alignSelf: "flex-start", marginTop: 2 }}
           />
@@ -319,7 +319,7 @@ export function LocationPicker({
               fontFamily: fontSerif,
               fontSize: 17,
               fontWeight: mono ? 700 : 600,
-              color: geocoding ? paper.inkMute : paper.ink,
+              color: geocoding ? tokens.inkMute : tokens.ink,
               background: "transparent",
               border: "none",
               outline: "none",
@@ -331,7 +331,7 @@ export function LocationPicker({
               style={{
                 fontFamily: fontMono,
                 fontSize: mono ? 11 : 8,
-                color: paper.inkMute,
+                color: tokens.inkMute,
                 letterSpacing: mono ? 0 : 1,
                 marginTop: 2,
               }}
@@ -351,9 +351,9 @@ export function LocationPicker({
             letterSpacing: mono ? 0 : 1.5,
             textTransform: mono ? "none" : "uppercase",
             background: "transparent",
-            border: `1px solid ${paper.paperDark}`,
+            border: `1px solid ${tokens.paperDark}`,
             borderRadius: mono ? "var(--radius-pill, 999px)" : 0,
-            color: paper.inkDim,
+            color: tokens.inkDim,
             padding: mono ? "5px 12px" : "4px 8px",
             cursor: "pointer",
             flexShrink: 0,
@@ -375,7 +375,7 @@ export function LocationPicker({
               fontSize: 11,
               background: "transparent",
               border: "none",
-              color: paper.inkMute,
+              color: tokens.inkMute,
               cursor: "pointer",
               padding: "0 2px",
               lineHeight: 1,
@@ -391,7 +391,7 @@ export function LocationPicker({
           style={{
             fontFamily: fontMono,
             fontSize: mono ? 11 : 9,
-            color: paper.accent,
+            color: tokens.accent,
             letterSpacing: mono ? 0 : 1,
             marginBottom: 6,
           }}
@@ -406,7 +406,7 @@ export function LocationPicker({
           height: 200,
           minHeight: 200,
           width: "100%",
-          border: mono ? `1px solid ${paper.paperDark}` : `1.5px solid ${paper.paperDark}`,
+          border: mono ? `1px solid ${tokens.paperDark}` : `1.5px solid ${tokens.paperDark}`,
           borderRadius: mono ? "var(--radius-md, 10px)" : 0,
           overflow: "hidden",
         }}
@@ -415,7 +415,7 @@ export function LocationPicker({
         style={{
           fontFamily: fontMono,
           fontSize: mono ? 11 : 8,
-          color: paper.inkMute,
+          color: tokens.inkMute,
           letterSpacing: mono ? 0 : 1,
           marginTop: 4,
         }}

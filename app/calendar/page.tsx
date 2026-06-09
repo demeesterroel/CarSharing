@@ -21,8 +21,8 @@ import {
   shouldShowCalendarNudge,
 } from "@/lib/calendar-nudge";
 import { useOnlineState } from "@/lib/offline/online-state";
-import { fontMono, fontSerif, paper } from "@/lib/paper-theme";
 import { canEdit } from "@/lib/permissions";
+import { fontMono, fontSerif, tokens } from "@/lib/theme-tokens";
 import type { Car, Reservation } from "@/types";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { CalendarPlus } from "lucide-react";
@@ -59,7 +59,7 @@ function BottomSheet({
           left: 0,
           right: 0,
           bottom: 0,
-          background: paper.paper,
+          background: tokens.paper,
           borderRadius: "16px 16px 0 0",
           zIndex: 50,
           maxHeight: "92vh",
@@ -89,7 +89,7 @@ function CarTimeline({
   return (
     <div
       style={{
-        background: paper.paper,
+        background: tokens.paper,
         marginBottom: 12,
         padding: "14px 14px 18px",
         boxShadow: "0 1px 2px rgba(0,0,0,0.04)",
@@ -97,7 +97,7 @@ function CarTimeline({
     >
       <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10 }}>
         <CarBadge short={car.short} active={!!car.active} />
-        <div style={{ fontFamily: fontSerif, fontSize: 16, fontWeight: 700, color: paper.ink }}>
+        <div style={{ fontFamily: fontSerif, fontSize: 16, fontWeight: 700, color: tokens.ink }}>
           {car.name}
         </div>
       </div>
@@ -248,7 +248,7 @@ function CalendarContent() {
       target="_blank"
       rel="noopener noreferrer"
       title={t("calendar.subscribe")}
-      style={{ display: "flex", alignItems: "center", color: paper.inkDim, padding: 4 }}
+      style={{ display: "flex", alignItems: "center", color: tokens.inkDim, padding: 4 }}
     >
       <CalendarPlus size={18} />
     </a>
@@ -256,14 +256,14 @@ function CalendarContent() {
 
   if (isLoading)
     return (
-      <div style={{ background: paper.paperDeep, minHeight: "100dvh" }}>
+      <div style={{ background: tokens.paperDeep, minHeight: "100dvh" }}>
         <PageHeader title={t("page.reservations")} right={subscribeButton} />
         <div
           style={{
             padding: "32px 20px",
             fontFamily: fontMono,
             fontSize: 11,
-            color: paper.inkDim,
+            color: tokens.inkDim,
             letterSpacing: 1,
           }}
         >
@@ -273,7 +273,7 @@ function CalendarContent() {
     );
 
   return (
-    <div style={{ background: paper.paperDeep, minHeight: "100dvh", paddingBottom: 80 }}>
+    <div style={{ background: tokens.paperDeep, minHeight: "100dvh", paddingBottom: 80 }}>
       <PageHeader title={t("page.reservations")} right={subscribeButton} />
 
       {/* Legend */}
@@ -287,13 +287,13 @@ function CalendarContent() {
           fontSize: 9,
           letterSpacing: 1.5,
           textTransform: "uppercase",
-          color: paper.inkDim,
-          borderBottom: `1px solid ${paper.paperDark}`,
+          color: tokens.inkDim,
+          borderBottom: `1px solid ${tokens.paperDark}`,
         }}
       >
         <span>□ {t("calendar.available")}</span>
-        <span style={{ color: paper.ink }}>■ {t("calendar.confirmed")}</span>
-        <span style={{ color: paper.amber }}>▦ {t("calendar.pending")}</span>
+        <span style={{ color: tokens.ink }}>■ {t("calendar.confirmed")}</span>
+        <span style={{ color: tokens.amber }}>▦ {t("calendar.pending")}</span>
       </div>
 
       {/* Per-car 14-day timeline */}
@@ -314,11 +314,11 @@ function CalendarContent() {
           style={{
             fontFamily: fontMono,
             fontSize: 10,
-            color: paper.inkDim,
+            color: tokens.inkDim,
             letterSpacing: 2,
             textTransform: "uppercase",
             marginBottom: 10,
-            borderTop: `1.5px dashed ${paper.ink}`,
+            borderTop: `1.5px dashed ${tokens.ink}`,
             paddingTop: 12,
             display: "flex",
             justifyContent: "space-between",
@@ -335,7 +335,7 @@ function CalendarContent() {
               textAlign: "center",
               fontFamily: fontMono,
               fontSize: 11,
-              color: paper.inkDim,
+              color: tokens.inkDim,
               letterSpacing: 1,
             }}
           >
@@ -415,8 +415,8 @@ function CalendarContent() {
                     width: "100%",
                     padding: "10px",
                     background: "transparent",
-                    border: `1.5px solid ${paper.accent}`,
-                    color: paper.accent,
+                    border: `1.5px solid ${tokens.accent}`,
+                    color: tokens.accent,
                     fontFamily: fontMono,
                     fontSize: 10,
                     fontWeight: 700,

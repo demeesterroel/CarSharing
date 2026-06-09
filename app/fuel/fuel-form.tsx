@@ -7,13 +7,14 @@ import { useMe } from "@/hooks/use-me";
 import { usePeople } from "@/hooks/use-people";
 import { useLastCarState } from "@/hooks/use-vehicle-state";
 import { useCars } from "@/hooks/use-vehicles";
+import { monoLabel, paperLabel } from "@/lib/form-styles";
 import { parseDecimalInput } from "@/lib/form-utils";
 import { calcPricePerLiter } from "@/lib/formulas";
 import { buildMissingLabel, t } from "@/lib/i18n";
 import { useOnlineState } from "@/lib/offline/online-state";
-import { fmtDate, fontMono, fontSerif, paper } from "@/lib/paper-theme";
 import { fullNameOf } from "@/lib/person-utils";
 import { useTheme } from "@/lib/theme-context";
+import { fmtDate, fontMono, fontSerif, tokens } from "@/lib/theme-tokens";
 import type { FuelFillup, FuelFillupInput } from "@/types";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Lock } from "lucide-react";
@@ -71,25 +72,8 @@ const fieldsetReset: React.CSSProperties = {
   minInlineSize: "auto",
 };
 
-const paperLabel: React.CSSProperties = {
-  fontFamily: fontMono,
-  fontSize: 9,
-  fontWeight: 700,
-  letterSpacing: 2,
-  textTransform: "uppercase",
-  color: paper.inkMute,
-  display: "block",
-  marginBottom: 4,
-};
-const monoLabel: React.CSSProperties = {
-  fontFamily: fontMono,
-  fontSize: 11,
-  color: paper.inkMute,
-  display: "block",
-  marginBottom: 4,
-};
 const dashedBox: React.CSSProperties = {
-  border: `1.5px dashed ${paper.paperDark}`,
+  border: `1.5px dashed ${tokens.paperDark}`,
   padding: "12px 14px",
 };
 
@@ -165,7 +149,7 @@ export function FuelForm({ defaultValues, onSubmit, onCancel, onDelete, readOnly
 
   const displayDate = date ? date.slice(5).replace("-", "/") : "";
   const lbl = mono ? monoLabel : paperLabel;
-  const rowBorder = mono ? `1px solid ${paper.paperDark}` : `1.5px dashed ${paper.paperDark}`;
+  const rowBorder = mono ? `1px solid ${tokens.paperDark}` : `1.5px dashed ${tokens.paperDark}`;
 
   function handleSubmitForm(data: FormData) {
     onSubmit({
@@ -197,7 +181,7 @@ export function FuelForm({ defaultValues, onSubmit, onCancel, onDelete, readOnly
         }
         handleSubmit(handleSubmitForm)(e);
       }}
-      style={{ background: paper.paperDeep }}
+      style={{ background: tokens.paperDeep }}
     >
       {/* Top bar */}
       <div
@@ -208,7 +192,7 @@ export function FuelForm({ defaultValues, onSubmit, onCancel, onDelete, readOnly
           padding: "0 16px",
           height: 52,
           borderBottom: rowBorder,
-          background: paper.paper,
+          background: tokens.paper,
           position: "sticky",
           top: 0,
           zIndex: 10,
@@ -226,7 +210,7 @@ export function FuelForm({ defaultValues, onSubmit, onCancel, onDelete, readOnly
             background: "transparent",
             border: "none",
             cursor: "pointer",
-            color: paper.ink,
+            color: tokens.ink,
             padding: "0 4px",
             lineHeight: 1,
           }}
@@ -236,13 +220,13 @@ export function FuelForm({ defaultValues, onSubmit, onCancel, onDelete, readOnly
         <div
           style={
             mono
-              ? { fontFamily: fontSerif, fontSize: 17, fontWeight: 700, color: paper.ink }
+              ? { fontFamily: fontSerif, fontSize: 17, fontWeight: 700, color: tokens.ink }
               : {
                   fontFamily: fontMono,
                   fontSize: 10,
                   fontWeight: 700,
                   letterSpacing: 3,
-                  color: paper.inkDim,
+                  color: tokens.inkDim,
                   textTransform: "uppercase",
                 }
           }
@@ -261,10 +245,10 @@ export function FuelForm({ defaultValues, onSubmit, onCancel, onDelete, readOnly
               fontWeight: 700,
               letterSpacing: 2,
               textTransform: "uppercase",
-              color: paper.inkMute,
+              color: tokens.inkMute,
             }}
           >
-            <Lock size={13} color={paper.inkMute} strokeWidth={1.75} />
+            <Lock size={13} color={tokens.inkMute} strokeWidth={1.75} />
             {t("form.read_only")}
           </div>
         ) : (
@@ -278,7 +262,7 @@ export function FuelForm({ defaultValues, onSubmit, onCancel, onDelete, readOnly
                 fontWeight: 700,
                 letterSpacing: mono ? 0 : 2,
                 textTransform: mono ? "none" : "uppercase",
-                background: mono ? paper.accent : paper.green,
+                background: mono ? tokens.accent : tokens.green,
                 color: "#fff",
                 border: "none",
                 borderRadius: mono ? "var(--radius-pill, 999px)" : 0,
@@ -296,8 +280,8 @@ export function FuelForm({ defaultValues, onSubmit, onCancel, onDelete, readOnly
                   position: "absolute",
                   right: 0,
                   top: "calc(100% + 6px)",
-                  background: paper.ink,
-                  color: paper.paper,
+                  background: tokens.ink,
+                  color: tokens.paper,
                   fontFamily: fontMono,
                   fontSize: 9,
                   letterSpacing: 1,
@@ -326,7 +310,7 @@ export function FuelForm({ defaultValues, onSubmit, onCancel, onDelete, readOnly
               fontSize: 9,
               fontWeight: 700,
               letterSpacing: 1,
-              color: paper.amber,
+              color: tokens.amber,
               borderBottom: rowBorder,
             }}
           >
@@ -357,7 +341,7 @@ export function FuelForm({ defaultValues, onSubmit, onCancel, onDelete, readOnly
                     fontFamily: fontSerif,
                     fontSize: mono ? 19 : 17,
                     fontWeight: mono ? 700 : 600,
-                    color: paper.ink,
+                    color: tokens.ink,
                     background: "transparent",
                     border: "none",
                     outline: "none",
@@ -385,7 +369,7 @@ export function FuelForm({ defaultValues, onSubmit, onCancel, onDelete, readOnly
                     fontFamily: fontSerif,
                     fontSize: 19,
                     fontWeight: 700,
-                    color: paper.ink,
+                    color: tokens.ink,
                     lineHeight: 1.15,
                   }}
                 >
@@ -393,7 +377,7 @@ export function FuelForm({ defaultValues, onSubmit, onCancel, onDelete, readOnly
                 </span>
                 <Lock
                   size={14}
-                  color={paper.inkMute}
+                  color={tokens.inkMute}
                   strokeWidth={1.75}
                   style={{ flexShrink: 0 }}
                 />
@@ -401,7 +385,12 @@ export function FuelForm({ defaultValues, onSubmit, onCancel, onDelete, readOnly
             ) : (
               <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
                 <span
-                  style={{ fontFamily: fontSerif, fontSize: 17, fontWeight: 600, color: paper.ink }}
+                  style={{
+                    fontFamily: fontSerif,
+                    fontSize: 17,
+                    fontWeight: 600,
+                    color: tokens.ink,
+                  }}
                 >
                   {person ? fullNameOf(person) : (me?.shortName ?? "—")}
                 </span>
@@ -418,7 +407,7 @@ export function FuelForm({ defaultValues, onSubmit, onCancel, onDelete, readOnly
                     fontFamily: fontSerif,
                     fontSize: 17,
                     fontWeight: 700,
-                    color: paper.ink,
+                    color: tokens.ink,
                     pointerEvents: "none",
                   }}
                 >
@@ -448,7 +437,7 @@ export function FuelForm({ defaultValues, onSubmit, onCancel, onDelete, readOnly
                     fontFamily: fontSerif,
                     fontSize: 17,
                     fontWeight: 600,
-                    color: paper.ink,
+                    color: tokens.ink,
                     background: "transparent",
                     border: "none",
                     outline: "none",
@@ -467,7 +456,7 @@ export function FuelForm({ defaultValues, onSubmit, onCancel, onDelete, readOnly
               padding: "6px 14px",
               fontFamily: fontMono,
               fontSize: 9,
-              color: paper.amber,
+              color: tokens.amber,
               letterSpacing: 1,
             }}
           >
@@ -483,7 +472,7 @@ export function FuelForm({ defaultValues, onSubmit, onCancel, onDelete, readOnly
               <div style={{ flex: 1 }}>
                 <span style={{ ...monoLabel, marginBottom: 2 }}>{t("form.amount")}</span>
                 <div style={{ display: "flex", alignItems: "baseline", gap: 4 }}>
-                  <span style={{ fontFamily: fontMono, fontSize: 20, color: paper.inkMute }}>
+                  <span style={{ fontFamily: fontMono, fontSize: 20, color: tokens.inkMute }}>
                     €
                   </span>
                   <input
@@ -494,11 +483,11 @@ export function FuelForm({ defaultValues, onSubmit, onCancel, onDelete, readOnly
                       fontFamily: fontMono,
                       fontSize: 28,
                       fontWeight: 700,
-                      color: paper.ink,
+                      color: tokens.ink,
                       background: "transparent",
                       border: "none",
                       outline: "none",
-                      borderBottom: `1px solid ${paper.paperDark}`,
+                      borderBottom: `1px solid ${tokens.paperDark}`,
                       width: "100%",
                       padding: "2px 0",
                     }}
@@ -506,7 +495,7 @@ export function FuelForm({ defaultValues, onSubmit, onCancel, onDelete, readOnly
                 </div>
               </div>
               <div style={{ textAlign: "center", flexShrink: 0, padding: "0 6px 8px" }}>
-                <div style={{ fontFamily: fontMono, fontSize: 11.5, color: paper.inkMute }}>
+                <div style={{ fontFamily: fontMono, fontSize: 11.5, color: tokens.inkMute }}>
                   {parseDecimalInput(liters as string) > 0
                     ? `€ ${pricePerLiter.toFixed(3).replace(".", ",")}/L`
                     : "€/L"}
@@ -534,11 +523,11 @@ export function FuelForm({ defaultValues, onSubmit, onCancel, onDelete, readOnly
                       fontFamily: fontMono,
                       fontSize: 28,
                       fontWeight: 700,
-                      color: paper.ink,
+                      color: tokens.ink,
                       background: "transparent",
                       border: "none",
                       outline: "none",
-                      borderBottom: `1px solid ${paper.paperDark}`,
+                      borderBottom: `1px solid ${tokens.paperDark}`,
                       width: "100%",
                       padding: "2px 0",
                       textAlign: "right",
@@ -548,7 +537,7 @@ export function FuelForm({ defaultValues, onSubmit, onCancel, onDelete, readOnly
                     style={{
                       fontFamily: fontMono,
                       fontSize: 14,
-                      color: paper.inkMute,
+                      color: tokens.inkMute,
                       flexShrink: 0,
                     }}
                   >
@@ -562,8 +551,8 @@ export function FuelForm({ defaultValues, onSubmit, onCancel, onDelete, readOnly
           <div
             style={{
               margin: "12px 14px",
-              background: paper.paper,
-              border: `1.5px solid ${paper.paperDark}`,
+              background: tokens.paper,
+              border: `1.5px solid ${tokens.paperDark}`,
             }}
           >
             <div
@@ -572,7 +561,7 @@ export function FuelForm({ defaultValues, onSubmit, onCancel, onDelete, readOnly
                 justifyContent: "space-between",
                 alignItems: "center",
                 padding: "10px 14px 6px",
-                borderBottom: `1px dashed ${paper.paperDark}`,
+                borderBottom: `1px dashed ${tokens.paperDark}`,
               }}
             >
               <span
@@ -581,7 +570,7 @@ export function FuelForm({ defaultValues, onSubmit, onCancel, onDelete, readOnly
                   fontSize: 10,
                   fontWeight: 700,
                   letterSpacing: 2,
-                  color: paper.amber,
+                  color: tokens.amber,
                   textTransform: "uppercase",
                 }}
               >
@@ -591,7 +580,7 @@ export function FuelForm({ defaultValues, onSubmit, onCancel, onDelete, readOnly
                 style={{
                   fontFamily: fontMono,
                   fontSize: 10,
-                  color: paper.inkMute,
+                  color: tokens.inkMute,
                   letterSpacing: 1,
                 }}
               >
@@ -614,11 +603,11 @@ export function FuelForm({ defaultValues, onSubmit, onCancel, onDelete, readOnly
                       fontFamily: fontMono,
                       fontSize: 32,
                       fontWeight: 700,
-                      color: paper.ink,
+                      color: tokens.ink,
                       background: "transparent",
                       border: "none",
                       outline: "none",
-                      borderBottom: `1px dashed ${paper.paperDark}`,
+                      borderBottom: `1px dashed ${tokens.paperDark}`,
                       width: "100%",
                       padding: "2px 0",
                     }}
@@ -630,7 +619,7 @@ export function FuelForm({ defaultValues, onSubmit, onCancel, onDelete, readOnly
                   padding: "0 12px 6px",
                   fontFamily: fontMono,
                   fontSize: 14,
-                  color: paper.inkMute,
+                  color: tokens.inkMute,
                 }}
               >
                 €
@@ -646,11 +635,11 @@ export function FuelForm({ defaultValues, onSubmit, onCancel, onDelete, readOnly
                       fontFamily: fontMono,
                       fontSize: 32,
                       fontWeight: 700,
-                      color: paper.ink,
+                      color: tokens.ink,
                       background: "transparent",
                       border: "none",
                       outline: "none",
-                      borderBottom: `1px dashed ${paper.paperDark}`,
+                      borderBottom: `1px dashed ${tokens.paperDark}`,
                       width: "100%",
                       padding: "2px 0",
                     }}
@@ -659,7 +648,7 @@ export function FuelForm({ defaultValues, onSubmit, onCancel, onDelete, readOnly
                     style={{
                       fontFamily: fontMono,
                       fontSize: 14,
-                      color: paper.inkMute,
+                      color: tokens.inkMute,
                       flexShrink: 0,
                     }}
                   >
@@ -676,7 +665,7 @@ export function FuelForm({ defaultValues, onSubmit, onCancel, onDelete, readOnly
                 justifyContent: "space-between",
                 alignItems: "center",
                 padding: "8px 14px 12px",
-                borderTop: `1px dashed ${paper.paperDark}`,
+                borderTop: `1px dashed ${tokens.paperDark}`,
               }}
             >
               <span
@@ -685,7 +674,7 @@ export function FuelForm({ defaultValues, onSubmit, onCancel, onDelete, readOnly
                   fontSize: 9,
                   letterSpacing: 2,
                   textTransform: "uppercase",
-                  color: paper.inkMute,
+                  color: tokens.inkMute,
                 }}
               >
                 {t("form.price_per_liter")}
@@ -695,7 +684,7 @@ export function FuelForm({ defaultValues, onSubmit, onCancel, onDelete, readOnly
                   fontFamily: fontMono,
                   fontSize: 12,
                   fontWeight: 700,
-                  color: paper.inkDim,
+                  color: tokens.inkDim,
                   letterSpacing: 1,
                 }}
               >
@@ -714,8 +703,8 @@ export function FuelForm({ defaultValues, onSubmit, onCancel, onDelete, readOnly
                 width: 22,
                 height: 22,
                 borderRadius: "50%",
-                border: `2px solid ${fullTank ? paper.green : paper.paperDark}`,
-                background: fullTank ? paper.green : "transparent",
+                border: `2px solid ${fullTank ? tokens.green : tokens.paperDark}`,
+                background: fullTank ? tokens.green : "transparent",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
@@ -734,12 +723,12 @@ export function FuelForm({ defaultValues, onSubmit, onCancel, onDelete, readOnly
               onClick={() => !readOnly && setValue("full_tank", !fullTank)}
             >
               <div
-                style={{ fontFamily: fontSerif, fontSize: 15, fontWeight: 600, color: paper.ink }}
+                style={{ fontFamily: fontSerif, fontSize: 15, fontWeight: 600, color: tokens.ink }}
               >
                 {t("form.full_tank")}
               </div>
               <div
-                style={{ fontFamily: fontMono, fontSize: 11, color: paper.inkMute, marginTop: 2 }}
+                style={{ fontFamily: fontMono, fontSize: 11, color: tokens.inkMute, marginTop: 2 }}
               >
                 {t("form.full_tank_hint")}
               </div>
@@ -759,10 +748,10 @@ export function FuelForm({ defaultValues, onSubmit, onCancel, onDelete, readOnly
                     fontFamily: fontSerif,
                     fontSize: 18,
                     fontWeight: 700,
-                    color: paper.ink,
+                    color: tokens.ink,
                     background: "transparent",
                     border: "none",
-                    borderBottom: `1px solid ${paper.paperDark}`,
+                    borderBottom: `1px solid ${tokens.paperDark}`,
                     outline: "none",
                     width: "100%",
                     padding: "2px 0",
@@ -779,7 +768,7 @@ export function FuelForm({ defaultValues, onSubmit, onCancel, onDelete, readOnly
               id="full_tank"
               checked={!!fullTank}
               onChange={(e) => setValue("full_tank", e.target.checked)}
-              style={{ width: 16, height: 16, cursor: "pointer", accentColor: paper.green }}
+              style={{ width: 16, height: 16, cursor: "pointer", accentColor: tokens.green }}
             />
             <label
               htmlFor="full_tank"
@@ -789,14 +778,14 @@ export function FuelForm({ defaultValues, onSubmit, onCancel, onDelete, readOnly
                 fontWeight: 700,
                 letterSpacing: 2,
                 textTransform: "uppercase",
-                color: paper.inkDim,
+                color: tokens.inkDim,
                 cursor: "pointer",
               }}
             >
               {t("form.full_tank")}
             </label>
             <span
-              style={{ fontFamily: fontMono, fontSize: 9, color: paper.inkMute, letterSpacing: 1 }}
+              style={{ fontFamily: fontMono, fontSize: 9, color: tokens.inkMute, letterSpacing: 1 }}
             >
               — {t("form.full_tank_hint")}
             </span>
@@ -820,8 +809,8 @@ export function FuelForm({ defaultValues, onSubmit, onCancel, onDelete, readOnly
                 width: 22,
                 height: 22,
                 borderRadius: "50%",
-                border: `2px solid ${settledOutside ? paper.inkMute : paper.paperDark}`,
-                background: settledOutside ? paper.inkMute : "transparent",
+                border: `2px solid ${settledOutside ? tokens.inkMute : tokens.paperDark}`,
+                background: settledOutside ? tokens.inkMute : "transparent",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
@@ -836,12 +825,12 @@ export function FuelForm({ defaultValues, onSubmit, onCancel, onDelete, readOnly
             </div>
             <div>
               <div
-                style={{ fontFamily: fontSerif, fontSize: 15, fontWeight: 600, color: paper.ink }}
+                style={{ fontFamily: fontSerif, fontSize: 15, fontWeight: 600, color: tokens.ink }}
               >
                 {t("form.settled_outside")}
               </div>
               <div
-                style={{ fontFamily: fontMono, fontSize: 11, color: paper.inkMute, marginTop: 2 }}
+                style={{ fontFamily: fontMono, fontSize: 11, color: tokens.inkMute, marginTop: 2 }}
               >
                 {t("form.settled_outside_hint")}
               </div>
@@ -854,7 +843,7 @@ export function FuelForm({ defaultValues, onSubmit, onCancel, onDelete, readOnly
               id="fuel_settled_outside"
               checked={!!settledOutside}
               onChange={(e) => setValue("settled_outside", e.target.checked)}
-              style={{ width: 16, height: 16, cursor: "pointer", accentColor: paper.inkMute }}
+              style={{ width: 16, height: 16, cursor: "pointer", accentColor: tokens.inkMute }}
             />
             <label
               htmlFor="fuel_settled_outside"
@@ -864,14 +853,14 @@ export function FuelForm({ defaultValues, onSubmit, onCancel, onDelete, readOnly
                 fontWeight: 700,
                 letterSpacing: 2,
                 textTransform: "uppercase",
-                color: paper.inkDim,
+                color: tokens.inkDim,
                 cursor: "pointer",
               }}
             >
               {t("form.settled_outside")}
             </label>
             <span
-              style={{ fontFamily: fontMono, fontSize: 9, color: paper.inkMute, letterSpacing: 1 }}
+              style={{ fontFamily: fontMono, fontSize: 9, color: tokens.inkMute, letterSpacing: 1 }}
             >
               — {t("form.settled_outside_hint")}
             </span>
@@ -886,7 +875,7 @@ export function FuelForm({ defaultValues, onSubmit, onCancel, onDelete, readOnly
               style={
                 mono
                   ? {
-                      border: `1px solid ${paper.paperDark}`,
+                      border: `1px solid ${tokens.paperDark}`,
                       borderRadius: "var(--radius-sm, 6px)",
                       padding: "8px 14px",
                     }
@@ -901,7 +890,7 @@ export function FuelForm({ defaultValues, onSubmit, onCancel, onDelete, readOnly
                   fontFamily: fontSerif,
                   fontSize: 20,
                   fontWeight: 600,
-                  color: paper.ink,
+                  color: tokens.ink,
                   background: "transparent",
                   border: "none",
                   outline: "none",
@@ -958,9 +947,9 @@ export function FuelForm({ defaultValues, onSubmit, onCancel, onDelete, readOnly
                 width: "100%",
                 padding: "10px",
                 background: "transparent",
-                border: mono ? `1px solid ${paper.accent}` : `1.5px solid ${paper.accent}`,
+                border: mono ? `1px solid ${tokens.accent}` : `1.5px solid ${tokens.accent}`,
                 borderRadius: mono ? "var(--radius-pill, 999px)" : 0,
-                color: paper.accent,
+                color: tokens.accent,
                 fontFamily: mono ? fontSerif : fontMono,
                 fontSize: mono ? 13 : 10,
                 fontWeight: 700,

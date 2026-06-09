@@ -1,9 +1,9 @@
 "use client";
-import { fontMono, paper } from "@/lib/paper-theme";
+import { fontMono, tokens } from "@/lib/theme-tokens";
 
 // ── Primitives ────────────────────────────────────────────────
 export function Perf({ margin = "12px 0" }: { margin?: string }) {
-  return <div style={{ height: 0, borderTop: `1.5px dashed ${paper.ink}`, margin }} />;
+  return <div style={{ height: 0, borderTop: `1.5px dashed ${tokens.ink}`, margin }} />;
 }
 
 export function Row({
@@ -30,7 +30,7 @@ export function Row({
       <span
         style={{
           fontSize: big ? 11 : 10,
-          color: paper.inkDim,
+          color: tokens.inkDim,
           textTransform: "uppercase",
           letterSpacing: 1,
           whiteSpace: "nowrap",
@@ -43,7 +43,7 @@ export function Row({
         style={{
           fontSize: big ? 16 : 13,
           fontWeight: big ? 700 : 600,
-          color: color ?? paper.ink,
+          color: color ?? tokens.ink,
           whiteSpace: "nowrap",
         }}
       >
@@ -65,7 +65,7 @@ export function Card({
   return (
     <div
       style={{
-        background: paper.paper,
+        background: tokens.paper,
         padding: "18px 16px",
         marginBottom: 12,
         boxShadow: "0 1px 2px rgba(0,0,0,0.05), 0 4px 16px rgba(0,0,0,0.06)",

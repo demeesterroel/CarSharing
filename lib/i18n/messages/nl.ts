@@ -661,9 +661,13 @@ export const nl = {
     "Verversen kan niet — je bent offline met niet-gesynchroniseerde wijzigingen.",
 
   // In-app notifications
-  "notif.new_reservation": "Nieuwe reservering voor {car} op {date}",
-  "notif.reservation_update": "Reservering voor {car} op {date} bijgewerkt",
+  "notif.new_reservation": "Nieuwe reservering voor {car} van {start} tot {end}",
+  "notif.reservation_update": "Reservering voor {car} van {start} tot {end} {status}",
   "notif.new_trip": "Nieuwe rit met {car} op {date}",
+  "notif.status_confirmed": "goedgekeurd",
+  "notif.status_rejected": "geweigerd",
+  "notif.status_pending": "opnieuw in behandeling",
+  "notif.status_deleted": "verwijderd",
 
   // Notification preferences (profile page)
   "notif.pref_section": "Meldingen",

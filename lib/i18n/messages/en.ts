@@ -661,9 +661,13 @@ export const en: Messages = {
   "pwa.refresh_blocked_offline": "Can't refresh — you're offline with unsynced changes.",
 
   // In-app notifications
-  "notif.new_reservation": "New reservation for {car} on {date}",
-  "notif.reservation_update": "Reservation for {car} on {date} updated",
+  "notif.new_reservation": "New reservation for {car} from {start} to {end}",
+  "notif.reservation_update": "Reservation for {car} from {start} to {end} {status}",
   "notif.new_trip": "New trip with {car} on {date}",
+  "notif.status_confirmed": "approved",
+  "notif.status_rejected": "rejected",
+  "notif.status_pending": "set to pending",
+  "notif.status_deleted": "deleted",
 
   // Notification preferences (profile page)
   "notif.pref_section": "Notifications",

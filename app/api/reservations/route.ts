@@ -43,7 +43,8 @@ export const POST = json(async (req) => {
     actorPersonId: session.personId!,
     message: t("notif.new_reservation", {
       car: reservation?.car_short ?? String(body.car_id),
-      date: body.start_date,
+      start: body.start_date,
+      end: body.end_date,
     }),
   }).catch(() => {});
   return NextResponse.json(reservation, { status: 201 });

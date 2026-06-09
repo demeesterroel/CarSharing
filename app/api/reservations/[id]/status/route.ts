@@ -17,6 +17,12 @@ export const PATCH = json(async (req, ctx) => {
   const body = await readBody(req, reservationStatusSchema);
   updateReservationStatus(db, id, body.status);
   syncReservationUpdate(db, id).catch(() => {});
+  const statusWordKey =
+    body.status === "confirmed"
+      ? "notif.status_confirmed"
+      : body.status === "rejected"
+        ? "notif.status_rejected"
+        : "notif.status_pending";
   notifyUsersOfEvent({
     db,
     trigger: "reservation_update",
@@ -26,7 +32,9 @@ export const PATCH = json(async (req, ctx) => {
     actorPersonId: session.personId!,
     message: t("notif.reservation_update", {
       car: reservation.car_short ?? String(reservation.car_id),
-      date: reservation.start_date,
+      start: reservation.start_date,
+      end: reservation.end_date,
+      status: t(statusWordKey),
     }),
   }).catch(() => {});
   return { ok: true };

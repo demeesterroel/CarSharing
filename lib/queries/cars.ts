@@ -74,6 +74,49 @@ export function carHasHistory(db: Database.Database, id: number): boolean {
   return reservationRow !== undefined;
 }
 
+export interface CarStats {
+  tripCount: number;
+  totalKm: number;
+  totalFuelLiters: number;
+  totalFuelCost: number;
+  avgConsumptionLper100km: number | null;
+  avgFuelCostPerKm: number | null;
+}
+
+export function getCarStats(db: Database.Database, carId: number, year: number): CarStats {
+  const yearStr = String(year);
+
+  const tripRow = db.prepare(
+    "SELECT COUNT(*) AS cnt, COALESCE(SUM(km),0) AS km FROM trips WHERE car_id=? AND strftime('%Y',date)=?"
+  ).get(carId, yearStr) as { cnt: number; km: number };
+
+  const fuelRow = db.prepare(
+    "SELECT COALESCE(SUM(liters),0) AS liters, COALESCE(SUM(amount),0) AS amount FROM fuel_fillups WHERE car_id=? AND strftime('%Y',date)=?"
+  ).get(carId, yearStr) as { liters: number; amount: number };
+
+  const totalKm = tripRow.km;
+  const totalFuelLiters = fuelRow.liters;
+  const totalFuelCost = fuelRow.amount;
+  const avgConsumptionLper100km = totalKm > 0 ? totalFuelLiters / totalKm * 100 : null;
+  const avgFuelCostPerKm = totalKm > 0 ? totalFuelCost / totalKm : null;
+
+  return {
+    tripCount: tripRow.cnt,
+    totalKm,
+    totalFuelLiters,
+    totalFuelCost,
+    avgConsumptionLper100km,
+    avgFuelCostPerKm,
+  };
+}
+
 export function deleteCar(db: Database.Database, id: number): void {
   db.prepare("DELETE FROM cars WHERE id = ?").run(id);
+}
+
+export function getLastYearWithStats(db: Database.Database, carId: number): number | null {
+  const row = db.prepare(
+    `SELECT MAX(CAST(strftime('%Y', date) AS INTEGER)) AS y FROM trips WHERE car_id = ?`
+  ).get(carId) as { y: number | null };
+  return row.y;
 }

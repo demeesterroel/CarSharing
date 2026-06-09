@@ -235,28 +235,29 @@ export default function EditProfilePage({ params }: { params: Promise<{ id: stri
         >
           <div
             style={{
-              fontFamily: fontSerif,
-              fontSize: 14,
-              fontWeight: 700,
-              color: paper.ink,
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "baseline",
+              gap: 8,
               marginBottom: 16,
             }}
           >
-            {fullNameOf({ first_name: firstName, last_name: lastName, username: person.username })}
-          </div>
-
-          <div
-            aria-live="polite"
-            style={{
-              fontFamily: fontMono,
-              fontSize: 9,
-              letterSpacing: 1,
-              minHeight: 12,
-              marginBottom: 12,
-              color: saving ? paper.inkMute : paper.green,
-            }}
-          >
-            {saving ? t("action.saving") : saved ? t("action.saved") : ""}
+            <div style={{ fontFamily: fontSerif, fontSize: 14, fontWeight: 700, color: paper.ink }}>
+              {fullNameOf({ first_name: firstName, last_name: lastName, username: person.username })}
+            </div>
+            <div
+              aria-live="polite"
+              style={{
+                fontFamily: fontMono,
+                fontSize: 9,
+                letterSpacing: 1,
+                textTransform: "uppercase",
+                whiteSpace: "nowrap",
+                color: saving ? paper.inkMute : paper.green,
+              }}
+            >
+              {saving ? t("action.saving") : saved ? t("action.saved") : ""}
+            </div>
           </div>
 
           <form id="profile-form" onSubmit={handleSubmit}>

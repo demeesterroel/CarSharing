@@ -41,6 +41,9 @@ const existingPerson = {
   discount: 0,
   discount_long: 0,
   updated_at: "",
+  notify_new_reservations: "off" as const,
+  notify_reservation_updates: "off" as const,
+  notify_new_trips: "off" as const,
 };
 
 function makeCtx(id: string) {
@@ -130,5 +133,56 @@ describe("PATCH /api/people/[id]/profile", () => {
     expect(res.status).toBe(200);
     const [, , data] = mockUpdatePerson.mock.calls[0];
     expect(data.theme_preference).toBe("paper");
+  });
+
+  it("persists notify_new_reservations update", async () => {
+    const res = await PATCH(
+      makeReq({ ...validBody, notify_new_reservations: "all" }),
+      makeCtx("1")
+    );
+    expect(res.status).toBe(200);
+    const [, , data] = mockUpdatePerson.mock.calls[0];
+    expect(data.notify_new_reservations).toBe("all");
+  });
+
+  it("persists notify_reservation_updates update", async () => {
+    const res = await PATCH(
+      makeReq({ ...validBody, notify_reservation_updates: "own" }),
+      makeCtx("1")
+    );
+    expect(res.status).toBe(200);
+    const [, , data] = mockUpdatePerson.mock.calls[0];
+    expect(data.notify_reservation_updates).toBe("own");
+  });
+
+  it("persists notify_new_trips update", async () => {
+    const res = await PATCH(makeReq({ ...validBody, notify_new_trips: "off" }), makeCtx("1"));
+    expect(res.status).toBe(200);
+    const [, , data] = mockUpdatePerson.mock.calls[0];
+    expect(data.notify_new_trips).toBe("off");
+  });
+
+  it("rejects invalid notify_new_reservations value", async () => {
+    const res = await PATCH(
+      makeReq({ ...validBody, notify_new_reservations: "invalid" }),
+      makeCtx("1")
+    );
+    expect(res.status).toBe(400);
+    expect(mockUpdatePerson).not.toHaveBeenCalled();
+  });
+
+  it("falls back to existing notify prefs when not provided", async () => {
+    mockGetPersonById.mockReturnValue({
+      ...existingPerson,
+      notify_new_reservations: "all",
+      notify_reservation_updates: "own",
+      notify_new_trips: "all",
+    });
+    const res = await PATCH(makeReq(validBody), makeCtx("1"));
+    expect(res.status).toBe(200);
+    const [, , data] = mockUpdatePerson.mock.calls[0];
+    expect(data.notify_new_reservations).toBe("all");
+    expect(data.notify_reservation_updates).toBe("own");
+    expect(data.notify_new_trips).toBe("all");
   });
 });

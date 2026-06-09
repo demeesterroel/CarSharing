@@ -665,6 +665,21 @@ export const en: Messages = {
   "notif.reservation_update": "Reservation for {car} on {date} updated",
   "notif.new_trip": "New trip with {car} on {date}",
 
+  // Notification preferences (profile page)
+  "notif.pref_section": "Notifications",
+  "notif.pref_new_reservations": "New reservations",
+  "notif.pref_reservation_updates": "Reservation updates",
+  "notif.pref_new_trips": "New trips",
+  "notif.pref_scope_all": "All cars",
+  "notif.pref_scope_own": "Only my cars",
+  "notif.pref_enabled": "Enabled",
+
+  // Notifications page
+  "notif.page_title": "Notifications",
+  "notif.empty": "No notifications",
+  "notif.mark_all_read": "Mark all read",
+  "notif.unread_badge": "{count} unread",
+
   // Owner dashboard
   "owner.title": "My cars",
   "owner.subtitle": "Fleet economics · {year}",

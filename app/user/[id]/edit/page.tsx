@@ -29,6 +29,10 @@ export default function EditProfilePage({ params }: { params: Promise<{ id: stri
   const { theme: _theme, setTheme } = useTheme();
   const [themePreference, setThemePreference] = useState<Theme>("mono");
   const [themeSaved, setThemeSaved] = useState(false);
+  type NotifyPref = "off" | "all" | "own";
+  const [notifyNewReservations, setNotifyNewReservations] = useState<NotifyPref>("off");
+  const [notifyReservationUpdates, setNotifyReservationUpdates] = useState<NotifyPref>("off");
+  const [notifyNewTrips, setNotifyNewTrips] = useState<NotifyPref>("off");
 
   useEffect(() => {
     params.then(({ id: rawId }) => {
@@ -58,6 +62,9 @@ export default function EditProfilePage({ params }: { params: Promise<{ id: stri
   useEffect(() => {
     if (person) {
       setThemePreference((person.theme_preference as Theme) ?? "mono");
+      setNotifyNewReservations(person.notify_new_reservations ?? "off");
+      setNotifyReservationUpdates(person.notify_reservation_updates ?? "off");
+      setNotifyNewTrips(person.notify_new_trips ?? "off");
     }
   }, [person]);
 
@@ -103,6 +110,9 @@ export default function EditProfilePage({ params }: { params: Promise<{ id: stri
           last_name: lastName,
           bank_account: bankAccount,
           email: email || null,
+          notify_new_reservations: notifyNewReservations,
+          notify_reservation_updates: notifyReservationUpdates,
+          notify_new_trips: notifyNewTrips,
         }),
       });
       setSaved(true);
@@ -112,6 +122,40 @@ export default function EditProfilePage({ params }: { params: Promise<{ id: stri
       setError(err instanceof Error ? err.message : "Fout bij opslaan");
     } finally {
       setSaving(false);
+    }
+  }
+
+  async function handleNotifyChange(
+    field: "notify_new_reservations" | "notify_reservation_updates" | "notify_new_trips",
+    value: NotifyPref
+  ) {
+    const patch: Record<string, string> = {
+      first_name: firstName,
+      last_name: lastName,
+      bank_account: bankAccount,
+      email: email || "",
+      notify_new_reservations: notifyNewReservations,
+      notify_reservation_updates: notifyReservationUpdates,
+      notify_new_trips: notifyNewTrips,
+      [field]: value,
+    };
+    if (field === "notify_new_reservations") setNotifyNewReservations(value);
+    if (field === "notify_reservation_updates") setNotifyReservationUpdates(value);
+    if (field === "notify_new_trips") setNotifyNewTrips(value);
+    try {
+      await apiFetch(`/api/people/${id}/profile`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...patch, email: email || null }),
+      });
+      await queryClient.invalidateQueries({ queryKey: ["me"] });
+    } catch {
+      // revert
+      if (field === "notify_new_reservations")
+        setNotifyNewReservations(person!.notify_new_reservations ?? "off");
+      if (field === "notify_reservation_updates")
+        setNotifyReservationUpdates(person!.notify_reservation_updates ?? "off");
+      if (field === "notify_new_trips") setNotifyNewTrips(person!.notify_new_trips ?? "off");
     }
   }
 
@@ -445,6 +489,123 @@ export default function EditProfilePage({ params }: { params: Promise<{ id: stri
                 {t("action.saved")}
               </div>
             )}
+          </div>
+
+          {/* Notification preferences */}
+          <div style={{ marginTop: 20, paddingTop: 16, borderTop: `1px solid ${paper.paperDark}` }}>
+            <div
+              style={{
+                fontFamily: fontMono,
+                fontSize: 9,
+                color: paper.inkMute,
+                letterSpacing: 1,
+                marginBottom: 12,
+                textTransform: "uppercase",
+              }}
+            >
+              {t("notif.pref_section")}
+            </div>
+            {(
+              [
+                {
+                  field: "notify_new_reservations" as const,
+                  label: t("notif.pref_new_reservations"),
+                  value: notifyNewReservations,
+                },
+                {
+                  field: "notify_reservation_updates" as const,
+                  label: t("notif.pref_reservation_updates"),
+                  value: notifyReservationUpdates,
+                },
+                {
+                  field: "notify_new_trips" as const,
+                  label: t("notif.pref_new_trips"),
+                  value: notifyNewTrips,
+                },
+              ] as {
+                field:
+                  | "notify_new_reservations"
+                  | "notify_reservation_updates"
+                  | "notify_new_trips";
+                label: string;
+                value: NotifyPref;
+              }[]
+            ).map(({ field, label, value }) => {
+              const isOwner = me?.isOwner ?? false;
+              const enabled = value !== "off";
+              return (
+                <div
+                  key={field}
+                  style={{
+                    marginBottom: 12,
+                    padding: "8px 10px",
+                    background: paper.paperDark,
+                  }}
+                >
+                  <label
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 8,
+                      cursor: "pointer",
+                      fontFamily: fontMono,
+                      fontSize: 11,
+                      color: paper.ink,
+                    }}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={enabled}
+                      onChange={(e) => {
+                        if (!e.target.checked) {
+                          handleNotifyChange(field, "off");
+                        } else {
+                          handleNotifyChange(field, isOwner ? "all" : "all");
+                        }
+                      }}
+                      style={{ accentColor: paper.ink }}
+                    />
+                    {label}
+                  </label>
+                  {enabled && isOwner && (
+                    <div
+                      style={{
+                        marginTop: 6,
+                        marginLeft: 20,
+                        display: "flex",
+                        gap: 16,
+                      }}
+                    >
+                      {(["all", "own"] as const).map((scope) => (
+                        <label
+                          key={scope}
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 4,
+                            fontFamily: fontMono,
+                            fontSize: 9,
+                            color: paper.inkMute,
+                            cursor: "pointer",
+                            letterSpacing: 0.5,
+                          }}
+                        >
+                          <input
+                            type="radio"
+                            name={`${field}-scope`}
+                            value={scope}
+                            checked={value === scope}
+                            onChange={() => handleNotifyChange(field, scope)}
+                            style={{ accentColor: paper.ink }}
+                          />
+                          {scope === "all" ? t("notif.pref_scope_all") : t("notif.pref_scope_own")}
+                        </label>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
           </div>
 
           {me?.personId === id && (

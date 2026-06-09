@@ -665,6 +665,21 @@ export const nl = {
   "notif.reservation_update": "Reservering voor {car} op {date} bijgewerkt",
   "notif.new_trip": "Nieuwe rit met {car} op {date}",
 
+  // Notification preferences (profile page)
+  "notif.pref_section": "Meldingen",
+  "notif.pref_new_reservations": "Nieuwe reserveringen",
+  "notif.pref_reservation_updates": "Reserveringsupdates",
+  "notif.pref_new_trips": "Nieuwe ritten",
+  "notif.pref_scope_all": "Alle wagens",
+  "notif.pref_scope_own": "Alleen mijn wagens",
+  "notif.pref_enabled": "Ingeschakeld",
+
+  // Notifications page
+  "notif.page_title": "Meldingen",
+  "notif.empty": "Geen meldingen",
+  "notif.mark_all_read": "Alles gelezen",
+  "notif.unread_badge": "{count} ongelezen",
+
   // Owner dashboard
   "owner.title": "Mijn wagens",
   "owner.subtitle": "Economische gezondheid · {year}",

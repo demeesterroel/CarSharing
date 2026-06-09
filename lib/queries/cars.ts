@@ -1,6 +1,56 @@
 import type { Car, CarInput } from "@/types";
 import type Database from "better-sqlite3";
 
+export interface CarStats {
+  tripCount: number;
+  totalKm: number;
+  totalFuelLiters: number;
+  totalFuelCost: number;
+  avgConsumptionLper100km: number | null;
+  avgFuelCostPerKm: number | null;
+}
+
+export function getCarStats(db: Database.Database, carId: number, year: number): CarStats {
+  const yearStr = String(year);
+
+  const trips = db
+    .prepare(
+      `
+      SELECT COUNT(*) AS cnt, COALESCE(SUM(km), 0) AS km
+      FROM trips
+      WHERE car_id = ? AND strftime('%Y', date) = ?
+    `
+    )
+    .get(carId, yearStr) as { cnt: number; km: number };
+
+  const fuel = db
+    .prepare(
+      `
+      SELECT COALESCE(SUM(liters), 0) AS liters, COALESCE(SUM(amount), 0) AS amount
+      FROM fuel_fillups
+      WHERE car_id = ? AND strftime('%Y', date) = ?
+    `
+    )
+    .get(carId, yearStr) as { liters: number; amount: number };
+
+  const tripCount = trips.cnt;
+  const totalKm = trips.km;
+  const totalFuelLiters = fuel.liters;
+  const totalFuelCost = fuel.amount;
+
+  const avgConsumptionLper100km = totalKm > 0 ? (totalFuelLiters / totalKm) * 100 : null;
+  const avgFuelCostPerKm = totalKm > 0 ? totalFuelCost / totalKm : null;
+
+  return {
+    tripCount,
+    totalKm,
+    totalFuelLiters,
+    totalFuelCost,
+    avgConsumptionLper100km,
+    avgFuelCostPerKm,
+  };
+}
+
 export function getCars(db: Database.Database): Car[] {
   return db.prepare("SELECT * FROM cars ORDER BY short").all() as Car[];
 }

@@ -6,9 +6,11 @@ import { useT } from "@/components/locale-provider";
 import { useEarliestDashboardYear } from "@/hooks/use-dashboard";
 import { useMe } from "@/hooks/use-me";
 import { usePeople } from "@/hooks/use-people";
+import { useCarStats } from "@/hooks/use-car-stats";
 import { useCars, useCreateCar, useDeleteCar, useUpdateCar } from "@/hooks/use-vehicles";
 import { fontMono, fontSerif, paper } from "@/lib/paper-theme";
 import { shortNameOf } from "@/lib/person-utils";
+import type { CarStats } from "@/lib/queries/cars";
 import type { CarPnL, CarPriceHistory } from "@/lib/queries/admin";
 import type { Car } from "@/types";
 import * as Dialog from "@radix-ui/react-dialog";
@@ -103,6 +105,7 @@ function CarAccordion({
   displayPrice,
   year,
   hasPnl,
+  latestYearWithData,
 }: {
   car: Car;
   expanded: boolean;
@@ -110,6 +113,7 @@ function CarAccordion({
   displayPrice: number;
   year: number;
   hasPnl: boolean;
+  latestYearWithData: number;
 }) {
   const router = useRouter();
   const t = useT();
@@ -133,6 +137,9 @@ function CarAccordion({
     setOwnerPersonId(car.owner_person_id ?? null);
     setDeleteConfirm(false);
   }
+
+  const statsYear = latestYearWithData ?? year;
+  const { data: stats } = useCarStats(car.id, statsYear);
 
   const dirty =
     name !== car.name ||
@@ -304,6 +311,83 @@ function CarAccordion({
                   ✦
                 </button>
               )}
+            </div>
+          </div>
+          <div
+            style={{
+              marginBottom: 16,
+              padding: 10,
+              background: paper.paperDeep,
+              border: `1px solid ${paper.paperDark}`,
+              borderRadius: 6,
+            }}
+          >
+            <div
+              style={{
+                fontFamily: fontMono,
+                fontSize: 8,
+                fontWeight: 700,
+                color: paper.inkDim,
+                letterSpacing: 1.5,
+                textTransform: "uppercase",
+                marginBottom: 8,
+              }}
+            >
+              Statistieken {statsYear}
+            </div>
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "1fr 1fr",
+                gap: 8,
+                fontFamily: fontMono,
+                fontSize: 10,
+              }}
+            >
+              <div>
+                <div style={{ color: paper.inkDim, fontSize: 9 }}>Ritten</div>
+                <div style={{ fontWeight: 600, color: paper.ink }}>
+                  {stats?.tripCount ?? "—"}
+                </div>
+              </div>
+              <div>
+                <div style={{ color: paper.inkDim, fontSize: 9 }}>Kilometers</div>
+                <div style={{ fontWeight: 600, color: paper.ink }}>
+                  {stats?.totalKm != null ? `${stats.totalKm.toLocaleString("nl-BE")} km` : "—"}
+                </div>
+              </div>
+              <div>
+                <div style={{ color: paper.inkDim, fontSize: 9 }}>Brandstof (L)</div>
+                <div style={{ fontWeight: 600, color: paper.ink }}>
+                  {stats?.totalFuelLiters != null
+                    ? `${stats.totalFuelLiters.toLocaleString("nl-BE", { minimumFractionDigits: 1, maximumFractionDigits: 1 })} L`
+                    : "—"}
+                </div>
+              </div>
+              <div>
+                <div style={{ color: paper.inkDim, fontSize: 9 }}>Brandstof (€)</div>
+                <div style={{ fontWeight: 600, color: paper.ink }}>
+                  {stats?.totalFuelCost != null
+                    ? `€ ${stats.totalFuelCost.toLocaleString("nl-BE", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+                    : "—"}
+                </div>
+              </div>
+              <div>
+                <div style={{ color: paper.inkDim, fontSize: 9 }}>Verbruik (L/100km)</div>
+                <div style={{ fontWeight: 600, color: paper.ink }}>
+                  {stats?.avgConsumptionLper100km != null
+                    ? `${stats.avgConsumptionLper100km.toFixed(1)} L/100km`
+                    : "—"}
+                </div>
+              </div>
+              <div>
+                <div style={{ color: paper.inkDim, fontSize: 9 }}>Kosten (€/km)</div>
+                <div style={{ fontWeight: 600, color: paper.ink }}>
+                  {stats?.avgFuelCostPerKm != null
+                    ? `€ ${stats.avgFuelCostPerKm.toFixed(3)}/km`
+                    : "—"}
+                </div>
+              </div>
             </div>
           </div>
           <div
@@ -728,6 +812,20 @@ function OwnerFleet() {
   const ownerSplitAll = summary?.historicalOwnerSplit ?? [];
   const priceHistory = summary?.priceHistory ?? [];
 
+  const latestYearByCar = new Map<number, number>();
+  for (const row of historicalKm) {
+    const prev = latestYearByCar.get(row.car_id);
+    if (prev === undefined || row.year > prev) {
+      latestYearByCar.set(row.car_id, row.year);
+    }
+  }
+  for (const pnl of allPnL) {
+    const prev = latestYearByCar.get(pnl.car_id);
+    if (prev === undefined || year > prev) {
+      latestYearByCar.set(pnl.car_id, year);
+    }
+  }
+
   const [expandedId, setExpandedId] = useState<number | null>(null);
 
   // Coverage-card collapse, kept here (parent survives year switches, which
@@ -900,6 +998,7 @@ function OwnerFleet() {
           displayPrice={priceForYear(car.id, year, priceHistory, car.price_per_km)}
           year={year}
           hasPnl={!!allPnL.find((c) => c.car_id === car.id)}
+          latestYearWithData={latestYearByCar.get(car.id) ?? year}
         />
       ))}
       {inactiveCars.length > 0 && (
@@ -932,6 +1031,7 @@ function OwnerFleet() {
               displayPrice={priceForYear(car.id, year, priceHistory, car.price_per_km)}
               year={year}
               hasPnl={!!allPnL.find((c) => c.car_id === car.id)}
+              latestYearWithData={latestYearByCar.get(car.id) ?? year}
             />
           ))}
         </>

@@ -1,5 +1,5 @@
 // app/api/auth/login/route.test.ts
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { POST } from "./route";
 
 const mockSession = {

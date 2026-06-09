@@ -1,5 +1,5 @@
-import { describe, it, expect } from "vitest";
 import Database from "better-sqlite3";
+import { describe, expect, it } from "vitest";
 import { runMigrations } from "../db/migrate";
 
 function makeDb() {
@@ -11,9 +11,9 @@ function makeDb() {
 describe("migration 0006 — settings table", () => {
   it("creates the settings table", () => {
     const db = makeDb();
-    const tables = db
-      .prepare("SELECT name FROM sqlite_master WHERE type='table'")
-      .all() as { name: string }[];
+    const tables = db.prepare("SELECT name FROM sqlite_master WHERE type='table'").all() as {
+      name: string;
+    }[];
     expect(tables.map((t) => t.name)).toContain("settings");
   });
 
@@ -42,9 +42,9 @@ describe("migration 0006 — settings table", () => {
 
   it("seeds coop_bank_account row", () => {
     const db = makeDb();
-    const row = db
-      .prepare("SELECT value FROM settings WHERE key = 'coop_bank_account'")
-      .get() as { value: string } | undefined;
+    const row = db.prepare("SELECT value FROM settings WHERE key = 'coop_bank_account'").get() as
+      | { value: string }
+      | undefined;
     expect(row).toBeTruthy();
     expect(row!.value).toBe("");
   });

@@ -1,7 +1,7 @@
 // lib/__tests__/settlement_message.test.ts
-import { describe, it, expect } from "vitest";
-import { buildSettlementMessage } from "../settlement-message";
 import type { MemberStatement } from "@/types";
+import { describe, expect, it } from "vitest";
+import { buildSettlementMessage } from "../settlement-message";
 
 const mockT = (key: string): string => {
   const map: Record<string, string> = {

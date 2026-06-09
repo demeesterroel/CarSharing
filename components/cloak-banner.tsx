@@ -1,6 +1,6 @@
 "use client";
 import { useMe } from "@/hooks/use-me";
-import { paper, fontMono } from "@/lib/paper-theme";
+import { fontMono, paper } from "@/lib/paper-theme";
 
 export function CloakBanner() {
   const { data: me } = useMe();

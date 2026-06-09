@@ -1,8 +1,8 @@
 "use client";
-import { paper, fontMono } from "@/lib/paper-theme";
-import { useTheme } from "@/lib/theme-context";
 import { useT } from "@/components/locale-provider";
 import { YearSelect } from "@/components/year-select";
+import { fontMono, paper } from "@/lib/paper-theme";
+import { useTheme } from "@/lib/theme-context";
 
 interface ListFilterBarProps {
   canFilter: boolean;
@@ -60,7 +60,14 @@ export function ListFilterBar({
         };
 
   const pillGroup: React.CSSProperties = mono
-    ? { display: "inline-flex", alignSelf: "flex-start", border: `1px solid ${paper.paperDark}`, borderRadius: "var(--radius-pill, 999px)", padding: 2, gap: 1 }
+    ? {
+        display: "inline-flex",
+        alignSelf: "flex-start",
+        border: `1px solid ${paper.paperDark}`,
+        borderRadius: "var(--radius-pill, 999px)",
+        padding: 2,
+        gap: 1,
+      }
     : { display: "flex", gap: 0 };
 
   if (!canFilter && years.length <= 1 && cars.length <= 1) return null;
@@ -85,7 +92,9 @@ export function ListFilterBar({
                   onClick={() => onMineChange(v === "mine" ? "true" : "")}
                   style={{
                     ...btnStyle(v === "mine" ? isMine : !isMine),
-                    ...(mono ? {} : { borderRight: i < arr.length - 1 ? "none" : `1.5px solid ${paper.ink}` }),
+                    ...(mono
+                      ? {}
+                      : { borderRight: i < arr.length - 1 ? "none" : `1.5px solid ${paper.ink}` }),
                   }}
                 >
                   {v === "all" ? t("filter.all") : t("filter.mine")}
@@ -95,7 +104,12 @@ export function ListFilterBar({
           )}
           {years.length > 1 && (
             <div style={{ marginLeft: "auto" }}>
-              <YearSelect value={yearFilter} onChange={onYearChange} years={years} allLabel={t("filter.all")} />
+              <YearSelect
+                value={yearFilter}
+                onChange={onYearChange}
+                years={years}
+                allLabel={t("filter.all")}
+              />
             </div>
           )}
         </div>
@@ -108,7 +122,9 @@ export function ListFilterBar({
               onClick={() => onCarChange(car ?? "")}
               style={{
                 ...btnStyle(carFilter === (car ?? "")),
-                ...(mono ? {} : { borderRight: i < arr.length - 1 ? "none" : `1.5px solid ${paper.ink}` }),
+                ...(mono
+                  ? {}
+                  : { borderRight: i < arr.length - 1 ? "none" : `1.5px solid ${paper.ink}` }),
               }}
             >
               {car ?? t("filter.all")}

@@ -1,9 +1,9 @@
 "use client";
-import { useForm, useWatch } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
 import { t } from "@/lib/i18n";
-import { paper, fontMono } from "@/lib/paper-theme";
+import { fontMono, paper } from "@/lib/paper-theme";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm, useWatch } from "react-hook-form";
+import { z } from "zod";
 
 const schema = z.object({
   first_name: z.string().min(1, t("validation.name_required")),
@@ -109,7 +109,13 @@ export function MemberForm({ onSubmit, onCancel, isPending }: Props) {
       </div>
 
       <label
-        style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 16, cursor: "pointer" }}
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: 8,
+          marginBottom: 16,
+          cursor: "pointer",
+        }}
       >
         <input
           type="checkbox"

@@ -1,8 +1,8 @@
 // @vitest-environment node
-import { describe, it, expect, vi, beforeEach } from "vitest";
 import "fake-indexeddb/auto";
-import { enqueue, list, clearAll } from "./outbox";
-import { drainOutbox, type DrainOptions } from "./sync-engine";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { clearAll, enqueue, list } from "./outbox";
+import { drainOutbox } from "./sync-engine";
 
 function makeFetcher(responses: Array<{ status: number; body?: unknown }>) {
   let i = 0;

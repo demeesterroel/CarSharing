@@ -1,5 +1,5 @@
-import type Database from "better-sqlite3";
 import type { Car, CarInput } from "@/types";
+import type Database from "better-sqlite3";
 
 export function getCars(db: Database.Database): Car[] {
   return db.prepare("SELECT * FROM cars ORDER BY short").all() as Car[];

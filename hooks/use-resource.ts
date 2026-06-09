@@ -1,5 +1,5 @@
-import { useQuery, useMutation, useQueryClient, type QueryKey } from "@tanstack/react-query";
 import { apiFetch } from "@/lib/api/client";
+import { useMutation, useQuery, useQueryClient, type QueryKey } from "@tanstack/react-query";
 
 interface OptimisticContext<T> {
   previous: T[] | undefined;
@@ -7,7 +7,9 @@ interface OptimisticContext<T> {
 
 interface Factory<T extends { id: number }, TInput> {
   useList: () => ReturnType<typeof useQuery<T[]>>;
-  useCreate: () => ReturnType<typeof useMutation<{ id: number }, Error, TInput, OptimisticContext<T>>>;
+  useCreate: () => ReturnType<
+    typeof useMutation<{ id: number }, Error, TInput, OptimisticContext<T>>
+  >;
   useUpdate: () => ReturnType<typeof useMutation<unknown, Error, TInput & { id: number }>>;
   useDelete: () => ReturnType<typeof useMutation<unknown, Error, number>>;
 }

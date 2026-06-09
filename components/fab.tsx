@@ -1,15 +1,21 @@
 "use client";
-import { useState } from "react";
-import { toast } from "sonner";
-import { paper, fontMono } from "@/lib/paper-theme";
 import { t } from "@/lib/i18n";
 import { useOnlineState } from "@/lib/offline/online-state";
+import { fontMono, paper } from "@/lib/paper-theme";
 import { useTheme } from "@/lib/theme-context";
-import { Navigation, Fuel, Receipt, CalendarPlus } from "lucide-react";
+import { CalendarPlus, Fuel, Navigation, Receipt } from "lucide-react";
+import { useState } from "react";
+import { toast } from "sonner";
 
 const CHIT_DEFS = [
   { key: "expense", labelKey: "fab.expense" as const, emoji: "🧾", rotate: 2, Icon: Receipt },
-  { key: "reserve", labelKey: "fab.reservation" as const, emoji: "📅", rotate: -2, Icon: CalendarPlus },
+  {
+    key: "reserve",
+    labelKey: "fab.reservation" as const,
+    emoji: "📅",
+    rotate: -2,
+    Icon: CalendarPlus,
+  },
   { key: "fuel", labelKey: "fab.fuel" as const, emoji: "⛽", rotate: 1, Icon: Fuel },
   { key: "trip", labelKey: "fab.trip" as const, emoji: "🚗", rotate: -1, Icon: Navigation },
 ];
@@ -96,135 +102,135 @@ export function MultiFab({ onPick }: { onPick: (action: string) => void }) {
         zIndex: 40,
       }}
     >
-    <div
-      style={{
-        position: "absolute",
-        right: 20,
-        bottom: 0,
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "flex-end",
-        gap: mono ? 8 : 10,
-        pointerEvents: "auto",
-      }}
-    >
-      {open && (
-        <div
-          onClick={() => setOpen(false)}
-          style={{
-            position: "fixed",
-            inset: 0,
-            background: "rgba(26,26,26,0.2)",
-            backdropFilter: "blur(2px)",
-            zIndex: -1,
-          }}
-        />
-      )}
-
-      {open &&
-        CHIT_DEFS.map((chit) => {
-          const hovered = hoveredKey === chit.key;
-          return mono ? (
-            <button
-              key={chit.key}
-              onClick={() => {
-                setOpen(false);
-                onPick(chit.key);
-              }}
-              onMouseEnter={() => setHoveredKey(chit.key)}
-              onMouseLeave={() => setHoveredKey(null)}
-              className="animate-pop-in"
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 8,
-                padding: "9px 16px",
-                background: hovered ? paper.ink : paper.paper,
-                border: `1px solid ${paper.paperDark}`,
-                borderRadius: "var(--radius-pill, 999px)",
-                cursor: "pointer",
-                fontFamily: "var(--font-inter, 'Inter', system-ui, sans-serif)",
-                fontSize: 13,
-                fontWeight: 500,
-                letterSpacing: 0,
-                color: hovered ? paper.paper : paper.ink,
-                boxShadow: "0 2px 8px rgba(0,0,0,0.12)",
-                transition: "background 0.1s, color 0.1s",
-                whiteSpace: "nowrap",
-              }}
-            >
-              <chit.Icon size={14} />
-              {t(chit.labelKey)}
-            </button>
-          ) : (
-            <button
-              key={chit.key}
-              onClick={() => {
-                setOpen(false);
-                onPick(chit.key);
-              }}
-              onMouseEnter={() => setHoveredKey(chit.key)}
-              onMouseLeave={() => setHoveredKey(null)}
-              className="animate-pop-in"
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 10,
-                padding: "10px 14px",
-                background: hovered ? paper.ink : paper.paper,
-                border: `1.5px solid ${paper.ink}`,
-                cursor: "pointer",
-                fontFamily: fontMono,
-                fontSize: 11,
-                letterSpacing: 2,
-                textTransform: "uppercase" as const,
-                fontWeight: 700,
-                color: hovered ? paper.paper : paper.ink,
-                transform: `rotate(${chit.rotate}deg)`,
-                boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
-                transition: "background 0.1s, color 0.1s",
-              }}
-            >
-              <span style={{ fontSize: 16 }}>{chit.emoji}</span>
-              {t(chit.labelKey)}
-            </button>
-          );
-        })}
-
-      <button
-        onClick={() => {
-          if (!online) {
-            toast.error(t("offline.mutation_blocked"));
-            return;
-          }
-          setOpen((o) => !o);
-        }}
-        aria-label={t("fab.open_menu")}
-        aria-expanded={open}
+      <div
         style={{
-          width: 56,
-          height: 56,
-          background: online ? (mono ? paper.accent : paper.ink) : paper.inkMute,
-          color: paper.paper,
-          border: "none",
-          borderRadius: mono ? "50%" : 0,
-          cursor: online ? "pointer" : "default",
-          fontFamily: fontMono,
-          fontSize: 28,
-          fontWeight: 700,
-          lineHeight: 1,
-          boxShadow: "0 6px 20px rgba(0,0,0,0.25)",
-          transform: open ? "rotate(45deg)" : "rotate(0deg)",
-          transition: "transform 0.2s ease-out",
+          position: "absolute",
+          right: 20,
+          bottom: 0,
           display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          opacity: online ? 1 : 0.45,
+          flexDirection: "column",
+          alignItems: "flex-end",
+          gap: mono ? 8 : 10,
+          pointerEvents: "auto",
         }}
       >
-        +
-      </button>
-    </div>
+        {open && (
+          <div
+            onClick={() => setOpen(false)}
+            style={{
+              position: "fixed",
+              inset: 0,
+              background: "rgba(26,26,26,0.2)",
+              backdropFilter: "blur(2px)",
+              zIndex: -1,
+            }}
+          />
+        )}
+
+        {open &&
+          CHIT_DEFS.map((chit) => {
+            const hovered = hoveredKey === chit.key;
+            return mono ? (
+              <button
+                key={chit.key}
+                onClick={() => {
+                  setOpen(false);
+                  onPick(chit.key);
+                }}
+                onMouseEnter={() => setHoveredKey(chit.key)}
+                onMouseLeave={() => setHoveredKey(null)}
+                className="animate-pop-in"
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 8,
+                  padding: "9px 16px",
+                  background: hovered ? paper.ink : paper.paper,
+                  border: `1px solid ${paper.paperDark}`,
+                  borderRadius: "var(--radius-pill, 999px)",
+                  cursor: "pointer",
+                  fontFamily: "var(--font-inter, 'Inter', system-ui, sans-serif)",
+                  fontSize: 13,
+                  fontWeight: 500,
+                  letterSpacing: 0,
+                  color: hovered ? paper.paper : paper.ink,
+                  boxShadow: "0 2px 8px rgba(0,0,0,0.12)",
+                  transition: "background 0.1s, color 0.1s",
+                  whiteSpace: "nowrap",
+                }}
+              >
+                <chit.Icon size={14} />
+                {t(chit.labelKey)}
+              </button>
+            ) : (
+              <button
+                key={chit.key}
+                onClick={() => {
+                  setOpen(false);
+                  onPick(chit.key);
+                }}
+                onMouseEnter={() => setHoveredKey(chit.key)}
+                onMouseLeave={() => setHoveredKey(null)}
+                className="animate-pop-in"
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 10,
+                  padding: "10px 14px",
+                  background: hovered ? paper.ink : paper.paper,
+                  border: `1.5px solid ${paper.ink}`,
+                  cursor: "pointer",
+                  fontFamily: fontMono,
+                  fontSize: 11,
+                  letterSpacing: 2,
+                  textTransform: "uppercase" as const,
+                  fontWeight: 700,
+                  color: hovered ? paper.paper : paper.ink,
+                  transform: `rotate(${chit.rotate}deg)`,
+                  boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
+                  transition: "background 0.1s, color 0.1s",
+                }}
+              >
+                <span style={{ fontSize: 16 }}>{chit.emoji}</span>
+                {t(chit.labelKey)}
+              </button>
+            );
+          })}
+
+        <button
+          onClick={() => {
+            if (!online) {
+              toast.error(t("offline.mutation_blocked"));
+              return;
+            }
+            setOpen((o) => !o);
+          }}
+          aria-label={t("fab.open_menu")}
+          aria-expanded={open}
+          style={{
+            width: 56,
+            height: 56,
+            background: online ? (mono ? paper.accent : paper.ink) : paper.inkMute,
+            color: paper.paper,
+            border: "none",
+            borderRadius: mono ? "50%" : 0,
+            cursor: online ? "pointer" : "default",
+            fontFamily: fontMono,
+            fontSize: 28,
+            fontWeight: 700,
+            lineHeight: 1,
+            boxShadow: "0 6px 20px rgba(0,0,0,0.25)",
+            transform: open ? "rotate(45deg)" : "rotate(0deg)",
+            transition: "transform 0.2s ease-out",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            opacity: online ? 1 : 0.45,
+          }}
+        >
+          +
+        </button>
+      </div>
     </div>
   );
 }

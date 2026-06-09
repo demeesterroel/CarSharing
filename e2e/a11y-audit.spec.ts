@@ -1,5 +1,4 @@
-import { test, expect, type Page } from "@playwright/test";
-import path from "path";
+import { expect, test, type Page } from "@playwright/test";
 
 /**
  * Accessibility audit using axe-core.
@@ -51,20 +50,14 @@ async function runAxe(page: Page): Promise<AxeViolation[]> {
   return [];
 }
 
-async function loginAs(
-  page: Page,
-  username: string,
-  password: string
-): Promise<void> {
+async function loginAs(page: Page, username: string, password: string): Promise<void> {
   await page.request.post("/api/auth/login", {
     data: { username, password },
   });
 }
 
 function filterBlocking(violations: AxeViolation[]): AxeViolation[] {
-  return violations.filter(
-    (v) => v.impact === "critical" || v.impact === "serious"
-  );
+  return violations.filter((v) => v.impact === "critical" || v.impact === "serious");
 }
 
 function formatViolations(violations: AxeViolation[]): string {
@@ -76,11 +69,7 @@ function formatViolations(violations: AxeViolation[]): string {
     .join("\n");
 }
 
-async function auditRoute(
-  page: Page,
-  route: string,
-  label: string
-): Promise<void> {
+async function auditRoute(page: Page, route: string, label: string): Promise<void> {
   await page.goto(route);
   await page.waitForLoadState("networkidle");
 
@@ -92,9 +81,7 @@ async function auditRoute(
   } else {
     const warn = violations.filter((v) => v.impact === "moderate");
     if (warn.length > 0) {
-      console.log(
-        `WARN ${label} (${route}): ${warn.length} moderate violation(s)`
-      );
+      console.log(`WARN ${label} (${route}): ${warn.length} moderate violation(s)`);
     }
   }
 
@@ -121,14 +108,7 @@ test.describe("a11y — user routes (alice)", () => {
     await loginAs(page, "alice", "alice");
   });
 
-  for (const route of [
-    "/trips",
-    "/expenses",
-    "/fuel",
-    "/vehicles",
-    "/calendar",
-    "/payments",
-  ]) {
+  for (const route of ["/trips", "/expenses", "/fuel", "/vehicles", "/calendar", "/payments"]) {
     test(route, async ({ page }) => {
       await auditRoute(page, route, `user:${route}`);
     });

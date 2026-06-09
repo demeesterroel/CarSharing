@@ -1,7 +1,7 @@
 "use client";
-import type { Person } from "@/types";
 import { t } from "@/lib/i18n";
 import { fullNameOf } from "@/lib/person-utils";
+import type { Person } from "@/types";
 
 interface Props {
   people: Person[];

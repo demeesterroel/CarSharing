@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("@/lib/env", () => ({
   env: {
@@ -109,7 +109,9 @@ describe("GET /api/admin/calendar-test", () => {
   });
 
   it("returns no_write_access when role is reader", async () => {
-    mockCalendarsGet.mockResolvedValue({ data: { summary: "Read-only Cal", accessRole: "reader" } });
+    mockCalendarsGet.mockResolvedValue({
+      data: { summary: "Read-only Cal", accessRole: "reader" },
+    });
     const res = await GET(req());
     expect(res.status).toBe(200);
     const body = await res.json();

@@ -1,8 +1,8 @@
 // lib/__tests__/api_helpers.test.ts
 // Tests for the pure/synchronous helpers in lib/api.ts
-import { describe, it, expect } from "vitest";
+import { describe, expect, it } from "vitest";
 import { z } from "zod";
-import { HttpError, notFound, badRequest, forbidden, readBody, readId, canEdit } from "../api";
+import { badRequest, canEdit, forbidden, HttpError, notFound, readBody, readId } from "../api";
 
 describe("HttpError", () => {
   it("creates an error with the given status and message", () => {

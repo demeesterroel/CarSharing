@@ -1,10 +1,10 @@
-import { describe, it, expect, vi } from "vitest";
 import { QueryClient } from "@tanstack/react-query";
+import { describe, expect, it, vi } from "vitest";
 import {
-  prewarmCriticalEndpoints,
   CRITICAL_ENDPOINTS,
-  prewarmPages,
   CRITICAL_PAGES,
+  prewarmCriticalEndpoints,
+  prewarmPages,
 } from "./prewarm";
 
 describe("prewarmCriticalEndpoints", () => {

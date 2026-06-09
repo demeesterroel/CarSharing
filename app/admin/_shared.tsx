@@ -1,6 +1,5 @@
 "use client";
-import { paper, fontMono } from "@/lib/paper-theme";
-import { useT } from "@/components/locale-provider";
+import { fontMono, paper } from "@/lib/paper-theme";
 
 // ── Primitives ────────────────────────────────────────────────
 export function Perf({ margin = "12px 0" }: { margin?: string }) {
@@ -80,23 +79,23 @@ export function Card({
 }
 
 // ── Data hooks ─────────────────────────────────────────────────
-import { useQuery } from "@tanstack/react-query";
-import type {
-  CarPnL,
-  KmGap,
-  ZeroKmTrip,
-  DuplicateTripPair,
-  MonthlyCarKm,
-  PersonContribution,
-  CarYearKm,
-  CarPriceHistory,
-  CarRollingFuel,
-  CarOwnerSplit,
-  CarYearExpenses,
-} from "@/lib/queries/admin";
-import type { DashboardRow, Reservation, Person } from "@/types";
 import { useMe } from "@/hooks/use-me";
 import { useCars } from "@/hooks/use-vehicles";
+import type {
+  CarOwnerSplit,
+  CarPnL,
+  CarPriceHistory,
+  CarRollingFuel,
+  CarYearExpenses,
+  CarYearKm,
+  DuplicateTripPair,
+  KmGap,
+  MonthlyCarKm,
+  PersonContribution,
+  ZeroKmTrip,
+} from "@/lib/queries/admin";
+import type { DashboardRow, Person, Reservation } from "@/types";
+import { useQuery } from "@tanstack/react-query";
 
 export interface AdminSummary {
   carPnL: CarPnL[];

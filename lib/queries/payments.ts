@@ -1,6 +1,6 @@
-import type Database from "better-sqlite3";
-import type { Payment, PaymentInput } from "@/types";
 import { calcPaymentYear } from "@/lib/formulas";
+import type { Payment, PaymentInput } from "@/types";
+import type Database from "better-sqlite3";
 
 export function getPayments(db: Database.Database): Payment[] {
   return db

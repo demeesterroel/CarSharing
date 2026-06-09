@@ -1,5 +1,5 @@
-import { test, expect } from "@playwright/test";
-import { loginAndGetSession, loginAndGetCsrf, makeApi } from "./helpers";
+import { expect, test } from "@playwright/test";
+import { loginAndGetCsrf, loginAndGetSession, makeApi } from "./helpers";
 
 /**
  * Invite flow e2e tests.
@@ -77,7 +77,7 @@ test.describe("invite flow", () => {
     });
 
     expect(res.ok()).toBe(true);
-    const body = await res.json() as { ok: boolean; person_id: number };
+    const body = (await res.json()) as { ok: boolean; person_id: number };
     expect(body.ok).toBe(true);
     expect(body.person_id).toBe(personId);
   });
@@ -98,7 +98,7 @@ test.describe("invite flow", () => {
       headers: { "Content-Type": "application/json" },
     });
     expect(res.status()).toBe(400);
-    const body = await res.json() as { error: string };
+    const body = (await res.json()) as { error: string };
     expect(body.error).toBe("invalid_token");
   });
 });

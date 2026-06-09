@@ -1,23 +1,23 @@
 "use client";
-import { useState } from "react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { paper, fontMono, fontSerif } from "@/lib/paper-theme";
+import { CarBadge } from "@/components/car-badge";
 import { useT } from "@/components/locale-provider";
+import { ShimmerBar, shimmerKeyframes } from "@/components/shimmer";
+import { useCreateTrip } from "@/hooks/use-trips";
+import { apiFetch } from "@/lib/api/client";
+import { fontMono, fontSerif, paper } from "@/lib/paper-theme";
+import { shortNameOf } from "@/lib/person-utils";
+import type { KmGap } from "@/lib/queries/admin";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useState } from "react";
+import { toast } from "sonner";
 import {
-  useReservations,
-  useOwnerCarShorts,
-  useAdminSummary,
-  usePeople,
   Card,
   Perf,
+  useAdminSummary,
+  useOwnerCarShorts,
+  usePeople,
+  useReservations,
 } from "./_shared";
-import { toast } from "sonner";
-import { CarBadge } from "@/components/car-badge";
-import { apiFetch } from "@/lib/api/client";
-import { useCreateTrip } from "@/hooks/use-trips";
-import type { KmGap, DuplicateTripPair } from "@/lib/queries/admin";
-import { shortNameOf } from "@/lib/person-utils";
-import { ShimmerBar, shimmerKeyframes } from "@/components/shimmer";
 
 function groupByYear<T extends { date?: string; after_date?: string }>(
   items: T[]
@@ -609,7 +609,6 @@ export default function AdminInboxPage() {
           </YearGroup>
         ))
       )}
-
     </div>
   );
 }

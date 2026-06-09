@@ -1,6 +1,6 @@
-import type Database from "better-sqlite3";
-import type { Trip, TripInput } from "@/types";
 import { calcTripAmount } from "@/lib/formulas";
+import type { Trip, TripInput } from "@/types";
+import type Database from "better-sqlite3";
 
 export class ConflictError extends Error {
   constructor(message = "Conflict") {

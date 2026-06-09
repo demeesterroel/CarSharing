@@ -15,20 +15,20 @@ The app replaced a legacy Google AppSheet + Google Sheets setup. It is self-host
 
 ## Stack
 
-| Layer          | Technology                                                      |
-| -------------- | --------------------------------------------------------------- |
-| Frontend       | Next.js (App Router) + React + TypeScript                       |
-| Styling        | Paper/ink design system (custom), inline styles + Tailwind v4   |
-| Forms          | React Hook Form + Zod                                           |
-| Data fetching  | TanStack Query                                                  |
-| Database       | SQLite via `better-sqlite3` (Next.js API routes, WAL mode)      |
-| Auth           | `iron-session` (cookie-based, per-person login)                 |
-| PWA            | `next-pwa` (service worker, offline queue)                      |
-| Maps           | Leaflet (open-source, no API key)                               |
-| Calendar UI    | FullCalendar (day/week/month)                                   |
-| Calendar sync  | Google Calendar API via `googleapis`                            |
-| Toasts         | Sonner                                                          |
-| Deployment     | Docker + Traefik (cloud-infra stacks)                           |
+| Layer         | Technology                                                    |
+| ------------- | ------------------------------------------------------------- |
+| Frontend      | Next.js (App Router) + React + TypeScript                     |
+| Styling       | Paper/ink design system (custom), inline styles + Tailwind v4 |
+| Forms         | React Hook Form + Zod                                         |
+| Data fetching | TanStack Query                                                |
+| Database      | SQLite via `better-sqlite3` (Next.js API routes, WAL mode)    |
+| Auth          | `iron-session` (cookie-based, per-person login)               |
+| PWA           | `next-pwa` (service worker, offline queue)                    |
+| Maps          | Leaflet (open-source, no API key)                             |
+| Calendar UI   | FullCalendar (day/week/month)                                 |
+| Calendar sync | Google Calendar API via `googleapis`                          |
+| Toasts        | Sonner                                                        |
+| Deployment    | Docker + Traefik (cloud-infra stacks)                         |
 
 SQLite is intentional: low-volume, single-server, no connection pooling needed. WAL mode is enabled for concurrent reads during API route handling.
 
@@ -258,43 +258,43 @@ See `lib/queries/settlement.ts` for the full multi-car settlement implementation
 
 ### Admin pages
 
-| Route                   | Description                                           |
-| ----------------------- | ----------------------------------------------------- |
-| `/admin`                | Admin dashboard — activity feed, stats                |
-| `/admin/cars`           | Fleet management — add/edit/delete cars               |
-| `/admin/people`         | Member management                                     |
-| `/admin/trips`          | All trips across members                              |
-| `/admin/reservations`   | All reservations                                      |
-| `/admin/settlement`     | Annual settlement management                          |
-| `/admin/settings`       | Cooperative settings (bank account, Google Calendar)  |
+| Route                 | Description                                          |
+| --------------------- | ---------------------------------------------------- |
+| `/admin`              | Admin dashboard — activity feed, stats               |
+| `/admin/cars`         | Fleet management — add/edit/delete cars              |
+| `/admin/people`       | Member management                                    |
+| `/admin/trips`        | All trips across members                             |
+| `/admin/reservations` | All reservations                                     |
+| `/admin/settlement`   | Annual settlement management                         |
+| `/admin/settings`     | Cooperative settings (bank account, Google Calendar) |
 
 ### API routes
 
-| Route                              | Method | Description                         |
-| ---------------------------------- | ------ | ----------------------------------- |
-| `/api/me`                          | GET    | Current session info                |
-| `/api/trips`                       | GET/POST | Trips CRUD                        |
-| `/api/trips/[id]`                  | PUT/DELETE | -                               |
-| `/api/fuel`                        | GET/POST | Fuel fill-ups CRUD                |
-| `/api/fuel/[id]`                   | PUT/DELETE | -                               |
-| `/api/expenses`                    | GET/POST | Expenses CRUD                     |
-| `/api/expenses/[id]`               | PUT/DELETE | -                               |
-| `/api/payments`                    | GET/POST | Payments CRUD                     |
-| `/api/payments/[id]`               | PUT/DELETE | -                               |
-| `/api/reservations`                | GET/POST | Reservations CRUD                 |
-| `/api/reservations/[id]`           | GET/PUT/DELETE | -                           |
-| `/api/reservations/[id]/status`    | PATCH  | Update status only                  |
-| `/api/cars`                        | GET/POST | Cars CRUD                         |
-| `/api/cars/[id]`                   | GET/PUT/DELETE | -                           |
-| `/api/people`                      | GET/POST | People CRUD                       |
-| `/api/people/[id]/profile`         | PUT    | Update own profile                  |
-| `/api/dashboard`                   | GET    | Per-person annual balance data      |
-| `/api/settlement`                  | GET    | Annual settlement computation       |
-| `/api/admin/settings`              | GET/PUT | Cooperative settings               |
-| `/api/admin/calendar-renew`        | GET    | Register/renew Google push channel  |
-| `/api/calendar-webhook`            | POST   | Receive Google Calendar push events |
-| `/api/auth/login`                  | POST   | Login                               |
-| `/api/auth/logout`                 | POST   | Logout                              |
+| Route                           | Method         | Description                         |
+| ------------------------------- | -------------- | ----------------------------------- |
+| `/api/me`                       | GET            | Current session info                |
+| `/api/trips`                    | GET/POST       | Trips CRUD                          |
+| `/api/trips/[id]`               | PUT/DELETE     | -                                   |
+| `/api/fuel`                     | GET/POST       | Fuel fill-ups CRUD                  |
+| `/api/fuel/[id]`                | PUT/DELETE     | -                                   |
+| `/api/expenses`                 | GET/POST       | Expenses CRUD                       |
+| `/api/expenses/[id]`            | PUT/DELETE     | -                                   |
+| `/api/payments`                 | GET/POST       | Payments CRUD                       |
+| `/api/payments/[id]`            | PUT/DELETE     | -                                   |
+| `/api/reservations`             | GET/POST       | Reservations CRUD                   |
+| `/api/reservations/[id]`        | GET/PUT/DELETE | -                                   |
+| `/api/reservations/[id]/status` | PATCH          | Update status only                  |
+| `/api/cars`                     | GET/POST       | Cars CRUD                           |
+| `/api/cars/[id]`                | GET/PUT/DELETE | -                                   |
+| `/api/people`                   | GET/POST       | People CRUD                         |
+| `/api/people/[id]/profile`      | PUT            | Update own profile                  |
+| `/api/dashboard`                | GET            | Per-person annual balance data      |
+| `/api/settlement`               | GET            | Annual settlement computation       |
+| `/api/admin/settings`           | GET/PUT        | Cooperative settings                |
+| `/api/admin/calendar-renew`     | GET            | Register/renew Google push channel  |
+| `/api/calendar-webhook`         | POST           | Receive Google Calendar push events |
+| `/api/auth/login`               | POST           | Login                               |
+| `/api/auth/logout`              | POST           | Logout                              |
 
 ---
 
@@ -372,12 +372,12 @@ cloud-infra/stacks/autodelen/
 
 Environment variables required:
 
-| Variable                    | Required | Description                            |
-| --------------------------- | -------- | -------------------------------------- |
-| `SESSION_PASSWORD`          | yes      | 32+ char secret for iron-session       |
-| `AUTH_USERNAME`             | yes      | Shared login username                  |
-| `AUTH_PASSWORD_HASH`        | yes      | bcrypt hash of shared password         |
-| `NEXT_PUBLIC_BASE_URL`      | yes      | Public HTTPS URL (also for webhooks)   |
-| `GOOGLE_CLIENT_ID`          | no       | OAuth client ID (Calendar integration) |
-| `GOOGLE_CLIENT_SECRET`      | no       | OAuth client secret                    |
-| `CRON_SECRET`               | no       | Bearer token for calendar-renew route  |
+| Variable               | Required | Description                            |
+| ---------------------- | -------- | -------------------------------------- |
+| `SESSION_PASSWORD`     | yes      | 32+ char secret for iron-session       |
+| `AUTH_USERNAME`        | yes      | Shared login username                  |
+| `AUTH_PASSWORD_HASH`   | yes      | bcrypt hash of shared password         |
+| `NEXT_PUBLIC_BASE_URL` | yes      | Public HTTPS URL (also for webhooks)   |
+| `GOOGLE_CLIENT_ID`     | no       | OAuth client ID (Calendar integration) |
+| `GOOGLE_CLIENT_SECRET` | no       | OAuth client secret                    |
+| `CRON_SECRET`          | no       | Bearer token for calendar-renew route  |

@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, afterEach } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("@/lib/env", () => ({ env: { NEXT_PUBLIC_BASE_URL: "https://canonical.example" } }));
 

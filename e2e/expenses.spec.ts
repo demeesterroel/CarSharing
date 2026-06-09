@@ -1,5 +1,11 @@
-import { test, expect } from "@playwright/test";
-import { loginAndGetSession, loginAndGetCsrf, makeApi, getTestEntities, scrollToLoadAll } from "./helpers";
+import { expect, test } from "@playwright/test";
+import {
+  getTestEntities,
+  loginAndGetCsrf,
+  loginAndGetSession,
+  makeApi,
+  scrollToLoadAll,
+} from "./helpers";
 
 /**
  * Expense CRUD + dashboard delta tests.
@@ -72,11 +78,13 @@ test.describe("expense CRUD", () => {
   });
 
   test("dashboard expense_amount increases by the expense amount", async ({ request }) => {
-    const dashWithExpense = await api.get<Array<{
-      person_id: number;
-      expense_count: number;
-      expense_amount: number;
-    }>>(`/api/dashboard?year=${YEAR}`);
+    const dashWithExpense = await api.get<
+      Array<{
+        person_id: number;
+        expense_count: number;
+        expense_amount: number;
+      }>
+    >(`/api/dashboard?year=${YEAR}`);
 
     const rowWith = dashWithExpense.find((r) => r.person_id === personId);
     const amountWithExpense = rowWith?.expense_amount ?? 0;
@@ -86,11 +94,13 @@ test.describe("expense CRUD", () => {
     await api.delete(`/api/expenses/${expenseId}`);
     expenseId = 0;
 
-    const dashWithout = await api.get<Array<{
-      person_id: number;
-      expense_count: number;
-      expense_amount: number;
-    }>>(`/api/dashboard?year=${YEAR}`);
+    const dashWithout = await api.get<
+      Array<{
+        person_id: number;
+        expense_count: number;
+        expense_amount: number;
+      }>
+    >(`/api/dashboard?year=${YEAR}`);
 
     const rowWithout = dashWithout.find((r) => r.person_id === personId);
     const amountWithout = rowWithout?.expense_amount ?? 0;

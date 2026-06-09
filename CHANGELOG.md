@@ -2,203 +2,175 @@
 
 ## [1.19.4](https://github.com/demeesterroel/CarSharing/compare/v1.19.3...v1.19.4) (2026-06-05)
 
-
 ### 🐛 Bug fixes
 
-* **reservations:** editing re-opens for approval; clear stale GCal RSVP ([#2](https://github.com/demeesterroel/CarSharing/issues/2)) ([#354](https://github.com/demeesterroel/CarSharing/issues/354)) ([a988d2e](https://github.com/demeesterroel/CarSharing/commit/a988d2e0d15b193c2fcac357faba8145de2bc151))
+- **reservations:** editing re-opens for approval; clear stale GCal RSVP ([#2](https://github.com/demeesterroel/CarSharing/issues/2)) ([#354](https://github.com/demeesterroel/CarSharing/issues/354)) ([a988d2e](https://github.com/demeesterroel/CarSharing/commit/a988d2e0d15b193c2fcac357faba8145de2bc151))
 
 ## [1.19.3](https://github.com/demeesterroel/CarSharing/compare/v1.19.2...v1.19.3) (2026-06-04)
 
-
 ### 🐛 Bug fixes
 
-* **calendar:** converge reject to GCal + poll reservations for webhook changes ([#350](https://github.com/demeesterroel/CarSharing/issues/350)) ([#351](https://github.com/demeesterroel/CarSharing/issues/351)) ([ab07f88](https://github.com/demeesterroel/CarSharing/commit/ab07f8887fe802debd767cf557d875e362c95c3e))
+- **calendar:** converge reject to GCal + poll reservations for webhook changes ([#350](https://github.com/demeesterroel/CarSharing/issues/350)) ([#351](https://github.com/demeesterroel/CarSharing/issues/351)) ([ab07f88](https://github.com/demeesterroel/CarSharing/commit/ab07f8887fe802debd767cf557d875e362c95c3e))
 
 ## [1.19.2](https://github.com/demeesterroel/CarSharing/compare/v1.19.1...v1.19.2) (2026-06-04)
 
-
 ### 🐛 Bug fixes
 
-* **calendar:** backfill reconciles existing events, not only missing ([#347](https://github.com/demeesterroel/CarSharing/issues/347)) ([#348](https://github.com/demeesterroel/CarSharing/issues/348)) ([800131a](https://github.com/demeesterroel/CarSharing/commit/800131af305118558ad9917808b6e9022b13ad2c))
+- **calendar:** backfill reconciles existing events, not only missing ([#347](https://github.com/demeesterroel/CarSharing/issues/347)) ([#348](https://github.com/demeesterroel/CarSharing/issues/348)) ([800131a](https://github.com/demeesterroel/CarSharing/commit/800131af305118558ad9917808b6e9022b13ad2c))
 
 ## [1.19.1](https://github.com/demeesterroel/CarSharing/compare/v1.19.0...v1.19.1) (2026-06-04)
 
-
 ### 🐛 Bug fixes
 
-* **calendar:** visually mark confirmed events (✓ title + green) ([#344](https://github.com/demeesterroel/CarSharing/issues/344)) ([#345](https://github.com/demeesterroel/CarSharing/issues/345)) ([063b0aa](https://github.com/demeesterroel/CarSharing/commit/063b0aa297df7be4bc1254f0ef25046be424d67b))
+- **calendar:** visually mark confirmed events (✓ title + green) ([#344](https://github.com/demeesterroel/CarSharing/issues/344)) ([#345](https://github.com/demeesterroel/CarSharing/issues/345)) ([063b0aa](https://github.com/demeesterroel/CarSharing/commit/063b0aa297df7be4bc1254f0ef25046be424d67b))
 
 ## [1.19.0](https://github.com/demeesterroel/CarSharing/compare/v1.18.0...v1.19.0) (2026-06-04)
 
-
 ### ✨ New features
 
-* **calendar:** persistent 2-way sync log + admin viewer ([#338](https://github.com/demeesterroel/CarSharing/issues/338)) ([#342](https://github.com/demeesterroel/CarSharing/issues/342)) ([b3ef5cb](https://github.com/demeesterroel/CarSharing/commit/b3ef5cb55e6e5d4cf7a807758bcd8635fb3f0ec0))
-
+- **calendar:** persistent 2-way sync log + admin viewer ([#338](https://github.com/demeesterroel/CarSharing/issues/338)) ([#342](https://github.com/demeesterroel/CarSharing/issues/342)) ([b3ef5cb](https://github.com/demeesterroel/CarSharing/commit/b3ef5cb55e6e5d4cf7a807758bcd8635fb3f0ec0))
 
 ### 🐛 Bug fixes
 
-* **calendar:** allow Google webhook through proxy auth ([#339](https://github.com/demeesterroel/CarSharing/issues/339)) ([#340](https://github.com/demeesterroel/CarSharing/issues/340)) ([0da7d30](https://github.com/demeesterroel/CarSharing/commit/0da7d3090b9d0022c452523b400735f79d4f8f9a))
-* **calendar:** converge confirm in both sync directions, uninvite owner ([#337](https://github.com/demeesterroel/CarSharing/issues/337)) ([#343](https://github.com/demeesterroel/CarSharing/issues/343)) ([273d60c](https://github.com/demeesterroel/CarSharing/commit/273d60c63b65ebbff3b4d704fc36af46f544f8df))
+- **calendar:** allow Google webhook through proxy auth ([#339](https://github.com/demeesterroel/CarSharing/issues/339)) ([#340](https://github.com/demeesterroel/CarSharing/issues/340)) ([0da7d30](https://github.com/demeesterroel/CarSharing/commit/0da7d3090b9d0022c452523b400735f79d4f8f9a))
+- **calendar:** converge confirm in both sync directions, uninvite owner ([#337](https://github.com/demeesterroel/CarSharing/issues/337)) ([#343](https://github.com/demeesterroel/CarSharing/issues/343)) ([273d60c](https://github.com/demeesterroel/CarSharing/commit/273d60c63b65ebbff3b4d704fc36af46f544f8df))
 
 ## [1.18.0](https://github.com/demeesterroel/CarSharing/compare/v1.17.2...v1.18.0) (2026-06-04)
 
-
 ### ✨ New features
 
-* **auth:** inline request-reset-link on /login ([#281](https://github.com/demeesterroel/CarSharing/issues/281)) ([#335](https://github.com/demeesterroel/CarSharing/issues/335)) ([dcbddb3](https://github.com/demeesterroel/CarSharing/commit/dcbddb39b9fb7fa488423eb7b688f697718cf56e))
-* **expenses:** allow attaching a receipt photo to costs ([#329](https://github.com/demeesterroel/CarSharing/issues/329)) ([75121d1](https://github.com/demeesterroel/CarSharing/commit/75121d1bcb62df85271713d77bb48b8aa397ee0f))
-* **pwa:** elastic pull-to-refresh — gear indicator + fixed header ([#332](https://github.com/demeesterroel/CarSharing/issues/332)) ([#336](https://github.com/demeesterroel/CarSharing/issues/336)) ([5990410](https://github.com/demeesterroel/CarSharing/commit/5990410aa3450ecbe02abfe007b69cf2cac9378e))
-* **pwa:** pull-to-refresh hard reload when installed as a PWA ([#330](https://github.com/demeesterroel/CarSharing/issues/330)) ([ccbcf7d](https://github.com/demeesterroel/CarSharing/commit/ccbcf7dcae600f4c23037d14329bcf3ff94184e9))
-
+- **auth:** inline request-reset-link on /login ([#281](https://github.com/demeesterroel/CarSharing/issues/281)) ([#335](https://github.com/demeesterroel/CarSharing/issues/335)) ([dcbddb3](https://github.com/demeesterroel/CarSharing/commit/dcbddb39b9fb7fa488423eb7b688f697718cf56e))
+- **expenses:** allow attaching a receipt photo to costs ([#329](https://github.com/demeesterroel/CarSharing/issues/329)) ([75121d1](https://github.com/demeesterroel/CarSharing/commit/75121d1bcb62df85271713d77bb48b8aa397ee0f))
+- **pwa:** elastic pull-to-refresh — gear indicator + fixed header ([#332](https://github.com/demeesterroel/CarSharing/issues/332)) ([#336](https://github.com/demeesterroel/CarSharing/issues/336)) ([5990410](https://github.com/demeesterroel/CarSharing/commit/5990410aa3450ecbe02abfe007b69cf2cac9378e))
+- **pwa:** pull-to-refresh hard reload when installed as a PWA ([#330](https://github.com/demeesterroel/CarSharing/issues/330)) ([ccbcf7d](https://github.com/demeesterroel/CarSharing/commit/ccbcf7dcae600f4c23037d14329bcf3ff94184e9))
 
 ### 🐛 Bug fixes
 
-* **auth:** issue CSRF token once instead of rotating it on every /api/me ([#334](https://github.com/demeesterroel/CarSharing/issues/334)) ([99d0eb9](https://github.com/demeesterroel/CarSharing/commit/99d0eb9568a0d9c3c77daf1ddc60fca7b6a97888)), closes [#333](https://github.com/demeesterroel/CarSharing/issues/333)
-* **forms:** open native date picker in mono theme date field ([#331](https://github.com/demeesterroel/CarSharing/issues/331)) ([da69e37](https://github.com/demeesterroel/CarSharing/commit/da69e37dec6c1981b03414dc6345759d1c634427)), closes [#328](https://github.com/demeesterroel/CarSharing/issues/328)
-* **location:** robust Leaflet map init in modal (ResizeObserver instead of fixed timeout) ([#327](https://github.com/demeesterroel/CarSharing/issues/327)) ([7fa7c34](https://github.com/demeesterroel/CarSharing/commit/7fa7c34229184b1a20398ee4fdf7d4555b6f1862))
-* **ui:** key edit forms by entity id to prevent stale form on reopen ([#325](https://github.com/demeesterroel/CarSharing/issues/325)) ([a038490](https://github.com/demeesterroel/CarSharing/commit/a0384909b4246ce813c81935b4f6595239e25ea0)), closes [#321](https://github.com/demeesterroel/CarSharing/issues/321)
+- **auth:** issue CSRF token once instead of rotating it on every /api/me ([#334](https://github.com/demeesterroel/CarSharing/issues/334)) ([99d0eb9](https://github.com/demeesterroel/CarSharing/commit/99d0eb9568a0d9c3c77daf1ddc60fca7b6a97888)), closes [#333](https://github.com/demeesterroel/CarSharing/issues/333)
+- **forms:** open native date picker in mono theme date field ([#331](https://github.com/demeesterroel/CarSharing/issues/331)) ([da69e37](https://github.com/demeesterroel/CarSharing/commit/da69e37dec6c1981b03414dc6345759d1c634427)), closes [#328](https://github.com/demeesterroel/CarSharing/issues/328)
+- **location:** robust Leaflet map init in modal (ResizeObserver instead of fixed timeout) ([#327](https://github.com/demeesterroel/CarSharing/issues/327)) ([7fa7c34](https://github.com/demeesterroel/CarSharing/commit/7fa7c34229184b1a20398ee4fdf7d4555b6f1862))
+- **ui:** key edit forms by entity id to prevent stale form on reopen ([#325](https://github.com/demeesterroel/CarSharing/issues/325)) ([a038490](https://github.com/demeesterroel/CarSharing/commit/a0384909b4246ce813c81935b4f6595239e25ea0)), closes [#321](https://github.com/demeesterroel/CarSharing/issues/321)
 
 ## [1.17.2](https://github.com/demeesterroel/CarSharing/compare/v1.17.1...v1.17.2) (2026-06-02)
 
-
 ### 🐛 Bug fixes
 
-* **api:** require authentication on reservation create + public GET endpoints ([#306](https://github.com/demeesterroel/CarSharing/issues/306)) ([#314](https://github.com/demeesterroel/CarSharing/issues/314)) ([ce73a1c](https://github.com/demeesterroel/CarSharing/commit/ce73a1c38265368558569f01ea1eaa925998997d))
-
+- **api:** require authentication on reservation create + public GET endpoints ([#306](https://github.com/demeesterroel/CarSharing/issues/306)) ([#314](https://github.com/demeesterroel/CarSharing/issues/314)) ([ce73a1c](https://github.com/demeesterroel/CarSharing/commit/ce73a1c38265368558569f01ea1eaa925998997d))
 
 ### 📖 Documentation
 
-* **security:** add access-control (ACL) reference table, link from SECURITY-AUDIT ([#311](https://github.com/demeesterroel/CarSharing/issues/311)) ([0bfba47](https://github.com/demeesterroel/CarSharing/commit/0bfba47778290ced40fdbc76867a4aa5b70b66a3))
-* **test-coverage:** refresh overview (547 unit / 53 e2e) ([#303](https://github.com/demeesterroel/CarSharing/issues/303)) ([f9596a6](https://github.com/demeesterroel/CarSharing/commit/f9596a6593983c2cd32445682e88fa60e594e405))
+- **security:** add access-control (ACL) reference table, link from SECURITY-AUDIT ([#311](https://github.com/demeesterroel/CarSharing/issues/311)) ([0bfba47](https://github.com/demeesterroel/CarSharing/commit/0bfba47778290ced40fdbc76867a4aa5b70b66a3))
+- **test-coverage:** refresh overview (547 unit / 53 e2e) ([#303](https://github.com/demeesterroel/CarSharing/issues/303)) ([f9596a6](https://github.com/demeesterroel/CarSharing/commit/f9596a6593983c2cd32445682e88fa60e594e405))
 
 ## [1.17.1](https://github.com/demeesterroel/CarSharing/compare/v1.17.0...v1.17.1) (2026-06-02)
 
-
 ### 🐛 Bug fixes
 
-* **auth:** single password toggle on invite form, skip eye in tab order ([#300](https://github.com/demeesterroel/CarSharing/issues/300)) ([e050e59](https://github.com/demeesterroel/CarSharing/commit/e050e59d4f6f47ba40aba2f23ed187a17b46e12c))
+- **auth:** single password toggle on invite form, skip eye in tab order ([#300](https://github.com/demeesterroel/CarSharing/issues/300)) ([e050e59](https://github.com/demeesterroel/CarSharing/commit/e050e59d4f6f47ba40aba2f23ed187a17b46e12c))
 
 ## [1.17.0](https://github.com/demeesterroel/CarSharing/compare/v1.16.1...v1.17.0) (2026-06-02)
 
-
 ### ✨ New features
 
-* **admin:** send invite link by email + fix magic-link SameSite ([#299](https://github.com/demeesterroel/CarSharing/issues/299)) ([7768326](https://github.com/demeesterroel/CarSharing/commit/77683262bc96bf42d9ab6e4ecf291a69b4f237e8))
-* **auth:** magic-link sign-in on /login + Resend mail transport ([#296](https://github.com/demeesterroel/CarSharing/issues/296)) ([78d6110](https://github.com/demeesterroel/CarSharing/commit/78d6110929d61d1d454831adb745b2b8eec05c73))
-* **forms:** show edit forms read-only when user lacks edit permission ([#297](https://github.com/demeesterroel/CarSharing/issues/297)) ([67c99a1](https://github.com/demeesterroel/CarSharing/commit/67c99a121ea316a6a33f407463d9e4b959f812a3)), closes [#172](https://github.com/demeesterroel/CarSharing/issues/172)
-* **owner:** collapsible coverage card + costs/fuel as negative red ([#298](https://github.com/demeesterroel/CarSharing/issues/298)) ([a9ec7e7](https://github.com/demeesterroel/CarSharing/commit/a9ec7e737c31ac7b061acf29fa9eae5d825a0515)), closes [#182](https://github.com/demeesterroel/CarSharing/issues/182)
-
+- **admin:** send invite link by email + fix magic-link SameSite ([#299](https://github.com/demeesterroel/CarSharing/issues/299)) ([7768326](https://github.com/demeesterroel/CarSharing/commit/77683262bc96bf42d9ab6e4ecf291a69b4f237e8))
+- **auth:** magic-link sign-in on /login + Resend mail transport ([#296](https://github.com/demeesterroel/CarSharing/issues/296)) ([78d6110](https://github.com/demeesterroel/CarSharing/commit/78d6110929d61d1d454831adb745b2b8eec05c73))
+- **forms:** show edit forms read-only when user lacks edit permission ([#297](https://github.com/demeesterroel/CarSharing/issues/297)) ([67c99a1](https://github.com/demeesterroel/CarSharing/commit/67c99a121ea316a6a33f407463d9e4b959f812a3)), closes [#172](https://github.com/demeesterroel/CarSharing/issues/172)
+- **owner:** collapsible coverage card + costs/fuel as negative red ([#298](https://github.com/demeesterroel/CarSharing/issues/298)) ([a9ec7e7](https://github.com/demeesterroel/CarSharing/commit/a9ec7e737c31ac7b061acf29fa9eae5d825a0515)), closes [#182](https://github.com/demeesterroel/CarSharing/issues/182)
 
 ### 📖 Documentation
 
-* add RELEASING.md (release-please merge-timing policy) ([#292](https://github.com/demeesterroel/CarSharing/issues/292)) ([a488a11](https://github.com/demeesterroel/CarSharing/commit/a488a1166bbabdc1023f769d1c0a2e4383a9bc51))
+- add RELEASING.md (release-please merge-timing policy) ([#292](https://github.com/demeesterroel/CarSharing/issues/292)) ([a488a11](https://github.com/demeesterroel/CarSharing/commit/a488a1166bbabdc1023f769d1c0a2e4383a9bc51))
 
 ## [1.16.1](https://github.com/demeesterroel/CarSharing/compare/v1.16.0...v1.16.1) (2026-06-01)
 
-
 ### 🐛 Bug fixes
 
-* **admin:** prevent password managers autofilling Google settings fields ([#288](https://github.com/demeesterroel/CarSharing/issues/288)) ([1ce377b](https://github.com/demeesterroel/CarSharing/commit/1ce377b85177bf62f8c1bbd9078524f86e9833b8)), closes [#287](https://github.com/demeesterroel/CarSharing/issues/287)
+- **admin:** prevent password managers autofilling Google settings fields ([#288](https://github.com/demeesterroel/CarSharing/issues/288)) ([1ce377b](https://github.com/demeesterroel/CarSharing/commit/1ce377b85177bf62f8c1bbd9078524f86e9833b8)), closes [#287](https://github.com/demeesterroel/CarSharing/issues/287)
 
 ## [1.16.0](https://github.com/demeesterroel/CarSharing/compare/v1.15.0...v1.16.0) (2026-06-01)
 
-
 ### ✨ New features
 
-* **admin:** revoke a member's sessions from /admin/members ([#266](https://github.com/demeesterroel/CarSharing/issues/266)) ([#285](https://github.com/demeesterroel/CarSharing/issues/285)) ([c4e9a5f](https://github.com/demeesterroel/CarSharing/commit/c4e9a5febdd3a88f8cef34ba6f37c73bc7e251f3))
-* **auth:** disable /forgot with 'not available yet' notice until mail transport ([#283](https://github.com/demeesterroel/CarSharing/issues/283)) ([fb619ad](https://github.com/demeesterroel/CarSharing/commit/fb619ad4d7f13db98befd2115451a3be7d8ecfa3)), closes [#282](https://github.com/demeesterroel/CarSharing/issues/282)
-* **auth:** session revocation ([#266](https://github.com/demeesterroel/CarSharing/issues/266)) + self-service password reset / magic link ([#267](https://github.com/demeesterroel/CarSharing/issues/267)) ([#270](https://github.com/demeesterroel/CarSharing/issues/270)) ([3ebf95e](https://github.com/demeesterroel/CarSharing/commit/3ebf95e17fce227ed9b8698587df874704e22e97))
-* **owner:** show potential duplicate trips in inbox ([#276](https://github.com/demeesterroel/CarSharing/issues/276)) ([5ff98ba](https://github.com/demeesterroel/CarSharing/commit/5ff98ba6fb49bceeaa0aa43ecc5f3837e508c312))
-* **theme:** mono as default theme ([#263](https://github.com/demeesterroel/CarSharing/issues/263)) + /user redirect ([#279](https://github.com/demeesterroel/CarSharing/issues/279)) ([3be85ee](https://github.com/demeesterroel/CarSharing/commit/3be85ee2fc21dccbffcbeb94bad0c5d3f113a6c0))
-
+- **admin:** revoke a member's sessions from /admin/members ([#266](https://github.com/demeesterroel/CarSharing/issues/266)) ([#285](https://github.com/demeesterroel/CarSharing/issues/285)) ([c4e9a5f](https://github.com/demeesterroel/CarSharing/commit/c4e9a5febdd3a88f8cef34ba6f37c73bc7e251f3))
+- **auth:** disable /forgot with 'not available yet' notice until mail transport ([#283](https://github.com/demeesterroel/CarSharing/issues/283)) ([fb619ad](https://github.com/demeesterroel/CarSharing/commit/fb619ad4d7f13db98befd2115451a3be7d8ecfa3)), closes [#282](https://github.com/demeesterroel/CarSharing/issues/282)
+- **auth:** session revocation ([#266](https://github.com/demeesterroel/CarSharing/issues/266)) + self-service password reset / magic link ([#267](https://github.com/demeesterroel/CarSharing/issues/267)) ([#270](https://github.com/demeesterroel/CarSharing/issues/270)) ([3ebf95e](https://github.com/demeesterroel/CarSharing/commit/3ebf95e17fce227ed9b8698587df874704e22e97))
+- **owner:** show potential duplicate trips in inbox ([#276](https://github.com/demeesterroel/CarSharing/issues/276)) ([5ff98ba](https://github.com/demeesterroel/CarSharing/commit/5ff98ba6fb49bceeaa0aa43ecc5f3837e508c312))
+- **theme:** mono as default theme ([#263](https://github.com/demeesterroel/CarSharing/issues/263)) + /user redirect ([#279](https://github.com/demeesterroel/CarSharing/issues/279)) ([3be85ee](https://github.com/demeesterroel/CarSharing/commit/3be85ee2fc21dccbffcbeb94bad0c5d3f113a6c0))
 
 ### 🐛 Bug fixes
 
-* **auth:** make /forgot and /reset guest-only (redirect logged-in users) ([#280](https://github.com/demeesterroel/CarSharing/issues/280)) ([a3164be](https://github.com/demeesterroel/CarSharing/commit/a3164befe82b7f956a5cbb30016f51facf331fd1)), closes [#275](https://github.com/demeesterroel/CarSharing/issues/275)
-* **e2e:** target reservation confirm button by id to kill approve flake ([#274](https://github.com/demeesterroel/CarSharing/issues/274)) ([2daac88](https://github.com/demeesterroel/CarSharing/commit/2daac888ce904f06ae87d67ac7935a3e76327d43))
-* **payments:** redesign admin page to match app UX patterns ([#273](https://github.com/demeesterroel/CarSharing/issues/273)) ([308feda](https://github.com/demeesterroel/CarSharing/commit/308fedaccaa73b4d89930719badc116b316ffe65)), closes [#265](https://github.com/demeesterroel/CarSharing/issues/265)
-
+- **auth:** make /forgot and /reset guest-only (redirect logged-in users) ([#280](https://github.com/demeesterroel/CarSharing/issues/280)) ([a3164be](https://github.com/demeesterroel/CarSharing/commit/a3164befe82b7f956a5cbb30016f51facf331fd1)), closes [#275](https://github.com/demeesterroel/CarSharing/issues/275)
+- **e2e:** target reservation confirm button by id to kill approve flake ([#274](https://github.com/demeesterroel/CarSharing/issues/274)) ([2daac88](https://github.com/demeesterroel/CarSharing/commit/2daac888ce904f06ae87d67ac7935a3e76327d43))
+- **payments:** redesign admin page to match app UX patterns ([#273](https://github.com/demeesterroel/CarSharing/issues/273)) ([308feda](https://github.com/demeesterroel/CarSharing/commit/308fedaccaa73b4d89930719badc116b316ffe65)), closes [#265](https://github.com/demeesterroel/CarSharing/issues/265)
 
 ### 📖 Documentation
 
-* add full feature/test coverage overview ([#224](https://github.com/demeesterroel/CarSharing/issues/224)) ([#260](https://github.com/demeesterroel/CarSharing/issues/260)) ([e1517fe](https://github.com/demeesterroel/CarSharing/commit/e1517fe1982328010a647445d31561f830704612))
+- add full feature/test coverage overview ([#224](https://github.com/demeesterroel/CarSharing/issues/224)) ([#260](https://github.com/demeesterroel/CarSharing/issues/260)) ([e1517fe](https://github.com/demeesterroel/CarSharing/commit/e1517fe1982328010a647445d31561f830704612))
 
 ## [1.15.0](https://github.com/demeesterroel/CarSharing/compare/v1.14.3...v1.15.0) (2026-05-26)
 
-
 ### ✨ New features
 
-* **settlement:** show already-paid amount in settlement message ([#253](https://github.com/demeesterroel/CarSharing/issues/253)) ([db1b2d2](https://github.com/demeesterroel/CarSharing/commit/db1b2d2093b1f1b265f4ee68821e1726d9e092f3)), closes [#249](https://github.com/demeesterroel/CarSharing/issues/249)
-
+- **settlement:** show already-paid amount in settlement message ([#253](https://github.com/demeesterroel/CarSharing/issues/253)) ([db1b2d2](https://github.com/demeesterroel/CarSharing/commit/db1b2d2093b1f1b265f4ee68821e1726d9e092f3)), closes [#249](https://github.com/demeesterroel/CarSharing/issues/249)
 
 ### 🐛 Bug fixes
 
-* **calendar:** run delta sync on every renew call, not only on channel rotation ([#255](https://github.com/demeesterroel/CarSharing/issues/255)) ([591e237](https://github.com/demeesterroel/CarSharing/commit/591e237a26933e320d8e6bf4da77f8490ffcf068)), closes [#254](https://github.com/demeesterroel/CarSharing/issues/254)
-* **e2e:** make all 39 Playwright tests pass against prod server ([#250](https://github.com/demeesterroel/CarSharing/issues/250)) ([96b37f8](https://github.com/demeesterroel/CarSharing/commit/96b37f8f327e9c03360cbebb42ab59f7e971b504))
+- **calendar:** run delta sync on every renew call, not only on channel rotation ([#255](https://github.com/demeesterroel/CarSharing/issues/255)) ([591e237](https://github.com/demeesterroel/CarSharing/commit/591e237a26933e320d8e6bf4da77f8490ffcf068)), closes [#254](https://github.com/demeesterroel/CarSharing/issues/254)
+- **e2e:** make all 39 Playwright tests pass against prod server ([#250](https://github.com/demeesterroel/CarSharing/issues/250)) ([96b37f8](https://github.com/demeesterroel/CarSharing/commit/96b37f8f327e9c03360cbebb42ab59f7e971b504))
 
 ## [1.14.3](https://github.com/demeesterroel/CarSharing/compare/v1.14.2...v1.14.3) (2026-05-25)
 
-
 ### 🐛 Bug fixes
 
-* **settlement:** show sign on individual payment amounts in list ([#247](https://github.com/demeesterroel/CarSharing/issues/247)) ([72245ad](https://github.com/demeesterroel/CarSharing/commit/72245adc7519753a9c53a55cf5082132f9b1cad5))
+- **settlement:** show sign on individual payment amounts in list ([#247](https://github.com/demeesterroel/CarSharing/issues/247)) ([72245ad](https://github.com/demeesterroel/CarSharing/commit/72245adc7519753a9c53a55cf5082132f9b1cad5))
 
 ## [1.14.2](https://github.com/demeesterroel/CarSharing/compare/v1.14.1...v1.14.2) (2026-05-25)
 
-
 ### 🐛 Bug fixes
 
-* **settlement:** use net payments for step-1 paid/open annotation ([#245](https://github.com/demeesterroel/CarSharing/issues/245)) ([b664c36](https://github.com/demeesterroel/CarSharing/commit/b664c36f42f5ab06926c398cb1291b3e48822b03))
+- **settlement:** use net payments for step-1 paid/open annotation ([#245](https://github.com/demeesterroel/CarSharing/issues/245)) ([b664c36](https://github.com/demeesterroel/CarSharing/commit/b664c36f42f5ab06926c398cb1291b3e48822b03))
 
 ## [1.14.1](https://github.com/demeesterroel/CarSharing/compare/v1.14.0...v1.14.1) (2026-05-25)
 
-
 ### 🐛 Bug fixes
 
-* **calendar:** remove duplicate '+ Reservering toevoegen' button from upcoming section ([5b3f5b4](https://github.com/demeesterroel/CarSharing/commit/5b3f5b4d9a01220cccffe31067e0105a86cc875e))
+- **calendar:** remove duplicate '+ Reservering toevoegen' button from upcoming section ([5b3f5b4](https://github.com/demeesterroel/CarSharing/commit/5b3f5b4d9a01220cccffe31067e0105a86cc875e))
 
 ## [1.14.0](https://github.com/demeesterroel/CarSharing/compare/v1.13.3...v1.14.0) (2026-05-25)
 
-
 ### ✨ New features
 
-* **user:** add hint below email field explaining calendar invite use ([7432343](https://github.com/demeesterroel/CarSharing/commit/743234366c6c83e3114e9e4fe417a3dea3710517))
+- **user:** add hint below email field explaining calendar invite use ([7432343](https://github.com/demeesterroel/CarSharing/commit/743234366c6c83e3114e9e4fe417a3dea3710517))
 
 ## [1.13.3](https://github.com/demeesterroel/CarSharing/compare/v1.13.2...v1.13.3) (2026-05-25)
 
-
 ### 🐛 Bug fixes
 
-* **calendar:** handle paginated full sync in listEventsDelta ([18ed5b4](https://github.com/demeesterroel/CarSharing/commit/18ed5b4b2756f00530303c5c4c2f5d2ffc0f9bb4))
+- **calendar:** handle paginated full sync in listEventsDelta ([18ed5b4](https://github.com/demeesterroel/CarSharing/commit/18ed5b4b2756f00530303c5c4c2f5d2ffc0f9bb4))
 
 ## [1.13.2](https://github.com/demeesterroel/CarSharing/compare/v1.13.1...v1.13.2) (2026-05-25)
 
-
 ### 🐛 Bug fixes
 
-* **auth:** add calendar-renew and calendar-id to public paths ([d8b28b3](https://github.com/demeesterroel/CarSharing/commit/d8b28b36b515beb43b2fdc139b028fa4f03e5cee))
+- **auth:** add calendar-renew and calendar-id to public paths ([d8b28b3](https://github.com/demeesterroel/CarSharing/commit/d8b28b36b515beb43b2fdc139b028fa4f03e5cee))
 
 ## [1.13.1](https://github.com/demeesterroel/CarSharing/compare/v1.13.0...v1.13.1) (2026-05-25)
 
-
 ### 🐛 Bug fixes
 
-* **calendar:** cast accessRole — not in googleapis Schema$Calendar types ([98cd798](https://github.com/demeesterroel/CarSharing/commit/98cd79826977e4e80c03e4244417a155b5c58000))
-* **calendar:** diagnostic messages for test connection (no access / read-only) ([#237](https://github.com/demeesterroel/CarSharing/issues/237)) ([2d6d7b3](https://github.com/demeesterroel/CarSharing/commit/2d6d7b38222b1775ce640b71d62beaaff8e9bf1d))
+- **calendar:** cast accessRole — not in googleapis Schema$Calendar types ([98cd798](https://github.com/demeesterroel/CarSharing/commit/98cd79826977e4e80c03e4244417a155b5c58000))
+- **calendar:** diagnostic messages for test connection (no access / read-only) ([#237](https://github.com/demeesterroel/CarSharing/issues/237)) ([2d6d7b3](https://github.com/demeesterroel/CarSharing/commit/2d6d7b38222b1775ce640b71d62beaaff8e9bf1d))
 
 ## [1.13.0](https://github.com/demeesterroel/CarSharing/compare/v1.12.5...v1.13.0) (2026-05-25)
 
-
 ### ✨ New features
 
-* **calendar:** subscribe button + Google Calendar setup docs ([#180](https://github.com/demeesterroel/CarSharing/issues/180)) ([#236](https://github.com/demeesterroel/CarSharing/issues/236)) ([36f733e](https://github.com/demeesterroel/CarSharing/commit/36f733e3d7e943bbc2cf6625cfc54443ec6e6447))
-* **trips/fuel:** lazy-render GroupedList — show 3 months, auto-load on scroll ([#235](https://github.com/demeesterroel/CarSharing/issues/235)) ([5547fd3](https://github.com/demeesterroel/CarSharing/commit/5547fd30075dc73558fc5195555849d68a49bf9e))
-
+- **calendar:** subscribe button + Google Calendar setup docs ([#180](https://github.com/demeesterroel/CarSharing/issues/180)) ([#236](https://github.com/demeesterroel/CarSharing/issues/236)) ([36f733e](https://github.com/demeesterroel/CarSharing/commit/36f733e3d7e943bbc2cf6625cfc54443ec6e6447))
+- **trips/fuel:** lazy-render GroupedList — show 3 months, auto-load on scroll ([#235](https://github.com/demeesterroel/CarSharing/issues/235)) ([5547fd3](https://github.com/demeesterroel/CarSharing/commit/5547fd30075dc73558fc5195555849d68a49bf9e))
 
 ### 🐛 Bug fixes
 
-* **calendar:** show real Google error code instead of [object Object] ([87d24b5](https://github.com/demeesterroel/CarSharing/commit/87d24b5bdabf0d24626608272ab1aaf8601462c5))
+- **calendar:** show real Google error code instead of [object Object] ([87d24b5](https://github.com/demeesterroel/CarSharing/commit/87d24b5bdabf0d24626608272ab1aaf8601462c5))
 
 ## [1.12.5](https://github.com/demeesterroel/CarSharing/compare/v1.12.4...v1.12.5) (2026-05-25)
 

@@ -1,6 +1,6 @@
 "use client";
-import { useState, useEffect } from "react";
-import { useSearchParams, useRouter, usePathname } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useState } from "react";
 
 export function useEditModal() {
   const searchParams = useSearchParams();
@@ -14,7 +14,9 @@ export function useEditModal() {
   const editingId = editIdParam ? Number(editIdParam) : null;
 
   const [modalClosed, setModalClosed] = useState(false);
-  useEffect(() => { setModalClosed(false); }, [editingId]);
+  useEffect(() => {
+    setModalClosed(false);
+  }, [editingId]);
 
   const openAdd = () => {
     const params = new URLSearchParams(searchParams.toString());

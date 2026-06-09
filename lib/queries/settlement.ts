@@ -1,7 +1,7 @@
-import type Database from "better-sqlite3";
-import type { SettlementResult, MemberStatement, CarEraBalance, AnnotatedTransfer } from "@/types";
-import { getPaymentsByYear } from "./payments";
 import { shortNameOf } from "@/lib/person-utils";
+import type { AnnotatedTransfer, CarEraBalance, MemberStatement, SettlementResult } from "@/types";
+import type Database from "better-sqlite3";
+import { getPaymentsByYear } from "./payments";
 
 interface CarEraRow {
   id: number;

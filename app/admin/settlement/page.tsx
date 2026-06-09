@@ -1,19 +1,22 @@
 "use client";
-import { useState, Suspense } from "react";
-import { useQueryClient, useMutation } from "@tanstack/react-query";
-import { useRouter, usePathname, useSearchParams } from "next/navigation";
-import { paper, fontMono, fontSerif, fmtMoney, amtColor, signPrefix } from "@/lib/paper-theme";
 import { useT } from "@/components/locale-provider";
-import { useEarliestDashboardYear } from "@/hooks/use-dashboard";
-import { useSettlement } from "@/hooks/use-settlement";
-import { useMe } from "@/hooks/use-me";
 import { useAdminSettings } from "@/hooks/use-admin-settings";
+import { useEarliestDashboardYear } from "@/hooks/use-dashboard";
+import { useMe } from "@/hooks/use-me";
 import { usePeople } from "@/hooks/use-people";
+import { useSettlement } from "@/hooks/use-settlement";
 import { apiFetch } from "@/lib/api/client";
-import { Card, Row, Perf } from "../_shared";
-import type { MemberStatement, AnnotatedTransfer } from "@/types";
+import { amtColor, fmtMoney, fontMono, fontSerif, paper, signPrefix } from "@/lib/paper-theme";
 import { fullNameOf } from "@/lib/person-utils";
-import { buildSettlementMessage, buildSettlementLines, type SettlementLine } from "@/lib/settlement-message";
+import {
+  buildSettlementLines,
+  buildSettlementMessage,
+  type SettlementLine,
+} from "@/lib/settlement-message";
+import type { AnnotatedTransfer, MemberStatement } from "@/types";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { Suspense, useState } from "react";
 
 function fmtL(liters: number): string {
   return liters.toLocaleString("nl-BE", { minimumFractionDigits: 1, maximumFractionDigits: 1 });

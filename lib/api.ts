@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import { z, ZodError, type ZodSchema } from "zod";
+import { ZodError, type ZodSchema } from "zod";
 import { validateCsrfToken } from "./csrf";
-import { checkRateLimit } from "./rate-limit";
 import { canEdit } from "./permissions";
+import { checkRateLimit } from "./rate-limit";
 import type { SessionData } from "./session";
 
 // Re-export the pure permission helper so existing call sites that import it

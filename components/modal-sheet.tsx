@@ -1,6 +1,6 @@
 "use client";
-import * as Dialog from "@radix-ui/react-dialog";
 import { paper } from "@/lib/paper-theme";
+import * as Dialog from "@radix-ui/react-dialog";
 
 const overlayStyle: React.CSSProperties = {
   position: "fixed",
@@ -39,7 +39,12 @@ interface ModalSheetProps {
 
 export function ModalSheet({ open, onClose, title, children }: ModalSheetProps) {
   return (
-    <Dialog.Root open={open} onOpenChange={(o) => { if (!o) onClose(); }}>
+    <Dialog.Root
+      open={open}
+      onOpenChange={(o) => {
+        if (!o) onClose();
+      }}
+    >
       <Dialog.Portal>
         <Dialog.Overlay style={overlayStyle} />
         <Dialog.Content style={sheetStyle} aria-describedby={undefined}>

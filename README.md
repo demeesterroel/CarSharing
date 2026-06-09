@@ -11,7 +11,9 @@ npm install
 npm run seed:demo     # creates data/carsharing.db with demo data
 npm run dev           # http://localhost:3000
 ```
+
 To seed into an isolated file (e.g. alongside a production-synced DB):
+
 ```bash
 DB_PATH=./data/demo.db npm run seed:demo
 DB_PATH=./data/demo.db npm run dev
@@ -31,7 +33,7 @@ Open [http://localhost:3000](http://localhost:3000).
 
 **What's populated:** dashboard with 5-year balances, trips/fuel/expenses across 3 cars, settlement 2021–2024 locked (2025 open).
 
-To reset: delete the database in `data/<databasefile>.db` and re-run the `seed:demo` and `dev` commands. 
+To reset: delete the database in `data/<databasefile>.db` and re-run the `seed:demo` and `dev` commands.
 
 Note : The `data/` directory is gitignored.
 

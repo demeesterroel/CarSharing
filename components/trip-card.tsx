@@ -1,10 +1,10 @@
 "use client";
-import type { Trip } from "@/types";
-import { paper, fontMono, fontSerif, fmtMoney, fmtDate } from "@/lib/paper-theme";
-import { useLocale } from "@/components/locale-provider";
-import { useTheme } from "@/lib/theme-context";
 import { CarBadge } from "@/components/car-badge";
+import { useLocale } from "@/components/locale-provider";
 import { PendingBadge } from "@/components/pending-badge";
+import { fmtDate, fmtMoney, fontMono, fontSerif, paper } from "@/lib/paper-theme";
+import { useTheme } from "@/lib/theme-context";
+import type { Trip } from "@/types";
 
 export interface TripCardProps {
   trip: Trip;
@@ -83,7 +83,9 @@ export function TripCard({ trip, onClick }: TripCardProps) {
         >
           {fmtMoney(trip.amount)}
         </div>
-        <div style={{ fontFamily: fontMono, fontSize: mono ? 11.5 : 10, color: paper.inkDim }}>{trip.km} km</div>
+        <div style={{ fontFamily: fontMono, fontSize: mono ? 11.5 : 10, color: paper.inkDim }}>
+          {trip.km} km
+        </div>
       </div>
     </button>
   );

@@ -1,8 +1,8 @@
 // lib/__tests__/settlement_lines.test.ts
-import { describe, it, expect } from "vitest";
-import { buildSettlementLines } from "../settlement-lines";
-import type { SettlementLine } from "../settlement-lines";
 import type { MemberStatement } from "@/types";
+import { describe, expect, it } from "vitest";
+import type { SettlementLine } from "../settlement-lines";
+import { buildSettlementLines } from "../settlement-lines";
 
 const mockT = (key: string): string => {
   const map: Record<string, string> = {
@@ -62,7 +62,10 @@ describe("buildSettlementLines — non-owner, no payments", () => {
   });
 
   it("car_header has correct label, sign, amount", () => {
-    const header = lines().find((l) => l.kind === "car_header") as Extract<SettlementLine, { kind: "car_header" }>;
+    const header = lines().find((l) => l.kind === "car_header") as Extract<
+      SettlementLine,
+      { kind: "car_header" }
+    >;
     expect(header.label).toBe("CA");
     expect(header.sign).toBe("−");
     expect(header.amount).toBeCloseTo(148.01, 2);
@@ -77,7 +80,10 @@ describe("buildSettlementLines — non-owner, no payments", () => {
   });
 
   it("summary label is 'Saldo' when no payments", () => {
-    const s = lines().find((l) => l.kind === "summary") as Extract<SettlementLine, { kind: "summary" }>;
+    const s = lines().find((l) => l.kind === "summary") as Extract<
+      SettlementLine,
+      { kind: "summary" }
+    >;
     expect(s.label).toBe("Saldo");
     expect(s.sign).toBe("−");
     expect(s.amount).toBeCloseTo(148.01, 2);
@@ -85,7 +91,9 @@ describe("buildSettlementLines — non-owner, no payments", () => {
 
   it("no instruction line when person has no balance direction to settle", () => {
     // balance < 0 → person owes co-op → instruction_pay with iban
-    const inst = lines().find((l) => l.kind === "instruction_pay") as Extract<SettlementLine, { kind: "instruction_pay" }> | undefined;
+    const inst = lines().find((l) => l.kind === "instruction_pay") as
+      | Extract<SettlementLine, { kind: "instruction_pay" }>
+      | undefined;
     expect(inst).toBeDefined();
     expect(inst!.iban).toBe("BE00 0000 0000 0000");
     expect(inst!.amount).toBeCloseTo(148.01, 2);
@@ -110,28 +118,37 @@ describe("buildSettlementLines — non-owner, with partial payment", () => {
       "row",
       "row",
       "separator",
-      "summary",  // Bruto saldo
-      "summary",  // Al betaald
+      "summary", // Bruto saldo
+      "summary", // Al betaald
       "separator",
-      "summary",  // Nog te betalen
+      "summary", // Nog te betalen
       "instruction_pay",
     ]);
   });
 
   it("first summary is 'Bruto saldo'", () => {
-    const summaries = lines().filter((l) => l.kind === "summary") as Extract<SettlementLine, { kind: "summary" }>[];
+    const summaries = lines().filter((l) => l.kind === "summary") as Extract<
+      SettlementLine,
+      { kind: "summary" }
+    >[];
     expect(summaries[0].label).toBe("Bruto saldo");
     expect(summaries[0].amount).toBeCloseTo(148.01, 2);
   });
 
   it("second summary is 'Al betaald'", () => {
-    const summaries = lines().filter((l) => l.kind === "summary") as Extract<SettlementLine, { kind: "summary" }>[];
+    const summaries = lines().filter((l) => l.kind === "summary") as Extract<
+      SettlementLine,
+      { kind: "summary" }
+    >[];
     expect(summaries[1].label).toBe("Al betaald");
     expect(summaries[1].amount).toBeCloseTo(50, 2);
   });
 
   it("final summary is 'Nog te betalen' with remaining amount", () => {
-    const summaries = lines().filter((l) => l.kind === "summary") as Extract<SettlementLine, { kind: "summary" }>[];
+    const summaries = lines().filter((l) => l.kind === "summary") as Extract<
+      SettlementLine,
+      { kind: "summary" }
+    >[];
     expect(summaries[2].label).toBe("Nog te betalen");
     expect(summaries[2].amount).toBeCloseTo(98.01, 2);
     expect(summaries[2].emphasis).toBe(true);
@@ -146,10 +163,12 @@ describe("buildSettlementLines — non-owner, net > 0 with payments", () => {
       bankAccount: "BE00 0000 0000 0000",
       personBankAccount: "BE00 0000 0000 0004",
       crossRows: [],
-      alreadyPaid: -2,  // raw sum: 22 + (-24)
+      alreadyPaid: -2, // raw sum: 22 + (-24)
       t: mockT,
     });
-    const inst = lines.find((l) => l.kind === "instruction_receive") as Extract<SettlementLine, { kind: "instruction_receive" }> | undefined;
+    const inst = lines.find((l) => l.kind === "instruction_receive") as
+      | Extract<SettlementLine, { kind: "instruction_receive" }>
+      | undefined;
     expect(inst).toBeDefined();
     expect(inst!.amount).toBeCloseTo(0.19, 2);
     expect(inst!.bankAccount).toBe("BE00 0000 0000 0004");
@@ -165,7 +184,10 @@ describe("buildSettlementLines — non-owner, net > 0 with payments", () => {
       alreadyPaid: -2,
       t: mockT,
     });
-    const summaries = lines.filter((l) => l.kind === "summary") as Extract<SettlementLine, { kind: "summary" }>[];
+    const summaries = lines.filter((l) => l.kind === "summary") as Extract<
+      SettlementLine,
+      { kind: "summary" }
+    >[];
     expect(summaries.at(-1)!.label).toBe("Nog te ontvangen");
   });
 });
@@ -176,7 +198,15 @@ describe("buildSettlementLines — two car eras → section_break between them",
       ...nonOwner,
       car_eras: [
         { ...nonOwner.car_eras[0], car_short: "CA" },
-        { ...nonOwner.car_eras[0], car_short: "CB", balance: -80, trip_km: 400, trip_amount: 80, fuel_liters: 0, fuel_amount: 0 },
+        {
+          ...nonOwner.car_eras[0],
+          car_short: "CB",
+          balance: -80,
+          trip_km: 400,
+          trip_amount: 80,
+          fuel_liters: 0,
+          fuel_amount: 0,
+        },
       ],
     };
     const lines = buildSettlementLines({
@@ -191,8 +221,8 @@ describe("buildSettlementLines — two car eras → section_break between them",
     expect(kinds(lines)).toContain("section_break");
     // section_break appears between the two car_headers
     const breakIdx = lines.findIndex((l) => l.kind === "section_break");
-    expect(lines[breakIdx - 1].kind).not.toBe("car_header");  // after some rows
-    expect(lines[breakIdx + 1].kind).toBe("car_header");      // before next header
+    expect(lines[breakIdx - 1].kind).not.toBe("car_header"); // after some rows
+    expect(lines[breakIdx + 1].kind).toBe("car_header"); // before next header
   });
 });
 
@@ -200,11 +230,13 @@ describe("buildSettlementLines — settled-outside notes", () => {
   it("emits note line when fuel_settled_liters > 0", () => {
     const member: MemberStatement = {
       ...nonOwner,
-      car_eras: [{
-        ...nonOwner.car_eras[0],
-        fuel_settled_liters: 10,
-        fuel_settled_count: 1,
-      }],
+      car_eras: [
+        {
+          ...nonOwner.car_eras[0],
+          fuel_settled_liters: 10,
+          fuel_settled_count: 1,
+        },
+      ],
     };
     const lines = buildSettlementLines({
       m: member,
@@ -215,7 +247,9 @@ describe("buildSettlementLines — settled-outside notes", () => {
       alreadyPaid: 0,
       t: mockT,
     });
-    const note = lines.find((l) => l.kind === "note") as Extract<SettlementLine, { kind: "note" }> | undefined;
+    const note = lines.find((l) => l.kind === "note") as
+      | Extract<SettlementLine, { kind: "note" }>
+      | undefined;
     expect(note).toBeDefined();
     expect(note!.text).toContain("(*)");
     expect(note!.text).toContain("buiten afrekening");
@@ -245,7 +279,17 @@ describe("buildSettlementLines — owner, own car section", () => {
         expense_amount: 0,
         n_c_star: 150,
         member_contributions: [
-          { person_name: "Bob", trip_km: 500, fuel_liters: 10, expense_amount: 0, contribution: 150, fuel_settled_count: 0, fuel_settled_liters: 0, expense_settled_count: 0, expense_settled_amount: 0 },
+          {
+            person_name: "Bob",
+            trip_km: 500,
+            fuel_liters: 10,
+            expense_amount: 0,
+            contribution: 150,
+            fuel_settled_count: 0,
+            fuel_settled_liters: 0,
+            expense_settled_count: 0,
+            expense_settled_amount: 0,
+          },
         ],
       },
     ],
@@ -261,7 +305,10 @@ describe("buildSettlementLines — owner, own car section", () => {
       alreadyPaid: 0,
       t: mockT,
     });
-    const header = lines.find((l) => l.kind === "car_header") as Extract<SettlementLine, { kind: "car_header" }>;
+    const header = lines.find((l) => l.kind === "car_header") as Extract<
+      SettlementLine,
+      { kind: "car_header" }
+    >;
     expect(header.label).toBe("Eigen wagen — CA");
   });
 
@@ -275,7 +322,10 @@ describe("buildSettlementLines — owner, own car section", () => {
       alreadyPaid: 0,
       t: mockT,
     });
-    const rows = lines.filter((l) => l.kind === "row") as Extract<SettlementLine, { kind: "row" }>[];
+    const rows = lines.filter((l) => l.kind === "row") as Extract<
+      SettlementLine,
+      { kind: "row" }
+    >[];
     expect(rows.length).toBe(1);
     expect(rows[0].label).toContain("Bob");
   });

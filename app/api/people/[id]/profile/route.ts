@@ -1,8 +1,8 @@
+import { forbidden, json, notFound, readBody, readId } from "@/lib/api";
 import { getDb } from "@/lib/db";
 import { getPersonById, updatePerson } from "@/lib/queries/people";
-import { json, readBody, readId, notFound, forbidden } from "@/lib/api";
-import { getIronSession } from "iron-session";
 import { sessionOptions, type SessionData } from "@/lib/session";
+import { getIronSession } from "iron-session";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 

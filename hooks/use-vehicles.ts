@@ -1,5 +1,5 @@
-import { createResourceHooks } from "./use-resource";
 import type { Car } from "@/types";
+import { createResourceHooks } from "./use-resource";
 
 const hooks = createResourceHooks<Car, Omit<Car, "id">>("cars", "/api/vehicles", {
   invalidate: [["dashboard"]],

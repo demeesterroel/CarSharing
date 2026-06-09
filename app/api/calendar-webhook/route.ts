@@ -1,10 +1,10 @@
 // app/api/calendar-webhook/route.ts
-import { NextRequest, NextResponse } from "next/server";
+import { logSync } from "@/lib/calendar-sync-log";
 import { getDb } from "@/lib/db";
-import { getSetting } from "@/lib/queries/settings";
 import { getOAuthClient, listEventsDelta } from "@/lib/google-calendar";
 import { processCalendarDelta } from "@/lib/process-calendar-delta";
-import { logSync } from "@/lib/calendar-sync-log";
+import { getSetting } from "@/lib/queries/settings";
+import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(req: NextRequest): Promise<NextResponse> {
   // Initial handshake from Google
@@ -53,7 +53,10 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
           direction: "inbound",
           action: "webhook",
           ok: false,
-          detail: { reason: "resync_failed", message: e2 instanceof Error ? e2.message : String(e2) },
+          detail: {
+            reason: "resync_failed",
+            message: e2 instanceof Error ? e2.message : String(e2),
+          },
         });
         return NextResponse.json({ ok: true });
       }
@@ -63,7 +66,11 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
         direction: "inbound",
         action: "webhook",
         ok: false,
-        detail: { reason: "delta_failed", code, message: e instanceof Error ? e.message : String(e) },
+        detail: {
+          reason: "delta_failed",
+          code,
+          message: e instanceof Error ? e.message : String(e),
+        },
       });
       return NextResponse.json({ ok: true });
     }

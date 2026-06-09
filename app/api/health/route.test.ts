@@ -1,5 +1,5 @@
-import { describe, it, expect } from "vitest";
 import { version } from "@/package.json";
+import { describe, expect, it } from "vitest";
 import { GET, HEAD } from "./route";
 
 describe("GET /api/health", () => {

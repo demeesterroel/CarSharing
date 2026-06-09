@@ -1,24 +1,23 @@
 "use client";
-import { useEffect } from "react";
-import { useForm, useWatch, Controller } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
-import { toast } from "sonner";
-import { Lock } from "lucide-react";
 import { CarToggle } from "@/components/car-toggle";
-import { LocationPicker } from "@/components/location-picker";
-import { calcTripAmount } from "@/lib/formulas";
-import { usePeople } from "@/hooks/use-people";
-import { useCars } from "@/hooks/use-vehicles";
-import { useLastCarState } from "@/hooks/use-vehicle-state";
-import { useMe } from "@/hooks/use-me";
-import { useOnlineState } from "@/lib/offline/online-state";
-import type { Trip } from "@/types";
-import { t, buildMissingLabel } from "@/lib/i18n";
-import { fullNameOf } from "@/lib/person-utils";
-import { paper, fontMono, fontSerif, fmtMoney, fmtDate } from "@/lib/paper-theme";
-import { useTheme } from "@/lib/theme-context";
 import { useLocale } from "@/components/locale-provider";
+import { LocationPicker } from "@/components/location-picker";
+import { useMe } from "@/hooks/use-me";
+import { usePeople } from "@/hooks/use-people";
+import { useLastCarState } from "@/hooks/use-vehicle-state";
+import { useCars } from "@/hooks/use-vehicles";
+import { buildMissingLabel, t } from "@/lib/i18n";
+import { useOnlineState } from "@/lib/offline/online-state";
+import { fmtDate, fmtMoney, fontMono, fontSerif, paper } from "@/lib/paper-theme";
+import { fullNameOf } from "@/lib/person-utils";
+import { useTheme } from "@/lib/theme-context";
+import type { Trip } from "@/types";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Lock } from "lucide-react";
+import { useEffect } from "react";
+import { Controller, useForm, useWatch } from "react-hook-form";
+import { toast } from "sonner";
+import { z } from "zod";
 
 const schema = z
   .object({

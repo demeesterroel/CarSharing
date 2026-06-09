@@ -1,15 +1,15 @@
 "use client";
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import { useQueryClient } from "@tanstack/react-query";
-import { useMe } from "@/hooks/use-me";
 import { useT } from "@/components/locale-provider";
 import { PageHeader } from "@/components/page-header";
-import { paper, fontMono, fontSerif } from "@/lib/paper-theme";
+import { useMe } from "@/hooks/use-me";
 import { apiFetch } from "@/lib/api/client";
+import { fontMono, fontSerif, paper } from "@/lib/paper-theme";
+import { fullNameOf } from "@/lib/person-utils";
 import { useTheme, type Theme } from "@/lib/theme-context";
 import type { Person } from "@/types";
-import { fullNameOf } from "@/lib/person-utils";
+import { useQueryClient } from "@tanstack/react-query";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 
 export default function EditProfilePage({ params }: { params: Promise<{ id: string }> }) {
   const router = useRouter();

@@ -1,20 +1,20 @@
 "use client";
-import { useState, useEffect } from "react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useRouter } from "next/navigation";
-import Link from "next/link";
-import { Pencil } from "lucide-react";
-import { useMe } from "@/hooks/use-me";
-import { paper, fontMono, fontSerif } from "@/lib/paper-theme";
-import { useT } from "@/components/locale-provider";
-import type { Person } from "@/types";
-import { usePeople } from "../_shared";
-import { toast } from "sonner";
-import { apiFetch } from "@/lib/api/client";
-import { fullNameOf } from "@/lib/person-utils";
 import { Fab } from "@/components/fab";
+import { useT } from "@/components/locale-provider";
 import { ModalSheet } from "@/components/modal-sheet";
+import { useMe } from "@/hooks/use-me";
 import { useCreatePerson } from "@/hooks/use-people";
+import { apiFetch } from "@/lib/api/client";
+import { fontMono, fontSerif, paper } from "@/lib/paper-theme";
+import { fullNameOf } from "@/lib/person-utils";
+import type { Person } from "@/types";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { Pencil } from "lucide-react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
+import { usePeople } from "../_shared";
 import { MemberForm } from "./member-form";
 
 // ── Person Row (accordion) ────────────────────────────────────

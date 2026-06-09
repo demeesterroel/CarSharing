@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
-import { describe, it, expect, vi } from "vitest";
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import "@testing-library/jest-dom";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { describe, expect, it, vi } from "vitest";
 import LoginForm from "../login-form";
 
 // useT returns the key itself so we can assert on stable identifiers.
@@ -67,7 +67,9 @@ describe("LoginForm", () => {
   });
 
   it("calls fetch to /api/auth/forgot when submitting reset email", async () => {
-    const fetchSpy = vi.spyOn(globalThis, "fetch").mockResolvedValueOnce(new Response(null, { status: 200 }));
+    const fetchSpy = vi
+      .spyOn(globalThis, "fetch")
+      .mockResolvedValueOnce(new Response(null, { status: 200 }));
 
     render(<LoginForm mailEnabled={true} />);
 
@@ -87,7 +89,7 @@ describe("LoginForm", () => {
         expect.objectContaining({
           method: "POST",
           body: JSON.stringify({ email: "user@example.com" }),
-        }),
+        })
       );
     });
 

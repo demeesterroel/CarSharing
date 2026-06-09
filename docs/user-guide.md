@@ -55,6 +55,7 @@ The dashboard contains:
 ### Latest info
 
 Scroll down to see a overview of latest info.
+
 - **Recent trips, fuel, and expenses** — the latest entries with an **All** link to the full page
 - **Upcoming reservations** — your next confirmed and pending reservations
 
@@ -106,10 +107,11 @@ Each fuel entry shows: date, car, litres, price per litre, total cost, and who p
 
 ### Fill-up Details
 
-When editing a fill-up, you can optionally 
+When editing a fill-up, you can optionally
+
 - mark if this was a FULL tank fill (usefull to be able to better calculate average consumption)
 - the location where you filled up
-- a receipt 
+- a receipt
 
 ![Fuel detail view](screenshots/member-35-fuel-detail.png)
 
@@ -137,8 +139,8 @@ Each expense card shows: date, car, amount, description, and category. Click an 
 
 ![Expense detail view](screenshots/member-36-expense-detail.png)
 
-
 ### Note : Mark Costs that have been Settled outside the app
+
 When editing an Expense or Fill-up, you can enabled the check box "settled outside" in case you have already received the reimbursment of this cost, either directly or through a another setllment app like Splitser etc..
 
 ---

@@ -17,11 +17,11 @@
  * plain handler using json() / readBody() / readId() directly.
  */
 
+import { json, notFound, readBody, readId, requireSession } from "@/lib/api";
+import { getDb } from "@/lib/db";
+import type Database from "better-sqlite3";
 import { NextResponse } from "next/server";
 import type { ZodSchema } from "zod";
-import type Database from "better-sqlite3";
-import { getDb } from "@/lib/db";
-import { json, readBody, readId, notFound, requireSession } from "@/lib/api";
 
 type Ctx = { params: Promise<Record<string, string>> };
 

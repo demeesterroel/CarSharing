@@ -1,6 +1,6 @@
+import { json, readId } from "@/lib/api";
 import { getDb } from "@/lib/db";
 import { getLastCarState } from "@/lib/queries/car-state";
-import { json, readId } from "@/lib/api";
 
 export const GET = json(async (_req, ctx) => {
   const carId = await readId(ctx);

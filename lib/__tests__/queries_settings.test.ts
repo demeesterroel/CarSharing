@@ -1,6 +1,6 @@
 // lib/__tests__/queries_settings.test.ts
-import { describe, it, expect } from "vitest";
 import Database from "better-sqlite3";
+import { describe, expect, it } from "vitest";
 import { runMigrations } from "../db/migrate";
 import { getSetting, setSetting } from "../queries/settings";
 

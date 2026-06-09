@@ -1,5 +1,5 @@
-import { describe, it, expect } from "vitest";
 import Database from "better-sqlite3";
+import { describe, expect, it } from "vitest";
 import { runMigrations } from "../db/migrate";
 
 function makeDb() {
@@ -164,8 +164,12 @@ describe("migration 0019 — default theme mono", () => {
     `);
 
     // Seed people with theme_preference 'paper' (the pre-0019 default)
-    db.exec(`INSERT INTO people (id, first_name, active, theme_preference) VALUES (1, 'Alice', 1, 'paper')`);
-    db.exec(`INSERT INTO people (id, first_name, active, theme_preference) VALUES (2, 'Bob',   1, 'paper')`);
+    db.exec(
+      `INSERT INTO people (id, first_name, active, theme_preference) VALUES (1, 'Alice', 1, 'paper')`
+    );
+    db.exec(
+      `INSERT INTO people (id, first_name, active, theme_preference) VALUES (2, 'Bob',   1, 'paper')`
+    );
 
     // Mark all migrations except 0019 as applied
     const skip = [
@@ -197,9 +201,10 @@ describe("migration 0019 — default theme mono", () => {
 
     runMigrations(db);
 
-    const people = db
-      .prepare("SELECT id, theme_preference FROM people ORDER BY id")
-      .all() as { id: number; theme_preference: string }[];
+    const people = db.prepare("SELECT id, theme_preference FROM people ORDER BY id").all() as {
+      id: number;
+      theme_preference: string;
+    }[];
 
     expect(people[0].theme_preference).toBe("mono");
     expect(people[1].theme_preference).toBe("mono");
@@ -212,7 +217,9 @@ describe("migration 0019 — default theme mono", () => {
     // This test documents the current behaviour: new rows get 'paper' from the column DEFAULT.
     const db = makeDb();
     db.exec("INSERT INTO people (first_name, active) VALUES ('Charlie', 1)");
-    const row = db.prepare("SELECT theme_preference FROM people WHERE first_name = 'Charlie'").get() as {
+    const row = db
+      .prepare("SELECT theme_preference FROM people WHERE first_name = 'Charlie'")
+      .get() as {
       theme_preference: string;
     };
     // The column DEFAULT remains 'paper'; 0019 only UPDATEs existing rows.
@@ -232,9 +239,7 @@ describe("migration 0020 — date indexes", () => {
   it("creates idx_fuel_fillups_date index", () => {
     const db = makeDb();
     const indexes = db
-      .prepare(
-        "SELECT name FROM sqlite_master WHERE type='index' AND tbl_name='fuel_fillups'"
-      )
+      .prepare("SELECT name FROM sqlite_master WHERE type='index' AND tbl_name='fuel_fillups'")
       .all() as { name: string }[];
     expect(indexes.map((i) => i.name)).toContain("idx_fuel_fillups_date");
   });
@@ -298,9 +303,11 @@ describe("migration 0022 — invite_tokens purpose column", () => {
     // Instead verify a freshly inserted token gets the default.
     const db = makeDb();
     db.exec("INSERT INTO people (id, first_name, active) VALUES (1, 'Alice', 1)");
-    db.prepare(
-      "INSERT INTO invite_tokens (token, person_id, expires_at) VALUES (?,?,?)"
-    ).run("tok-abc", 1, "2099-01-01");
+    db.prepare("INSERT INTO invite_tokens (token, person_id, expires_at) VALUES (?,?,?)").run(
+      "tok-abc",
+      1,
+      "2099-01-01"
+    );
     const row = db.prepare("SELECT purpose FROM invite_tokens WHERE token = 'tok-abc'").get() as {
       purpose: string;
     };

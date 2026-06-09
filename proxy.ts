@@ -1,6 +1,6 @@
-import { NextRequest, NextResponse } from "next/server";
-import { getIronSession } from "iron-session";
 import { sessionOptions, type SessionData } from "@/lib/session";
+import { getIronSession } from "iron-session";
+import { NextRequest, NextResponse } from "next/server";
 
 // Paths that are always accessible — no auth check.
 const PUBLIC_PATHS = [

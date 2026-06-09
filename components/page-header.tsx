@@ -1,12 +1,12 @@
 "use client";
-import { useRouter } from "next/navigation";
-import { paper, fontMono, fontSerif } from "@/lib/paper-theme";
 import { useT } from "@/components/locale-provider";
+import { fontMono, fontSerif, paper } from "@/lib/paper-theme";
 import { useTheme } from "@/lib/theme-context";
+import pkg from "@/package.json";
 import { Power } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { LangSwitcher } from "./lang-switcher";
 import { OfflineBadge } from "./offline-badge";
-import pkg from "@/package.json";
 
 const version = pkg.version;
 
@@ -59,9 +59,7 @@ export function PageHeader({ title, subtitle, right, titleSize = 26 }: Props) {
           top: 0,
           zIndex: 20,
           background: paper.paper,
-          borderBottom: mono
-            ? `1px solid ${paper.paperDark}`
-            : `1.5px dashed ${paper.ink}`,
+          borderBottom: mono ? `1px solid ${paper.paperDark}` : `1.5px dashed ${paper.ink}`,
           padding: "6px 20px 10px",
           display: "flex",
           alignItems: "baseline",

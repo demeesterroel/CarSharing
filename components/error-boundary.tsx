@@ -1,6 +1,6 @@
 "use client";
+import { fontMono, fontSerif, paper } from "@/lib/paper-theme";
 import React from "react";
-import { paper, fontMono, fontSerif } from "@/lib/paper-theme";
 
 interface Props {
   children: React.ReactNode;
@@ -29,19 +29,21 @@ export class ErrorBoundary extends React.Component<Props, State> {
     if (this.state.error) {
       if (this.props.fallback) return this.props.fallback;
       return (
-        <div style={{
-          padding: "40px 24px",
-          fontFamily: fontMono,
-          color: paper.ink,
-          background: paper.paper,
-          minHeight: "60vh",
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          justifyContent: "center",
-          gap: 16,
-          textAlign: "center",
-        }}>
+        <div
+          style={{
+            padding: "40px 24px",
+            fontFamily: fontMono,
+            color: paper.ink,
+            background: paper.paper,
+            minHeight: "60vh",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: 16,
+            textAlign: "center",
+          }}
+        >
           <div style={{ fontSize: 40 }}>⚠</div>
           <div style={{ fontFamily: fontSerif, fontSize: 22, fontWeight: 700 }}>
             Something went wrong

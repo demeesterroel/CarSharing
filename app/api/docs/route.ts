@@ -1,5 +1,5 @@
-import { NextResponse } from "next/server";
 import { readFileSync } from "fs";
+import { NextResponse } from "next/server";
 import { join } from "path";
 
 export async function GET() {

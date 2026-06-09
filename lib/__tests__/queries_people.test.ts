@@ -1,19 +1,19 @@
 // lib/__tests__/queries_people.test.ts
-import { describe, it, expect } from "vitest";
 import Database from "better-sqlite3";
+import { describe, expect, it } from "vitest";
 import { runMigrations } from "../db/migrate";
 import {
-  getPeople,
+  createInviteToken,
+  deleteInviteToken,
   getActivePeople,
+  getInviteToken,
+  getPeople,
   getPersonById,
   getPersonByUsername,
   insertPerson,
-  updatePerson,
-  setPasswordHash,
   isOwner,
-  createInviteToken,
-  getInviteToken,
-  deleteInviteToken,
+  setPasswordHash,
+  updatePerson,
 } from "../queries/people";
 
 function makeDb() {
@@ -171,8 +171,12 @@ describe("theme_preference default", () => {
     const { readdirSync, readFileSync } = require("fs");
     const path = require("path");
     const migrationsDir = path.join(process.cwd(), "migrations");
-    db.exec(`CREATE TABLE IF NOT EXISTS _migrations (id INTEGER PRIMARY KEY AUTOINCREMENT, filename TEXT NOT NULL UNIQUE, applied_at TEXT NOT NULL DEFAULT (datetime('now')))`);
-    const files = readdirSync(migrationsDir).filter((f: string) => f.endsWith(".sql") && f <= "0018_people_theme_preference.sql").sort();
+    db.exec(
+      `CREATE TABLE IF NOT EXISTS _migrations (id INTEGER PRIMARY KEY AUTOINCREMENT, filename TEXT NOT NULL UNIQUE, applied_at TEXT NOT NULL DEFAULT (datetime('now')))`
+    );
+    const files = readdirSync(migrationsDir)
+      .filter((f: string) => f.endsWith(".sql") && f <= "0018_people_theme_preference.sql")
+      .sort();
     for (const f of files) {
       db.pragma("foreign_keys = OFF");
       db.exec(readFileSync(path.join(migrationsDir, f), "utf-8"));
@@ -180,10 +184,14 @@ describe("theme_preference default", () => {
       db.prepare("INSERT INTO _migrations (filename) VALUES (?)").run(f);
     }
     // Insert legacy 'paper' row before migration 0019
-    db.prepare("INSERT INTO people (first_name, last_name, discount, discount_long, active, bank_account, theme_preference) VALUES ('Legacy','User',0,0,1,'','paper')").run();
+    db.prepare(
+      "INSERT INTO people (first_name, last_name, discount, discount_long, active, bank_account, theme_preference) VALUES ('Legacy','User',0,0,1,'','paper')"
+    ).run();
     // Apply remaining migrations (0019)
     runMigrations(db);
-    const row = db.prepare("SELECT theme_preference FROM people WHERE first_name='Legacy'").get() as any;
+    const row = db
+      .prepare("SELECT theme_preference FROM people WHERE first_name='Legacy'")
+      .get() as any;
     expect(row.theme_preference).toBe("mono");
   });
 });

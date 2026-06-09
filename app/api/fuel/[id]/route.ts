@@ -1,14 +1,14 @@
-import { NextResponse } from "next/server";
+import { json, notFound, readBody, readId, requireCanEdit } from "@/lib/api";
+import { getOneHandler } from "@/lib/api/crud-handler";
+import { getDb } from "@/lib/db";
 import {
+  ConflictError,
+  deleteFuelFillup,
   getFuelFillupById,
   updateFuelFillup,
-  deleteFuelFillup,
-  ConflictError,
 } from "@/lib/queries/fuel-fillups";
 import { fuelFillupSchema } from "@/lib/schemas/fuel-fillup";
-import { getOneHandler } from "@/lib/api/crud-handler";
-import { json, readBody, readId, notFound, requireCanEdit } from "@/lib/api";
-import { getDb } from "@/lib/db";
+import { NextResponse } from "next/server";
 
 export const GET = getOneHandler(getFuelFillupById);
 

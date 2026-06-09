@@ -1,9 +1,9 @@
 // @vitest-environment jsdom
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import type { CarPnL } from "@/lib/queries/admin";
+import "@testing-library/jest-dom";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import "@testing-library/jest-dom";
-import type { CarPnL } from "@/lib/queries/admin";
+import { describe, expect, it, vi } from "vitest";
 
 // --- module mocks ---
 

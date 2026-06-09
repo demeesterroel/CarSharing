@@ -1,9 +1,9 @@
 "use client";
-import { useState } from "react";
-import type { Reservation } from "@/types";
-import { paper, fontMono, fmtDate } from "@/lib/paper-theme";
-import { useT, useLocale } from "@/components/locale-provider";
+import { useLocale, useT } from "@/components/locale-provider";
+import { fmtDate, fontMono, paper } from "@/lib/paper-theme";
 import { useTheme } from "@/lib/theme-context";
+import type { Reservation } from "@/types";
+import { useState } from "react";
 
 function shortMonth(iso: string, locale: string): string {
   return new Date(`${iso}T00:00:00Z`)

@@ -1,22 +1,22 @@
 "use client";
-import { useEffect } from "react";
-import { toast } from "sonner";
-import { useForm, useWatch, Controller } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
-import { Lock, Wrench, Search, FileText, Shield, MoreHorizontal } from "lucide-react";
 import { CarToggle } from "@/components/car-toggle";
+import { useLocale, useT } from "@/components/locale-provider";
 import { ReceiptUpload } from "@/components/receipt-upload";
+import { useMe } from "@/hooks/use-me";
 import { usePeople } from "@/hooks/use-people";
 import { useCars } from "@/hooks/use-vehicles";
-import { useMe } from "@/hooks/use-me";
-import { useOnlineState } from "@/lib/offline/online-state";
-import type { Expense, ExpenseCategory, ExpenseInput } from "@/types";
-import { useT, useLocale } from "@/components/locale-provider";
 import { buildMissingLabel } from "@/lib/i18n";
+import { useOnlineState } from "@/lib/offline/online-state";
+import { fmtDate, fontMono, fontSerif, paper } from "@/lib/paper-theme";
 import { fullNameOf } from "@/lib/person-utils";
-import { paper, fontMono, fontSerif, fmtDate } from "@/lib/paper-theme";
 import { useTheme } from "@/lib/theme-context";
+import type { Expense, ExpenseCategory, ExpenseInput } from "@/types";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { FileText, Lock, MoreHorizontal, Search, Shield, Wrench } from "lucide-react";
+import { useEffect } from "react";
+import { Controller, useForm, useWatch } from "react-hook-form";
+import { toast } from "sonner";
+import { z } from "zod";
 
 const EXPENSE_CATEGORIES: {
   key: ExpenseCategory;

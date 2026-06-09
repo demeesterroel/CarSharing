@@ -1,7 +1,7 @@
 "use client";
-import { useState, useRef, useEffect } from "react";
+import { fontMono, paper } from "@/lib/paper-theme";
 import { useTheme } from "@/lib/theme-context";
-import { paper, fontMono } from "@/lib/paper-theme";
+import { useEffect, useRef, useState } from "react";
 
 interface YearSelectProps {
   value: string;

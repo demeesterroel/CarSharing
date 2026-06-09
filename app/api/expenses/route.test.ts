@@ -1,5 +1,5 @@
 // app/api/expenses/route.test.ts
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("@/lib/env", () => ({
   env: { SESSION_PASSWORD: "test-password-32-chars-minimum!!", NODE_ENV: "test" },

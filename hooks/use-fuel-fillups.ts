@@ -1,16 +1,16 @@
 "use client";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiFetch } from "@/lib/api/client";
-import { newUuid } from "@/lib/offline/uuid";
-import { enqueue } from "@/lib/offline/outbox";
 import {
   applyCreate,
+  applyDelete,
+  applyUpdate,
   replaceCreate,
   rollbackCreate,
-  applyUpdate,
-  applyDelete,
 } from "@/lib/offline/optimistic";
+import { enqueue } from "@/lib/offline/outbox";
+import { newUuid } from "@/lib/offline/uuid";
 import type { FuelFillup, FuelFillupInput } from "@/types";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 const QUERY_KEY = "fuel-fillups";
 const PATH = "/api/fuel";

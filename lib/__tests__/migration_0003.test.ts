@@ -1,5 +1,5 @@
-import { describe, it, expect } from "vitest";
 import Database from "better-sqlite3";
+import { describe, expect, it } from "vitest";
 import { runMigrations } from "../db/migrate";
 
 describe("migration 0003", () => {

@@ -1,5 +1,5 @@
-import { describe, it, expect, beforeAll } from "vitest";
 import bcrypt from "bcryptjs";
+import { beforeAll, describe, expect, it } from "vitest";
 import { verifyCredentials } from "../auth";
 
 let HASH: string;

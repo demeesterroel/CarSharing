@@ -1,8 +1,8 @@
-import { NextResponse } from "next/server";
+import { json, readBody, requireAdminOrOwner, requireSession } from "@/lib/api";
+import { getDb } from "@/lib/db";
 import { getCars, insertCar } from "@/lib/queries/cars";
 import { carSchema } from "@/lib/schemas/car";
-import { getDb } from "@/lib/db";
-import { json, readBody, requireAdminOrOwner, requireSession } from "@/lib/api";
+import { NextResponse } from "next/server";
 
 export const GET = json(async (req) => {
   await requireSession(req);

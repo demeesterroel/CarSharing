@@ -1,9 +1,9 @@
 // lib/calendar-renew.ts
-import { randomUUID } from "crypto";
-import type Database from "better-sqlite3";
-import { getSetting } from "@/lib/queries/settings";
-import { getOAuthClient, watchEvents, stopChannel, listEventsDelta } from "@/lib/google-calendar";
+import { getOAuthClient, listEventsDelta, stopChannel, watchEvents } from "@/lib/google-calendar";
 import { processCalendarDelta } from "@/lib/process-calendar-delta";
+import { getSetting } from "@/lib/queries/settings";
+import type Database from "better-sqlite3";
+import { randomUUID } from "crypto";
 
 export interface RenewResult {
   ok: boolean;

@@ -1,6 +1,6 @@
+import { json, notFound, readBody, readId, requireAdmin, requireSession } from "@/lib/api";
 import { getDb } from "@/lib/db";
 import { getPersonById, updatePerson } from "@/lib/queries/people";
-import { json, readBody, readId, notFound, requireAdmin, requireSession } from "@/lib/api";
 import { personSchema } from "@/lib/schemas/person";
 
 export const GET = json(async (req, ctx) => {

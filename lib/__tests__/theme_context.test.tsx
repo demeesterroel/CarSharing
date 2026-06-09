@@ -1,7 +1,6 @@
 // @vitest-environment jsdom
-import { describe, it, expect, afterEach } from "vitest";
-import { render, act } from "@testing-library/react";
-import React from "react";
+import { act, render } from "@testing-library/react";
+import { afterEach, describe, expect, it } from "vitest";
 import { ThemeProvider, useTheme } from "../theme-context";
 
 function ThemeReader() {
@@ -24,7 +23,11 @@ describe("ThemeProvider", () => {
   });
 
   it("applies data-theme attribute to html element", () => {
-    render(<ThemeProvider><div /></ThemeProvider>);
+    render(
+      <ThemeProvider>
+        <div />
+      </ThemeProvider>
+    );
     expect(document.documentElement.getAttribute("data-theme")).toBe("mono");
   });
 
@@ -38,7 +41,9 @@ describe("ThemeProvider", () => {
         <Switcher />
       </ThemeProvider>
     );
-    act(() => { getByRole("button").click(); });
+    act(() => {
+      getByRole("button").click();
+    });
     expect(document.documentElement.getAttribute("data-theme")).toBe("mono");
   });
 

@@ -1,15 +1,15 @@
-import { NextResponse } from "next/server";
+import { resolveBaseUrl } from "@/lib/base-url";
 import { getDb } from "@/lib/db";
 import {
-  getAuthToken,
   deleteAuthToken,
-  getSessionEpoch,
+  getAuthToken,
   getPersonById,
+  getSessionEpoch,
   shortNameOf,
 } from "@/lib/queries/people";
-import { getIronSession } from "iron-session";
 import { sessionOptions, type SessionData } from "@/lib/session";
-import { resolveBaseUrl } from "@/lib/base-url";
+import { getIronSession } from "iron-session";
+import { NextResponse } from "next/server";
 
 /**
  * Consumes a magic-link token (the URL emailed to the user) and establishes a

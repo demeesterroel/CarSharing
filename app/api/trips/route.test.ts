@@ -1,5 +1,5 @@
 // app/api/trips/route.test.ts
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("@/lib/env", () => ({
   env: { SESSION_PASSWORD: "test-password-32-chars-minimum!!", NODE_ENV: "test" },
@@ -107,7 +107,10 @@ describe("POST /api/trips", () => {
   it("returns 403 when CSRF token is missing", async () => {
     const req = new Request("http://localhost/api/trips", {
       method: "POST",
-      headers: { "Content-Type": "application/json", "x-forwarded-for": `203.0.113.${++ipCounter}` },
+      headers: {
+        "Content-Type": "application/json",
+        "x-forwarded-for": `203.0.113.${++ipCounter}`,
+      },
       body: JSON.stringify(validTrip),
     });
     const res = await POST(req, ctx);

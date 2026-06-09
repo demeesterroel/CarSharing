@@ -1,18 +1,26 @@
 "use client";
-import { useState } from "react";
-import * as Dialog from "@radix-ui/react-dialog";
-import { paper, fontMono, fontSerif, fmtMoney, fmtDate, amtColor, signPrefix } from "@/lib/paper-theme";
+import { Fab } from "@/components/fab";
 import { useT } from "@/components/locale-provider";
 import {
-  usePayments,
   useCreatePayment,
-  useUpdatePayment,
   useDeletePayment,
+  usePayments,
+  useUpdatePayment,
 } from "@/hooks/use-payments";
 import { usePeople } from "@/hooks/use-people";
-import { Fab } from "@/components/fab";
-import type { Payment } from "@/types";
+import {
+  amtColor,
+  fmtDate,
+  fmtMoney,
+  fontMono,
+  fontSerif,
+  paper,
+  signPrefix,
+} from "@/lib/paper-theme";
 import { fullNameOf } from "@/lib/person-utils";
+import type { Payment } from "@/types";
+import * as Dialog from "@radix-ui/react-dialog";
+import { useState } from "react";
 
 // ── Sheet styles ──────────────────────────────────────────────
 const overlayStyle: React.CSSProperties = {
@@ -85,8 +93,7 @@ function AddPaymentSheet({ onClose }: { onClose: () => void }) {
   const { data: people = [] } = usePeople();
   const create = useCreatePayment();
   const [f, setF] = useState<FormState>(emptyForm());
-  const set = <K extends keyof FormState>(k: K, v: FormState[K]) =>
-    setF((p) => ({ ...p, [k]: v }));
+  const set = <K extends keyof FormState>(k: K, v: FormState[K]) => setF((p) => ({ ...p, [k]: v }));
 
   const valid = f.person_id !== "" && f.date.length >= 10 && Number(f.amount) !== 0;
 
@@ -175,9 +182,7 @@ function AddPaymentSheet({ onClose }: { onClose: () => void }) {
           <label style={labelStyle}>{t("form.person")}</label>
           <select
             value={f.person_id}
-            onChange={(e) =>
-              set("person_id", e.target.value === "" ? "" : Number(e.target.value))
-            }
+            onChange={(e) => set("person_id", e.target.value === "" ? "" : Number(e.target.value))}
             style={inputStyle}
           >
             <option value="">— {t("form.person")} —</option>
@@ -245,8 +250,7 @@ function PaymentAccordion({
   const remove = useDeletePayment();
 
   const [f, setF] = useState<FormState>(() => fromPayment(payment));
-  const set = <K extends keyof FormState>(k: K, v: FormState[K]) =>
-    setF((p) => ({ ...p, [k]: v }));
+  const set = <K extends keyof FormState>(k: K, v: FormState[K]) => setF((p) => ({ ...p, [k]: v }));
   const [deleteConfirm, setDeleteConfirm] = useState(false);
 
   // Reset form when payment changes externally
@@ -552,9 +556,7 @@ export default function AdminPaymentsPage() {
         <select
           aria-label={t("filter.all_persons")}
           value={personFilter}
-          onChange={(e) =>
-            setPersonFilter(e.target.value === "" ? "" : Number(e.target.value))
-          }
+          onChange={(e) => setPersonFilter(e.target.value === "" ? "" : Number(e.target.value))}
           style={{
             flex: 1,
             padding: "7px 10px",
@@ -576,9 +578,7 @@ export default function AdminPaymentsPage() {
         <select
           aria-label={t("filter.all_years")}
           value={yearFilter}
-          onChange={(e) =>
-            setYearFilter(e.target.value === "" ? "" : Number(e.target.value))
-          }
+          onChange={(e) => setYearFilter(e.target.value === "" ? "" : Number(e.target.value))}
           style={{
             flex: 1,
             padding: "7px 10px",

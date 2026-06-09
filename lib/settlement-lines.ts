@@ -1,4 +1,4 @@
-import type { MemberStatement, CarParticipantRow } from "@/types";
+import type { CarParticipantRow, MemberStatement } from "@/types";
 
 function fmtL(liters: number): string {
   return liters.toLocaleString("nl-BE", { minimumFractionDigits: 1, maximumFractionDigits: 1 });
@@ -95,7 +95,12 @@ export function buildSettlementLines({
           amount: Math.abs(saldo),
         });
         if (r.trip_km > 0) {
-          lines.push({ kind: "row", label: `ritten (${r.trip_km} km)`, sign: "−", amount: r.trip_amount });
+          lines.push({
+            kind: "row",
+            label: `ritten (${r.trip_km} km)`,
+            sign: "−",
+            amount: r.trip_amount,
+          });
         }
         if (r.fuel_liters > 0.05) {
           const hasFuelStar = r.fuel_settled_liters > 0.05;
@@ -144,7 +149,12 @@ export function buildSettlementLines({
         amount: Math.abs(era.balance),
       });
       if (era.trip_km > 0) {
-        lines.push({ kind: "row", label: `${t("page.trips")} (${era.trip_km} km)`, sign: "−", amount: era.trip_amount });
+        lines.push({
+          kind: "row",
+          label: `${t("page.trips")} (${era.trip_km} km)`,
+          sign: "−",
+          amount: era.trip_amount,
+        });
       }
       const hasFuelStar = (era.fuel_settled_liters ?? 0) > 0.05;
       const hasExpStar = (era.expense_settled_amount ?? 0) > 0.005;
@@ -186,17 +196,18 @@ export function buildSettlementLines({
   const remaining = net > 0 ? net - paid : net + paid;
 
   if (paid > 0.005) {
-    lines.push({ kind: "summary", label: "Bruto saldo", sign: net >= 0 ? "+" : "−", amount: Math.abs(net) });
+    lines.push({
+      kind: "summary",
+      label: "Bruto saldo",
+      sign: net >= 0 ? "+" : "−",
+      amount: Math.abs(net),
+    });
     lines.push({ kind: "summary", label: "Al betaald", sign: "+", amount: paid });
     lines.push({ kind: "separator" });
   }
 
   const finalLabel =
-    paid > 0.005
-      ? remaining >= 0
-        ? "Nog te ontvangen"
-        : "Nog te betalen"
-      : "Saldo";
+    paid > 0.005 ? (remaining >= 0 ? "Nog te ontvangen" : "Nog te betalen") : "Saldo";
   lines.push({
     kind: "summary",
     label: finalLabel,

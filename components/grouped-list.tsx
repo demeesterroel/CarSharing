@@ -1,6 +1,6 @@
 "use client";
-import React, { useState, useEffect, useRef } from "react";
-import { paper, fontSerif } from "@/lib/paper-theme";
+import { fontSerif, paper } from "@/lib/paper-theme";
+import React, { useEffect, useRef, useState } from "react";
 
 const INITIAL_GROUPS = 3;
 const INCREMENT = 3;
@@ -85,8 +85,7 @@ export function GroupedList<T>({
               </span>
               <span
                 style={{
-                  fontFamily:
-                    "var(--font-sans, var(--font-inter, 'Inter', system-ui, sans-serif))",
+                  fontFamily: "var(--font-sans, var(--font-inter, 'Inter', system-ui, sans-serif))",
                   fontSize: 13,
                   color: paper.inkDim,
                   fontWeight: 500,

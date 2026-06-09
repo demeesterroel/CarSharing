@@ -1,9 +1,9 @@
-import { NextResponse } from "next/server";
-import { getFuelFillups, getFuelFillupById, insertFuelFillup } from "@/lib/queries/fuel-fillups";
-import { fuelFillupSchema } from "@/lib/schemas/fuel-fillup";
-import { listHandler } from "@/lib/api/crud-handler";
 import { json } from "@/lib/api";
+import { listHandler } from "@/lib/api/crud-handler";
 import { getDb } from "@/lib/db";
+import { getFuelFillupById, getFuelFillups, insertFuelFillup } from "@/lib/queries/fuel-fillups";
+import { fuelFillupSchema } from "@/lib/schemas/fuel-fillup";
+import { NextResponse } from "next/server";
 
 export const GET = listHandler(getFuelFillups);
 

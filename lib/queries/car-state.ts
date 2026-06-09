@@ -1,5 +1,5 @@
-import type Database from "better-sqlite3";
 import type { CarState } from "@/types";
+import type Database from "better-sqlite3";
 
 interface Row {
   odometer: number | null;

@@ -1,6 +1,6 @@
 "use client";
+import { fontMono, fontSerif, paper } from "@/lib/paper-theme";
 import { useQuery } from "@tanstack/react-query";
-import { paper, fontMono, fontSerif } from "@/lib/paper-theme";
 import { Card } from "../_shared";
 
 interface SyncLogRow {

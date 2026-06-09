@@ -1,12 +1,12 @@
 "use client";
-import { useState, useEffect } from "react";
-import Link from "next/link";
-import { Eye, EyeOff } from "lucide-react";
-import { toast } from "sonner";
-import { paper, fontMono, fontSerif } from "@/lib/paper-theme";
-import { useAdminSettings, useSaveAdminSettings } from "@/hooks/use-admin-settings";
-import { Card, Perf } from "../_shared";
 import { useT } from "@/components/locale-provider";
+import { useAdminSettings, useSaveAdminSettings } from "@/hooks/use-admin-settings";
+import { fontMono, fontSerif, paper } from "@/lib/paper-theme";
+import { Eye, EyeOff } from "lucide-react";
+import Link from "next/link";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
+import { Card, Perf } from "../_shared";
 
 export default function AdminSettingsPage() {
   const t = useT();

@@ -1,8 +1,8 @@
+import { json, notFound, readBody, readId, requireAdminOrCarOwner } from "@/lib/api";
 import { getDb } from "@/lib/db";
 import { getReservationById, updateReservationStatus } from "@/lib/queries/reservations";
-import { json, readBody, readId, notFound, requireAdminOrCarOwner } from "@/lib/api";
-import { reservationStatusSchema } from "@/lib/schemas/reservation";
 import { syncReservationUpdate } from "@/lib/reservation-sync";
+import { reservationStatusSchema } from "@/lib/schemas/reservation";
 
 export const PATCH = json(async (req, ctx) => {
   const id = await readId(ctx);

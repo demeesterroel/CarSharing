@@ -1,8 +1,8 @@
 // lib/reservation-sync.ts
-import type Database from "better-sqlite3";
-import { getSetting } from "@/lib/queries/settings";
-import * as cal from "@/lib/google-calendar";
 import { logSync } from "@/lib/calendar-sync-log";
+import * as cal from "@/lib/google-calendar";
+import { getSetting } from "@/lib/queries/settings";
+import type Database from "better-sqlite3";
 
 function errMessage(e: unknown): string {
   return e instanceof Error ? e.message : String(e);
@@ -69,7 +69,13 @@ export async function syncReservationCreate(db: Database.Database, id: number): 
       action: "create",
       reservationId: id,
       googleEventId: eventId,
-      detail: { start: r.start_date, end: r.end_date, status: r.status, ownerEmail: r.owner_email, nonce },
+      detail: {
+        start: r.start_date,
+        end: r.end_date,
+        status: r.status,
+        ownerEmail: r.owner_email,
+        nonce,
+      },
     });
   } catch (e) {
     console.error("[calendar-sync] createEvent failed", e);

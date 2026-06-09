@@ -1,9 +1,9 @@
 // app/api/admin/calendar-renew/route.ts
-import { NextRequest, NextResponse } from "next/server";
-import { getDb } from "@/lib/db";
-import { env } from "@/lib/env";
 import { resolveBaseUrl } from "@/lib/base-url";
 import { handleCalendarRenew } from "@/lib/calendar-renew";
+import { getDb } from "@/lib/db";
+import { env } from "@/lib/env";
+import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(req: NextRequest): Promise<NextResponse> {
   const cronSecret = env.CRON_SECRET;

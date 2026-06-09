@@ -1,5 +1,5 @@
 // app/api/reservations/route.test.ts
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("@/lib/env", () => ({
   env: { SESSION_PASSWORD: "test-password-32-chars-minimum!!", NODE_ENV: "test" },
@@ -43,9 +43,7 @@ function postReq(body: unknown, withCsrf = true) {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      ...(withCsrf
-        ? { Cookie: `csrf-token=${CSRF}`, "x-csrf-token": CSRF }
-        : {}),
+      ...(withCsrf ? { Cookie: `csrf-token=${CSRF}`, "x-csrf-token": CSRF } : {}),
       "x-forwarded-for": `198.51.100.${++ip}`,
     },
     body: JSON.stringify(body),

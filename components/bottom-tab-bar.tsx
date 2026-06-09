@@ -1,12 +1,29 @@
 "use client";
-import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { House, Navigation, Fuel, CalendarPlus, Receipt, Settings, type LucideIcon } from "lucide-react";
-import { paper, fontMono } from "@/lib/paper-theme";
 import { useT } from "@/components/locale-provider";
 import { useMe } from "@/hooks/use-me";
+import { fontMono, paper } from "@/lib/paper-theme";
+import {
+  CalendarPlus,
+  Fuel,
+  House,
+  Navigation,
+  Receipt,
+  Settings,
+  type LucideIcon,
+} from "lucide-react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 
-const BASE_TABS: { href: string; labelKey: "nav.dashboard" | "nav.trips" | "nav.fuel" | "nav.tab.reservations" | "nav.tab.expenses"; Icon: LucideIcon }[] = [
+const BASE_TABS: {
+  href: string;
+  labelKey:
+    | "nav.dashboard"
+    | "nav.trips"
+    | "nav.fuel"
+    | "nav.tab.reservations"
+    | "nav.tab.expenses";
+  Icon: LucideIcon;
+}[] = [
   { href: "/", labelKey: "nav.dashboard", Icon: House },
   { href: "/trips", labelKey: "nav.trips", Icon: Navigation },
   { href: "/fuel", labelKey: "nav.fuel", Icon: Fuel },
@@ -35,8 +52,6 @@ const tabStyle = (active: boolean): React.CSSProperties => ({
   cursor: "pointer",
   border: "none",
 });
-
-
 
 export function BottomTabBar() {
   const t = useT();

@@ -129,6 +129,19 @@ export function isOwner(db: Database.Database, personId: number): boolean {
   return row.n > 0;
 }
 
+/**
+ * Returns the email addresses of all active admin users.
+ * Used to resolve notification recipients for admin-change emails.
+ */
+export function getAdminEmails(db: Database.Database): string[] {
+  const rows = db
+    .prepare(
+      "SELECT email FROM people WHERE is_admin=1 AND active=1 AND email IS NOT NULL AND email != ''"
+    )
+    .all() as { email: string }[];
+  return rows.map((r) => r.email);
+}
+
 // Auth token helpers (invite, password reset, magic-link — all share one table)
 export type TokenPurpose = "invite" | "reset" | "magic";
 

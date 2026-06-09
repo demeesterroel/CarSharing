@@ -18,6 +18,9 @@ export interface SessionData {
     personId: number;
     shortName: string;
     isAdmin: boolean;
+    /** Whether the impersonated person owns a car — gates owner-only pages
+     *  (e.g. /admin/vehicles) at the Edge proxy, which has no DB access. */
+    isOwner: boolean;
   };
 }
 

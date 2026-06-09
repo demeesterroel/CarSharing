@@ -79,10 +79,14 @@ export async function proxy(req: NextRequest) {
   }
 
   // While cloaking as a non-admin, block admin-only pages (redirect to dashboard).
-
+  // /admin/vehicles is an OWNER page, so it stays open to a cloaked car owner —
+  // matching the access the impersonated person has when logged in directly (#179).
   if (session.cloakedAs && !session.cloakedAs.isAdmin) {
-    const adminOnlyPaths = ["/admin/vehicles", "/admin/members", "/admin/payout"];
-    if (adminOnlyPaths.some((p) => pathname === p || pathname.startsWith(p + "/"))) {
+    const blockedPaths = ["/admin/members", "/admin/payout"];
+    if (!session.cloakedAs.isOwner) {
+      blockedPaths.push("/admin/vehicles");
+    }
+    if (blockedPaths.some((p) => pathname === p || pathname.startsWith(p + "/"))) {
       return NextResponse.redirect(new URL("/admin", req.url));
     }
   }

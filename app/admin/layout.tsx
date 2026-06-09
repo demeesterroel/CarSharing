@@ -1,7 +1,7 @@
 "use client";
-import { Suspense } from "react";
+import { Suspense, useEffect } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { PageHeader, TITLE_BAR_HEIGHT } from "@/components/page-header";
 import { paper, fontMono } from "@/lib/paper-theme";
 import { useT } from "@/components/locale-provider";
@@ -81,9 +81,25 @@ function SubNav() {
   );
 }
 
+// The /admin area is for admins and car owners only. Bounce everyone else to the
+// dashboard — including an admin cloaked as a plain member, whose useMe reflects
+// the cloaked (non-admin, non-owner) identity (#179). Page-level data APIs already
+// enforce this server-side; this stops the shells/chrome from rendering at all.
+function AdminAccessGuard() {
+  const { data: me, isFetched } = useMe();
+  const router = useRouter();
+  useEffect(() => {
+    if (isFetched && me && !me.isAdmin && !me.isOwner) {
+      router.replace("/");
+    }
+  }, [isFetched, me, router]);
+  return null;
+}
+
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   return (
     <div style={{ background: paper.paperDeep, minHeight: "100dvh", paddingBottom: 80 }}>
+      <AdminAccessGuard />
       <Suspense>
         <SubNav />
       </Suspense>

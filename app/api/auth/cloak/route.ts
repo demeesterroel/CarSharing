@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { getIronSession } from "iron-session";
 import { sessionOptions, type SessionData } from "@/lib/session";
 import { getDb } from "@/lib/db";
-import { getPersonById, shortNameOf } from "@/lib/queries/people";
+import { getPersonById, shortNameOf, isOwner } from "@/lib/queries/people";
 
 export async function POST(req: Request) {
   const res = NextResponse.json({ ok: true });
@@ -33,6 +33,7 @@ export async function POST(req: Request) {
     personId: person.id,
     shortName: shortNameOf(person),
     isAdmin: person.is_admin === 1,
+    isOwner: isOwner(getDb(), person.id),
   };
   await session.save();
   return res;

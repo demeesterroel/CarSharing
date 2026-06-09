@@ -23,6 +23,7 @@ const mockGetPersonById = vi.fn();
 vi.mock("@/lib/queries/people", () => ({
   getPersonById: (...args: unknown[]) => mockGetPersonById(...args),
   shortNameOf: (p: { first_name?: string }) => p.first_name ?? "Person",
+  isOwner: () => true,
 }));
 
 function makeReq(body: unknown) {
@@ -47,7 +48,7 @@ describe("POST /api/auth/cloak", () => {
     const res = await POST(makeReq({ personId: 5 }));
     expect(res.status).toBe(200);
     expect(await res.json()).toEqual({ ok: true });
-    expect(mockSession.cloakedAs).toMatchObject({ personId: 5, shortName: "Alice" });
+    expect(mockSession.cloakedAs).toMatchObject({ personId: 5, shortName: "Alice", isOwner: true });
     expect(mockSession.save).toHaveBeenCalledOnce();
   });
 

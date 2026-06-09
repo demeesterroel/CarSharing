@@ -281,3 +281,76 @@ describe("notifyUsersOfEvent — error swallowing", () => {
     ).resolves.toBeUndefined();
   });
 });
+
+describe("notifyUsersOfEvent — alwaysNotifyPersonId (reserver outcome)", () => {
+  it("notifies the always-notify person even when their pref is 'off'", async () => {
+    const db = makeDb();
+    const reserverId = insertPerson(db, {
+      ...basePerson,
+      first_name: "Reserver",
+      notify_reservation_updates: "off",
+    });
+    const actorId = insertPerson(db, { ...basePerson, first_name: "Owner" });
+    const carId = insertCar(db, actorId);
+
+    await notifyUsersOfEvent({
+      db,
+      trigger: "reservation_update",
+      entityType: "reservation",
+      entityId: 7,
+      carId,
+      actorPersonId: actorId,
+      alwaysNotifyPersonId: reserverId,
+      message: "approved",
+    });
+
+    expect(listNotifications(db, reserverId)).toHaveLength(1);
+  });
+
+  it("does not notify the always-notify person when they are the actor", async () => {
+    const db = makeDb();
+    const actorId = insertPerson(db, {
+      ...basePerson,
+      first_name: "Owner",
+      notify_reservation_updates: "off",
+    });
+    const carId = insertCar(db, actorId);
+
+    await notifyUsersOfEvent({
+      db,
+      trigger: "reservation_update",
+      entityType: "reservation",
+      entityId: 8,
+      carId,
+      actorPersonId: actorId,
+      alwaysNotifyPersonId: actorId,
+      message: "approved",
+    });
+
+    expect(listNotifications(db, actorId)).toHaveLength(0);
+  });
+
+  it("does not double-notify when the reserver is also opted in", async () => {
+    const db = makeDb();
+    const reserverId = insertPerson(db, {
+      ...basePerson,
+      first_name: "Reserver",
+      notify_reservation_updates: "all",
+    });
+    const actorId = insertPerson(db, { ...basePerson, first_name: "Owner" });
+    const carId = insertCar(db, actorId);
+
+    await notifyUsersOfEvent({
+      db,
+      trigger: "reservation_update",
+      entityType: "reservation",
+      entityId: 9,
+      carId,
+      actorPersonId: actorId,
+      alwaysNotifyPersonId: reserverId,
+      message: "approved",
+    });
+
+    expect(listNotifications(db, reserverId)).toHaveLength(1);
+  });
+});

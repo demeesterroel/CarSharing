@@ -30,6 +30,7 @@ export const PATCH = json(async (req, ctx) => {
     entityId: id,
     carId: reservation.car_id,
     actorPersonId: session.personId!,
+    alwaysNotifyPersonId: reservation.person_id,
     message: t("notif.reservation_update", {
       car: reservation.car_short ?? String(reservation.car_id),
       start: reservation.start_date,

@@ -31,6 +31,12 @@ export interface NotifyUsersOptions {
   carId: number;
   /** The person performing the action; always excluded from recipients. */
   actorPersonId: number;
+  /**
+   * A person who must be notified regardless of their preferences — e.g. the
+   * reserver, told their reservation was approved/rejected/deleted. Still
+   * excluded if they are the actor; de-duplicated against opt-in recipients.
+   */
+  alwaysNotifyPersonId?: number | null;
   message: string;
 }
 
@@ -76,6 +82,12 @@ export async function notifyUsersOfEvent(opts: NotifyUsersOptions): Promise<void
       ...allRecipients.map((r) => r.id),
       ...ownRecipients.map((r) => r.id),
     ]);
+
+    // Always-notify recipient (e.g. the reserver) — regardless of prefs, but not
+    // when they are the actor; the Set de-duplicates against opt-in recipients.
+    if (opts.alwaysNotifyPersonId != null && opts.alwaysNotifyPersonId !== opts.actorPersonId) {
+      recipientIds.add(opts.alwaysNotifyPersonId);
+    }
 
     for (const recipientPersonId of recipientIds) {
       insertNotification(opts.db, {

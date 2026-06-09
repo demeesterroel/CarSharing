@@ -69,6 +69,7 @@ export const DELETE = json(async (req, ctx) => {
     entityId: id,
     carId: existing.car_id,
     actorPersonId: session.personId!,
+    alwaysNotifyPersonId: existing.person_id,
     message: t("notif.reservation_update", {
       car: existing.car_short ?? String(existing.car_id),
       start: existing.start_date,

@@ -1,5 +1,5 @@
 "use client";
-import { fontSerif, paper } from "@/lib/paper-theme";
+import { fontSerif, tokens } from "@/lib/theme-tokens";
 import React, { useEffect, useRef, useState } from "react";
 
 const INITIAL_GROUPS = 3;
@@ -69,7 +69,7 @@ export function GroupedList<T>({
                 alignItems: "baseline",
                 justifyContent: "space-between",
                 padding: "14px 20px 6px",
-                background: paper.paperDeep,
+                background: tokens.paperDeep,
               }}
             >
               <span
@@ -78,7 +78,7 @@ export function GroupedList<T>({
                   fontSize: 19,
                   fontWeight: 650,
                   letterSpacing: "-0.022em",
-                  color: paper.ink,
+                  color: tokens.ink,
                 }}
               >
                 {getGroupLabel(key)}
@@ -87,7 +87,7 @@ export function GroupedList<T>({
                 style={{
                   fontFamily: "var(--font-sans, var(--font-inter, 'Inter', system-ui, sans-serif))",
                   fontSize: 13,
-                  color: paper.inkDim,
+                  color: tokens.inkDim,
                   fontWeight: 500,
                 }}
               >

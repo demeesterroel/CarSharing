@@ -1,7 +1,7 @@
 "use client";
 import { useT } from "@/components/locale-provider";
 import { useMe } from "@/hooks/use-me";
-import { fontMono, paper } from "@/lib/paper-theme";
+import { fontMono, tokens } from "@/lib/theme-tokens";
 import {
   CalendarPlus,
   Fuel,
@@ -45,8 +45,8 @@ const tabStyle = (active: boolean): React.CSSProperties => ({
   alignItems: "center",
   gap: 3,
   fontFamily: fontMono,
-  background: active ? paper.ink : "transparent",
-  color: active ? paper.paper : paper.ink,
+  background: active ? tokens.ink : "transparent",
+  color: active ? tokens.paper : tokens.ink,
   textDecoration: "none",
   minWidth: 0,
   cursor: "pointer",

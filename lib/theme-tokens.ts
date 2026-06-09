@@ -1,6 +1,8 @@
-// Shared paper-receipt theme constants — mirrors CSS custom properties in globals.css
+// Theme tokens — references to the CSS custom properties in globals.css. Each
+// value is a `var(--…)` pointer, so it resolves to the *current* theme's value
+// (paper vs mono) at render time; these are NOT paper-theme-specific literals.
 
-export const paper = {
+export const tokens = {
   paper: "var(--paper)",
   paperDeep: "var(--paper-deep)",
   paperDark: "var(--paper-dark)",
@@ -21,7 +23,7 @@ export const fontSerif = "var(--font-serif)";
 export const fontSans = "var(--font-sans)";
 
 /** Signed color: positive → green, negative → accent, zero → inkMute */
-export const amtColor = (n: number) => (n > 0 ? paper.green : n < 0 ? paper.accent : paper.inkMute);
+export const amtColor = (n: number) => (n > 0 ? tokens.green : n < 0 ? tokens.accent : tokens.inkMute);
 
 /** Sign prefix string: +, −, or empty */
 export const signPrefix = (n: number) => (n > 0 ? "+" : n < 0 ? "−" : "");

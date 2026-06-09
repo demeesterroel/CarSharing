@@ -1,7 +1,7 @@
 "use client";
 
 import { useT } from "@/components/locale-provider";
-import { fontMono, fontSerif, paper } from "@/lib/paper-theme";
+import { fontMono, fontSerif, tokens } from "@/lib/theme-tokens";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
@@ -49,7 +49,7 @@ export default function ForgotForm({ mailEnabled }: { mailEnabled: boolean }) {
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        background: paper.paperDeep,
+        background: tokens.paperDeep,
         padding: "16px",
       }}
     >
@@ -60,7 +60,7 @@ export default function ForgotForm({ mailEnabled }: { mailEnabled: boolean }) {
               fontFamily: fontSerif,
               fontSize: 26,
               fontWeight: 700,
-              color: paper.ink,
+              color: tokens.ink,
               margin: 0,
               lineHeight: 1.2,
             }}
@@ -71,7 +71,7 @@ export default function ForgotForm({ mailEnabled }: { mailEnabled: boolean }) {
             style={{
               fontFamily: fontMono,
               fontSize: 11,
-              color: paper.inkDim,
+              color: tokens.inkDim,
               marginTop: 8,
               letterSpacing: 0.5,
             }}
@@ -82,7 +82,7 @@ export default function ForgotForm({ mailEnabled }: { mailEnabled: boolean }) {
 
         <div
           style={{
-            background: paper.paper,
+            background: tokens.paper,
             padding: "32px 28px",
             boxShadow: "0 1px 2px rgba(0,0,0,0.05), 0 4px 16px rgba(0,0,0,0.06)",
           }}
@@ -93,9 +93,9 @@ export default function ForgotForm({ mailEnabled }: { mailEnabled: boolean }) {
               style={{
                 fontFamily: fontMono,
                 fontSize: 11,
-                color: paper.amber,
-                background: paper.amberBg,
-                border: `1px solid ${paper.amberBorder}`,
+                color: tokens.amber,
+                background: tokens.amberBg,
+                border: `1px solid ${tokens.amberBorder}`,
                 padding: "10px 12px",
                 marginBottom: 20,
                 lineHeight: 1.5,
@@ -108,7 +108,7 @@ export default function ForgotForm({ mailEnabled }: { mailEnabled: boolean }) {
           {sent ? (
             <p
               role="status"
-              style={{ fontFamily: fontMono, fontSize: 12, color: paper.ink, lineHeight: 1.6 }}
+              style={{ fontFamily: fontMono, fontSize: 12, color: tokens.ink, lineHeight: 1.6 }}
             >
               {t("auth.forgot_sent")}
             </p>
@@ -137,7 +137,7 @@ export default function ForgotForm({ mailEnabled }: { mailEnabled: boolean }) {
               </div>
               {error && (
                 <p
-                  style={{ fontFamily: fontMono, fontSize: 11, color: paper.accent, marginBottom: 16 }}
+                  style={{ fontFamily: fontMono, fontSize: 11, color: tokens.accent, marginBottom: 16 }}
                 >
                   {error}
                 </p>
@@ -171,7 +171,7 @@ export default function ForgotForm({ mailEnabled }: { mailEnabled: boolean }) {
               border: "none",
               fontFamily: fontMono,
               fontSize: 11,
-              color: paper.inkDim,
+              color: tokens.inkDim,
               cursor: "pointer",
             }}
           >
@@ -189,18 +189,18 @@ const labelStyle: React.CSSProperties = {
   fontSize: 10,
   letterSpacing: 1.5,
   textTransform: "uppercase",
-  color: paper.inkDim,
+  color: tokens.inkDim,
   marginBottom: 6,
 };
 
 const inputStyle: React.CSSProperties = {
   width: "100%",
   padding: "10px 12px",
-  border: "1px solid " + paper.paperDark,
-  background: paper.paperDeep,
+  border: "1px solid " + tokens.paperDark,
+  background: tokens.paperDeep,
   fontFamily: fontMono,
   fontSize: 13,
-  color: paper.ink,
+  color: tokens.ink,
   outline: "none",
   appearance: "none",
   boxSizing: "border-box",
@@ -208,8 +208,8 @@ const inputStyle: React.CSSProperties = {
 
 const primaryButtonStyle = (greyed: boolean): React.CSSProperties => ({
   width: "100%",
-  background: greyed ? paper.inkDim : paper.ink,
-  color: paper.paper,
+  background: greyed ? tokens.inkDim : tokens.ink,
+  color: tokens.paper,
   fontFamily: fontMono,
   fontSize: 10,
   letterSpacing: 2,
@@ -222,13 +222,13 @@ const primaryButtonStyle = (greyed: boolean): React.CSSProperties => ({
 const secondaryButtonStyle = (greyed: boolean): React.CSSProperties => ({
   width: "100%",
   background: "transparent",
-  color: greyed ? paper.inkDim : paper.ink,
+  color: greyed ? tokens.inkDim : tokens.ink,
   fontFamily: fontMono,
   fontSize: 10,
   letterSpacing: 2,
   textTransform: "uppercase",
   padding: "13px",
   marginTop: 12,
-  border: `1.5px solid ${paper.paperDark}`,
+  border: `1.5px solid ${tokens.paperDark}`,
   cursor: greyed ? "not-allowed" : "pointer",
 });

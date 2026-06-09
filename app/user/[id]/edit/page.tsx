@@ -3,7 +3,7 @@ import { useT } from "@/components/locale-provider";
 import { PageHeader } from "@/components/page-header";
 import { useMe } from "@/hooks/use-me";
 import { apiFetch } from "@/lib/api/client";
-import { fontMono, fontSerif, paper } from "@/lib/paper-theme";
+import { fontMono, fontSerif, tokens } from "@/lib/theme-tokens";
 import { fullNameOf } from "@/lib/person-utils";
 import { useTheme, type Theme } from "@/lib/theme-context";
 import type { Person } from "@/types";
@@ -84,7 +84,7 @@ export default function EditProfilePage({ params }: { params: Promise<{ id: stri
 
   if (meLoading || loading) {
     return (
-      <div style={{ background: paper.paperDeep, minHeight: "100dvh" }}>
+      <div style={{ background: tokens.paperDeep, minHeight: "100dvh" }}>
         <PageHeader title={t("page.profile_edit")} />
       </div>
     );
@@ -92,9 +92,9 @@ export default function EditProfilePage({ params }: { params: Promise<{ id: stri
 
   if (!canEdit || !person) {
     return (
-      <div style={{ background: paper.paperDeep, minHeight: "100dvh" }}>
+      <div style={{ background: tokens.paperDeep, minHeight: "100dvh" }}>
         <PageHeader title={t("page.profile_edit")} />
-        <div style={{ padding: 24, fontFamily: fontMono, fontSize: 12, color: paper.accent }}>
+        <div style={{ padding: 24, fontFamily: fontMono, fontSize: 12, color: tokens.accent }}>
           {!canEdit ? t("error.no_access") : t("error.not_found")}
         </div>
       </div>
@@ -252,7 +252,7 @@ export default function EditProfilePage({ params }: { params: Promise<{ id: stri
   const notifySectionStyle: React.CSSProperties = {
     fontFamily: fontMono,
     fontSize: 9,
-    color: paper.inkMute,
+    color: tokens.inkMute,
     letterSpacing: 1,
     marginBottom: 12,
     textTransform: "uppercase",
@@ -260,7 +260,7 @@ export default function EditProfilePage({ params }: { params: Promise<{ id: stri
   const notifyRowStyle: React.CSSProperties = {
     marginBottom: 10,
     padding: "8px 10px",
-    background: paper.paperDark,
+    background: tokens.paperDark,
   };
   const notifyCheckbox = (
     key: string,
@@ -277,14 +277,14 @@ export default function EditProfilePage({ params }: { params: Promise<{ id: stri
           cursor: "pointer",
           fontFamily: fontMono,
           fontSize: 11,
-          color: paper.ink,
+          color: tokens.ink,
         }}
       >
         <input
           type="checkbox"
           checked={checked}
           onChange={(e) => onToggle(e.target.checked)}
-          style={{ accentColor: paper.ink }}
+          style={{ accentColor: tokens.ink }}
         />
         {label}
       </label>
@@ -292,13 +292,13 @@ export default function EditProfilePage({ params }: { params: Promise<{ id: stri
   );
 
   return (
-    <div style={{ background: paper.paperDeep, minHeight: "100dvh" }}>
+    <div style={{ background: tokens.paperDeep, minHeight: "100dvh" }}>
       <PageHeader title={t("page.profile_edit")} />
 
       <div style={{ padding: 16 }}>
         <div
           style={{
-            background: paper.paper,
+            background: tokens.paper,
             boxShadow: "0 1px 4px rgba(0,0,0,0.07)",
             padding: "14px 16px",
           }}
@@ -312,7 +312,7 @@ export default function EditProfilePage({ params }: { params: Promise<{ id: stri
               marginBottom: 16,
             }}
           >
-            <div style={{ fontFamily: fontSerif, fontSize: 14, fontWeight: 700, color: paper.ink }}>
+            <div style={{ fontFamily: fontSerif, fontSize: 14, fontWeight: 700, color: tokens.ink }}>
               {fullNameOf({ first_name: firstName, last_name: lastName, username: person.username })}
             </div>
             <div
@@ -323,7 +323,7 @@ export default function EditProfilePage({ params }: { params: Promise<{ id: stri
                 letterSpacing: 1,
                 textTransform: "uppercase",
                 whiteSpace: "nowrap",
-                color: saving ? paper.inkMute : paper.green,
+                color: saving ? tokens.inkMute : tokens.green,
               }}
             >
               {saving ? t("action.saving") : saved ? t("action.saved") : ""}
@@ -338,7 +338,7 @@ export default function EditProfilePage({ params }: { params: Promise<{ id: stri
                   display: "block",
                   fontFamily: fontMono,
                   fontSize: 9,
-                  color: paper.inkMute,
+                  color: tokens.inkMute,
                   letterSpacing: 1,
                   marginBottom: 4,
                 }}
@@ -355,9 +355,9 @@ export default function EditProfilePage({ params }: { params: Promise<{ id: stri
                   padding: "8px 10px",
                   fontFamily: fontMono,
                   fontSize: 12,
-                  background: paper.paperDeep,
-                  color: paper.inkMute,
-                  border: `1.5px solid ${paper.paperDeep}`,
+                  background: tokens.paperDeep,
+                  color: tokens.inkMute,
+                  border: `1.5px solid ${tokens.paperDeep}`,
                   outline: "none",
                   boxSizing: "border-box",
                   cursor: "default",
@@ -373,7 +373,7 @@ export default function EditProfilePage({ params }: { params: Promise<{ id: stri
                     display: "block",
                     fontFamily: fontMono,
                     fontSize: 9,
-                    color: paper.inkMute,
+                    color: tokens.inkMute,
                     letterSpacing: 1,
                     marginBottom: 4,
                   }}
@@ -392,9 +392,9 @@ export default function EditProfilePage({ params }: { params: Promise<{ id: stri
                     padding: "8px 10px",
                     fontFamily: fontMono,
                     fontSize: 12,
-                    background: paper.paperDark,
-                    color: paper.ink,
-                    border: `1.5px solid ${firstName !== personFirstName ? paper.ink : paper.paperDark}`,
+                    background: tokens.paperDark,
+                    color: tokens.ink,
+                    border: `1.5px solid ${firstName !== personFirstName ? tokens.ink : tokens.paperDark}`,
                     outline: "none",
                     boxSizing: "border-box",
                   }}
@@ -407,7 +407,7 @@ export default function EditProfilePage({ params }: { params: Promise<{ id: stri
                     display: "block",
                     fontFamily: fontMono,
                     fontSize: 9,
-                    color: paper.inkMute,
+                    color: tokens.inkMute,
                     letterSpacing: 1,
                     marginBottom: 4,
                   }}
@@ -425,9 +425,9 @@ export default function EditProfilePage({ params }: { params: Promise<{ id: stri
                     padding: "8px 10px",
                     fontFamily: fontMono,
                     fontSize: 12,
-                    background: paper.paperDark,
-                    color: paper.ink,
-                    border: `1.5px solid ${lastName !== personLastName ? paper.ink : paper.paperDark}`,
+                    background: tokens.paperDark,
+                    color: tokens.ink,
+                    border: `1.5px solid ${lastName !== personLastName ? tokens.ink : tokens.paperDark}`,
                     outline: "none",
                     boxSizing: "border-box",
                   }}
@@ -442,7 +442,7 @@ export default function EditProfilePage({ params }: { params: Promise<{ id: stri
                   display: "block",
                   fontFamily: fontMono,
                   fontSize: 9,
-                  color: paper.inkMute,
+                  color: tokens.inkMute,
                   letterSpacing: 1,
                   marginBottom: 4,
                 }}
@@ -461,9 +461,9 @@ export default function EditProfilePage({ params }: { params: Promise<{ id: stri
                   padding: "8px 10px",
                   fontFamily: fontMono,
                   fontSize: 12,
-                  background: paper.paperDark,
-                  color: paper.ink,
-                  border: `1.5px solid ${bankAccount !== (person.bank_account ?? "") ? paper.ink : paper.paperDark}`,
+                  background: tokens.paperDark,
+                  color: tokens.ink,
+                  border: `1.5px solid ${bankAccount !== (person.bank_account ?? "") ? tokens.ink : tokens.paperDark}`,
                   outline: "none",
                   boxSizing: "border-box",
                   letterSpacing: 1,
@@ -478,7 +478,7 @@ export default function EditProfilePage({ params }: { params: Promise<{ id: stri
                   display: "block",
                   fontFamily: fontMono,
                   fontSize: 9,
-                  color: paper.inkMute,
+                  color: tokens.inkMute,
                   letterSpacing: 1,
                   marginBottom: 4,
                 }}
@@ -497,9 +497,9 @@ export default function EditProfilePage({ params }: { params: Promise<{ id: stri
                   padding: "8px 10px",
                   fontFamily: fontMono,
                   fontSize: 12,
-                  background: paper.paperDark,
-                  color: paper.ink,
-                  border: `1.5px solid ${email !== (person.email ?? "") ? paper.ink : paper.paperDark}`,
+                  background: tokens.paperDark,
+                  color: tokens.ink,
+                  border: `1.5px solid ${email !== (person.email ?? "") ? tokens.ink : tokens.paperDark}`,
                   outline: "none",
                   boxSizing: "border-box",
                   letterSpacing: 1,
@@ -509,7 +509,7 @@ export default function EditProfilePage({ params }: { params: Promise<{ id: stri
                 style={{
                   fontFamily: fontMono,
                   fontSize: 9,
-                  color: paper.inkMute,
+                  color: tokens.inkMute,
                   marginTop: 4,
                   marginBottom: 0,
                   letterSpacing: 0.5,
@@ -522,12 +522,12 @@ export default function EditProfilePage({ params }: { params: Promise<{ id: stri
 
           </form>
 
-          <div style={{ marginTop: 20, paddingTop: 16, borderTop: `1px solid ${paper.paperDark}` }}>
+          <div style={{ marginTop: 20, paddingTop: 16, borderTop: `1px solid ${tokens.paperDark}` }}>
             <div
               style={{
                 fontFamily: fontMono,
                 fontSize: 9,
-                color: paper.inkMute,
+                color: tokens.inkMute,
                 letterSpacing: 1,
                 marginBottom: 8,
                 textTransform: "uppercase",
@@ -549,8 +549,8 @@ export default function EditProfilePage({ params }: { params: Promise<{ id: stri
                     fontWeight: 700,
                     letterSpacing: 2,
                     textTransform: "uppercase",
-                    background: themePreference === t2 ? paper.ink : paper.paperDark,
-                    color: themePreference === t2 ? paper.paper : paper.inkMute,
+                    background: themePreference === t2 ? tokens.ink : tokens.paperDark,
+                    color: themePreference === t2 ? tokens.paper : tokens.inkMute,
                     border: "none",
                     cursor: "pointer",
                   }}
@@ -562,7 +562,7 @@ export default function EditProfilePage({ params }: { params: Promise<{ id: stri
           </div>
 
           {/* Notification preferences — driver/member block (all users) */}
-          <div style={{ marginTop: 20, paddingTop: 16, borderTop: `1px solid ${paper.paperDark}` }}>
+          <div style={{ marginTop: 20, paddingTop: 16, borderTop: `1px solid ${tokens.paperDark}` }}>
             <div style={notifySectionStyle}>{t("notif.pref_section")}</div>
 
             {notifyCheckbox(
@@ -583,7 +583,7 @@ export default function EditProfilePage({ params }: { params: Promise<{ id: stri
                   cursor: "pointer",
                   fontFamily: fontMono,
                   fontSize: 11,
-                  color: paper.ink,
+                  color: tokens.ink,
                 }}
               >
                 <input
@@ -595,7 +595,7 @@ export default function EditProfilePage({ params }: { params: Promise<{ id: stri
                       e.target.checked ? "mine" : "off"
                     )
                   }
-                  style={{ accentColor: paper.ink }}
+                  style={{ accentColor: tokens.ink }}
                 />
                 {t("notif.pref_reservation_updates")}
               </label>
@@ -610,7 +610,7 @@ export default function EditProfilePage({ params }: { params: Promise<{ id: stri
                         gap: 4,
                         fontFamily: fontMono,
                         fontSize: 10,
-                        color: paper.ink,
+                        color: tokens.ink,
                         cursor: "pointer",
                       }}
                     >
@@ -620,7 +620,7 @@ export default function EditProfilePage({ params }: { params: Promise<{ id: stri
                         value={scope}
                         checked={notifyReservationUpdates === scope}
                         onChange={() => handleNotifyChange("notify_reservation_updates", scope)}
-                        style={{ accentColor: paper.ink }}
+                        style={{ accentColor: tokens.ink }}
                       />
                       {scope === "all" ? t("notif.pref_updates_all") : t("notif.pref_updates_mine")}
                     </label>
@@ -640,7 +640,7 @@ export default function EditProfilePage({ params }: { params: Promise<{ id: stri
           {/* Owner block — only shown to people who own a car */}
           {me?.isOwner && (
             <div
-              style={{ marginTop: 20, paddingTop: 16, borderTop: `1px solid ${paper.paperDark}` }}
+              style={{ marginTop: 20, paddingTop: 16, borderTop: `1px solid ${tokens.paperDark}` }}
             >
               <div style={notifySectionStyle}>{t("notif.pref_section_owner")}</div>
               {notifyCheckbox(
@@ -660,7 +660,7 @@ export default function EditProfilePage({ params }: { params: Promise<{ id: stri
 
           {me?.personId === id && (
             <div
-              style={{ marginTop: 20, paddingTop: 16, borderTop: `1px solid ${paper.paperDark}` }}
+              style={{ marginTop: 20, paddingTop: 16, borderTop: `1px solid ${tokens.paperDark}` }}
             >
               <button
                 type="button"
@@ -674,8 +674,8 @@ export default function EditProfilePage({ params }: { params: Promise<{ id: stri
                   letterSpacing: 2,
                   textTransform: "uppercase",
                   background: "transparent",
-                  color: paper.accent,
-                  border: `1.5px solid ${paper.accent}`,
+                  color: tokens.accent,
+                  border: `1.5px solid ${tokens.accent}`,
                   cursor: "pointer",
                 }}
               >

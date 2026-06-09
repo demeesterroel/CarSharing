@@ -2,7 +2,7 @@
 import { CarBadge } from "@/components/car-badge";
 import { useLocale } from "@/components/locale-provider";
 import { PendingBadge } from "@/components/pending-badge";
-import { fmtDate, fmtMoney, fontMono, fontSerif, paper } from "@/lib/paper-theme";
+import { fmtDate, fmtMoney, fontMono, fontSerif, tokens } from "@/lib/theme-tokens";
 import { useTheme } from "@/lib/theme-context";
 import type { Trip } from "@/types";
 
@@ -24,7 +24,7 @@ export function TripCard({ trip, onClick }: TripCardProps) {
         width: "100%",
         textAlign: "left",
         appearance: "none",
-        background: mono ? "transparent" : paper.paper,
+        background: mono ? "transparent" : tokens.paper,
         padding: "12px 14px",
         marginBottom: mono ? 0 : 8,
         display: "flex",
@@ -32,8 +32,8 @@ export function TripCard({ trip, onClick }: TripCardProps) {
         gap: 12,
         borderTop: "none",
         borderRight: "none",
-        borderBottom: mono ? `1px solid ${paper.paperDark}` : "none",
-        borderLeft: mono ? "none" : `3px solid ${paper.accent}`,
+        borderBottom: mono ? `1px solid ${tokens.paperDark}` : "none",
+        borderLeft: mono ? "none" : `3px solid ${tokens.accent}`,
         boxShadow: mono ? "none" : "0 1px 2px rgba(0,0,0,0.04)",
         cursor: onClick ? "pointer" : "default",
       }}
@@ -44,7 +44,7 @@ export function TripCard({ trip, onClick }: TripCardProps) {
           style={{
             fontFamily: fontSerif,
             fontSize: mono ? 14.5 : 15,
-            color: isParkingOnly ? paper.inkDim : paper.ink,
+            color: isParkingOnly ? tokens.inkDim : tokens.ink,
             fontStyle: isParkingOnly ? "italic" : "normal",
             fontWeight: mono ? 500 : 600,
             lineHeight: 1.2,
@@ -60,7 +60,7 @@ export function TripCard({ trip, onClick }: TripCardProps) {
           style={{
             fontFamily: fontMono,
             fontSize: mono ? 11.5 : 10,
-            color: paper.inkDim,
+            color: tokens.inkDim,
             letterSpacing: mono ? 0 : 1,
             marginTop: 2,
           }}
@@ -77,13 +77,13 @@ export function TripCard({ trip, onClick }: TripCardProps) {
             fontFamily: fontMono,
             fontSize: 14,
             fontWeight: 700,
-            color: paper.accent,
+            color: tokens.accent,
             whiteSpace: "nowrap",
           }}
         >
           {fmtMoney(trip.amount)}
         </div>
-        <div style={{ fontFamily: fontMono, fontSize: mono ? 11.5 : 10, color: paper.inkDim }}>
+        <div style={{ fontFamily: fontMono, fontSize: mono ? 11.5 : 10, color: tokens.inkDim }}>
           {trip.km} km
         </div>
       </div>

@@ -1,5 +1,5 @@
 "use client";
-import { fontMono, fontSerif, paper } from "@/lib/paper-theme";
+import { fontMono, fontSerif, tokens } from "@/lib/theme-tokens";
 import React from "react";
 
 interface Props {
@@ -33,8 +33,8 @@ export class ErrorBoundary extends React.Component<Props, State> {
           style={{
             padding: "40px 24px",
             fontFamily: fontMono,
-            color: paper.ink,
-            background: paper.paper,
+            color: tokens.ink,
+            background: tokens.paper,
             minHeight: "60vh",
             display: "flex",
             flexDirection: "column",
@@ -48,7 +48,7 @@ export class ErrorBoundary extends React.Component<Props, State> {
           <div style={{ fontFamily: fontSerif, fontSize: 22, fontWeight: 700 }}>
             Something went wrong
           </div>
-          <div style={{ fontSize: 12, color: paper.inkDim, maxWidth: 320 }}>
+          <div style={{ fontSize: 12, color: tokens.inkDim, maxWidth: 320 }}>
             {this.state.error.message}
           </div>
           <button
@@ -61,8 +61,8 @@ export class ErrorBoundary extends React.Component<Props, State> {
               fontWeight: 700,
               letterSpacing: 1.5,
               textTransform: "uppercase" as const,
-              background: paper.ink,
-              color: paper.paper,
+              background: tokens.ink,
+              color: tokens.paper,
               border: "none",
               cursor: "pointer",
             }}

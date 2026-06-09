@@ -14,9 +14,9 @@ import {
   fmtMoney,
   fontMono,
   fontSerif,
-  paper,
+  tokens,
   signPrefix,
-} from "@/lib/paper-theme";
+} from "@/lib/theme-tokens";
 import { fullNameOf } from "@/lib/person-utils";
 import type { Payment } from "@/types";
 import * as Dialog from "@radix-ui/react-dialog";
@@ -37,7 +37,7 @@ const sheetStyle: React.CSSProperties = {
   width: "min(100%, 480px)",
   maxHeight: "92dvh",
   borderRadius: "14px 14px 0 0",
-  background: paper.paperDeep,
+  background: tokens.paperDeep,
   zIndex: 50,
   overflowY: "auto",
 };
@@ -47,16 +47,16 @@ const inputStyle: React.CSSProperties = {
   padding: "6px 8px",
   fontFamily: fontMono,
   fontSize: 11,
-  border: `1px solid ${paper.paperDark}`,
-  background: paper.paperDeep,
-  color: paper.ink,
+  border: `1px solid ${tokens.paperDark}`,
+  background: tokens.paperDeep,
+  color: tokens.ink,
   outline: "none",
   boxSizing: "border-box",
 };
 const labelStyle: React.CSSProperties = {
   fontFamily: fontMono,
   fontSize: 9,
-  color: paper.inkDim,
+  color: tokens.inkDim,
   letterSpacing: 1.5,
   textTransform: "uppercase",
   display: "block",
@@ -111,7 +111,7 @@ function AddPaymentSheet({ onClose }: { onClose: () => void }) {
   }
 
   return (
-    <div style={{ background: paper.paperDeep }}>
+    <div style={{ background: tokens.paperDeep }}>
       <div
         style={{
           display: "flex",
@@ -119,8 +119,8 @@ function AddPaymentSheet({ onClose }: { onClose: () => void }) {
           justifyContent: "space-between",
           padding: "0 16px",
           height: 52,
-          borderBottom: `1.5px solid ${paper.paperDark}`,
-          background: paper.paper,
+          borderBottom: `1.5px solid ${tokens.paperDark}`,
+          background: tokens.paper,
           position: "sticky",
           top: 0,
           zIndex: 10,
@@ -137,7 +137,7 @@ function AddPaymentSheet({ onClose }: { onClose: () => void }) {
             background: "transparent",
             border: "none",
             cursor: "pointer",
-            color: paper.ink,
+            color: tokens.ink,
             padding: "0 4px",
             lineHeight: 1,
           }}
@@ -150,7 +150,7 @@ function AddPaymentSheet({ onClose }: { onClose: () => void }) {
             fontSize: 10,
             fontWeight: 700,
             letterSpacing: 3,
-            color: paper.inkDim,
+            color: tokens.inkDim,
             textTransform: "uppercase",
           }}
         >
@@ -166,8 +166,8 @@ function AddPaymentSheet({ onClose }: { onClose: () => void }) {
             fontWeight: 700,
             letterSpacing: 2,
             textTransform: "uppercase",
-            background: valid && !create.isPending ? paper.ink : paper.paperDark,
-            color: valid && !create.isPending ? paper.paper : paper.inkMute,
+            background: valid && !create.isPending ? tokens.ink : tokens.paperDark,
+            color: valid && !create.isPending ? tokens.paper : tokens.inkMute,
             border: "none",
             padding: "8px 14px",
             cursor: valid && !create.isPending ? "pointer" : "default",
@@ -299,7 +299,7 @@ function PaymentAccordion({
   return (
     <div
       style={{
-        background: paper.paper,
+        background: tokens.paper,
         marginBottom: 6,
         boxShadow: "0 1px 2px rgba(0,0,0,0.05), 0 4px 16px rgba(0,0,0,0.06)",
         borderLeft: `3px solid ${barColor}`,
@@ -324,7 +324,7 @@ function PaymentAccordion({
           style={{
             fontFamily: fontMono,
             fontSize: 9,
-            color: paper.inkDim,
+            color: tokens.inkDim,
             whiteSpace: "nowrap",
             flexShrink: 0,
           }}
@@ -337,7 +337,7 @@ function PaymentAccordion({
               fontFamily: fontSerif,
               fontSize: 14,
               fontWeight: 600,
-              color: paper.ink,
+              color: tokens.ink,
               overflow: "hidden",
               textOverflow: "ellipsis",
               whiteSpace: "nowrap",
@@ -350,7 +350,7 @@ function PaymentAccordion({
               style={{
                 fontFamily: fontMono,
                 fontSize: 9,
-                color: paper.inkDim,
+                color: tokens.inkDim,
                 marginTop: 1,
                 overflow: "hidden",
                 textOverflow: "ellipsis",
@@ -378,7 +378,7 @@ function PaymentAccordion({
 
       {/* Expanded edit form */}
       {expanded && (
-        <div style={{ padding: "0 14px 14px", borderTop: `1px solid ${paper.paperDark}` }}>
+        <div style={{ padding: "0 14px 14px", borderTop: `1px solid ${tokens.paperDark}` }}>
           <div style={{ paddingTop: 12, marginBottom: 8 }}>
             <label style={labelStyle}>{t("form.person")}</label>
             <select
@@ -440,8 +440,8 @@ function PaymentAccordion({
                 flex: 1,
                 padding: "9px",
                 background: "transparent",
-                color: paper.inkDim,
-                border: `1px solid ${paper.paperDark}`,
+                color: tokens.inkDim,
+                border: `1px solid ${tokens.paperDark}`,
                 cursor: "pointer",
                 fontFamily: fontMono,
                 fontSize: 9,
@@ -458,8 +458,8 @@ function PaymentAccordion({
               style={{
                 flex: 2,
                 padding: "9px",
-                background: dirty && !update.isPending ? paper.ink : paper.paperDark,
-                color: dirty && !update.isPending ? paper.paper : paper.inkMute,
+                background: dirty && !update.isPending ? tokens.ink : tokens.paperDark,
+                color: dirty && !update.isPending ? tokens.paper : tokens.inkMute,
                 border: "none",
                 cursor: dirty && !update.isPending ? "pointer" : "default",
                 fontFamily: fontMono,
@@ -479,9 +479,9 @@ function PaymentAccordion({
             style={{
               width: "100%",
               padding: "9px",
-              background: deleteConfirm ? paper.accent : "transparent",
-              color: deleteConfirm ? paper.paper : paper.accent,
-              border: `1px solid ${paper.accent}`,
+              background: deleteConfirm ? tokens.accent : "transparent",
+              color: deleteConfirm ? tokens.paper : tokens.accent,
+              border: `1px solid ${tokens.accent}`,
               cursor: "pointer",
               fontFamily: fontMono,
               fontSize: 9,
@@ -504,8 +504,8 @@ function PaymentAccordion({
                 marginTop: 4,
                 padding: "6px",
                 background: "transparent",
-                color: paper.inkDim,
-                border: `1px solid ${paper.paperDark}`,
+                color: tokens.inkDim,
+                border: `1px solid ${tokens.paperDark}`,
                 cursor: "pointer",
                 fontFamily: fontMono,
                 fontSize: 8,
@@ -562,9 +562,9 @@ export default function AdminPaymentsPage() {
             padding: "7px 10px",
             fontFamily: fontMono,
             fontSize: 10,
-            background: paper.paper,
-            color: paper.ink,
-            border: `1.5px solid ${paper.paperDark}`,
+            background: tokens.paper,
+            color: tokens.ink,
+            border: `1.5px solid ${tokens.paperDark}`,
             outline: "none",
           }}
         >
@@ -584,9 +584,9 @@ export default function AdminPaymentsPage() {
             padding: "7px 10px",
             fontFamily: fontMono,
             fontSize: 10,
-            background: paper.paper,
-            color: paper.ink,
-            border: `1.5px solid ${paper.paperDark}`,
+            background: tokens.paper,
+            color: tokens.ink,
+            border: `1.5px solid ${tokens.paperDark}`,
             outline: "none",
           }}
         >
@@ -604,7 +604,7 @@ export default function AdminPaymentsPage() {
           style={{
             fontFamily: fontMono,
             fontSize: 10,
-            color: paper.inkDim,
+            color: tokens.inkDim,
             padding: "24px 0",
             textAlign: "center",
           }}
@@ -631,14 +631,14 @@ export default function AdminPaymentsPage() {
                 style={{
                   fontFamily: fontMono,
                   fontSize: 9,
-                  color: paper.inkDim,
+                  color: tokens.inkDim,
                   letterSpacing: 2,
                   textTransform: "uppercase",
                 }}
               >
                 {t("settlement.year")} {year}
               </div>
-              <div style={{ fontFamily: fontMono, fontSize: 10, color: paper.inkDim }}>
+              <div style={{ fontFamily: fontMono, fontSize: 10, color: tokens.inkDim }}>
                 {fmtMoney(total)}
               </div>
             </div>
@@ -660,7 +660,7 @@ export default function AdminPaymentsPage() {
           style={{
             fontFamily: fontMono,
             fontSize: 10,
-            color: paper.inkDim,
+            color: tokens.inkDim,
             padding: "32px 0",
             textAlign: "center",
           }}

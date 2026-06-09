@@ -8,7 +8,7 @@ import { useLastCarState } from "@/hooks/use-vehicle-state";
 import { useCars } from "@/hooks/use-vehicles";
 import { buildMissingLabel, t } from "@/lib/i18n";
 import { useOnlineState } from "@/lib/offline/online-state";
-import { fmtDate, fmtMoney, fontMono, fontSerif, paper } from "@/lib/paper-theme";
+import { fmtDate, fmtMoney, fontMono, fontSerif, tokens } from "@/lib/theme-tokens";
 import { fullNameOf } from "@/lib/person-utils";
 import { useTheme } from "@/lib/theme-context";
 import type { Trip } from "@/types";
@@ -71,26 +71,26 @@ const paperLabel: React.CSSProperties = {
   fontWeight: 700,
   letterSpacing: 2,
   textTransform: "uppercase",
-  color: paper.inkMute,
+  color: tokens.inkMute,
   display: "block",
   marginBottom: 4,
 };
 const monoLabel: React.CSSProperties = {
   fontFamily: fontMono,
   fontSize: 11,
-  color: paper.inkMute,
+  color: tokens.inkMute,
   display: "block",
   marginBottom: 4,
 };
 const dashedBox: React.CSSProperties = {
-  border: `1.5px dashed ${paper.paperDark}`,
+  border: `1.5px dashed ${tokens.paperDark}`,
   padding: "12px 14px",
 };
 const bigInput: React.CSSProperties = {
   fontFamily: fontSerif,
   fontSize: 28,
   fontWeight: 700,
-  color: paper.ink,
+  color: tokens.ink,
   background: "transparent",
   border: "none",
   outline: "none",
@@ -176,7 +176,7 @@ export function TripForm({ defaultValues, onSubmit, onCancel, onDelete, readOnly
   const pctLong = Math.round(discLong * 100);
   const lbl = mono ? monoLabel : paperLabel;
 
-  const rowBorder = mono ? `1px solid ${paper.paperDark}` : `1.5px dashed ${paper.paperDark}`;
+  const rowBorder = mono ? `1px solid ${tokens.paperDark}` : `1.5px dashed ${tokens.paperDark}`;
 
   return (
     <form
@@ -192,7 +192,7 @@ export function TripForm({ defaultValues, onSubmit, onCancel, onDelete, readOnly
         }
         handleSubmit(onSubmit)(e);
       }}
-      style={{ background: paper.paperDeep }}
+      style={{ background: tokens.paperDeep }}
     >
       {/* Top bar */}
       <div
@@ -203,7 +203,7 @@ export function TripForm({ defaultValues, onSubmit, onCancel, onDelete, readOnly
           padding: "0 16px",
           height: 52,
           borderBottom: rowBorder,
-          background: paper.paper,
+          background: tokens.paper,
           position: "sticky",
           top: 0,
           zIndex: 10,
@@ -221,7 +221,7 @@ export function TripForm({ defaultValues, onSubmit, onCancel, onDelete, readOnly
             background: "transparent",
             border: "none",
             cursor: "pointer",
-            color: paper.ink,
+            color: tokens.ink,
             padding: "0 4px",
             lineHeight: 1,
           }}
@@ -235,14 +235,14 @@ export function TripForm({ defaultValues, onSubmit, onCancel, onDelete, readOnly
                   fontFamily: fontSerif,
                   fontSize: 17,
                   fontWeight: 700,
-                  color: paper.ink,
+                  color: tokens.ink,
                 }
               : {
                   fontFamily: fontMono,
                   fontSize: 10,
                   fontWeight: 700,
                   letterSpacing: 3,
-                  color: paper.inkDim,
+                  color: tokens.inkDim,
                   textTransform: "uppercase",
                 }
           }
@@ -261,10 +261,10 @@ export function TripForm({ defaultValues, onSubmit, onCancel, onDelete, readOnly
               fontWeight: 700,
               letterSpacing: 2,
               textTransform: "uppercase",
-              color: paper.inkMute,
+              color: tokens.inkMute,
             }}
           >
-            <Lock size={13} color={paper.inkMute} strokeWidth={1.75} />
+            <Lock size={13} color={tokens.inkMute} strokeWidth={1.75} />
             {t("form.read_only")}
           </div>
         ) : (
@@ -278,7 +278,7 @@ export function TripForm({ defaultValues, onSubmit, onCancel, onDelete, readOnly
                 fontWeight: 700,
                 letterSpacing: mono ? 0 : 2,
                 textTransform: mono ? "none" : "uppercase",
-                background: paper.accent,
+                background: tokens.accent,
                 color: "#fff",
                 border: "none",
                 borderRadius: mono ? "var(--radius-pill, 999px)" : 0,
@@ -296,8 +296,8 @@ export function TripForm({ defaultValues, onSubmit, onCancel, onDelete, readOnly
                   position: "absolute",
                   right: 0,
                   top: "calc(100% + 6px)",
-                  background: paper.ink,
-                  color: paper.paper,
+                  background: tokens.ink,
+                  color: tokens.paper,
                   fontFamily: fontMono,
                   fontSize: 9,
                   letterSpacing: 1,
@@ -326,7 +326,7 @@ export function TripForm({ defaultValues, onSubmit, onCancel, onDelete, readOnly
               fontSize: 9,
               fontWeight: 700,
               letterSpacing: 1,
-              color: paper.amber,
+              color: tokens.amber,
               borderBottom: rowBorder,
             }}
           >
@@ -357,7 +357,7 @@ export function TripForm({ defaultValues, onSubmit, onCancel, onDelete, readOnly
                     fontFamily: fontSerif,
                     fontSize: mono ? 19 : 17,
                     fontWeight: mono ? 700 : 600,
-                    color: paper.ink,
+                    color: tokens.ink,
                     background: "transparent",
                     border: "none",
                     outline: "none",
@@ -385,7 +385,7 @@ export function TripForm({ defaultValues, onSubmit, onCancel, onDelete, readOnly
                     fontFamily: fontSerif,
                     fontSize: 19,
                     fontWeight: 700,
-                    color: paper.ink,
+                    color: tokens.ink,
                     lineHeight: 1.15,
                   }}
                 >
@@ -393,7 +393,7 @@ export function TripForm({ defaultValues, onSubmit, onCancel, onDelete, readOnly
                 </span>
                 <Lock
                   size={14}
-                  color={paper.inkMute}
+                  color={tokens.inkMute}
                   strokeWidth={1.75}
                   style={{ flexShrink: 0 }}
                 />
@@ -401,12 +401,12 @@ export function TripForm({ defaultValues, onSubmit, onCancel, onDelete, readOnly
             ) : (
               <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
                 <span
-                  style={{ fontFamily: fontSerif, fontSize: 17, fontWeight: 600, color: paper.ink }}
+                  style={{ fontFamily: fontSerif, fontSize: 17, fontWeight: 600, color: tokens.ink }}
                 >
                   {person ? fullNameOf(person) : (me?.shortName ?? "—")}
                 </span>
                 {(person?.discount ?? 0) > 0 && (
-                  <span style={{ color: paper.accent, fontSize: 13 }}>★</span>
+                  <span style={{ color: tokens.accent, fontSize: 13 }}>★</span>
                 )}
                 <span style={{ fontSize: 13 }}>🔒</span>
               </div>
@@ -421,7 +421,7 @@ export function TripForm({ defaultValues, onSubmit, onCancel, onDelete, readOnly
                     fontFamily: fontSerif,
                     fontSize: 17,
                     fontWeight: 700,
-                    color: paper.ink,
+                    color: tokens.ink,
                     pointerEvents: "none",
                   }}
                 >
@@ -451,7 +451,7 @@ export function TripForm({ defaultValues, onSubmit, onCancel, onDelete, readOnly
                     fontFamily: fontSerif,
                     fontSize: 17,
                     fontWeight: 600,
-                    color: paper.ink,
+                    color: tokens.ink,
                     background: "transparent",
                     border: "none",
                     outline: "none",
@@ -470,7 +470,7 @@ export function TripForm({ defaultValues, onSubmit, onCancel, onDelete, readOnly
               padding: "6px 14px",
               fontFamily: fontMono,
               fontSize: 9,
-              color: paper.amber,
+              color: tokens.amber,
               letterSpacing: 1,
             }}
           >
@@ -486,7 +486,7 @@ export function TripForm({ defaultValues, onSubmit, onCancel, onDelete, readOnly
                 fontFamily: fontSerif,
                 fontSize: 13,
                 fontWeight: 600,
-                color: paper.inkMute,
+                color: tokens.inkMute,
                 display: "block",
                 marginBottom: 8,
               }}
@@ -509,7 +509,7 @@ export function TripForm({ defaultValues, onSubmit, onCancel, onDelete, readOnly
                 />
               </div>
               <div style={{ textAlign: "center", flexShrink: 0, padding: "0 6px 8px" }}>
-                <div style={{ fontFamily: fontMono, fontSize: 11.5, color: paper.inkMute }}>
+                <div style={{ fontFamily: fontMono, fontSize: 11.5, color: tokens.inkMute }}>
                   {km > 0 ? `+${km} km` : "—"}
                 </div>
               </div>
@@ -528,13 +528,13 @@ export function TripForm({ defaultValues, onSubmit, onCancel, onDelete, readOnly
             </div>
             {errors.end_odometer && (
               <div
-                style={{ fontFamily: fontMono, fontSize: 11, color: paper.accent, marginTop: 4 }}
+                style={{ fontFamily: fontMono, fontSize: 11, color: tokens.accent, marginTop: 4 }}
               >
                 {errors.end_odometer.message}
               </div>
             )}
             {!online && isAddMode && (
-              <div style={{ fontFamily: fontMono, fontSize: 10, color: paper.amber, marginTop: 4 }}>
+              <div style={{ fontFamily: fontMono, fontSize: 10, color: tokens.amber, marginTop: 4 }}>
                 {t("form.offline_start_km_hint")}
               </div>
             )}
@@ -543,8 +543,8 @@ export function TripForm({ defaultValues, onSubmit, onCancel, onDelete, readOnly
           <div
             style={{
               margin: "12px 14px",
-              background: paper.paper,
-              border: `1.5px solid ${paper.paperDark}`,
+              background: tokens.paper,
+              border: `1.5px solid ${tokens.paperDark}`,
             }}
           >
             <div
@@ -555,9 +555,9 @@ export function TripForm({ defaultValues, onSubmit, onCancel, onDelete, readOnly
                 fontSize: 9,
                 fontWeight: 700,
                 letterSpacing: 3,
-                color: paper.inkMute,
+                color: tokens.inkMute,
                 textTransform: "uppercase",
-                borderBottom: `1px dashed ${paper.paperDark}`,
+                borderBottom: `1px dashed ${tokens.paperDark}`,
               }}
             >
               @ {t("form.odometer_section")}
@@ -581,7 +581,7 @@ export function TripForm({ defaultValues, onSubmit, onCancel, onDelete, readOnly
                     style={{
                       fontFamily: fontMono,
                       fontSize: 8,
-                      color: paper.amber,
+                      color: tokens.amber,
                       letterSpacing: 1,
                       marginTop: 2,
                       textTransform: "uppercase",
@@ -596,7 +596,7 @@ export function TripForm({ defaultValues, onSubmit, onCancel, onDelete, readOnly
                   style={{
                     fontFamily: fontMono,
                     fontSize: 10,
-                    color: paper.inkMute,
+                    color: tokens.inkMute,
                     letterSpacing: 1,
                     marginBottom: 2,
                   }}
@@ -606,7 +606,7 @@ export function TripForm({ defaultValues, onSubmit, onCancel, onDelete, readOnly
                 <div
                   style={{
                     fontSize: 16,
-                    color: errors.end_odometer ? paper.accent : paper.inkMute,
+                    color: errors.end_odometer ? tokens.accent : tokens.inkMute,
                   }}
                 >
                   →
@@ -626,7 +626,7 @@ export function TripForm({ defaultValues, onSubmit, onCancel, onDelete, readOnly
                     style={{
                       fontFamily: fontMono,
                       fontSize: 8,
-                      color: paper.accent,
+                      color: tokens.accent,
                       letterSpacing: 1,
                     }}
                   >
@@ -671,7 +671,7 @@ export function TripForm({ defaultValues, onSubmit, onCancel, onDelete, readOnly
             style={
               mono
                 ? {
-                    border: `1px solid ${paper.paperDark}`,
+                    border: `1px solid ${tokens.paperDark}`,
                     borderRadius: "var(--radius-sm, 6px)",
                     padding: "10px 14px",
                   }
@@ -686,7 +686,7 @@ export function TripForm({ defaultValues, onSubmit, onCancel, onDelete, readOnly
                 fontFamily: fontSerif,
                 fontSize: 16,
                 fontWeight: 500,
-                color: paper.ink,
+                color: tokens.ink,
                 background: "transparent",
                 border: "none",
                 outline: "none",
@@ -703,7 +703,7 @@ export function TripForm({ defaultValues, onSubmit, onCancel, onDelete, readOnly
             mono
               ? {
                   margin: "12px 14px",
-                  border: `1px solid ${paper.paperDark}`,
+                  border: `1px solid ${tokens.paperDark}`,
                   borderRadius: "var(--radius-md, 10px)",
                   padding: "12px 14px",
                 }
@@ -717,7 +717,7 @@ export function TripForm({ defaultValues, onSubmit, onCancel, onDelete, readOnly
                     fontFamily: fontSerif,
                     fontSize: 13,
                     fontWeight: 600,
-                    color: paper.inkMute,
+                    color: tokens.inkMute,
                     marginBottom: 10,
                   }
                 : {
@@ -726,7 +726,7 @@ export function TripForm({ defaultValues, onSubmit, onCancel, onDelete, readOnly
                     fontSize: 9,
                     fontWeight: 700,
                     letterSpacing: 3,
-                    color: paper.inkDim,
+                    color: tokens.inkDim,
                     textTransform: "uppercase",
                     marginBottom: 10,
                   }
@@ -755,14 +755,14 @@ export function TripForm({ defaultValues, onSubmit, onCancel, onDelete, readOnly
           )}
           <div
             style={{
-              borderTop: mono ? `1px solid ${paper.paperDark}` : `1px dashed ${paper.paperDark}`,
+              borderTop: mono ? `1px solid ${tokens.paperDark}` : `1px dashed ${tokens.paperDark}`,
               margin: "8px 0",
             }}
           />
           <BreakdownRow
             label={`${mono ? "Totaal" : "TOTAL"} (${km} km)`}
             value={fmtMoney(amount)}
-            valueStyle={{ color: paper.accent, fontSize: mono ? 16 : 15, fontWeight: 700 }}
+            valueStyle={{ color: tokens.accent, fontSize: mono ? 16 : 15, fontWeight: 700 }}
             mono={mono}
           />
           {car && shortAmount + longAmount < car.price_per_km * km && km > 0 && (
@@ -771,7 +771,7 @@ export function TripForm({ defaultValues, onSubmit, onCancel, onDelete, readOnly
                 textAlign: "right",
                 fontFamily: fontMono,
                 fontSize: mono ? 11 : 9,
-                color: paper.inkMute,
+                color: tokens.inkMute,
                 letterSpacing: mono ? 0 : 1,
                 marginTop: 2,
               }}
@@ -790,9 +790,9 @@ export function TripForm({ defaultValues, onSubmit, onCancel, onDelete, readOnly
                 width: "100%",
                 padding: "10px",
                 background: "transparent",
-                border: mono ? `1px solid ${paper.accent}` : `1.5px solid ${paper.accent}`,
+                border: mono ? `1px solid ${tokens.accent}` : `1.5px solid ${tokens.accent}`,
                 borderRadius: mono ? "var(--radius-pill, 999px)" : 0,
-                color: paper.accent,
+                color: tokens.accent,
                 fontFamily: mono ? fontSerif : fontMono,
                 fontSize: mono ? 13 : 10,
                 fontWeight: 700,
@@ -836,11 +836,11 @@ function BreakdownRow({
       <span
         style={
           mono
-            ? { fontFamily: fontMono, fontSize: 11, color: paper.inkMute }
+            ? { fontFamily: fontMono, fontSize: 11, color: tokens.inkMute }
             : {
                 fontFamily: fontMono,
                 fontSize: 9,
-                color: paper.inkDim,
+                color: tokens.inkDim,
                 letterSpacing: 1.5,
                 textTransform: "uppercase",
               }
@@ -853,7 +853,7 @@ function BreakdownRow({
           fontFamily: fontMono,
           fontSize: mono ? 13 : 12,
           fontWeight: 700,
-          color: muted ? paper.inkMute : paper.ink,
+          color: muted ? tokens.inkMute : tokens.ink,
           ...valueStyle,
         }}
       >

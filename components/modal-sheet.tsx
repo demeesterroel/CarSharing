@@ -1,5 +1,5 @@
 "use client";
-import { paper } from "@/lib/paper-theme";
+import { tokens } from "@/lib/theme-tokens";
 import * as Dialog from "@radix-ui/react-dialog";
 
 const overlayStyle: React.CSSProperties = {
@@ -17,7 +17,7 @@ const sheetStyle: React.CSSProperties = {
   width: "min(100%, 480px)",
   maxHeight: "92dvh",
   borderRadius: "14px 14px 0 0",
-  background: paper.paperDeep,
+  background: tokens.paperDeep,
   zIndex: 50,
   overflowY: "auto",
 };

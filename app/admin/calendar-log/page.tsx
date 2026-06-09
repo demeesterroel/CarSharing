@@ -1,5 +1,5 @@
 "use client";
-import { fontMono, fontSerif, paper } from "@/lib/paper-theme";
+import { fontMono, fontSerif, tokens } from "@/lib/theme-tokens";
 import { useQuery } from "@tanstack/react-query";
 import { Card } from "../_shared";
 
@@ -20,7 +20,7 @@ const labelStyle: React.CSSProperties = {
   fontWeight: 700,
   letterSpacing: 1,
   textTransform: "uppercase",
-  color: paper.inkMute,
+  color: tokens.inkMute,
 };
 
 export default function CalendarLogPage() {
@@ -41,7 +41,7 @@ export default function CalendarLogPage() {
             marginBottom: 6,
           }}
         >
-          <div style={{ fontFamily: fontSerif, fontSize: 16, color: paper.ink }}>
+          <div style={{ fontFamily: fontSerif, fontSize: 16, color: tokens.ink }}>
             Calendar sync log
           </div>
           <button
@@ -55,8 +55,8 @@ export default function CalendarLogPage() {
               letterSpacing: 2,
               textTransform: "uppercase",
               background: "none",
-              color: isFetching ? paper.inkMute : paper.inkDim,
-              border: `1px solid ${paper.paperDark}`,
+              color: isFetching ? tokens.inkMute : tokens.inkDim,
+              border: `1px solid ${tokens.paperDark}`,
               padding: "5px 10px",
               cursor: isFetching ? "default" : "pointer",
             }}
@@ -68,7 +68,7 @@ export default function CalendarLogPage() {
           style={{
             fontFamily: fontMono,
             fontSize: 10,
-            color: paper.inkMute,
+            color: tokens.inkMute,
             lineHeight: 1.5,
             marginBottom: 12,
           }}
@@ -93,7 +93,7 @@ export default function CalendarLogPage() {
               }}
             >
               <thead>
-                <tr style={{ textAlign: "left", color: paper.inkMute }}>
+                <tr style={{ textAlign: "left", color: tokens.inkMute }}>
                   <th style={thStyle}>Time (UTC)</th>
                   <th style={thStyle}>Dir</th>
                   <th style={thStyle}>Action</th>
@@ -106,17 +106,17 @@ export default function CalendarLogPage() {
                 {data.map((row) => (
                   <tr
                     key={row.id}
-                    style={{ borderTop: `1px solid ${paper.paperDark}`, verticalAlign: "top" }}
+                    style={{ borderTop: `1px solid ${tokens.paperDark}`, verticalAlign: "top" }}
                   >
-                    <td style={{ ...tdStyle, whiteSpace: "nowrap", color: paper.inkDim }}>
+                    <td style={{ ...tdStyle, whiteSpace: "nowrap", color: tokens.inkDim }}>
                       {row.created_at}
                     </td>
-                    <td style={{ ...tdStyle, color: paper.inkMute }}>{row.direction}</td>
+                    <td style={{ ...tdStyle, color: tokens.inkMute }}>{row.direction}</td>
                     <td
                       style={{
                         ...tdStyle,
                         fontWeight: 700,
-                        color: row.ok ? paper.ink : paper.accent,
+                        color: row.ok ? tokens.ink : tokens.accent,
                         whiteSpace: "nowrap",
                       }}
                     >
@@ -124,10 +124,10 @@ export default function CalendarLogPage() {
                       {row.action}
                     </td>
                     <td style={tdStyle}>{row.reservation_id ?? "—"}</td>
-                    <td style={{ ...tdStyle, color: paper.inkMute }}>
+                    <td style={{ ...tdStyle, color: tokens.inkMute }}>
                       {row.google_event_id ? "…" + row.google_event_id.slice(-6) : "—"}
                     </td>
-                    <td style={{ ...tdStyle, color: paper.inkDim, wordBreak: "break-word" }}>
+                    <td style={{ ...tdStyle, color: tokens.inkDim, wordBreak: "break-word" }}>
                       {formatDetail(row.detail)}
                     </td>
                   </tr>

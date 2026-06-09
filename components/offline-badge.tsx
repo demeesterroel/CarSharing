@@ -1,7 +1,7 @@
 "use client";
 import { useT } from "@/components/locale-provider";
 import { useOnlineState } from "@/lib/offline/online-state";
-import { fontMono, paper } from "@/lib/paper-theme";
+import { fontMono, tokens } from "@/lib/theme-tokens";
 
 export function OfflineBadge() {
   const t = useT();
@@ -12,7 +12,7 @@ export function OfflineBadge() {
 
   // Online but syncing (items still in outbox)
   if (online && pendingCount > 0) {
-    const color = paper.amber;
+    const color = tokens.amber;
     return (
       <span
         role="status"
@@ -39,7 +39,7 @@ export function OfflineBadge() {
 
   // Offline
   const isStale = staleness !== "fresh";
-  const color = isStale ? paper.amber : paper.inkDim;
+  const color = isStale ? tokens.amber : tokens.inkDim;
   const tooltip = isStale ? t("offline.tooltip_stale") : t("offline.tooltip_fresh");
   const suffix =
     pendingCount > 0

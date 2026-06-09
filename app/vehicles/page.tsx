@@ -4,7 +4,7 @@ import { useT } from "@/components/locale-provider";
 import { PageHeader } from "@/components/page-header";
 import { usePeople } from "@/hooks/use-people";
 import { useCars, useCreateCar, useUpdateCar } from "@/hooks/use-vehicles";
-import { fontMono, fontSerif, paper } from "@/lib/paper-theme";
+import { fontMono, fontSerif, tokens } from "@/lib/theme-tokens";
 import { shortNameOf } from "@/lib/person-utils";
 import type { Car } from "@/types";
 import * as Dialog from "@radix-ui/react-dialog";
@@ -17,7 +17,7 @@ const sheetStyle: React.CSSProperties = {
   left: 0,
   right: 0,
   bottom: 0,
-  background: paper.paper,
+  background: tokens.paper,
   borderRadius: "16px 16px 0 0",
   zIndex: 50,
   maxHeight: "95vh",
@@ -37,14 +37,14 @@ export default function CarsPage() {
 
   if (isLoading)
     return (
-      <div style={{ background: paper.paperDeep, minHeight: "100dvh" }}>
+      <div style={{ background: tokens.paperDeep, minHeight: "100dvh" }}>
         <PageHeader title={t("page.cars")} />
         <div
           style={{
             padding: "32px 20px",
             fontFamily: fontMono,
             fontSize: 11,
-            color: paper.inkDim,
+            color: tokens.inkDim,
             letterSpacing: 1,
           }}
         >
@@ -54,7 +54,7 @@ export default function CarsPage() {
     );
 
   return (
-    <div style={{ background: paper.paperDeep, minHeight: "100dvh", paddingBottom: 80 }}>
+    <div style={{ background: tokens.paperDeep, minHeight: "100dvh", paddingBottom: 80 }}>
       <PageHeader title={t("page.cars")} />
 
       <div style={{ padding: "8px 16px" }}>
@@ -69,19 +69,19 @@ export default function CarsPage() {
               gap: 12,
               padding: "12px 14px",
               marginBottom: 8,
-              background: paper.paper,
+              background: tokens.paper,
               border: "none",
               cursor: "pointer",
               textAlign: "left",
-              borderLeft: `3px solid ${paper.blue}`,
+              borderLeft: `3px solid ${tokens.blue}`,
               boxShadow: "0 1px 2px rgba(0,0,0,0.04)",
             }}
           >
             <div
               style={{
                 padding: "6px 8px",
-                background: paper.ink,
-                color: paper.paper,
+                background: tokens.ink,
+                color: tokens.paper,
                 fontFamily: fontMono,
                 fontSize: 11,
                 fontWeight: 700,
@@ -99,7 +99,7 @@ export default function CarsPage() {
                   fontFamily: fontSerif,
                   fontSize: 15,
                   fontWeight: 600,
-                  color: paper.ink,
+                  color: tokens.ink,
                   lineHeight: 1.2,
                 }}
               >
@@ -109,7 +109,7 @@ export default function CarsPage() {
                 style={{
                   fontFamily: fontMono,
                   fontSize: 10,
-                  color: paper.inkDim,
+                  color: tokens.inkDim,
                   letterSpacing: 1,
                   marginTop: 2,
                 }}
@@ -125,10 +125,10 @@ export default function CarsPage() {
                   <div
                     style={{
                       padding: "2px 6px",
-                      background: paper.paperDark,
+                      background: tokens.paperDark,
                       fontFamily: fontMono,
                       fontSize: 9,
-                      color: paper.inkDim,
+                      color: tokens.inkDim,
                       letterSpacing: 1,
                     }}
                   >

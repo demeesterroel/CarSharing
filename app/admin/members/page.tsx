@@ -5,7 +5,7 @@ import { ModalSheet } from "@/components/modal-sheet";
 import { useMe } from "@/hooks/use-me";
 import { useCreatePerson } from "@/hooks/use-people";
 import { apiFetch } from "@/lib/api/client";
-import { fontMono, fontSerif, paper } from "@/lib/paper-theme";
+import { fontMono, fontSerif, tokens } from "@/lib/theme-tokens";
 import { fullNameOf } from "@/lib/person-utils";
 import type { Person } from "@/types";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -126,7 +126,7 @@ function PersonRow({
     return (
       <div
         style={{
-          background: paper.paper,
+          background: tokens.paper,
           marginBottom: 6,
           opacity: 0.55,
           boxShadow: "0 1px 2px rgba(0,0,0,0.05), 0 4px 16px rgba(0,0,0,0.06)",
@@ -137,7 +137,7 @@ function PersonRow({
           padding: "12px 14px",
         }}
       >
-        <div style={{ fontFamily: fontSerif, fontSize: 15, fontWeight: 700, color: paper.inkDim }}>
+        <div style={{ fontFamily: fontSerif, fontSize: 15, fontWeight: 700, color: tokens.inkDim }}>
           {fullNameOf(person)}
         </div>
         <button
@@ -145,8 +145,8 @@ function PersonRow({
           onClick={() => onSave({ ...person, active: 1 })}
           style={{
             padding: "5px 12px",
-            background: paper.green,
-            color: paper.paper,
+            background: tokens.green,
+            color: tokens.paper,
             border: "none",
             cursor: isSaving ? "default" : "pointer",
             opacity: isSaving ? 0.6 : 1,
@@ -166,10 +166,10 @@ function PersonRow({
   return (
     <div
       style={{
-        background: paper.paper,
+        background: tokens.paper,
         marginBottom: 6,
         boxShadow: "0 1px 2px rgba(0,0,0,0.05), 0 4px 16px rgba(0,0,0,0.06)",
-        borderLeft: expanded ? `3px solid ${paper.blue}` : `3px solid transparent`,
+        borderLeft: expanded ? `3px solid ${tokens.blue}` : `3px solid transparent`,
       }}
     >
       {/* Collapsed header */}
@@ -203,7 +203,7 @@ function PersonRow({
               fontFamily: fontSerif,
               fontSize: 15,
               fontWeight: 700,
-              color: paper.ink,
+              color: tokens.ink,
               whiteSpace: "nowrap",
             }}
           >
@@ -214,7 +214,7 @@ function PersonRow({
               style={{
                 fontFamily: fontMono,
                 fontSize: 10,
-                color: paper.inkDim,
+                color: tokens.inkDim,
                 whiteSpace: "nowrap",
                 overflow: "hidden",
                 textOverflow: "ellipsis",
@@ -228,10 +228,10 @@ function PersonRow({
               style={{
                 fontFamily: fontMono,
                 fontSize: 9,
-                color: paper.inkDim,
+                color: tokens.inkDim,
                 fontWeight: 700,
                 letterSpacing: 1,
-                border: `1px solid ${paper.amber}`,
+                border: `1px solid ${tokens.amber}`,
                 padding: "2px 5px",
                 textTransform: "uppercase",
                 flexShrink: 0,
@@ -247,7 +247,7 @@ function PersonRow({
           style={{
             display: "inline-flex",
             alignItems: "center",
-            color: paper.inkDim,
+            color: tokens.inkDim,
             opacity: hovered ? 1 : 0,
             transition: "opacity 0.15s",
             padding: "0 6px",
@@ -268,7 +268,7 @@ function PersonRow({
               fontWeight: 700,
               letterSpacing: 1.5,
               textTransform: "uppercase",
-              color: paper.inkDim,
+              color: tokens.inkDim,
               whiteSpace: "nowrap",
             }}
           >
@@ -279,7 +279,7 @@ function PersonRow({
 
       {/* Expanded edit form */}
       {expanded && (
-        <div style={{ padding: "0 14px 14px", borderTop: `1px dashed ${paper.paperDark}` }}>
+        <div style={{ padding: "0 14px 14px", borderTop: `1px dashed ${tokens.paperDark}` }}>
           {/* Username + admin */}
           <div
             style={{
@@ -295,7 +295,7 @@ function PersonRow({
                 style={{
                   fontFamily: fontMono,
                   fontSize: 9,
-                  color: paper.inkDim,
+                  color: tokens.inkDim,
                   letterSpacing: 1.5,
                   textTransform: "uppercase",
                   marginBottom: 4,
@@ -311,11 +311,11 @@ function PersonRow({
                 style={{
                   width: "100%",
                   padding: "6px 8px",
-                  border: `1px solid ${paper.paperDark}`,
-                  background: paper.paperDeep,
+                  border: `1px solid ${tokens.paperDark}`,
+                  background: tokens.paperDeep,
                   fontFamily: fontMono,
                   fontSize: 12,
-                  color: paper.ink,
+                  color: tokens.ink,
                   outline: "none",
                 }}
               />
@@ -333,7 +333,7 @@ function PersonRow({
                 type="checkbox"
                 checked={isAdmin}
                 onChange={(e) => setIsAdmin(e.target.checked)}
-                style={{ accentColor: paper.blue, width: 14, height: 14 }}
+                style={{ accentColor: tokens.blue, width: 14, height: 14 }}
               />
               <span
                 style={{
@@ -341,7 +341,7 @@ function PersonRow({
                   fontSize: 9,
                   letterSpacing: 1.5,
                   textTransform: "uppercase",
-                  color: paper.inkDim,
+                  color: tokens.inkDim,
                 }}
               >
                 {t("admin.is_admin_label")}
@@ -358,21 +358,21 @@ function PersonRow({
               style={{
                 padding: "7px 12px",
                 background: "transparent",
-                border: `1px dashed ${paper.inkDim}`,
+                border: `1px dashed ${tokens.inkDim}`,
                 cursor: hasUsername ? "pointer" : "not-allowed",
                 opacity: hasUsername ? 1 : 0.45,
                 fontFamily: fontMono,
                 fontSize: 9,
                 letterSpacing: 1.5,
                 textTransform: "uppercase",
-                color: paper.inkDim,
+                color: tokens.inkDim,
               }}
             >
               {canSendInvite ? t("admin.invite_send") : t("admin.invite_copy")}
             </button>
             {inviteBanner && (
               <span
-                style={{ marginLeft: 10, fontFamily: fontMono, fontSize: 10, color: paper.green }}
+                style={{ marginLeft: 10, fontFamily: fontMono, fontSize: 10, color: tokens.green }}
               >
                 {inviteBanner}
               </span>
@@ -385,7 +385,7 @@ function PersonRow({
               style={{
                 fontFamily: fontMono,
                 fontSize: 9,
-                color: paper.inkDim,
+                color: tokens.inkDim,
                 letterSpacing: 1.5,
                 textTransform: "uppercase",
                 marginBottom: 4,
@@ -400,7 +400,7 @@ function PersonRow({
               step={0.05}
               value={disc}
               onChange={(e) => setDisc(parseFloat(e.target.value))}
-              style={{ width: "100%", accentColor: disc > 0 ? paper.amber : paper.inkDim }}
+              style={{ width: "100%", accentColor: disc > 0 ? tokens.amber : tokens.inkDim }}
             />
           </div>
           <div style={{ marginBottom: 14 }}>
@@ -408,7 +408,7 @@ function PersonRow({
               style={{
                 fontFamily: fontMono,
                 fontSize: 9,
-                color: paper.inkDim,
+                color: tokens.inkDim,
                 letterSpacing: 1.5,
                 textTransform: "uppercase",
                 marginBottom: 4,
@@ -423,7 +423,7 @@ function PersonRow({
               step={0.05}
               value={discLong}
               onChange={(e) => setDiscLong(parseFloat(e.target.value))}
-              style={{ width: "100%", accentColor: discLong > 0 ? paper.amber : paper.inkDim }}
+              style={{ width: "100%", accentColor: discLong > 0 ? tokens.amber : tokens.inkDim }}
             />
           </div>
 
@@ -437,8 +437,8 @@ function PersonRow({
               style={{
                 width: "100%",
                 padding: "8px",
-                background: paper.accent,
-                color: paper.paper,
+                background: tokens.accent,
+                color: tokens.paper,
                 border: "none",
                 cursor: isSaving ? "default" : "pointer",
                 opacity: isSaving ? 0.6 : 1,
@@ -464,8 +464,8 @@ function PersonRow({
                   width: "100%",
                   padding: "8px",
                   background: "transparent",
-                  color: paper.accent,
-                  border: `1.5px solid ${paper.accent}`,
+                  color: tokens.accent,
+                  border: `1.5px solid ${tokens.accent}`,
                   cursor: isSaving ? "default" : "pointer",
                   opacity: isSaving ? 0.6 : 1,
                   fontFamily: fontMono,
@@ -491,8 +491,8 @@ function PersonRow({
                 flex: 1,
                 padding: "9px",
                 background: "transparent",
-                color: paper.inkDim,
-                border: `1px solid ${paper.paperDark}`,
+                color: tokens.inkDim,
+                border: `1px solid ${tokens.paperDark}`,
                 cursor: "pointer",
                 fontFamily: fontMono,
                 fontSize: 9,
@@ -517,8 +517,8 @@ function PersonRow({
               style={{
                 flex: 2,
                 padding: "9px",
-                background: dirty && !isSaving ? paper.ink : paper.paperDark,
-                color: dirty && !isSaving ? paper.paper : paper.inkMute,
+                background: dirty && !isSaving ? tokens.ink : tokens.paperDark,
+                color: dirty && !isSaving ? tokens.paper : tokens.inkMute,
                 border: "none",
                 cursor: dirty && !isSaving ? "pointer" : "default",
                 fontFamily: fontMono,
@@ -638,11 +638,11 @@ export default function AdminLedenPage() {
             style={{
               fontFamily: fontMono,
               fontSize: 9,
-              color: paper.inkDim,
+              color: tokens.inkDim,
               letterSpacing: 2,
               textTransform: "uppercase",
               padding: "16px 0 8px",
-              borderTop: `1.5px dashed ${paper.inkMute}`,
+              borderTop: `1.5px dashed ${tokens.inkMute}`,
               marginTop: 8,
             }}
           >
@@ -667,7 +667,7 @@ export default function AdminLedenPage() {
             fontFamily: fontSerif,
             fontSize: 20,
             fontWeight: 700,
-            color: paper.ink,
+            color: tokens.ink,
           }}
         >
           {t("page.person_add")}

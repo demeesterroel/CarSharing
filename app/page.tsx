@@ -29,9 +29,9 @@ import {
   fmtMoney,
   fontMono,
   fontSerif,
-  paper,
+  tokens,
   signPrefix,
-} from "@/lib/paper-theme";
+} from "@/lib/theme-tokens";
 import { useTheme } from "@/lib/theme-context";
 import type { CarDashboardBreakdown, Expense, FuelFillup, Reservation, Trip } from "@/types";
 import * as Dialog from "@radix-ui/react-dialog";
@@ -93,7 +93,7 @@ function Perf({ margin = "12px 0" }: { margin?: string }) {
     <div
       style={{
         height: 0,
-        borderTop: theme === "mono" ? `1px solid ${paper.paperDark}` : `1.5px dashed ${paper.ink}`,
+        borderTop: theme === "mono" ? `1px solid ${tokens.paperDark}` : `1.5px dashed ${tokens.ink}`,
         margin,
       }}
     />
@@ -118,7 +118,7 @@ function ReceiptRow({
   const [hovered, setHovered] = useState(false);
   const { theme } = useTheme();
   const mono = theme === "mono";
-  const c = color ?? paper.ink;
+  const c = color ?? tokens.ink;
   const inner = (
     <div
       style={{
@@ -146,13 +146,13 @@ function ReceiptRow({
           textTransform: mono ? "none" : ("uppercase" as const),
           letterSpacing: mono ? 0 : 1,
           fontSize: big ? 11 : 10,
-          color: mono ? paper.ink : paper.inkDim,
+          color: mono ? tokens.ink : tokens.inkDim,
           whiteSpace: "nowrap",
           marginRight: 12,
           ...(href && hovered
             ? {
                 textDecoration: "underline",
-                textDecorationColor: mono ? paper.ink : paper.inkDim,
+                textDecorationColor: mono ? tokens.ink : tokens.inkDim,
               }
             : {}),
         }}
@@ -209,7 +209,7 @@ function DashboardSettledNote({
   const noteStyle: React.CSSProperties = {
     fontFamily: fontMono,
     fontSize: 8,
-    color: paper.inkDim,
+    color: tokens.inkDim,
     paddingLeft: 8,
     marginTop: 3,
     fontStyle: "italic",
@@ -248,7 +248,7 @@ function CarBreakdownSection({ bd, year }: { bd: CarDashboardBreakdown; year: nu
         fontFamily: fontMono,
         fontSize: 9,
         letterSpacing: mono ? 0 : 1,
-        color: paper.inkDim,
+        color: tokens.inkDim,
         textTransform: mono ? "none" : ("uppercase" as const),
         marginBottom: 2,
       }}
@@ -270,7 +270,7 @@ function CarBreakdownSection({ bd, year }: { bd: CarDashboardBreakdown; year: nu
             fontFamily: fontMono,
             fontSize: mono ? 13 : 11,
             fontWeight: 700,
-            color: paper.ink,
+            color: tokens.ink,
             padding: "4px 0 2px",
           }}
         >
@@ -288,7 +288,7 @@ function CarBreakdownSection({ bd, year }: { bd: CarDashboardBreakdown; year: nu
                 href={`/trips?mine=false&car=${bd.car_short}&year=${year}`}
                 label={`${bd.trip_count} ritten · ${bd.trip_km.toLocaleString("nl-BE")} km`}
                 value={`+ ${fmtMoney(bd.trip_amount)}`}
-                color={paper.green}
+                color={tokens.green}
                 icon={<Navigation size={11} />}
               />
             )}
@@ -297,7 +297,7 @@ function CarBreakdownSection({ bd, year }: { bd: CarDashboardBreakdown; year: nu
                 href={`/fuel?mine=false&car=${bd.car_short}&year=${year}`}
                 label={`${bd.fuel_count} tankbeurten, ${fmtL(bd.fuel_liters)} L${(bd.fuel_settled_liters ?? 0) > 0.05 ? " (*)" : ""}`}
                 value={`− ${fmtMoney(bd.fuel_amount)}`}
-                color={paper.accent}
+                color={tokens.accent}
                 icon={<FuelIcon size={11} />}
               />
             )}
@@ -306,7 +306,7 @@ function CarBreakdownSection({ bd, year }: { bd: CarDashboardBreakdown; year: nu
                 href={`/expenses?mine=false&car=${bd.car_short}&year=${year}`}
                 label={`${bd.expense_count} kosten${(bd.expense_settled_amount ?? 0) > 0.005 ? ((bd.fuel_settled_liters ?? 0) > 0.05 ? " (**)" : " (*)") : ""}`}
                 value={`− ${fmtMoney(bd.expense_amount)}`}
-                color={paper.accent}
+                color={tokens.accent}
                 icon={<ReceiptIcon size={11} />}
               />
             )}
@@ -326,7 +326,7 @@ function CarBreakdownSection({ bd, year }: { bd: CarDashboardBreakdown; year: nu
               <ReceiptRow
                 href={`/trips?mine=true&car=${bd.car_short}&year=${year}`}
                 label={`${bd.own_trip_count} ritten · ${bd.own_trip_km.toLocaleString("nl-BE")} km`}
-                color={paper.inkDim}
+                color={tokens.inkDim}
                 icon={<Navigation size={11} />}
               />
             )}
@@ -334,7 +334,7 @@ function CarBreakdownSection({ bd, year }: { bd: CarDashboardBreakdown; year: nu
               <ReceiptRow
                 href={`/fuel?mine=true&car=${bd.car_short}&year=${year}`}
                 label={`${bd.own_fuel_count} tankbeurten, ${fmtL(bd.own_fuel_liters)} L`}
-                color={paper.inkDim}
+                color={tokens.inkDim}
                 icon={<FuelIcon size={11} />}
               />
             )}
@@ -342,7 +342,7 @@ function CarBreakdownSection({ bd, year }: { bd: CarDashboardBreakdown; year: nu
               <ReceiptRow
                 href={`/expenses?mine=true&car=${bd.car_short}&year=${year}`}
                 label={`${bd.own_expense_count} kosten`}
-                color={paper.inkDim}
+                color={tokens.inkDim}
                 icon={<ReceiptIcon size={11} />}
               />
             )}
@@ -365,7 +365,7 @@ function CarBreakdownSection({ bd, year }: { bd: CarDashboardBreakdown; year: nu
           fontFamily: fontMono,
           fontSize: mono ? 13 : 11,
           fontWeight: 700,
-          color: paper.ink,
+          color: tokens.ink,
           padding: "4px 0 2px",
         }}
       >
@@ -380,7 +380,7 @@ function CarBreakdownSection({ bd, year }: { bd: CarDashboardBreakdown; year: nu
             href={`/trips?mine=true&year=${year}`}
             label={`${bd.trip_count} ritten · ${bd.trip_km.toLocaleString("nl-BE")} km`}
             value={`− ${fmtMoney(bd.trip_amount)}`}
-            color={paper.accent}
+            color={tokens.accent}
             icon={<Navigation size={11} />}
           />
         )}
@@ -389,7 +389,7 @@ function CarBreakdownSection({ bd, year }: { bd: CarDashboardBreakdown; year: nu
             href={`/fuel?mine=true&car=${bd.car_short}&year=${year}`}
             label={`${bd.fuel_count} tankbeurten, ${fmtL(bd.fuel_liters)} L${(bd.fuel_settled_liters ?? 0) > 0.05 ? " (*)" : ""}`}
             value={`+ ${fmtMoney(bd.fuel_amount)}`}
-            color={paper.green}
+            color={tokens.green}
             icon={<FuelIcon size={11} />}
           />
         )}
@@ -398,7 +398,7 @@ function CarBreakdownSection({ bd, year }: { bd: CarDashboardBreakdown; year: nu
             href={`/expenses?mine=true&car=${bd.car_short}&year=${year}`}
             label={`${bd.expense_count} kosten${(bd.expense_settled_amount ?? 0) > 0.005 ? ((bd.fuel_settled_liters ?? 0) > 0.05 ? " (**)" : " (*)") : ""}`}
             value={`+ ${fmtMoney(bd.expense_amount)}`}
-            color={paper.green}
+            color={tokens.green}
             icon={<ReceiptIcon size={11} />}
           />
         )}
@@ -430,7 +430,7 @@ function SkeletonRow({
 }
 
 function Dashed() {
-  return <div style={{ height: 0, borderTop: `1.5px dashed ${paper.paperDark}` }} />;
+  return <div style={{ height: 0, borderTop: `1.5px dashed ${tokens.paperDark}` }} />;
 }
 
 function BalanceCardSkeleton() {
@@ -441,7 +441,7 @@ function BalanceCardSkeleton() {
       <div style={{ padding: "12px 16px 0" }}>
         <div
           style={{
-            background: paper.paper,
+            background: tokens.paper,
             padding: "16px 18px 24px",
             boxShadow: "0 1px 2px rgba(0,0,0,0.05), 0 8px 24px rgba(0,0,0,0.07)",
           }}
@@ -458,7 +458,7 @@ function BalanceCardSkeleton() {
             <div
               style={{
                 display: "flex",
-                border: `1.5px solid ${paper.paperDark}`,
+                border: `1.5px solid ${tokens.paperDark}`,
                 borderRadius: "var(--radius-pill, 999px)",
                 padding: 2,
                 gap: 1,
@@ -470,7 +470,7 @@ function BalanceCardSkeleton() {
                   fontFamily: fontMono,
                   fontSize: 10,
                   fontWeight: 700,
-                  color: paper.inkDim,
+                  color: tokens.inkDim,
                   borderRadius: "var(--radius-pill, 999px)",
                 }}
               >
@@ -482,8 +482,8 @@ function BalanceCardSkeleton() {
                   fontFamily: fontMono,
                   fontSize: 10,
                   fontWeight: 700,
-                  background: paper.paperDark,
-                  color: paper.inkDim,
+                  background: tokens.paperDark,
+                  color: tokens.inkDim,
                   borderRadius: "var(--radius-pill, 999px)",
                 }}
               >
@@ -495,7 +495,7 @@ function BalanceCardSkeleton() {
                   fontFamily: fontMono,
                   fontSize: 10,
                   fontWeight: 700,
-                  color: paper.inkDim,
+                  color: tokens.inkDim,
                   borderRadius: "var(--radius-pill, 999px)",
                 }}
               >
@@ -554,7 +554,7 @@ function SectionSkeleton({ rows = 3 }: { rows?: number }) {
           key={i}
           style={{
             padding: "12px 0",
-            borderBottom: i < rows - 1 ? `1px dashed ${paper.paperDark}` : "none",
+            borderBottom: i < rows - 1 ? `1px dashed ${tokens.paperDark}` : "none",
             display: "flex",
             flexDirection: "column",
             gap: 7,
@@ -601,18 +601,18 @@ function BalanceReceipt({ fullName, personId }: { fullName: string; personId: nu
   const expenseLabel = `${yours} ${myRow.expense_count} ${pl(myRow.expense_count, t("dashboard.noun_expense"), t("dashboard.noun_expenses"))}`;
 
   const settled = Math.abs(myRow.balance) <= 0.05;
-  const balanceColor = settled ? paper.green : paper.accent;
+  const balanceColor = settled ? tokens.green : tokens.accent;
 
   return (
     <div style={{ padding: "12px 16px 0" }}>
       {/* Receipt card */}
       <div
         style={{
-          background: paper.paper,
+          background: tokens.paper,
           padding: "16px 18px 22px",
           borderRadius: mono ? "var(--radius-lg, 14px)" : 0,
           boxShadow: mono ? "none" : "0 1px 2px rgba(0,0,0,0.05), 0 8px 24px rgba(0,0,0,0.07)",
-          border: mono ? `1px solid ${paper.paperDark}` : "none",
+          border: mono ? `1px solid ${tokens.paperDark}` : "none",
         }}
       >
         {/* Year navigation + owner badge */}
@@ -621,7 +621,7 @@ function BalanceReceipt({ fullName, personId }: { fullName: string; personId: nu
           <div
             style={{
               display: "flex",
-              border: mono ? `1px solid ${paper.paperDark}` : `1.5px solid ${paper.ink}`,
+              border: mono ? `1px solid ${tokens.paperDark}` : `1.5px solid ${tokens.ink}`,
               borderRadius: "var(--radius-pill, 999px)",
               padding: 2,
               gap: 1,
@@ -637,7 +637,7 @@ function BalanceReceipt({ fullName, personId }: { fullName: string; personId: nu
                 fontWeight: 700,
                 letterSpacing: mono ? 0 : 1,
                 background: "transparent",
-                color: year <= earliestYear ? paper.inkDim : mono ? paper.inkDim : paper.ink,
+                color: year <= earliestYear ? tokens.inkDim : mono ? tokens.inkDim : tokens.ink,
                 border: "none",
                 borderRadius: "var(--radius-pill, 999px)",
                 cursor: year <= earliestYear ? "default" : "pointer",
@@ -652,8 +652,8 @@ function BalanceReceipt({ fullName, personId }: { fullName: string; personId: nu
                 fontSize: 10,
                 fontWeight: 700,
                 letterSpacing: mono ? 0 : 2,
-                background: paper.ink,
-                color: paper.paper,
+                background: tokens.ink,
+                color: tokens.paper,
                 borderRadius: "var(--radius-pill, 999px)",
               }}
             >
@@ -669,7 +669,7 @@ function BalanceReceipt({ fullName, personId }: { fullName: string; personId: nu
                 fontWeight: 700,
                 letterSpacing: mono ? 0 : 1,
                 background: "transparent",
-                color: year >= currentYear ? paper.inkDim : mono ? paper.inkDim : paper.ink,
+                color: year >= currentYear ? tokens.inkDim : mono ? tokens.inkDim : tokens.ink,
                 border: "none",
                 borderRadius: "var(--radius-pill, 999px)",
                 cursor: year >= currentYear ? "default" : "pointer",
@@ -687,9 +687,9 @@ function BalanceReceipt({ fullName, personId }: { fullName: string; personId: nu
                   fontWeight: 700,
                   letterSpacing: mono ? 0.5 : 1.5,
                   textTransform: "uppercase",
-                  color: mono ? paper.green : paper.paper,
-                  background: mono ? "transparent" : paper.green,
-                  border: mono ? `1px solid ${paper.green}` : "none",
+                  color: mono ? tokens.green : tokens.paper,
+                  background: mono ? "transparent" : tokens.green,
+                  border: mono ? `1px solid ${tokens.green}` : "none",
                   borderRadius: mono ? 999 : 0,
                   padding: mono ? "2px 9px" : "2px 7px",
                 }}
@@ -721,7 +721,7 @@ function BalanceReceipt({ fullName, personId }: { fullName: string; personId: nu
                     : `− ${fmtMoney(Math.abs(owner_net))}`
                   : "—"
               }
-              color={owner_net !== null ? amtColor(owner_net) : paper.inkDim}
+              color={owner_net !== null ? amtColor(owner_net) : tokens.inkDim}
               big
             />
 
@@ -733,7 +733,7 @@ function BalanceReceipt({ fullName, personId }: { fullName: string; personId: nu
                 value={`${signPrefix(-myRow.paid_amount)}${fmtMoney(myRow.paid_amount)}`}
               />
             ) : (
-              <ReceiptRow label={t("dashboard.not_yet_paid")} value="—" color={paper.inkDim} />
+              <ReceiptRow label={t("dashboard.not_yet_paid")} value="—" color={tokens.inkDim} />
             )}
 
             {/* Balance = owner_net + paid_amount */}
@@ -759,7 +759,7 @@ function BalanceReceipt({ fullName, personId }: { fullName: string; personId: nu
                           fontSize: 10,
                           letterSpacing: mono ? 0 : 2,
                           textTransform: mono ? "none" : ("uppercase" as const),
-                          color: paper.inkDim,
+                          color: tokens.inkDim,
                           whiteSpace: "nowrap",
                           marginRight: 12,
                         }}
@@ -771,7 +771,7 @@ function BalanceReceipt({ fullName, personId }: { fullName: string; personId: nu
                           fontFamily: fontSerif,
                           fontSize: 28,
                           fontWeight: 700,
-                          color: isSettled ? paper.green : paper.accent,
+                          color: isSettled ? tokens.green : tokens.accent,
                           letterSpacing: -1,
                           lineHeight: 1,
                           whiteSpace: "nowrap",
@@ -796,21 +796,21 @@ function BalanceReceipt({ fullName, personId }: { fullName: string; personId: nu
               href={`/trips?mine=true&year=${year}`}
               label={tripLabel}
               value={`− ${fmtMoney(Math.abs(myRow.trip_amount))}`}
-              color={paper.accent}
+              color={tokens.accent}
               icon={<Navigation size={11} />}
             />
             <ReceiptRow
               href={`/fuel?mine=true&year=${year}`}
               label={fuelLabel}
               value={`+ ${fmtMoney(myRow.fuel_amount)}`}
-              color={paper.green}
+              color={tokens.green}
               icon={<FuelIcon size={11} />}
             />
             <ReceiptRow
               href={`/expenses?mine=true&year=${year}`}
               label={expenseLabel}
               value={`+ ${fmtMoney(myRow.expense_amount)}`}
-              color={paper.green}
+              color={tokens.green}
               icon={<ReceiptIcon size={11} />}
             />
 
@@ -831,7 +831,7 @@ function BalanceReceipt({ fullName, personId }: { fullName: string; personId: nu
                 value={`${signPrefix(-myRow.paid_amount)}${fmtMoney(myRow.paid_amount)}`}
               />
             ) : (
-              <ReceiptRow label={t("dashboard.not_yet_paid")} value="—" color={paper.inkDim} />
+              <ReceiptRow label={t("dashboard.not_yet_paid")} value="—" color={tokens.inkDim} />
             )}
 
             {/* Balance row — only when a payment has been recorded */}
@@ -852,7 +852,7 @@ function BalanceReceipt({ fullName, personId }: { fullName: string; personId: nu
                       fontSize: 10,
                       letterSpacing: 2,
                       textTransform: "uppercase",
-                      color: paper.inkDim,
+                      color: tokens.inkDim,
                       whiteSpace: "nowrap",
                       marginRight: 12,
                     }}
@@ -903,7 +903,7 @@ function SectionHeader({ title, href }: { title: string; href: string }) {
           fontFamily: fontSerif,
           fontSize: 20,
           fontWeight: 700,
-          color: paper.ink,
+          color: tokens.ink,
           letterSpacing: -0.3,
         }}
       >
@@ -914,10 +914,10 @@ function SectionHeader({ title, href }: { title: string; href: string }) {
         style={{
           fontFamily: fontMono,
           fontSize: mono ? 11 : 10,
-          color: paper.inkDim,
+          color: tokens.inkDim,
           letterSpacing: mono ? 0 : 1.5,
           textTransform: mono ? "none" : ("uppercase" as const),
-          borderBottom: mono ? "none" : `1px solid ${paper.inkDim}`,
+          borderBottom: mono ? "none" : `1px solid ${tokens.inkDim}`,
           textDecoration: "none",
           opacity: 1,
         }}
@@ -955,18 +955,18 @@ function CarLocations({
     <div style={{ padding: "18px 16px 0" }}>
       <div
         style={{
-          background: paper.paper,
+          background: tokens.paper,
           padding: "16px 18px",
           borderRadius: mono ? "var(--radius-lg, 14px)" : 0,
           boxShadow: mono ? "none" : "0 1px 2px rgba(0,0,0,0.05), 0 8px 24px rgba(0,0,0,0.07)",
-          border: mono ? `1px solid ${paper.paperDark}` : "none",
+          border: mono ? `1px solid ${tokens.paperDark}` : "none",
         }}
       >
         <div
           style={{
             fontFamily: mono ? fontSerif : fontMono,
             fontSize: mono ? 13 : 11,
-            color: mono ? paper.inkDim : paper.ink,
+            color: mono ? tokens.inkDim : tokens.ink,
             letterSpacing: mono ? 0 : 3,
             textTransform: mono ? "none" : ("uppercase" as const),
             textAlign: mono ? "left" : "center",
@@ -995,7 +995,7 @@ function CarLocations({
                 gap: 12,
                 paddingTop: 10,
                 paddingBottom: 10,
-                borderTop: mono ? `1px solid ${paper.paperDark}` : `1px dashed ${paper.paperDark}`,
+                borderTop: mono ? `1px solid ${tokens.paperDark}` : `1px dashed ${tokens.paperDark}`,
                 cursor: "pointer",
               }}
             >
@@ -1010,7 +1010,7 @@ function CarLocations({
                     whiteSpace: "nowrap",
                     overflow: "hidden",
                     textOverflow: "ellipsis",
-                    color: isParkingOnly ? paper.inkDim : paper.ink,
+                    color: isParkingOnly ? tokens.inkDim : tokens.ink,
                     fontStyle: isParkingOnly ? "italic" : "normal",
                   }}
                 >
@@ -1020,7 +1020,7 @@ function CarLocations({
                   style={{
                     fontFamily: fontMono,
                     fontSize: 9,
-                    color: paper.inkDim,
+                    color: tokens.inkDim,
                     letterSpacing: mono ? 0 : 1,
                     marginTop: 2,
                   }}
@@ -1029,7 +1029,7 @@ function CarLocations({
                 </div>
               </div>
               <div
-                style={{ fontFamily: fontMono, fontSize: 11, color: paper.inkDim, flexShrink: 0 }}
+                style={{ fontFamily: fontMono, fontSize: 11, color: tokens.inkDim, flexShrink: 0 }}
               >
                 ›
               </div>
@@ -1049,7 +1049,7 @@ const SHEET_STYLE: React.CSSProperties = {
   left: 0,
   right: 0,
   bottom: 0,
-  background: paper.paper,
+  background: tokens.paper,
   borderRadius: "16px 16px 0 0",
   zIndex: 50,
   maxHeight: "95vh",
@@ -1207,7 +1207,7 @@ function DashboardContent() {
     width: "min(100%, 480px)",
     maxHeight: "92dvh",
     borderRadius: "14px 14px 0 0",
-    background: paper.paperDeep,
+    background: tokens.paperDeep,
     zIndex: 50,
     overflowY: "auto",
   };
@@ -1219,7 +1219,7 @@ function DashboardContent() {
   };
 
   return (
-    <div style={{ background: paper.paperDeep, minHeight: "100dvh", paddingBottom: 80 }}>
+    <div style={{ background: tokens.paperDeep, minHeight: "100dvh", paddingBottom: 80 }}>
       <PageHeader
         title={
           <>
@@ -1251,9 +1251,9 @@ function DashboardContent() {
             mono
               ? {
                   margin: "0 16px",
-                  background: paper.paper,
+                  background: tokens.paper,
                   borderRadius: "var(--radius-lg, 14px)",
-                  border: `1px solid ${paper.paperDark}`,
+                  border: `1px solid ${tokens.paperDark}`,
                   overflow: "hidden",
                 }
               : { padding: "0 16px" }
@@ -1264,7 +1264,7 @@ function DashboardContent() {
               style={{
                 fontFamily: fontMono,
                 fontSize: 11,
-                color: paper.inkDim,
+                color: tokens.inkDim,
                 padding: "12px 16px",
                 letterSpacing: mono ? 0 : 1,
               }}
@@ -1289,9 +1289,9 @@ function DashboardContent() {
             mono
               ? {
                   margin: "0 16px",
-                  background: paper.paper,
+                  background: tokens.paper,
                   borderRadius: "var(--radius-lg, 14px)",
-                  border: `1px solid ${paper.paperDark}`,
+                  border: `1px solid ${tokens.paperDark}`,
                   overflow: "hidden",
                 }
               : { padding: "0 16px" }
@@ -1302,7 +1302,7 @@ function DashboardContent() {
               style={{
                 fontFamily: fontMono,
                 fontSize: 11,
-                color: paper.inkDim,
+                color: tokens.inkDim,
                 padding: "12px 16px",
                 letterSpacing: mono ? 0 : 1,
               }}
@@ -1325,9 +1325,9 @@ function DashboardContent() {
             mono
               ? {
                   margin: "0 16px",
-                  background: paper.paper,
+                  background: tokens.paper,
                   borderRadius: "var(--radius-lg, 14px)",
-                  border: `1px solid ${paper.paperDark}`,
+                  border: `1px solid ${tokens.paperDark}`,
                   overflow: "hidden",
                 }
               : { padding: "0 16px" }
@@ -1338,7 +1338,7 @@ function DashboardContent() {
               style={{
                 fontFamily: fontMono,
                 fontSize: 11,
-                color: paper.inkDim,
+                color: tokens.inkDim,
                 padding: "12px 16px",
                 letterSpacing: mono ? 0 : 1,
               }}
@@ -1363,9 +1363,9 @@ function DashboardContent() {
             mono
               ? {
                   margin: "0 16px",
-                  background: paper.paper,
+                  background: tokens.paper,
                   borderRadius: "var(--radius-lg, 14px)",
-                  border: `1px solid ${paper.paperDark}`,
+                  border: `1px solid ${tokens.paperDark}`,
                   overflow: "hidden",
                 }
               : { padding: "0 16px" }
@@ -1383,7 +1383,7 @@ function DashboardContent() {
           fontFamily: mono ? fontMono : fontSerif,
           fontSize: 12,
           fontStyle: mono ? "normal" : "italic",
-          color: paper.inkDim,
+          color: tokens.inkDim,
           textAlign: "center",
           padding: "32px 32px 20px",
           lineHeight: 1.5,

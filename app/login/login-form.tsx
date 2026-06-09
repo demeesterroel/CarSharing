@@ -1,7 +1,7 @@
 "use client";
 import { LangSwitcher } from "@/components/lang-switcher";
 import { useT } from "@/components/locale-provider";
-import { fontMono, fontSerif, paper } from "@/lib/paper-theme";
+import { fontMono, fontSerif, tokens } from "@/lib/theme-tokens";
 import { useQueryClient } from "@tanstack/react-query";
 import { Eye, EyeOff } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -98,7 +98,7 @@ export default function LoginForm({ mailEnabled }: { mailEnabled: boolean }) {
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        background: paper.paperDeep,
+        background: tokens.paperDeep,
         padding: "16px",
       }}
     >
@@ -115,7 +115,7 @@ export default function LoginForm({ mailEnabled }: { mailEnabled: boolean }) {
               fontFamily: fontSerif,
               fontSize: 28,
               fontWeight: 700,
-              color: paper.ink,
+              color: tokens.ink,
               margin: 0,
               lineHeight: 1.2,
             }}
@@ -126,7 +126,7 @@ export default function LoginForm({ mailEnabled }: { mailEnabled: boolean }) {
             style={{
               fontFamily: fontMono,
               fontSize: 11,
-              color: paper.inkDim,
+              color: tokens.inkDim,
               marginTop: 6,
               letterSpacing: 1,
             }}
@@ -142,7 +142,7 @@ export default function LoginForm({ mailEnabled }: { mailEnabled: boolean }) {
         <form
           onSubmit={handleSubmit}
           style={{
-            background: paper.paper,
+            background: tokens.paper,
             padding: "40px 32px",
             boxShadow: "0 1px 2px rgba(0,0,0,0.05), 0 4px 16px rgba(0,0,0,0.06)",
           }}
@@ -159,7 +159,7 @@ export default function LoginForm({ mailEnabled }: { mailEnabled: boolean }) {
                     fontSize: 10,
                     letterSpacing: 1.5,
                     textTransform: "uppercase",
-                    color: paper.inkDim,
+                    color: tokens.inkDim,
                     marginBottom: 6,
                   }}
                 >
@@ -175,11 +175,11 @@ export default function LoginForm({ mailEnabled }: { mailEnabled: boolean }) {
                   style={{
                     width: "100%",
                     padding: "10px 12px",
-                    border: "1px solid " + paper.paperDark,
-                    background: paper.paperDeep,
+                    border: "1px solid " + tokens.paperDark,
+                    background: tokens.paperDeep,
                     fontFamily: fontMono,
                     fontSize: 13,
-                    color: paper.ink,
+                    color: tokens.ink,
                     outline: "none",
                     appearance: "none",
                     boxSizing: "border-box",
@@ -197,7 +197,7 @@ export default function LoginForm({ mailEnabled }: { mailEnabled: boolean }) {
                     fontSize: 10,
                     letterSpacing: 1.5,
                     textTransform: "uppercase",
-                    color: paper.inkDim,
+                    color: tokens.inkDim,
                     marginBottom: 6,
                   }}
                 >
@@ -215,11 +215,11 @@ export default function LoginForm({ mailEnabled }: { mailEnabled: boolean }) {
                       width: "100%",
                       padding: "10px 12px",
                       paddingRight: 36,
-                      border: "1px solid " + paper.paperDark,
-                      background: paper.paperDeep,
+                      border: "1px solid " + tokens.paperDark,
+                      background: tokens.paperDeep,
                       fontFamily: fontMono,
                       fontSize: 13,
-                      color: paper.ink,
+                      color: tokens.ink,
                       outline: "none",
                       appearance: "none",
                       boxSizing: "border-box",
@@ -241,7 +241,7 @@ export default function LoginForm({ mailEnabled }: { mailEnabled: boolean }) {
                       border: "none",
                       cursor: "pointer",
                       padding: 0,
-                      color: paper.inkMute,
+                      color: tokens.inkMute,
                       display: "flex",
                     }}
                   >
@@ -256,7 +256,7 @@ export default function LoginForm({ mailEnabled }: { mailEnabled: boolean }) {
                   style={{
                     fontFamily: fontMono,
                     fontSize: 11,
-                    color: paper.accent,
+                    color: tokens.accent,
                     marginBottom: 16,
                     marginTop: 0,
                   }}
@@ -271,8 +271,8 @@ export default function LoginForm({ mailEnabled }: { mailEnabled: boolean }) {
                 disabled={loading}
                 style={{
                   width: "100%",
-                  background: loading ? paper.inkDim : paper.ink,
-                  color: paper.paper,
+                  background: loading ? tokens.inkDim : tokens.ink,
+                  color: tokens.paper,
                   fontFamily: fontMono,
                   fontSize: 10,
                   letterSpacing: 2,
@@ -299,7 +299,7 @@ export default function LoginForm({ mailEnabled }: { mailEnabled: boolean }) {
                 fontFamily: fontMono,
                 fontSize: 10,
                 letterSpacing: 1,
-                color: paper.inkDim,
+                color: tokens.inkDim,
                 textDecoration: "none",
               }}
             >
@@ -322,7 +322,7 @@ export default function LoginForm({ mailEnabled }: { mailEnabled: boolean }) {
                   fontSize: 10,
                   letterSpacing: 1,
                   textTransform: "uppercase",
-                  color: paper.inkDim,
+                  color: tokens.inkDim,
                   cursor: "pointer",
                 }}
               >
@@ -341,7 +341,7 @@ export default function LoginForm({ mailEnabled }: { mailEnabled: boolean }) {
                   fontSize: 10,
                   letterSpacing: 1,
                   textTransform: "uppercase",
-                  color: paper.inkDim,
+                  color: tokens.inkDim,
                   cursor: "pointer",
                 }}
               >
@@ -355,7 +355,7 @@ export default function LoginForm({ mailEnabled }: { mailEnabled: boolean }) {
               {magicSent ? (
                 <p
                   role="status"
-                  style={{ fontFamily: fontMono, fontSize: 12, color: paper.ink, lineHeight: 1.6 }}
+                  style={{ fontFamily: fontMono, fontSize: 12, color: tokens.ink, lineHeight: 1.6 }}
                 >
                   {t("auth.forgot_sent")}
                 </p>
@@ -370,7 +370,7 @@ export default function LoginForm({ mailEnabled }: { mailEnabled: boolean }) {
                         fontSize: 10,
                         letterSpacing: 1.5,
                         textTransform: "uppercase",
-                        color: paper.inkDim,
+                        color: tokens.inkDim,
                         marginBottom: 6,
                       }}
                     >
@@ -386,11 +386,11 @@ export default function LoginForm({ mailEnabled }: { mailEnabled: boolean }) {
                       style={{
                         width: "100%",
                         padding: "10px 12px",
-                        border: "1px solid " + paper.paperDark,
-                        background: paper.paperDeep,
+                        border: "1px solid " + tokens.paperDark,
+                        background: tokens.paperDeep,
                         fontFamily: fontMono,
                         fontSize: 13,
-                        color: paper.ink,
+                        color: tokens.ink,
                         outline: "none",
                         appearance: "none",
                         boxSizing: "border-box",
@@ -403,8 +403,8 @@ export default function LoginForm({ mailEnabled }: { mailEnabled: boolean }) {
                     onClick={submitMagic}
                     style={{
                       width: "100%",
-                      background: loading ? paper.inkDim : paper.ink,
-                      color: paper.paper,
+                      background: loading ? tokens.inkDim : tokens.ink,
+                      color: tokens.paper,
                       fontFamily: fontMono,
                       fontSize: 10,
                       letterSpacing: 2,
@@ -435,7 +435,7 @@ export default function LoginForm({ mailEnabled }: { mailEnabled: boolean }) {
                   fontSize: 10,
                   letterSpacing: 1,
                   textTransform: "uppercase",
-                  color: paper.inkDim,
+                  color: tokens.inkDim,
                   cursor: "pointer",
                 }}
               >
@@ -449,7 +449,7 @@ export default function LoginForm({ mailEnabled }: { mailEnabled: boolean }) {
               {resetSent ? (
                 <p
                   role="status"
-                  style={{ fontFamily: fontMono, fontSize: 12, color: paper.ink, lineHeight: 1.6 }}
+                  style={{ fontFamily: fontMono, fontSize: 12, color: tokens.ink, lineHeight: 1.6 }}
                 >
                   {t("auth.forgot_sent")}
                 </p>
@@ -464,7 +464,7 @@ export default function LoginForm({ mailEnabled }: { mailEnabled: boolean }) {
                         fontSize: 10,
                         letterSpacing: 1.5,
                         textTransform: "uppercase",
-                        color: paper.inkDim,
+                        color: tokens.inkDim,
                         marginBottom: 6,
                       }}
                     >
@@ -480,11 +480,11 @@ export default function LoginForm({ mailEnabled }: { mailEnabled: boolean }) {
                       style={{
                         width: "100%",
                         padding: "10px 12px",
-                        border: "1px solid " + paper.paperDark,
-                        background: paper.paperDeep,
+                        border: "1px solid " + tokens.paperDark,
+                        background: tokens.paperDeep,
                         fontFamily: fontMono,
                         fontSize: 13,
-                        color: paper.ink,
+                        color: tokens.ink,
                         outline: "none",
                         appearance: "none",
                         boxSizing: "border-box",
@@ -496,7 +496,7 @@ export default function LoginForm({ mailEnabled }: { mailEnabled: boolean }) {
                       style={{
                         fontFamily: fontMono,
                         fontSize: 11,
-                        color: paper.accent,
+                        color: tokens.accent,
                         marginBottom: 16,
                         marginTop: 0,
                       }}
@@ -510,8 +510,8 @@ export default function LoginForm({ mailEnabled }: { mailEnabled: boolean }) {
                     onClick={submitReset}
                     style={{
                       width: "100%",
-                      background: loading ? paper.inkDim : paper.ink,
-                      color: paper.paper,
+                      background: loading ? tokens.inkDim : tokens.ink,
+                      color: tokens.paper,
                       fontFamily: fontMono,
                       fontSize: 10,
                       letterSpacing: 2,
@@ -542,7 +542,7 @@ export default function LoginForm({ mailEnabled }: { mailEnabled: boolean }) {
                   fontSize: 10,
                   letterSpacing: 1,
                   textTransform: "uppercase",
-                  color: paper.inkDim,
+                  color: tokens.inkDim,
                   cursor: "pointer",
                 }}
               >

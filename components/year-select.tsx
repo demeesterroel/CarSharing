@@ -1,5 +1,5 @@
 "use client";
-import { fontMono, paper } from "@/lib/paper-theme";
+import { fontMono, tokens } from "@/lib/theme-tokens";
 import { useTheme } from "@/lib/theme-context";
 import { useEffect, useRef, useState } from "react";
 
@@ -39,9 +39,9 @@ export function YearSelect({ value, onChange, years, allLabel }: YearSelectProps
                 fontWeight: 500,
                 letterSpacing: 0,
                 textTransform: "none" as const,
-                background: active ? paper.ink : "transparent",
-                color: active ? paper.paper : paper.inkDim,
-                border: `1px solid ${paper.paperDark}`,
+                background: active ? tokens.ink : "transparent",
+                color: active ? tokens.paper : tokens.inkDim,
+                border: `1px solid ${tokens.paperDark}`,
                 borderRadius: "var(--radius-pill, 999px)",
                 padding: "4px 28px 4px 12px",
                 cursor: "pointer",
@@ -55,9 +55,9 @@ export function YearSelect({ value, onChange, years, allLabel }: YearSelectProps
                 fontWeight: 700,
                 letterSpacing: 2,
                 textTransform: "uppercase" as const,
-                background: active ? paper.ink : "transparent",
-                color: active ? paper.paper : paper.inkDim,
-                border: `1.5px solid ${paper.ink}`,
+                background: active ? tokens.ink : "transparent",
+                color: active ? tokens.paper : tokens.inkDim,
+                border: `1.5px solid ${tokens.ink}`,
                 padding: "5px 24px 5px 12px",
                 cursor: "pointer",
                 position: "relative",
@@ -88,8 +88,8 @@ export function YearSelect({ value, onChange, years, allLabel }: YearSelectProps
             right: 0,
             top: "calc(100% + 4px)",
             zIndex: 100,
-            background: paper.paper,
-            border: mono ? `1px solid ${paper.paperDark}` : `1.5px solid ${paper.ink}`,
+            background: tokens.paper,
+            border: mono ? `1px solid ${tokens.paperDark}` : `1.5px solid ${tokens.ink}`,
             borderRadius: mono ? "var(--radius-md, 10px)" : 0,
             boxShadow: "0 4px 16px rgba(0,0,0,0.12)",
             minWidth: "100%",
@@ -112,10 +112,10 @@ export function YearSelect({ value, onChange, years, allLabel }: YearSelectProps
                 fontWeight: mono ? 500 : 700,
                 letterSpacing: mono ? 0 : 2,
                 textTransform: mono ? "none" : ("uppercase" as const),
-                background: value === y ? paper.ink : paper.paper,
-                color: value === y ? paper.paper : paper.ink,
+                background: value === y ? tokens.ink : tokens.paper,
+                color: value === y ? tokens.paper : tokens.ink,
                 border: "none",
-                borderBottom: `1px solid ${paper.paperDark}`,
+                borderBottom: `1px solid ${tokens.paperDark}`,
                 padding: "8px 14px",
                 cursor: "pointer",
               }}

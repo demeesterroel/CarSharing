@@ -7,7 +7,7 @@ import { usePeople } from "@/hooks/use-people";
 import { useCars } from "@/hooks/use-vehicles";
 import { buildMissingLabel } from "@/lib/i18n";
 import { useOnlineState } from "@/lib/offline/online-state";
-import { fmtDate, fontMono, fontSerif, paper } from "@/lib/paper-theme";
+import { fmtDate, fontMono, fontSerif, tokens } from "@/lib/theme-tokens";
 import { fullNameOf } from "@/lib/person-utils";
 import { useTheme } from "@/lib/theme-context";
 import type { Expense, ExpenseCategory, ExpenseInput } from "@/types";
@@ -78,7 +78,7 @@ const paperLabel: React.CSSProperties = {
   fontWeight: 700,
   letterSpacing: 2,
   textTransform: "uppercase",
-  color: paper.inkMute,
+  color: tokens.inkMute,
   display: "block",
   marginBottom: 4,
 };
@@ -86,13 +86,13 @@ const paperLabel: React.CSSProperties = {
 const monoLabel: React.CSSProperties = {
   fontFamily: fontMono,
   fontSize: 11,
-  color: paper.inkMute,
+  color: tokens.inkMute,
   display: "block",
   marginBottom: 4,
 };
 
 const dashedBox: React.CSSProperties = {
-  border: `1.5px dashed ${paper.paperDark}`,
+  border: `1.5px dashed ${tokens.paperDark}`,
 };
 
 export function ExpenseForm({
@@ -179,7 +179,7 @@ export function ExpenseForm({
         }
         handleSubmit(handleSubmitForm)(e);
       }}
-      style={{ background: paper.paperDeep }}
+      style={{ background: tokens.paperDeep }}
     >
       {/* Top bar */}
       <div
@@ -189,8 +189,8 @@ export function ExpenseForm({
           justifyContent: "space-between",
           padding: "0 16px",
           height: 52,
-          borderBottom: mono ? `1px solid ${paper.paperDark}` : `1.5px solid ${paper.paperDark}`,
-          background: paper.paper,
+          borderBottom: mono ? `1px solid ${tokens.paperDark}` : `1.5px solid ${tokens.paperDark}`,
+          background: tokens.paper,
           position: "sticky",
           top: 0,
           zIndex: 10,
@@ -208,7 +208,7 @@ export function ExpenseForm({
             background: "transparent",
             border: "none",
             cursor: "pointer",
-            color: paper.ink,
+            color: tokens.ink,
             padding: "0 4px",
             lineHeight: 1,
           }}
@@ -223,14 +223,14 @@ export function ExpenseForm({
                     "var(--font-inter-tight, 'Inter Tight', 'Inter', system-ui, sans-serif)",
                   fontSize: 16,
                   fontWeight: 700,
-                  color: paper.ink,
+                  color: tokens.ink,
                 }
               : {
                   fontFamily: fontMono,
                   fontSize: 10,
                   fontWeight: 700,
                   letterSpacing: 3,
-                  color: paper.inkDim,
+                  color: tokens.inkDim,
                   textTransform: "uppercase" as const,
                 }
           }
@@ -248,10 +248,10 @@ export function ExpenseForm({
               fontWeight: 700,
               letterSpacing: 2,
               textTransform: "uppercase",
-              color: paper.inkMute,
+              color: tokens.inkMute,
             }}
           >
-            <Lock size={13} color={paper.inkMute} strokeWidth={1.75} />
+            <Lock size={13} color={tokens.inkMute} strokeWidth={1.75} />
             {t("form.read_only")}
           </div>
         ) : (
@@ -265,7 +265,7 @@ export function ExpenseForm({
                       fontFamily: "var(--font-inter, 'Inter', system-ui, sans-serif)",
                       fontSize: 14,
                       fontWeight: 600,
-                      background: paper.accent,
+                      background: tokens.accent,
                       color: "#fff",
                       border: "none",
                       padding: "8px 18px",
@@ -280,7 +280,7 @@ export function ExpenseForm({
                       fontWeight: 700,
                       letterSpacing: 2,
                       textTransform: "uppercase" as const,
-                      background: paper.inkDim,
+                      background: tokens.inkDim,
                       color: "#fff",
                       border: "none",
                       padding: "8px 14px",
@@ -298,8 +298,8 @@ export function ExpenseForm({
                   position: "absolute",
                   right: 0,
                   top: "calc(100% + 6px)",
-                  background: paper.ink,
-                  color: paper.paper,
+                  background: tokens.ink,
+                  color: tokens.paper,
                   fontFamily: fontMono,
                   fontSize: 9,
                   letterSpacing: 1,
@@ -328,10 +328,10 @@ export function ExpenseForm({
               fontSize: 9,
               fontWeight: 700,
               letterSpacing: 1,
-              color: paper.amber,
+              color: tokens.amber,
               borderBottom: mono
-                ? `1px solid ${paper.paperDark}`
-                : `1.5px dashed ${paper.paperDark}`,
+                ? `1px solid ${tokens.paperDark}`
+                : `1.5px dashed ${tokens.paperDark}`,
             }}
           >
             🔒 {t("form.read_only_hint")}
@@ -351,7 +351,7 @@ export function ExpenseForm({
         <div
           style={{
             display: "flex",
-            borderBottom: mono ? `1px solid ${paper.paperDark}` : `1.5px dashed ${paper.paperDark}`,
+            borderBottom: mono ? `1px solid ${tokens.paperDark}` : `1.5px dashed ${tokens.paperDark}`,
           }}
         >
           <div
@@ -359,8 +359,8 @@ export function ExpenseForm({
               flex: 1,
               padding: "10px 14px",
               borderRight: mono
-                ? `1px solid ${paper.paperDark}`
-                : `1.5px dashed ${paper.paperDark}`,
+                ? `1px solid ${tokens.paperDark}`
+                : `1.5px dashed ${tokens.paperDark}`,
             }}
           >
             {mono ? (
@@ -375,7 +375,7 @@ export function ExpenseForm({
                         fontFamily: fontSerif,
                         fontSize: 17,
                         fontWeight: 600,
-                        color: paper.ink,
+                        color: tokens.ink,
                         background: "transparent",
                         border: "none",
                         outline: "none",
@@ -404,12 +404,12 @@ export function ExpenseForm({
                           "var(--font-inter-tight, 'Inter Tight', 'Inter', system-ui, sans-serif)",
                         fontSize: 19,
                         fontWeight: 700,
-                        color: paper.ink,
+                        color: tokens.ink,
                       }}
                     >
                       {person ? fullNameOf(person) : (me?.shortName ?? "—")}
                     </span>
-                    <Lock size={14} color={paper.inkMute} strokeWidth={1.75} />
+                    <Lock size={14} color={tokens.inkMute} strokeWidth={1.75} />
                   </div>
                 )}
               </>
@@ -424,7 +424,7 @@ export function ExpenseForm({
                       fontFamily: fontSerif,
                       fontSize: 17,
                       fontWeight: 600,
-                      color: paper.ink,
+                      color: tokens.ink,
                       background: "transparent",
                       border: "none",
                       outline: "none",
@@ -451,13 +451,13 @@ export function ExpenseForm({
                         fontFamily: fontSerif,
                         fontSize: 17,
                         fontWeight: 600,
-                        color: paper.ink,
+                        color: tokens.ink,
                       }}
                     >
                       {person ? fullNameOf(person) : (me?.shortName ?? "—")}
                     </span>
                     {(person?.discount ?? 0) > 0 && (
-                      <span style={{ color: paper.accent, fontSize: 13 }}>★</span>
+                      <span style={{ color: tokens.accent, fontSize: 13 }}>★</span>
                     )}
                     <span style={{ fontSize: 13 }}>🔒</span>
                   </div>
@@ -475,7 +475,7 @@ export function ExpenseForm({
                       "var(--font-inter-tight, 'Inter Tight', 'Inter', system-ui, sans-serif)",
                     fontSize: 17,
                     fontWeight: 700,
-                    color: paper.ink,
+                    color: tokens.ink,
                     pointerEvents: "none",
                   }}
                 >
@@ -505,7 +505,7 @@ export function ExpenseForm({
                     fontFamily: fontSerif,
                     fontSize: 17,
                     fontWeight: 600,
-                    color: paper.ink,
+                    color: tokens.ink,
                     background: "transparent",
                     border: "none",
                     outline: "none",
@@ -524,7 +524,7 @@ export function ExpenseForm({
               padding: "6px 14px",
               fontFamily: fontMono,
               fontSize: 9,
-              color: paper.amber,
+              color: tokens.amber,
               letterSpacing: 1,
             }}
           >
@@ -542,7 +542,7 @@ export function ExpenseForm({
                       "var(--font-inter-tight, 'Inter Tight', 'Inter', system-ui, sans-serif)",
                     fontSize: 13,
                     fontWeight: 600,
-                    color: paper.inkDim,
+                    color: tokens.inkDim,
                     display: "block",
                     marginBottom: 8,
                   }
@@ -552,7 +552,7 @@ export function ExpenseForm({
                     fontWeight: 700,
                     letterSpacing: 2,
                     textTransform: "uppercase" as const,
-                    color: paper.inkMute,
+                    color: tokens.inkMute,
                     display: "block",
                     marginBottom: 8,
                   }
@@ -564,7 +564,7 @@ export function ExpenseForm({
             style={
               mono
                 ? { display: "flex", width: "100%", gap: 6 }
-                : { display: "flex", width: "100%", border: `1.5px solid ${paper.paperDark}` }
+                : { display: "flex", width: "100%", border: `1.5px solid ${tokens.paperDark}` }
             }
           >
             {EXPENSE_CATEGORIES.map((cat, i, arr) => {
@@ -579,8 +579,8 @@ export function ExpenseForm({
                       ? {
                           flex: 1,
                           padding: "10px 4px",
-                          background: selected ? paper.ink : "transparent",
-                          border: selected ? "none" : `1px solid ${paper.paperDark}`,
+                          background: selected ? tokens.ink : "transparent",
+                          border: selected ? "none" : `1px solid ${tokens.paperDark}`,
                           borderRadius: "var(--radius-sm, 6px)",
                           cursor: "pointer",
                           textAlign: "center" as const,
@@ -589,11 +589,11 @@ export function ExpenseForm({
                       : {
                           flex: 1,
                           padding: "12px 4px",
-                          background: selected ? paper.ink : "transparent",
+                          background: selected ? tokens.ink : "transparent",
                           borderTop: "none",
                           borderLeft: "none",
                           borderBottom: "none",
-                          borderRight: i < arr.length - 1 ? `1px solid ${paper.paperDark}` : "none",
+                          borderRight: i < arr.length - 1 ? `1px solid ${tokens.paperDark}` : "none",
                           cursor: "pointer",
                           textAlign: "center" as const,
                         }
@@ -604,14 +604,14 @@ export function ExpenseForm({
                       <cat.Icon
                         size={18}
                         strokeWidth={1.75}
-                        color={selected ? paper.paper : paper.inkDim}
+                        color={selected ? tokens.paper : tokens.inkDim}
                       />
                       <div
                         style={{
                           fontFamily: "var(--font-inter, 'Inter', system-ui, sans-serif)",
                           fontSize: 9,
                           fontWeight: 500,
-                          color: selected ? paper.paper : paper.inkDim,
+                          color: selected ? tokens.paper : tokens.inkDim,
                           marginTop: 4,
                         }}
                       >
@@ -628,7 +628,7 @@ export function ExpenseForm({
                           fontWeight: 700,
                           letterSpacing: 1,
                           textTransform: "uppercase" as const,
-                          color: selected ? paper.paper : paper.inkDim,
+                          color: selected ? tokens.paper : tokens.inkDim,
                         }}
                       >
                         {t(cat.labelKey as any)}
@@ -647,7 +647,7 @@ export function ExpenseForm({
             mono
               ? {
                   margin: "12px 14px",
-                  border: `1px solid ${paper.paperDark}`,
+                  border: `1px solid ${tokens.paperDark}`,
                   borderRadius: "var(--radius-md, 10px)",
                   padding: "12px 14px",
                 }
@@ -657,7 +657,7 @@ export function ExpenseForm({
           <span style={lbl}>{t("form.amount")}</span>
           <div style={{ display: "flex", alignItems: "baseline", gap: 4 }}>
             <span
-              style={{ fontFamily: fontSerif, fontSize: 32, fontWeight: 700, color: paper.inkDim }}
+              style={{ fontFamily: fontSerif, fontSize: 32, fontWeight: 700, color: tokens.inkDim }}
             >
               €
             </span>
@@ -670,7 +670,7 @@ export function ExpenseForm({
                 fontFamily: fontSerif,
                 fontSize: 32,
                 fontWeight: 700,
-                color: paper.ink,
+                color: tokens.ink,
                 background: "transparent",
                 border: "none",
                 outline: "none",
@@ -688,7 +688,7 @@ export function ExpenseForm({
             style={
               mono
                 ? {
-                    border: `1px solid ${paper.paperDark}`,
+                    border: `1px solid ${tokens.paperDark}`,
                     borderRadius: "var(--radius-md, 10px)",
                     padding: "10px 14px",
                   }
@@ -703,7 +703,7 @@ export function ExpenseForm({
                 fontFamily: fontSerif,
                 fontSize: 17,
                 fontWeight: 500,
-                color: paper.ink,
+                color: tokens.ink,
                 background: "transparent",
                 border: "none",
                 outline: "none",
@@ -738,8 +738,8 @@ export function ExpenseForm({
                 width: 22,
                 height: 22,
                 borderRadius: "50%",
-                border: `2px solid ${settledOutside ? paper.ink : paper.paperDark}`,
-                background: settledOutside ? paper.ink : "transparent",
+                border: `2px solid ${settledOutside ? tokens.ink : tokens.paperDark}`,
+                background: settledOutside ? tokens.ink : "transparent",
                 cursor: "pointer",
                 flexShrink: 0,
                 display: "flex",
@@ -751,7 +751,7 @@ export function ExpenseForm({
             >
               {settledOutside && (
                 <div
-                  style={{ width: 8, height: 8, borderRadius: "50%", background: paper.paper }}
+                  style={{ width: 8, height: 8, borderRadius: "50%", background: tokens.paper }}
                 />
               )}
             </div>
@@ -761,7 +761,7 @@ export function ExpenseForm({
                   fontFamily: "var(--font-inter, 'Inter', system-ui, sans-serif)",
                   fontSize: 15,
                   fontWeight: 600,
-                  color: paper.ink,
+                  color: tokens.ink,
                 }}
               >
                 {t("form.settled_outside")}
@@ -770,7 +770,7 @@ export function ExpenseForm({
                 style={{
                   fontFamily: "var(--font-inter, 'Inter', system-ui, sans-serif)",
                   fontSize: 12,
-                  color: paper.inkMute,
+                  color: tokens.inkMute,
                   marginTop: 2,
                 }}
               >
@@ -785,7 +785,7 @@ export function ExpenseForm({
               id="expense_settled_outside"
               checked={!!settledOutside}
               onChange={(e) => setValue("settled_outside", e.target.checked)}
-              style={{ width: 16, height: 16, cursor: "pointer", accentColor: paper.inkMute }}
+              style={{ width: 16, height: 16, cursor: "pointer", accentColor: tokens.inkMute }}
             />
             <label
               htmlFor="expense_settled_outside"
@@ -795,14 +795,14 @@ export function ExpenseForm({
                 fontWeight: 700,
                 letterSpacing: 2,
                 textTransform: "uppercase",
-                color: paper.inkDim,
+                color: tokens.inkDim,
                 cursor: "pointer",
               }}
             >
               {t("form.settled_outside")}
             </label>
             <span
-              style={{ fontFamily: fontMono, fontSize: 9, color: paper.inkMute, letterSpacing: 1 }}
+              style={{ fontFamily: fontMono, fontSize: 9, color: tokens.inkMute, letterSpacing: 1 }}
             >
               — {t("form.settled_outside_hint")}
             </span>
@@ -818,8 +818,8 @@ export function ExpenseForm({
                 width: "100%",
                 padding: "10px",
                 background: "transparent",
-                border: `1.5px solid ${paper.accent}`,
-                color: paper.accent,
+                border: `1.5px solid ${tokens.accent}`,
+                color: tokens.accent,
                 fontFamily: fontMono,
                 fontSize: 10,
                 fontWeight: 700,

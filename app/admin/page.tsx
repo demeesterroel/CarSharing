@@ -4,7 +4,7 @@ import { useT } from "@/components/locale-provider";
 import { ShimmerBar, shimmerKeyframes } from "@/components/shimmer";
 import { useCreateTrip } from "@/hooks/use-trips";
 import { apiFetch } from "@/lib/api/client";
-import { fontMono, fontSerif, paper } from "@/lib/paper-theme";
+import { fontMono, fontSerif, tokens } from "@/lib/theme-tokens";
 import { shortNameOf } from "@/lib/person-utils";
 import type { KmGap } from "@/lib/queries/admin";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -63,11 +63,11 @@ function YearGroup({
           fontFamily: fontMono,
           fontSize: 9,
           fontWeight: 700,
-          color: paper.ink,
+          color: tokens.ink,
           letterSpacing: 2,
           textTransform: "uppercase",
           padding: "6px 0 4px",
-          borderTop: `1px dashed ${paper.paperDark}`,
+          borderTop: `1px dashed ${tokens.paperDark}`,
           marginBottom: 6,
         }}
       >
@@ -105,7 +105,7 @@ function SectionHeader({
         fontWeight: 700,
         letterSpacing: 2,
         textTransform: "uppercase",
-        color: paper.inkDim,
+        color: tokens.inkDim,
         marginBottom: 8,
         marginTop: 4,
       }}
@@ -115,7 +115,7 @@ function SectionHeader({
         <ShimmerBar width={40} height={12} />
       ) : (
         count > 0 && (
-          <span style={{ color: paper.accent }}>
+          <span style={{ color: tokens.accent }}>
             {count} {countSuffix}
             {totalKm != null ? ` · ${totalKm.toLocaleString("nl-BE")} km` : ""}
           </span>
@@ -147,7 +147,7 @@ function InboxCardSkeleton() {
 
 function GapCardSkeleton() {
   return (
-    <Card style={{ borderLeft: `3px solid ${paper.paperDark}`, marginBottom: 8 }}>
+    <Card style={{ borderLeft: `3px solid ${tokens.paperDark}`, marginBottom: 8 }}>
       <div style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
         <ShimmerBar width={42} height={24} />
         <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 7 }}>
@@ -257,7 +257,7 @@ export default function AdminInboxPage() {
             textAlign: "center",
             fontFamily: fontMono,
             fontSize: 10,
-            color: paper.inkDim,
+            color: tokens.inkDim,
             letterSpacing: 1,
           }}
         >
@@ -270,7 +270,7 @@ export default function AdminInboxPage() {
               <CarBadge short={r.car_short ?? "?"} />
               <div style={{ flex: 1 }}>
                 <div
-                  style={{ fontFamily: fontSerif, fontSize: 16, fontWeight: 700, color: paper.ink }}
+                  style={{ fontFamily: fontSerif, fontSize: 16, fontWeight: 700, color: tokens.ink }}
                 >
                   {r.person_name}
                 </div>
@@ -278,7 +278,7 @@ export default function AdminInboxPage() {
                   style={{
                     fontFamily: fontMono,
                     fontSize: 10,
-                    color: paper.inkDim,
+                    color: tokens.inkDim,
                     letterSpacing: 1,
                     marginTop: 2,
                   }}
@@ -291,7 +291,7 @@ export default function AdminInboxPage() {
                     style={{
                       fontFamily: fontMono,
                       fontSize: 10,
-                      color: paper.inkDim,
+                      color: tokens.inkDim,
                       marginTop: 4,
                     }}
                   >
@@ -305,8 +305,8 @@ export default function AdminInboxPage() {
                   fontSize: 8,
                   fontWeight: 700,
                   letterSpacing: 1,
-                  color: paper.amber,
-                  border: `1px solid ${paper.amber}`,
+                  color: tokens.amber,
+                  border: `1px solid ${tokens.amber}`,
                   padding: "2px 6px",
                   textTransform: "uppercase",
                 }}
@@ -327,8 +327,8 @@ export default function AdminInboxPage() {
                 style={{
                   flex: 1,
                   padding: "10px",
-                  background: paper.green,
-                  color: paper.paper,
+                  background: tokens.green,
+                  color: tokens.paper,
                   border: "none",
                   cursor: "pointer",
                   fontFamily: fontMono,
@@ -351,8 +351,8 @@ export default function AdminInboxPage() {
                   flex: 1,
                   padding: "10px",
                   background: "transparent",
-                  color: paper.accent,
-                  border: `1.5px solid ${paper.accent}`,
+                  color: tokens.accent,
+                  border: `1.5px solid ${tokens.accent}`,
                   cursor: "pointer",
                   fontFamily: fontMono,
                   fontSize: 10,
@@ -386,7 +386,7 @@ export default function AdminInboxPage() {
             textAlign: "center",
             fontFamily: fontMono,
             fontSize: 10,
-            color: paper.inkDim,
+            color: tokens.inkDim,
             letterSpacing: 1,
           }}
         >
@@ -396,7 +396,7 @@ export default function AdminInboxPage() {
         duplicatePairs.map((pair) => (
           <Card
             key={`${pair.trip1_id}-${pair.trip2_id}`}
-            style={{ borderLeft: `3px solid ${paper.accent}`, marginBottom: 8 }}
+            style={{ borderLeft: `3px solid ${tokens.accent}`, marginBottom: 8 }}
           >
             <div style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
               <CarBadge short={pair.car_short} />
@@ -406,7 +406,7 @@ export default function AdminInboxPage() {
                     fontFamily: fontSerif,
                     fontSize: 16,
                     fontWeight: 700,
-                    color: paper.ink,
+                    color: tokens.ink,
                     lineHeight: 1.1,
                   }}
                 >
@@ -416,7 +416,7 @@ export default function AdminInboxPage() {
                   style={{
                     fontFamily: fontMono,
                     fontSize: 9,
-                    color: paper.inkDim,
+                    color: tokens.inkDim,
                     letterSpacing: 1,
                     marginTop: 3,
                   }}
@@ -438,16 +438,16 @@ export default function AdminInboxPage() {
                         flex: 1,
                         display: "block",
                         padding: "6px 8px",
-                        border: `1px dashed ${paper.paperDark}`,
+                        border: `1px dashed ${tokens.paperDark}`,
                         fontFamily: fontMono,
                         fontSize: 9,
-                        color: paper.ink,
+                        color: tokens.ink,
                         textDecoration: "none",
                         letterSpacing: 1,
                       }}
                     >
                       <div>{leg.date}</div>
-                      <div style={{ color: paper.inkDim }}>€{leg.amount.toFixed(2)}</div>
+                      <div style={{ color: tokens.inkDim }}>€{leg.amount.toFixed(2)}</div>
                     </a>
                   ))}
                 </div>
@@ -482,7 +482,7 @@ export default function AdminInboxPage() {
             textAlign: "center",
             fontFamily: fontMono,
             fontSize: 10,
-            color: paper.inkDim,
+            color: tokens.inkDim,
             letterSpacing: 1,
           }}
         >
@@ -503,7 +503,7 @@ export default function AdminInboxPage() {
                 <Card
                   key={key}
                   style={{
-                    borderLeft: `3px solid ${paper.accent}`,
+                    borderLeft: `3px solid ${tokens.accent}`,
                     marginBottom: 8,
                     cursor: "pointer",
                     paddingBottom: expanded ? 14 : 18,
@@ -518,7 +518,7 @@ export default function AdminInboxPage() {
                           fontFamily: fontSerif,
                           fontSize: 16,
                           fontWeight: 700,
-                          color: paper.ink,
+                          color: tokens.ink,
                           lineHeight: 1.1,
                         }}
                       >
@@ -528,7 +528,7 @@ export default function AdminInboxPage() {
                         style={{
                           fontFamily: fontMono,
                           fontSize: 9,
-                          color: paper.inkDim,
+                          color: tokens.inkDim,
                           letterSpacing: 1,
                           marginTop: 3,
                         }}
@@ -536,20 +536,20 @@ export default function AdminInboxPage() {
                         {gap.after_date} – {gap.before_date}
                       </div>
                       <div style={{ marginTop: 8 }}>
-                        <div style={{ fontFamily: fontMono, fontSize: 10, color: paper.inkDim }}>
+                        <div style={{ fontFamily: fontMono, fontSize: 10, color: tokens.inkDim }}>
                           ↑ {gap.after_end.toLocaleString("nl-BE")} km ({gap.after_person})
                         </div>
                         <div
                           style={{
                             fontFamily: fontMono,
                             fontSize: 10,
-                            color: paper.accent,
+                            color: tokens.accent,
                             fontWeight: 700,
                           }}
                         >
                           ? ...{gap.missing_km.toLocaleString("nl-BE")} km gap...
                         </div>
-                        <div style={{ fontFamily: fontMono, fontSize: 10, color: paper.inkDim }}>
+                        <div style={{ fontFamily: fontMono, fontSize: 10, color: tokens.inkDim }}>
                           ↓ {gap.before_start.toLocaleString("nl-BE")} km ({gap.before_person})
                         </div>
                       </div>
@@ -560,7 +560,7 @@ export default function AdminInboxPage() {
                     <div
                       style={{
                         marginTop: 14,
-                        borderTop: `1px dashed ${paper.paperDark}`,
+                        borderTop: `1px dashed ${tokens.paperDark}`,
                         paddingTop: 12,
                       }}
                       onClick={(e) => e.stopPropagation()}
@@ -569,7 +569,7 @@ export default function AdminInboxPage() {
                         style={{
                           fontFamily: fontMono,
                           fontSize: 9,
-                          color: paper.inkDim,
+                          color: tokens.inkDim,
                           letterSpacing: 2,
                           textTransform: "uppercase",
                           marginBottom: 8,
@@ -591,8 +591,8 @@ export default function AdminInboxPage() {
                               textTransform: "uppercase",
                               padding: "5px 10px",
                               background: "transparent",
-                              color: paper.ink,
-                              border: `1.5px dashed ${paper.ink}`,
+                              color: tokens.ink,
+                              border: `1.5px dashed ${tokens.ink}`,
                               cursor: "pointer",
                               opacity: createTrip.isPending ? 0.5 : 1,
                             }}

@@ -1,5 +1,5 @@
 "use client";
-import { fontMono, fontSerif, paper } from "@/lib/paper-theme";
+import { fontMono, fontSerif, tokens } from "@/lib/theme-tokens";
 import { useTheme } from "@/lib/theme-context";
 import type { Car } from "@/types";
 
@@ -19,7 +19,7 @@ export function CarToggle({ cars, value, onChange }: Props) {
         style={{
           display: "flex",
           margin: "8px 14px 4px",
-          border: `1px solid ${paper.paperDark}`,
+          border: `1px solid ${tokens.paperDark}`,
           borderRadius: "var(--radius-pill, 999px)",
           padding: 2,
           gap: 1,
@@ -35,8 +35,8 @@ export function CarToggle({ cars, value, onChange }: Props) {
               style={{
                 flex: 1,
                 padding: "8px 12px",
-                background: selected ? paper.ink : "transparent",
-                color: selected ? paper.paper : paper.inkDim,
+                background: selected ? tokens.ink : "transparent",
+                color: selected ? tokens.paper : tokens.inkDim,
                 border: "none",
                 borderRadius: "var(--radius-pill, 999px)",
                 cursor: "pointer",
@@ -56,7 +56,7 @@ export function CarToggle({ cars, value, onChange }: Props) {
   }
 
   return (
-    <div style={{ display: "flex", width: "100%", borderBottom: `1.5px solid ${paper.ink}` }}>
+    <div style={{ display: "flex", width: "100%", borderBottom: `1.5px solid ${tokens.ink}` }}>
       {visible.map((car, i) => {
         const selected = value === car.id;
         return (
@@ -67,10 +67,10 @@ export function CarToggle({ cars, value, onChange }: Props) {
             style={{
               flex: 1,
               padding: "12px 8px",
-              background: selected ? paper.ink : "transparent",
-              color: selected ? paper.paper : paper.inkDim,
+              background: selected ? tokens.ink : "transparent",
+              color: selected ? tokens.paper : tokens.inkDim,
               border: "none",
-              borderRight: i < visible.length - 1 ? `1.5px dashed ${paper.inkMute}` : "none",
+              borderRight: i < visible.length - 1 ? `1.5px dashed ${tokens.inkMute}` : "none",
               cursor: "pointer",
               textAlign: "center",
             }}
@@ -82,7 +82,7 @@ export function CarToggle({ cars, value, onChange }: Props) {
                 fontWeight: 700,
                 letterSpacing: 3,
                 textTransform: "uppercase",
-                color: selected ? paper.paper : paper.ink,
+                color: selected ? tokens.paper : tokens.ink,
               }}
             >
               {car.short}
@@ -92,7 +92,7 @@ export function CarToggle({ cars, value, onChange }: Props) {
                 fontFamily: fontSerif,
                 fontSize: 11,
                 fontWeight: 400,
-                color: selected ? paper.paperDark : paper.inkMute,
+                color: selected ? tokens.paperDark : tokens.inkMute,
                 marginTop: 2,
               }}
             >

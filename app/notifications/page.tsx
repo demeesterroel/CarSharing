@@ -3,7 +3,7 @@ import { useT } from "@/components/locale-provider";
 import { PageHeader } from "@/components/page-header";
 import { apiFetch } from "@/lib/api/client";
 import { notificationHref } from "@/lib/notification-href";
-import { fontMono, fontSerif, paper } from "@/lib/paper-theme";
+import { fontMono, fontSerif, tokens } from "@/lib/theme-tokens";
 import type { Notification } from "@/types";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
@@ -63,7 +63,7 @@ export default function NotificationsPage() {
   }
 
   return (
-    <div style={{ background: paper.paperDeep, minHeight: "100dvh" }}>
+    <div style={{ background: tokens.paperDeep, minHeight: "100dvh" }}>
       <PageHeader
         title={t("notif.page_title")}
         right={
@@ -81,7 +81,7 @@ export default function NotificationsPage() {
                 textTransform: "uppercase",
                 background: "transparent",
                 border: "none",
-                color: unreadCount > 0 ? paper.inkDim : paper.inkMute,
+                color: unreadCount > 0 ? tokens.inkDim : tokens.inkMute,
                 textDecoration: unreadCount > 0 ? "underline" : "none",
                 textUnderlineOffset: 2,
                 cursor: unreadCount > 0 ? "pointer" : "default",
@@ -100,7 +100,7 @@ export default function NotificationsPage() {
             padding: "32px 20px",
             fontFamily: fontMono,
             fontSize: 11,
-            color: paper.inkDim,
+            color: tokens.inkDim,
             letterSpacing: 1,
           }}
         >
@@ -115,7 +115,7 @@ export default function NotificationsPage() {
             textAlign: "center",
             fontFamily: fontMono,
             fontSize: 11,
-            color: paper.inkDim,
+            color: tokens.inkDim,
             letterSpacing: 1,
           }}
         >
@@ -132,8 +132,8 @@ export default function NotificationsPage() {
               <div
                 style={{
                   padding: "10px 16px",
-                  borderBottom: `1px solid ${paper.paperDark}`,
-                  background: isUnread ? paper.paper : paper.paperDeep,
+                  borderBottom: `1px solid ${tokens.paperDark}`,
+                  background: isUnread ? tokens.paper : tokens.paperDeep,
                   display: "flex",
                   justifyContent: "space-between",
                   alignItems: "flex-start",
@@ -149,7 +149,7 @@ export default function NotificationsPage() {
                         width: 6,
                         height: 6,
                         borderRadius: "50%",
-                        background: paper.accent,
+                        background: tokens.accent,
                         marginRight: 6,
                         verticalAlign: "middle",
                         flexShrink: 0,
@@ -160,7 +160,7 @@ export default function NotificationsPage() {
                     style={{
                       fontFamily: fontSerif,
                       fontSize: 13,
-                      color: paper.ink,
+                      color: tokens.ink,
                     }}
                   >
                     {n.message}
@@ -170,7 +170,7 @@ export default function NotificationsPage() {
                   style={{
                     fontFamily: fontMono,
                     fontSize: 9,
-                    color: paper.inkMute,
+                    color: tokens.inkMute,
                     letterSpacing: 1,
                     flexShrink: 0,
                     paddingTop: 2,

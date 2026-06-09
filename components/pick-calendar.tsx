@@ -1,6 +1,6 @@
 "use client";
 import { useLocale, useT } from "@/components/locale-provider";
-import { fmtDate, fontMono, paper } from "@/lib/paper-theme";
+import { fmtDate, fontMono, tokens } from "@/lib/theme-tokens";
 import { useTheme } from "@/lib/theme-context";
 import type { Reservation } from "@/types";
 import { useState } from "react";
@@ -102,9 +102,9 @@ export function PickCalendar({
         fontSize: 14,
         fontWeight: 700,
         background: "transparent",
-        border: `1px solid ${paper.paperDark}`,
+        border: `1px solid ${tokens.paperDark}`,
         borderRadius: "var(--radius-pill, 999px)",
-        color: paper.inkDim,
+        color: tokens.inkDim,
         cursor: "pointer",
         padding: "0 10px",
         lineHeight: "28px",
@@ -115,8 +115,8 @@ export function PickCalendar({
         fontSize: 14,
         fontWeight: 700,
         background: "transparent",
-        border: `1px solid ${paper.paperDark}`,
-        color: paper.inkDim,
+        border: `1px solid ${tokens.paperDark}`,
+        color: tokens.inkDim,
         cursor: "pointer",
         padding: "0 8px",
         lineHeight: "28px",
@@ -133,12 +133,12 @@ export function PickCalendar({
               ? {
                   flex: 1,
                   padding: "4px 10px",
-                  border: `1px solid ${pickFrom ? paper.accent : paper.paperDark}`,
+                  border: `1px solid ${pickFrom ? tokens.accent : tokens.paperDark}`,
                   borderRadius: "var(--radius-sm, 6px)",
                   background: "transparent",
                   fontFamily: "var(--font-inter, 'Inter', system-ui, sans-serif)",
                   fontSize: 13,
-                  color: paper.ink,
+                  color: tokens.ink,
                   display: "flex",
                   justifyContent: "space-between",
                   alignItems: "center",
@@ -147,12 +147,12 @@ export function PickCalendar({
               : {
                   flex: 1,
                   padding: "4px 10px",
-                  border: `1.5px dashed ${pickFrom ? paper.accent : paper.inkMute}`,
-                  background: paper.paperDeep,
+                  border: `1.5px dashed ${pickFrom ? tokens.accent : tokens.inkMute}`,
+                  background: tokens.paperDeep,
                   fontFamily: fontMono,
                   fontSize: 10,
                   letterSpacing: 1,
-                  color: paper.ink,
+                  color: tokens.ink,
                   display: "flex",
                   justifyContent: "space-between",
                   alignItems: "center",
@@ -176,7 +176,7 @@ export function PickCalendar({
                   fontFamily: fontMono,
                   fontSize: 12,
                   cursor: "pointer",
-                  color: paper.inkDim,
+                  color: tokens.inkDim,
                   lineHeight: 1,
                   padding: 0,
                 }}
@@ -185,7 +185,7 @@ export function PickCalendar({
               </button>
             </>
           ) : (
-            <span style={{ color: mono ? paper.ink : paper.inkDim }}>
+            <span style={{ color: mono ? tokens.ink : tokens.inkDim }}>
               {monthRange(days[0], days[13], locale)}
             </span>
           )}
@@ -225,37 +225,37 @@ export function PickCalendar({
             const isPickStart = pickFrom === day;
             const inRange = !pickFrom && from && to && day >= from && day <= to;
 
-            let bg: string = paper.paper;
-            let fg: string = paper.ink;
-            let border: string = `1px solid ${paper.paperDark}`;
+            let bg: string = tokens.paper;
+            let fg: string = tokens.ink;
+            let border: string = `1px solid ${tokens.paperDark}`;
 
             if (isPickStart) {
-              bg = paper.accent;
-              fg = paper.paper;
-              border = mono ? `2px solid ${paper.accent}` : `2px solid ${paper.ink}`;
+              bg = tokens.accent;
+              fg = tokens.paper;
+              border = mono ? `2px solid ${tokens.accent}` : `2px solid ${tokens.ink}`;
             } else if (res) {
               if (isPending) {
-                bg = `repeating-linear-gradient(45deg, ${paper.paper} 0 4px, ${paper.paperDark} 4px 6px)`;
-                fg = paper.inkDim;
+                bg = `repeating-linear-gradient(45deg, ${tokens.paper} 0 4px, ${tokens.paperDark} 4px 6px)`;
+                fg = tokens.inkDim;
               } else {
-                bg = paper.ink;
-                fg = paper.paper;
+                bg = tokens.ink;
+                fg = tokens.paper;
               }
               // Show selection on top of any reservation
               border = inRange
-                ? `2px solid ${paper.accent}`
+                ? `2px solid ${tokens.accent}`
                 : isPending
-                  ? `1.5px dashed ${paper.amber}`
-                  : `1px solid ${paper.paperDark}`;
+                  ? `1.5px dashed ${tokens.amber}`
+                  : `1px solid ${tokens.paperDark}`;
             } else if (inRange) {
               if (mono) {
                 bg = "rgba(185, 28, 28, 0.08)";
-                border = `2px solid ${paper.accent}`;
-                fg = paper.ink;
+                border = `2px solid ${tokens.accent}`;
+                fg = tokens.ink;
               } else {
-                bg = `repeating-linear-gradient(45deg, ${paper.paperDeep} 0 4px, ${paper.paperDark} 4px 6px)`;
-                border = `2px dashed ${paper.accent}`;
-                fg = paper.ink;
+                bg = `repeating-linear-gradient(45deg, ${tokens.paperDeep} 0 4px, ${tokens.paperDark} 4px 6px)`;
+                border = `2px dashed ${tokens.accent}`;
+                fg = tokens.ink;
               }
             }
 
@@ -292,7 +292,7 @@ export function PickCalendar({
                       top: 2,
                       right: 2,
                       fontSize: 9,
-                      color: paper.amber,
+                      color: tokens.amber,
                       fontWeight: 700,
                     }}
                   >

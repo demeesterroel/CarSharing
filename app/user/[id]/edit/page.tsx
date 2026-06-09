@@ -220,7 +220,7 @@ export default function EditProfilePage({ params }: { params: Promise<{ id: stri
             {fullNameOf({ first_name: firstName, last_name: lastName, username: person.username })}
           </div>
 
-          <form onSubmit={handleSubmit}>
+          <form id="profile-form" onSubmit={handleSubmit}>
             <div style={{ marginBottom: 12 }}>
               <label
                 htmlFor="edit-username"
@@ -418,25 +418,6 @@ export default function EditProfilePage({ params }: { params: Promise<{ id: stri
               </div>
             )}
 
-            <button
-              type="submit"
-              disabled={!dirty || saving}
-              style={{
-                width: "100%",
-                padding: "8px",
-                fontFamily: fontMono,
-                fontSize: 9,
-                fontWeight: 700,
-                letterSpacing: 2,
-                textTransform: "uppercase",
-                background: saved ? paper.green : dirty ? paper.ink : paper.paperDark,
-                color: dirty || saved ? paper.paper : paper.inkMute,
-                border: "none",
-                cursor: dirty && !saving ? "pointer" : "default",
-              }}
-            >
-              {saved ? t("action.saved") : saving ? t("action.saving") : t("action.save")}
-            </button>
           </form>
 
           <div style={{ marginTop: 20, paddingTop: 16, borderTop: `1px solid ${paper.paperDark}` }}>
@@ -606,6 +587,29 @@ export default function EditProfilePage({ params }: { params: Promise<{ id: stri
                 </div>
               );
             })}
+          </div>
+
+          <div style={{ marginTop: 20 }}>
+            <button
+              type="submit"
+              form="profile-form"
+              disabled={!dirty || saving}
+              style={{
+                width: "100%",
+                padding: "8px",
+                fontFamily: fontMono,
+                fontSize: 9,
+                fontWeight: 700,
+                letterSpacing: 2,
+                textTransform: "uppercase",
+                background: saved ? paper.green : dirty ? paper.ink : paper.paperDark,
+                color: dirty || saved ? paper.paper : paper.inkMute,
+                border: "none",
+                cursor: dirty && !saving ? "pointer" : "default",
+              }}
+            >
+              {saved ? t("action.saved") : saving ? t("action.saving") : t("action.save")}
+            </button>
           </div>
 
           {me?.personId === id && (

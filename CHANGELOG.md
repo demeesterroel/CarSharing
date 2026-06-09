@@ -1,5 +1,15 @@
 # Changelog
 
+## [1.21.0](https://github.com/demeesterroel/CarSharing/compare/v1.20.0...v1.21.0) (2026-06-09)
+
+
+### ✨ New features
+
+* **admin:** copy invite link sends full welcome message ([#371](https://github.com/demeesterroel/CarSharing/issues/371)) ([271154d](https://github.com/demeesterroel/CarSharing/commit/271154d3942053378f6040bb184ece99d09b0ff2))
+* **calendar:** show one-time toast nudging users to subscribe to calendar ([#372](https://github.com/demeesterroel/CarSharing/issues/372)) ([da01b7e](https://github.com/demeesterroel/CarSharing/commit/da01b7e38f3f192865bbd4779fd66a022a519cc3))
+* **notifications:** in-app notifications with two-block prefs ([#358](https://github.com/demeesterroel/CarSharing/issues/358)) ([#376](https://github.com/demeesterroel/CarSharing/issues/376)) ([7b2b36f](https://github.com/demeesterroel/CarSharing/commit/7b2b36f9ff8cde294ec937d377733f455a18a30f))
+* **notify:** email admins when non-admin user mutates data ([#98](https://github.com/demeesterroel/CarSharing/issues/98)) ([#369](https://github.com/demeesterroel/CarSharing/issues/369)) ([154c5a7](https://github.com/demeesterroel/CarSharing/commit/154c5a742da6a26fbe2f9b7d0ec0bb65dc15fbbf))
+
 ## [1.20.0](https://github.com/demeesterroel/CarSharing/compare/v1.19.4...v1.20.0) (2026-06-09)
 
 

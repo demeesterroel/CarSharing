@@ -28,7 +28,6 @@ export default function EditProfilePage({ params }: { params: Promise<{ id: stri
   const [saved, setSaved] = useState(false);
   const { theme: _theme, setTheme } = useTheme();
   const [themePreference, setThemePreference] = useState<Theme>("mono");
-  const [themeSaved, setThemeSaved] = useState(false);
   type NotifyPref = "off" | "all" | "own";
   const [notifyNewReservations, setNotifyNewReservations] = useState<NotifyPref>("off");
   const [notifyReservationUpdates, setNotifyReservationUpdates] = useState<NotifyPref>("off");
@@ -173,6 +172,8 @@ export default function EditProfilePage({ params }: { params: Promise<{ id: stri
         body: JSON.stringify({ ...patch, email: email || null }),
       });
       await queryClient.invalidateQueries({ queryKey: ["me"] });
+      setSaved(true);
+      setTimeout(() => setSaved(false), 1500);
     } catch {
       toast.error(t("toast.error"));
       // revert
@@ -198,7 +199,6 @@ export default function EditProfilePage({ params }: { params: Promise<{ id: stri
   async function handleThemeToggle(newTheme: Theme) {
     setThemePreference(newTheme);
     setTheme(newTheme);
-    setThemeSaved(false);
     try {
       await apiFetch(`/api/people/${id}/profile`, {
         method: "PATCH",
@@ -211,8 +211,8 @@ export default function EditProfilePage({ params }: { params: Promise<{ id: stri
           theme_preference: newTheme,
         }),
       });
-      setThemeSaved(true);
-      setTimeout(() => setThemeSaved(false), 1500);
+      setSaved(true);
+      setTimeout(() => setSaved(false), 1500);
       await queryClient.invalidateQueries({ queryKey: ["me"] });
     } catch {
       toast.error(t("toast.error"));
@@ -490,19 +490,6 @@ export default function EditProfilePage({ params }: { params: Promise<{ id: stri
                 </button>
               ))}
             </div>
-            {themeSaved && (
-              <div
-                style={{
-                  fontFamily: fontMono,
-                  fontSize: 9,
-                  color: paper.green,
-                  marginTop: 6,
-                  letterSpacing: 1,
-                }}
-              >
-                {t("action.saved")}
-              </div>
-            )}
           </div>
 
           {/* Notification preferences */}

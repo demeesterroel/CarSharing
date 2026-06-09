@@ -7,6 +7,7 @@ import { useEarliestDashboardYear } from "@/hooks/use-dashboard";
 import { useMe } from "@/hooks/use-me";
 import { usePeople } from "@/hooks/use-people";
 import { useCars, useCreateCar, useDeleteCar, useUpdateCar } from "@/hooks/use-vehicles";
+import { useCarStats } from "@/hooks/use-car-stats";
 import { fontMono, fontSerif, paper } from "@/lib/paper-theme";
 import { shortNameOf } from "@/lib/person-utils";
 import type { CarPnL, CarPriceHistory } from "@/lib/queries/admin";
@@ -56,6 +57,35 @@ const sharedLabelStyle: React.CSSProperties = {
   textTransform: "uppercase",
   display: "block",
   marginBottom: 3,
+};
+
+const statsCardStyle: React.CSSProperties = {
+  display: "grid",
+  gridTemplateColumns: "repeat(3, 1fr)",
+  gap: "8px 12px",
+  padding: "8px",
+  background: paper.paperDark,
+  borderRadius: "8px",
+  marginBottom: 12,
+};
+
+const statsItemStyle: React.CSSProperties = {
+  display: "flex",
+  flexDirection: "column",
+};
+
+const statsLabelStyle: React.CSSProperties = {
+  fontSize: 8,
+  color: paper.inkDim,
+  fontFamily: fontMono,
+  textTransform: "uppercase",
+};
+
+const statsValueStyle: React.CSSProperties = {
+  fontSize: 10,
+  fontWeight: 700,
+  fontFamily: fontMono,
+  color: paper.ink,
 };
 
 // ── Toggle ────────────────────────────────────────────────────

@@ -16,6 +16,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useState } from "react";
 import { toast } from "sonner";
 import { useAdminSummary } from "../_shared";
+import { useCarStats } from "@/hooks/use-car-stats";
 
 // ── Style constants ───────────────────────────────────────────
 const overlayStyle: React.CSSProperties = {
@@ -202,6 +203,8 @@ function CarAccordion({
     });
   }
 
+  const { data: stats, isLoading: statsLoading } = useCarStats(car.id, year);
+
   return (
     <div
       style={{
@@ -354,6 +357,159 @@ function CarAccordion({
               </div>
             )}
           </div>
+          
+          {/* Stats Card */}
+          <div style={{ marginBottom: 16 }}>
+            <h3 style={{ 
+              fontFamily: fontMono, 
+              fontSize: 10, 
+              fontWeight: 700, 
+              color: paper.inkDim, 
+              letterSpacing: 1.5, 
+              textTransform: "uppercase",
+              marginBottom: 6,
+            }}>
+              Statistieken {year}
+            </h3>
+            {statsLoading ? (
+              <div style={{ fontFamily: fontMono, fontSize: 10, color: paper.inkDim }}>
+                Laden...
+              </div>
+            ) : stats ? (
+              <div style={{ 
+                border: `1px solid ${paper.paperDark}`,
+                borderRadius: 4,
+                padding: 8,
+                background: paper.paperDeep,
+              }}>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+                  <div>
+                    <div style={{ 
+                      fontFamily: fontMono, 
+                      fontSize: 9, 
+                      color: paper.inkDim,
+                      textTransform: "uppercase",
+                      letterSpacing: 1.5,
+                    }}>
+                      Ritten
+                    </div>
+                    <div style={{ 
+                      fontFamily: fontMono, 
+                      fontSize: 12, 
+                      fontWeight: 700,
+                      color: paper.ink,
+                    }}>
+                      {stats.tripCount}
+                    </div>
+                  </div>
+                  <div>
+                    <div style={{ 
+                      fontFamily: fontMono, 
+                      fontSize: 9, 
+                      color: paper.inkDim,
+                      textTransform: "uppercase",
+                      letterSpacing: 1.5,
+                    }}>
+                      Totale km
+                    </div>
+                    <div style={{ 
+                      fontFamily: fontMono, 
+                      fontSize: 12, 
+                      fontWeight: 700,
+                      color: paper.ink,
+                    }}>
+                      {stats.totalKm.toLocaleString("nl-BE")} km
+                    </div>
+                  </div>
+                  <div>
+                    <div style={{ 
+                      fontFamily: fontMono, 
+                      fontSize: 9, 
+                      color: paper.inkDim,
+                      textTransform: "uppercase",
+                      letterSpacing: 1.5,
+                    }}>
+                      Brandstof (L)
+                    </div>
+                    <div style={{ 
+                      fontFamily: fontMono, 
+                      fontSize: 12, 
+                      fontWeight: 700,
+                      color: paper.ink,
+                    }}>
+                      {stats.totalFuelLiters.toLocaleString("nl-BE")} L
+                    </div>
+                  </div>
+                  <div>
+                    <div style={{ 
+                      fontFamily: fontMono, 
+                      fontSize: 9, 
+                      color: paper.inkDim,
+                      textTransform: "uppercase",
+                      letterSpacing: 1.5,
+                    }}>
+                      Brandstof (€)
+                    </div>
+                    <div style={{ 
+                      fontFamily: fontMono, 
+                      fontSize: 12, 
+                      fontWeight: 700,
+                      color: paper.ink,
+                    }}>
+                      € {stats.totalFuelCost.toFixed(2)}
+                    </div>
+                  </div>
+                  <div>
+                    <div style={{ 
+                      fontFamily: fontMono, 
+                      fontSize: 9, 
+                      color: paper.inkDim,
+                      textTransform: "uppercase",
+                      letterSpacing: 1.5,
+                    }}>
+                      Verbruik (L/100km)
+                    </div>
+                    <div style={{ 
+                      fontFamily: fontMono, 
+                      fontSize: 12, 
+                      fontWeight: 700,
+                      color: paper.ink,
+                    }}>
+                      {stats.avgConsumptionLper100km !== null 
+                        ? (stats.avgConsumptionLper100km).toFixed(1) 
+                        : "-"}
+                    </div>
+                  </div>
+                  <div>
+                    <div style={{ 
+                      fontFamily: fontMono, 
+                      fontSize: 9, 
+                      color: paper.inkDim,
+                      textTransform: "uppercase",
+                      letterSpacing: 1.5,
+                    }}>
+                      Kosten (€/km)
+                    </div>
+                    <div style={{ 
+                      fontFamily: fontMono, 
+                      fontSize: 12, 
+                      fontWeight: 700,
+                      color: paper.ink,
+                    }}>
+                      {stats.avgFuelCostPerKm !== null 
+                        ? "€ " + (stats.avgFuelCostPerKm).toFixed(2) 
+                        : "-"}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div style={{ fontFamily: fontMono, fontSize: 10, color: paper.inkDim }}>
+                Geen data beschikbaar
+              </div>
+            )}
+          </div>
+
           <div style={{ display: "flex", gap: 8, marginBottom: 8 }}>
             <button
               onClick={() => {

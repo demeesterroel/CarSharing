@@ -7,6 +7,7 @@ import {
   deleteCar,
   getCarById,
   getCars,
+  getCarStats,
   insertCar,
   updateCar,
 } from "../queries/cars";
@@ -161,6 +162,96 @@ describe("updateCar", () => {
   it("does nothing for non-existent id without throwing", () => {
     const db = makeDb();
     expect(() => updateCar(db, 9999, baseCar)).not.toThrow();
+  });
+});
+
+describe("getCarStats", () => {
+  it("returns zero stats for a car with no trips or fuel fillups", () => {
+    const db = makeDb();
+    const id = insertCar(db, baseCar);
+    
+    const stats = getCarStats(db, id, 2025);
+    expect(stats.tripCount).toBe(0);
+    expect(stats.totalKm).toBe(0);
+    expect(stats.totalFuelLiters).toBe(0);
+    expect(stats.totalFuelCost).toBe(0);
+    expect(stats.avgConsumptionLper100km).toBeNull();
+    expect(stats.avgFuelCostPerKm).toBeNull();
+  });
+
+  it("calculates stats correctly for a car with trips and fuel fillups", () => {
+    const db = makeDb();
+    db.exec(
+      `INSERT INTO people (id, first_name, last_name, active) VALUES (1, 'Alice', 'Owner', 1)`
+    );
+    const id = insertCar(db, baseCar);
+    
+    // Insert trips
+    db.exec(
+      `INSERT INTO trips (person_id, car_id, date, start_odometer, end_odometer, km, amount)
+       VALUES (1, ${id}, '2025-01-01', 0, 100, 100, 20.0),
+              (1, ${id}, '2025-01-02', 100, 250, 150, 30.0)`
+    );
+    
+    // Insert fuel fillups
+    db.prepare(
+      "INSERT INTO fuel_fillups (person_id, car_id, date, liters, amount, price_per_liter) VALUES (?,?,?,?,?,?)"
+    ).run(1, id, "2025-01-01", 50, 60, 1.2);
+    db.prepare(
+      "INSERT INTO fuel_fillups (person_id, car_id, date, liters, amount, price_per_liter) VALUES (?,?,?,?,?,?)"
+    ).run(1, id, "2025-01-02", 40, 48, 1.2);
+    
+    const stats = getCarStats(db, id, 2025);
+    expect(stats.tripCount).toBe(2);
+    expect(stats.totalKm).toBe(250);
+    expect(stats.totalFuelLiters).toBe(90);
+    expect(stats.totalFuelCost).toBe(108);
+    expect(stats.avgConsumptionLper100km).toBeCloseTo(36); // 90/250 * 100
+    expect(stats.avgFuelCostPerKm).toBeCloseTo(0.432); // 108/250
+  });
+
+  it("filters trips and fuel fillups by year", () => {
+    const db = makeDb();
+    db.exec(
+      `INSERT INTO people (id, first_name, last_name, active) VALUES (1, 'Alice', 'Owner', 1)`
+    );
+    const id = insertCar(db, baseCar);
+    
+    // Insert trips and fuel fillups for 2024
+    db.exec(
+      `INSERT INTO trips (person_id, car_id, date, start_odometer, end_odometer, km, amount)
+       VALUES (1, ${id}, '2024-01-01', 0, 100, 100, 20.0)`
+    );
+    db.prepare(
+      "INSERT INTO fuel_fillups (person_id, car_id, date, liters, amount, price_per_liter) VALUES (?,?,?,?,?,?)"
+    ).run(1, id, "2024-01-01", 50, 60, 1.2);
+    
+    // Insert trips and fuel fillups for 2025
+    db.exec(
+      `INSERT INTO trips (person_id, car_id, date, start_odometer, end_odometer, km, amount)
+       VALUES (1, ${id}, '2025-01-01', 0, 150, 150, 30.0)`
+    );
+    db.prepare(
+      "INSERT INTO fuel_fillups (person_id, car_id, date, liters, amount, price_per_liter) VALUES (?,?,?,?,?,?)"
+    ).run(1, id, "2025-01-01", 40, 48, 1.2);
+    
+    // Test 2024 stats
+    const stats2024 = getCarStats(db, id, 2024);
+    expect(stats2024.tripCount).toBe(1);
+    expect(stats2024.totalKm).toBe(100);
+    expect(stats2024.totalFuelLiters).toBe(50);
+    expect(stats2024.totalFuelCost).toBe(60);
+    expect(stats2024.avgConsumptionLper100km).toBeCloseTo(50); // 50/100 * 100
+    expect(stats2024.avgFuelCostPerKm).toBeCloseTo(0.6); // 60/100
+    
+    // Test 2025 stats
+    const stats2025 = getCarStats(db, id, 2025);
+    expect(stats2025.tripCount).toBe(1);
+    expect(stats2025.totalKm).toBe(150);
+    expect(stats2025.totalFuelLiters).toBe(40);
+    expect(stats2025.totalFuelCost).toBe(48);
+    expect(stats2025.avgConsumptionLper100km).toBeCloseTo(26.67); // 40/150 * 100
+    expect(stats2025.avgFuelCostPerKm).toBeCloseTo(0.32); // 48/150
   });
 });
 

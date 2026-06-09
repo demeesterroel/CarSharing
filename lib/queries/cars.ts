@@ -9,6 +9,15 @@ export function getCarById(db: Database.Database, id: number): Car | null {
   return (db.prepare("SELECT * FROM cars WHERE id=?").get(id) as Car) ?? null;
 }
 
+export interface CarStats {
+  tripCount: number;
+  totalKm: number;
+  totalFuelLiters: number;
+  totalFuelCost: number;
+  avgConsumptionLper100km: number | null;
+  avgFuelCostPerKm: number | null;
+}
+
 function recordPriceHistory(db: Database.Database, carId: number, price: number) {
   const today = new Date().toISOString().slice(0, 10);
   db.prepare(
@@ -58,6 +67,46 @@ export function updateCar(db: Database.Database, id: number, data: CarInput): vo
       args.id
     );
   })({ id, data });
+}
+
+export function getCarStats(db: Database.Database, carId: number, year: number): CarStats {
+  const startOfYear = `${year}-01-01`;
+  const endOfYear = `${year}-12-31`;
+
+  // Count trips and sum kilometers
+  const tripRow = db.prepare(`
+    SELECT 
+      COUNT(*) as tripCount,
+      SUM(km) as totalKm
+    FROM trips 
+    WHERE car_id = ? AND date BETWEEN ? AND ?
+  `).get(carId, startOfYear, endOfYear) as { tripCount: number; totalKm: number } | null;
+
+  // Sum fuel fillups
+  const fuelRow = db.prepare(`
+    SELECT 
+      SUM(liters) as totalFuelLiters,
+      SUM(amount) as totalFuelCost
+    FROM fuel_fillups 
+    WHERE car_id = ? AND date BETWEEN ? AND ?
+  `).get(carId, startOfYear, endOfYear) as { totalFuelLiters: number; totalFuelCost: number } | null;
+
+  const tripCount = tripRow?.tripCount ?? 0;
+  const totalKm = tripRow?.totalKm ?? 0;
+  const totalFuelLiters = fuelRow?.totalFuelLiters ?? 0;
+  const totalFuelCost = fuelRow?.totalFuelCost ?? 0;
+
+  const avgConsumptionLper100km = totalKm > 0 ? (totalFuelLiters / totalKm) * 100 : null;
+  const avgFuelCostPerKm = totalKm > 0 ? totalFuelCost / totalKm : null;
+
+  return {
+    tripCount,
+    totalKm,
+    totalFuelLiters,
+    totalFuelCost,
+    avgConsumptionLper100km,
+    avgFuelCostPerKm,
+  };
 }
 
 export function carHasHistory(db: Database.Database, id: number): boolean {

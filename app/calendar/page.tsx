@@ -15,6 +15,11 @@ import {
 } from "@/hooks/use-reservations";
 import { useCars } from "@/hooks/use-vehicles";
 import { apiFetch } from "@/lib/api/client";
+import {
+  CALENDAR_NUDGE_DURATION,
+  markCalendarNudgeSeen,
+  shouldShowCalendarNudge,
+} from "@/lib/calendar-nudge";
 import { useOnlineState } from "@/lib/offline/online-state";
 import { fontMono, fontSerif, paper } from "@/lib/paper-theme";
 import { canEdit } from "@/lib/permissions";
@@ -123,6 +128,27 @@ function CalendarContent() {
   const createR = useCreateReservation();
   const updateR = useUpdateReservation();
   const deleteR = useDeleteReservation();
+
+  // One-time nudge: prompt the user to subscribe to the CarSharing calendar.
+  // Fires on first /calendar visit; localStorage key cs.calendarNudgeSeen
+  // persists the dismissal.
+  useEffect(() => {
+    const calendarId = calendarMeta?.calendarId;
+    if (!calendarId) return;
+    if (!shouldShowCalendarNudge(localStorage)) return;
+
+    markCalendarNudgeSeen(localStorage);
+    const subscribeUrl = `https://calendar.google.com/calendar/r?cid=${encodeURIComponent(calendarId)}`;
+    toast(t("calendar.nudge_message"), {
+      duration: CALENDAR_NUDGE_DURATION,
+      action: {
+        label: t("calendar.nudge_action"),
+        onClick: () => {
+          window.open(subscribeUrl, "_blank", "noopener,noreferrer");
+        },
+      },
+    });
+  }, [calendarMeta, t]);
 
   const activeCars = cars.filter((c) => c.active);
 

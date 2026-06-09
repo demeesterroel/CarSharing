@@ -285,6 +285,8 @@ export const en: Messages = {
   "calendar.all_filter": "All",
   "calendar.mine_filter": "Mine",
   "calendar.subscribe": "Add to calendar app",
+  "calendar.nudge_message": "Add the CarSharing calendar to your own calendar app to stay up to date.",
+  "calendar.nudge_action": "Add calendar",
   "calendar.prev_weeks": "Previous weeks",
   "calendar.next_weeks": "Next weeks",
   "location.use_gps": "Use current location",

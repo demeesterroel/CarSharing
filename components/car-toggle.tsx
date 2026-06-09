@@ -1,7 +1,7 @@
 "use client";
-import type { Car } from "@/types";
-import { paper, fontMono, fontSerif } from "@/lib/paper-theme";
+import { fontMono, fontSerif, paper } from "@/lib/paper-theme";
 import { useTheme } from "@/lib/theme-context";
+import type { Car } from "@/types";
 
 interface Props {
   cars: Car[];

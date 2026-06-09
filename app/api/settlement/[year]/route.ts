@@ -1,6 +1,6 @@
+import { badRequest, json, requireAdmin, requireAdminOrOwner } from "@/lib/api";
 import { getDb } from "@/lib/db";
 import { getSettlement, lockSettlement, unlockSettlement } from "@/lib/queries/settlement";
-import { json, requireAdminOrOwner, requireAdmin, badRequest } from "@/lib/api";
 
 export const GET = json(async (req, ctx) => {
   await requireAdminOrOwner(req);

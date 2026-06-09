@@ -1,11 +1,11 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter, useParams } from "next/navigation";
+import { useT } from "@/components/locale-provider";
+import { fontMono, fontSerif, paper } from "@/lib/paper-theme";
 import { useQueryClient } from "@tanstack/react-query";
 import { Eye, EyeOff } from "lucide-react";
-import { useT } from "@/components/locale-provider";
-import { paper, fontMono, fontSerif } from "@/lib/paper-theme";
+import { useParams, useRouter } from "next/navigation";
+import { useState } from "react";
 
 export default function ResetPasswordPage() {
   const t = useT();

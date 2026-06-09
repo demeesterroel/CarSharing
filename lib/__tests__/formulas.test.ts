@@ -1,5 +1,5 @@
-import { describe, it, expect } from "vitest";
-import { calcTripAmount, calcPricePerLiter, calcPaymentYear } from "../formulas";
+import { describe, expect, it } from "vitest";
+import { calcPaymentYear, calcPricePerLiter, calcTripAmount } from "../formulas";
 
 describe("calcTripAmount", () => {
   it("charges full price when person has no discount", () => {

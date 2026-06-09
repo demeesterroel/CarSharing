@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("@/lib/env", () => ({
   env: {
@@ -93,11 +93,17 @@ describe("PUT /api/admin/settings", () => {
   });
 
   it("saves provided settings and returns ok:true", async () => {
-    const res = await PUT(putReq({ coop_bank_account: "BE99 1111 2222", google_calendar_id: "new-cal" }));
+    const res = await PUT(
+      putReq({ coop_bank_account: "BE99 1111 2222", google_calendar_id: "new-cal" })
+    );
     expect(res.status).toBe(200);
     const body = await res.json();
     expect(body).toEqual({ ok: true });
-    expect(mockSetSetting).toHaveBeenCalledWith(expect.anything(), "coop_bank_account", "BE99 1111 2222");
+    expect(mockSetSetting).toHaveBeenCalledWith(
+      expect.anything(),
+      "coop_bank_account",
+      "BE99 1111 2222"
+    );
     expect(mockSetSetting).toHaveBeenCalledWith(expect.anything(), "google_calendar_id", "new-cal");
   });
 

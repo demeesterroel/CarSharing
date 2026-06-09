@@ -1,21 +1,21 @@
 "use client";
-import { useState, Suspense } from "react";
-import { useRouter, usePathname, useSearchParams } from "next/navigation";
-import * as Dialog from "@radix-ui/react-dialog";
-import { useMe } from "@/hooks/use-me";
-import { paper, fontMono, fontSerif } from "@/lib/paper-theme";
-import { useT } from "@/components/locale-provider";
-import type { Car } from "@/types";
-import { useCars, useCreateCar, useUpdateCar, useDeleteCar } from "@/hooks/use-vehicles";
-import { usePeople } from "@/hooks/use-people";
-import { useAdminSummary } from "../_shared";
-import { useEarliestDashboardYear } from "@/hooks/use-dashboard";
-import { toast } from "sonner";
 import { CarBadge } from "@/components/car-badge";
 import { CostCoverageScreen } from "@/components/cost-coverage-screen";
 import { Fab } from "@/components/fab";
-import type { CarPriceHistory, CarPnL } from "@/lib/queries/admin";
+import { useT } from "@/components/locale-provider";
+import { useEarliestDashboardYear } from "@/hooks/use-dashboard";
+import { useMe } from "@/hooks/use-me";
+import { usePeople } from "@/hooks/use-people";
+import { useCars, useCreateCar, useDeleteCar, useUpdateCar } from "@/hooks/use-vehicles";
+import { fontMono, fontSerif, paper } from "@/lib/paper-theme";
 import { shortNameOf } from "@/lib/person-utils";
+import type { CarPnL, CarPriceHistory } from "@/lib/queries/admin";
+import type { Car } from "@/types";
+import * as Dialog from "@radix-ui/react-dialog";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { Suspense, useState } from "react";
+import { toast } from "sonner";
+import { useAdminSummary } from "../_shared";
 
 // ── Style constants ───────────────────────────────────────────
 const overlayStyle: React.CSSProperties = {

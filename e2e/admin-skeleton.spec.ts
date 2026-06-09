@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { expect, test } from "@playwright/test";
 import { sealData } from "iron-session";
 
 // Must match the password the e2e web server boots with — see

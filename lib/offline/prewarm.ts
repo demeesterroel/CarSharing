@@ -1,7 +1,7 @@
 "use client";
-import { useEffect, useRef } from "react";
 import type { QueryClient } from "@tanstack/react-query";
 import { useQueryClient } from "@tanstack/react-query";
+import { useEffect, useRef } from "react";
 import { useOnlineState } from "./online-state";
 
 export interface CriticalEndpoint {

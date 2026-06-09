@@ -1,12 +1,12 @@
-import { NextResponse } from "next/server";
-import { getIronSession } from "iron-session";
-import { sessionOptions, type SessionData } from "@/lib/session";
 import { verifyCredentials } from "@/lib/auth";
 import { getDb } from "@/lib/db";
-import { getPersonByUsername, isOwner } from "@/lib/queries/people";
-import { shortNameOf } from "@/lib/person-utils";
 import { env } from "@/lib/env";
+import { shortNameOf } from "@/lib/person-utils";
+import { getPersonByUsername } from "@/lib/queries/people";
 import { checkRateLimit } from "@/lib/rate-limit";
+import { sessionOptions, type SessionData } from "@/lib/session";
+import { getIronSession } from "iron-session";
+import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
   // Brute-force protection: 5 attempts per IP per 15 minutes.

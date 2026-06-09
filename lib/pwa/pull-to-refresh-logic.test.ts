@@ -1,13 +1,13 @@
-import { describe, it, expect } from "vitest";
+import { describe, expect, it } from "vitest";
 import {
-  decideRefresh,
-  pullOffset,
-  contentOffset,
-  isStandalone,
-  PULL_THRESHOLD_PX,
-  PULL_MAX_PX,
   CONTENT_MAX_PX,
   CONTENT_RESISTANCE,
+  contentOffset,
+  decideRefresh,
+  isStandalone,
+  PULL_MAX_PX,
+  PULL_THRESHOLD_PX,
+  pullOffset,
 } from "./pull-to-refresh-logic";
 
 describe("decideRefresh", () => {

@@ -1,10 +1,10 @@
-import { describe, it, expect } from "vitest";
 import Database from "better-sqlite3";
+import { describe, expect, it } from "vitest";
 import { runMigrations } from "../db/migrate";
-import { insertTrip, updateTrip, ConflictError } from "../queries/trips";
-import { insertFuelFillup } from "../queries/fuel-fillups";
 import { insertExpense } from "../queries/expenses";
+import { insertFuelFillup } from "../queries/fuel-fillups";
 import { insertReservation } from "../queries/reservations";
+import { ConflictError, insertTrip, updateTrip } from "../queries/trips";
 
 function makeDb() {
   const db = new Database(":memory:");
@@ -39,9 +39,9 @@ describe("insertTrip idempotency", () => {
     const idB = insertTrip(db, input);
     expect(idA).toBe(idB);
     // Only 1 row with this client_id should exist.
-    const count = db
-      .prepare("SELECT COUNT(*) c FROM trips WHERE client_id = ?")
-      .get("uuid-1") as { c: number };
+    const count = db.prepare("SELECT COUNT(*) c FROM trips WHERE client_id = ?").get("uuid-1") as {
+      c: number;
+    };
     expect(count.c).toBe(1);
   });
 

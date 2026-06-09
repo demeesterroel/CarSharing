@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { expect, test } from "@playwright/test";
 import { loginAndGetSession, makeApi } from "./helpers";
 
 const baseURL = process.env.TEST_BASE_URL ?? "http://localhost:3000";
@@ -22,9 +22,10 @@ test.describe("cloak owner access (#179)", () => {
     const api = makeApi(page.request, session.csrf);
 
     // The seeded "owner" account is a non-admin car owner — the exact case in #179.
-    const people = await api.get<Array<{ id: number; username: string | null; is_admin: number }>>(
-      "/api/people"
-    );
+    const people =
+      await api.get<Array<{ id: number; username: string | null; is_admin: number }>>(
+        "/api/people"
+      );
     const owner = people.find((p) => p.username === "owner");
     test.skip(!owner, "Seed has no 'owner' account — needs demo seed data");
     expect(owner!.is_admin).toBe(0);

@@ -1,9 +1,9 @@
 // lib/process-calendar-delta.ts
+import { logSync } from "@/lib/calendar-sync-log";
+import type { CalendarEvent } from "@/lib/google-calendar";
+import { addDays, updateEvent } from "@/lib/google-calendar";
 import type Database from "better-sqlite3";
 import type { OAuth2Client } from "google-auth-library";
-import { addDays, updateEvent } from "@/lib/google-calendar";
-import type { CalendarEvent } from "@/lib/google-calendar";
-import { logSync } from "@/lib/calendar-sync-log";
 
 interface ReservationRowForDelta {
   id: number;

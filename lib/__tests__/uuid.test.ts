@@ -1,5 +1,5 @@
 // lib/__tests__/uuid.test.ts
-import { describe, it, expect } from "vitest";
+import { describe, expect, it } from "vitest";
 import { newUuid } from "../offline/uuid";
 
 describe("newUuid", () => {

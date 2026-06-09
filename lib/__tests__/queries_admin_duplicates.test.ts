@@ -1,10 +1,10 @@
-import { describe, it, expect } from "vitest";
 import Database from "better-sqlite3";
+import { describe, expect, it } from "vitest";
 import { runMigrations } from "../db/migrate";
-import { insertPerson } from "../queries/people";
-import { insertCar } from "../queries/cars";
-import { insertTrip } from "../queries/trips";
 import { getDuplicateTrips } from "../queries/admin";
+import { insertCar } from "../queries/cars";
+import { insertPerson } from "../queries/people";
+import { insertTrip } from "../queries/trips";
 
 function makeDb() {
   const db = new Database(":memory:");

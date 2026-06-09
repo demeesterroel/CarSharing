@@ -12,7 +12,7 @@
  * Seed accounts: admin/admin (is_admin=1), owner/owner, alice/alice, bob/bob.
  */
 
-import { test, expect } from "@playwright/test";
+import { expect, test } from "@playwright/test";
 import { loginAndGetCsrf, makeApi } from "./helpers";
 
 // demo.db admin credentials
@@ -96,7 +96,9 @@ test.describe("issue #193 – reservation cache invalidation", () => {
 
     // Submit.
     await form
-      .getByRole("button", { name: /confirm reservation|request reservation|bevestig|aanvraag|opslaan|save/i })
+      .getByRole("button", {
+        name: /confirm reservation|request reservation|bevestig|aanvraag|opslaan|save/i,
+      })
       .click();
 
     const apiRes = await responsePromise;
@@ -131,7 +133,9 @@ test.describe("issue #176 – payment cache invalidation", () => {
     paymentId = null;
   });
 
-  test("payment added via FAB dialog appears in list immediately without page refresh", async ({ page }) => {
+  test("payment added via FAB dialog appears in list immediately without page refresh", async ({
+    page,
+  }) => {
     await loginViaApi(page);
     // Payments are managed at /admin/payments (no standalone /payments page).
     await page.goto("/admin/payments");

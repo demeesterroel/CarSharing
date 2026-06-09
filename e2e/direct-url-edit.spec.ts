@@ -1,5 +1,5 @@
-import { test, expect } from "@playwright/test";
-import { loginAndGetCsrf, loginAndGetSession, makeApi, getTestEntities } from "./helpers";
+import { expect, test } from "@playwright/test";
+import { getTestEntities, loginAndGetCsrf, loginAndGetSession, makeApi } from "./helpers";
 
 /**
  * Regression test for issue #171:
@@ -50,7 +50,10 @@ test.describe("direct URL edit — close stays on page", () => {
 
   test("closing edit form opened via direct URL stays on /trips", async ({ page }) => {
     await page.request.post("/api/auth/login", {
-      data: { username: process.env.TEST_EMAIL ?? "alice", password: process.env.TEST_PASSWORD ?? "alice" },
+      data: {
+        username: process.env.TEST_EMAIL ?? "alice",
+        password: process.env.TEST_PASSWORD ?? "alice",
+      },
     });
     // Navigate directly to the edit URL — no prior history
     await page.goto(`/trips?edit=${tripId}`);
@@ -67,9 +70,14 @@ test.describe("direct URL edit — close stays on page", () => {
     await expect(page).toHaveURL(/^[^?]*\/trips$/, { timeout: 5_000 });
   });
 
-  test("saving edit form opened via direct URL closes form and stays on /trips", async ({ page }) => {
+  test("saving edit form opened via direct URL closes form and stays on /trips", async ({
+    page,
+  }) => {
     await page.request.post("/api/auth/login", {
-      data: { username: process.env.TEST_EMAIL ?? "alice", password: process.env.TEST_PASSWORD ?? "alice" },
+      data: {
+        username: process.env.TEST_EMAIL ?? "alice",
+        password: process.env.TEST_PASSWORD ?? "alice",
+      },
     });
     await page.goto(`/trips?edit=${tripId}`);
     await page.waitForLoadState("networkidle");
@@ -99,7 +107,10 @@ test.describe("direct URL edit — close stays on page", () => {
     });
 
     await page.request.post("/api/auth/login", {
-      data: { username: process.env.TEST_EMAIL ?? "alice", password: process.env.TEST_PASSWORD ?? "alice" },
+      data: {
+        username: process.env.TEST_EMAIL ?? "alice",
+        password: process.env.TEST_PASSWORD ?? "alice",
+      },
     });
     await page.goto(`/fuel?edit=${fuel.id}`);
     await page.waitForLoadState("networkidle");
@@ -109,7 +120,11 @@ test.describe("direct URL edit — close stays on page", () => {
     await expect(page).toHaveURL(/\/fuel/, { timeout: 5_000 });
 
     // cleanup
-    try { await fuelApi.delete(`/api/fuel/${fuel.id}`); } catch { /**/ }
+    try {
+      await fuelApi.delete(`/api/fuel/${fuel.id}`);
+    } catch {
+      /**/
+    }
   });
 
   test("closing edit form opened via direct URL stays on /expenses", async ({ page, request }) => {
@@ -127,7 +142,10 @@ test.describe("direct URL edit — close stays on page", () => {
     });
 
     await page.request.post("/api/auth/login", {
-      data: { username: process.env.TEST_EMAIL ?? "alice", password: process.env.TEST_PASSWORD ?? "alice" },
+      data: {
+        username: process.env.TEST_EMAIL ?? "alice",
+        password: process.env.TEST_PASSWORD ?? "alice",
+      },
     });
     await page.goto(`/expenses?edit=${exp.id}`);
     await page.waitForLoadState("networkidle");
@@ -136,6 +154,10 @@ test.describe("direct URL edit — close stays on page", () => {
     await page.locator('button[aria-label="Sluiten"], button[aria-label="Close"]').first().click();
     await expect(page).toHaveURL(/\/expenses/, { timeout: 5_000 });
 
-    try { await expApi.delete(`/api/expenses/${exp.id}`); } catch { /**/ }
+    try {
+      await expApi.delete(`/api/expenses/${exp.id}`);
+    } catch {
+      /**/
+    }
   });
 });

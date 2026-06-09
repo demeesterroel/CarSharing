@@ -1,14 +1,14 @@
-import { describe, it, expect } from "vitest";
 import Database from "better-sqlite3";
+import { describe, expect, it } from "vitest";
 import { runMigrations } from "../db/migrate";
-import { getPeople, insertPerson, getPersonById } from "../queries/people";
-import { getCars, insertCar } from "../queries/cars";
-import { insertTrip, getTrips } from "../queries/trips";
 import { getLastCarState } from "../queries/car-state";
-import { insertFuelFillup } from "../queries/fuel-fillups";
+import { getCars, insertCar } from "../queries/cars";
 import { getDashboard } from "../queries/dashboard";
-import { insertPayment } from "../queries/payments";
 import { insertExpense } from "../queries/expenses";
+import { insertFuelFillup } from "../queries/fuel-fillups";
+import { insertPayment } from "../queries/payments";
+import { getPeople, getPersonById, insertPerson } from "../queries/people";
+import { getTrips, insertTrip } from "../queries/trips";
 
 function makeDb() {
   const db = new Database(":memory:");
@@ -350,19 +350,39 @@ describe("getDashboard", () => {
     const db = makeDb();
     const ownerId = insertPerson(db, { ...basePerson, first_name: "Owner A" });
     const memberId = insertPerson(db, { ...basePerson, first_name: "Alice" });
-    const cid = insertCar(db, { short: "JF", name: "Car JF", price_per_km: 0.25, brand: null, color: null });
+    const cid = insertCar(db, {
+      short: "JF",
+      name: "Car JF",
+      price_per_km: 0.25,
+      brand: null,
+      color: null,
+    });
     db.prepare("UPDATE cars SET owner_person_id = ? WHERE id = ?").run(ownerId, cid);
 
     insertFuelFillup(db, {
-      person_id: memberId, car_id: cid, date: "2026-01-10",
-      amount: 40, liters: 25, full_tank: 0,
-      odometer: null, receipt: null, location: null, gps_coords: null,
+      person_id: memberId,
+      car_id: cid,
+      date: "2026-01-10",
+      amount: 40,
+      liters: 25,
+      full_tank: 0,
+      odometer: null,
+      receipt: null,
+      location: null,
+      gps_coords: null,
       settled_outside: 1,
     });
     insertFuelFillup(db, {
-      person_id: memberId, car_id: cid, date: "2026-01-11",
-      amount: 20, liters: 12, full_tank: 0,
-      odometer: null, receipt: null, location: null, gps_coords: null,
+      person_id: memberId,
+      car_id: cid,
+      date: "2026-01-11",
+      amount: 20,
+      liters: 12,
+      full_tank: 0,
+      odometer: null,
+      receipt: null,
+      location: null,
+      gps_coords: null,
       settled_outside: 0,
     });
 
@@ -379,19 +399,42 @@ describe("getDashboard", () => {
     const db = makeDb();
     const ownerId = insertPerson(db, { ...basePerson, first_name: "Owner A" });
     const owner2Id = insertPerson(db, { ...basePerson, first_name: "Owner B" });
-    const cid = insertCar(db, { short: "JF", name: "Car JF", price_per_km: 0.25, brand: null, color: null });
-    const cid2 = insertCar(db, { short: "LW", name: "Car LW", price_per_km: 0.25, brand: null, color: null });
+    const cid = insertCar(db, {
+      short: "JF",
+      name: "Car JF",
+      price_per_km: 0.25,
+      brand: null,
+      color: null,
+    });
+    const cid2 = insertCar(db, {
+      short: "LW",
+      name: "Car LW",
+      price_per_km: 0.25,
+      brand: null,
+      color: null,
+    });
     db.prepare("UPDATE cars SET owner_person_id = ? WHERE id = ?").run(ownerId, cid);
     db.prepare("UPDATE cars SET owner_person_id = ? WHERE id = ?").run(owner2Id, cid2);
 
     insertTrip(db, {
-      person_id: ownerId, car_id: cid2, date: "2026-02-01",
-      start_odometer: 0, end_odometer: 100, location: null,
+      person_id: ownerId,
+      car_id: cid2,
+      date: "2026-02-01",
+      start_odometer: 0,
+      end_odometer: 100,
+      location: null,
     });
     insertFuelFillup(db, {
-      person_id: ownerId, car_id: cid2, date: "2026-02-01",
-      amount: 50, liters: 30, full_tank: 0,
-      odometer: null, receipt: null, location: null, gps_coords: null,
+      person_id: ownerId,
+      car_id: cid2,
+      date: "2026-02-01",
+      amount: 50,
+      liters: 30,
+      full_tank: 0,
+      odometer: null,
+      receipt: null,
+      location: null,
+      gps_coords: null,
       settled_outside: 1,
     });
 

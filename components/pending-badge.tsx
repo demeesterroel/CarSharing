@@ -1,6 +1,6 @@
 "use client";
-import { paper, fontMono } from "@/lib/paper-theme";
 import { useT } from "@/components/locale-provider";
+import { fontMono, paper } from "@/lib/paper-theme";
 
 export function PendingBadge() {
   const t = useT();

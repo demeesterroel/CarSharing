@@ -1,6 +1,6 @@
-import { describe, it, expect } from "vitest";
 import { QueryClient } from "@tanstack/react-query";
-import { applyCreate, replaceCreate, rollbackCreate, applyUpdate, applyDelete } from "./optimistic";
+import { describe, expect, it } from "vitest";
+import { applyCreate, applyDelete, applyUpdate, replaceCreate, rollbackCreate } from "./optimistic";
 
 interface Trip {
   id: number;

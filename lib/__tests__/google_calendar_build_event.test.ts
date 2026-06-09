@@ -1,5 +1,5 @@
 // lib/__tests__/google_calendar_build_event.test.ts
-import { describe, it, expect, vi } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 vi.mock("@/lib/env", () => ({
   env: {
@@ -93,10 +93,7 @@ describe("buildEventBody timed events (#191)", () => {
   });
 
   it("falls back to an all-day event when only one time is set", () => {
-    const body = buildEventBody(
-      { ...timed, end_time: null, status: "pending" },
-      "n1"
-    ) as Body;
+    const body = buildEventBody({ ...timed, end_time: null, status: "pending" }, "n1") as Body;
     expect(body.start.date).toBe("2026-06-01");
     expect(body.start.dateTime).toBeUndefined();
   });

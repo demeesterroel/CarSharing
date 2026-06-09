@@ -1,10 +1,10 @@
-import { NextResponse } from "next/server";
-import { google } from "googleapis";
+import { json, requireAdmin } from "@/lib/api";
 import { getDb } from "@/lib/db";
 import { env } from "@/lib/env";
-import { json, requireAdmin } from "@/lib/api";
-import { getSetting } from "@/lib/queries/settings";
 import { getOAuthClient } from "@/lib/google-calendar";
+import { getSetting } from "@/lib/queries/settings";
+import { google } from "googleapis";
+import { NextResponse } from "next/server";
 
 function googleErrorCode(e: unknown): string {
   if (e && typeof e === "object") {

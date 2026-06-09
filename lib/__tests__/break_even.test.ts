@@ -1,6 +1,6 @@
-import { describe, it, expect } from "vitest";
 import { beMetrics } from "@/app/admin/_shared";
 import type { CarPnL } from "@/lib/queries/admin";
+import { describe, expect, it } from "vitest";
 
 function makeCar(overrides: Partial<CarPnL> = {}): CarPnL {
   return {

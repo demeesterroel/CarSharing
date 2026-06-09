@@ -1,6 +1,6 @@
 "use client";
-import React, { createContext, useContext, useState, useEffect } from "react";
 import { setLocale as setModuleLocale, t, type Locale } from "@/lib/i18n";
+import React, { createContext, useContext, useState } from "react";
 
 const STORAGE_KEY = "carsharing_locale";
 

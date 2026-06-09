@@ -1,17 +1,17 @@
-import { NextResponse } from "next/server";
-import { z } from "zod";
-import bcrypt from "bcryptjs";
 import { getDb } from "@/lib/db";
 import {
-  getInviteToken,
   deleteInviteToken,
-  setPasswordHash,
+  getInviteToken,
   getPersonById,
   getSessionEpoch,
+  setPasswordHash,
   shortNameOf,
 } from "@/lib/queries/people";
-import { getIronSession } from "iron-session";
 import { sessionOptions, type SessionData } from "@/lib/session";
+import bcrypt from "bcryptjs";
+import { getIronSession } from "iron-session";
+import { NextResponse } from "next/server";
+import { z } from "zod";
 
 const Schema = z.object({
   password: z.string().min(8),

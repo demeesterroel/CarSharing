@@ -1,24 +1,24 @@
 // lib/__tests__/queries_admin.test.ts
-import { describe, it, expect } from "vitest";
 import Database from "better-sqlite3";
+import { describe, expect, it } from "vitest";
 import { runMigrations } from "../db/migrate";
-import { insertPerson } from "../queries/people";
-import { insertCar } from "../queries/cars";
-import { insertTrip } from "../queries/trips";
-import { insertFuelFillup } from "../queries/fuel-fillups";
-import { insertExpense } from "../queries/expenses";
 import {
   getCarPnL,
+  getHistoricalCarKm,
+  getHistoricalExpenses,
+  getHistoricalOwnerSplit,
+  getKmGaps,
   getMonthlyCarKm,
   getPersonContributions,
-  getHistoricalCarKm,
   getPriceHistory,
-  getZeroKmTrips,
-  getKmGaps,
   getRollingFuelPerKm,
-  getHistoricalOwnerSplit,
-  getHistoricalExpenses,
+  getZeroKmTrips,
 } from "../queries/admin";
+import { insertCar } from "../queries/cars";
+import { insertExpense } from "../queries/expenses";
+import { insertFuelFillup } from "../queries/fuel-fillups";
+import { insertPerson } from "../queries/people";
+import { insertTrip } from "../queries/trips";
 
 function makeDb() {
   const db = new Database(":memory:");
@@ -470,10 +470,32 @@ describe("getRollingFuelPerKm", () => {
   it("computes fuel/km from rolling 12-month window", () => {
     const db = makeDb();
     const pid = insertPerson(db, { ...basePerson, first_name: "Alice" });
-    const cid = insertCar(db, { short: "CA", name: "Car A", price_per_km: 0.2, brand: null, color: null });
+    const cid = insertCar(db, {
+      short: "CA",
+      name: "Car A",
+      price_per_km: 0.2,
+      brand: null,
+      color: null,
+    });
     const today = new Date().toISOString().slice(0, 10);
-    insertTrip(db, { person_id: pid, car_id: cid, date: today, start_odometer: 0, end_odometer: 200, location: null });
-    insertFuelFillup(db, { person_id: pid, car_id: cid, date: today, amount: 30, liters: 20, odometer: null, receipt: null, location: null });
+    insertTrip(db, {
+      person_id: pid,
+      car_id: cid,
+      date: today,
+      start_odometer: 0,
+      end_odometer: 200,
+      location: null,
+    });
+    insertFuelFillup(db, {
+      person_id: pid,
+      car_id: cid,
+      date: today,
+      amount: 30,
+      liters: 20,
+      odometer: null,
+      receipt: null,
+      location: null,
+    });
     const result = getRollingFuelPerKm(db);
     const row = result.find((r) => r.car_id === cid);
     // 30 / 200 = 0.15
@@ -491,9 +513,30 @@ describe("getHistoricalOwnerSplit", () => {
     const db = makeDb();
     const owner = insertPerson(db, { ...basePerson, first_name: "Alice" });
     const other = insertPerson(db, { ...basePerson, first_name: "Bob" });
-    const cid = insertCar(db, { short: "CA", name: "Car A", price_per_km: 0.2, brand: null, color: null, owner_person_id: owner });
-    insertTrip(db, { person_id: owner, car_id: cid, date: "2022-06-01", start_odometer: 0, end_odometer: 100, location: null });
-    insertTrip(db, { person_id: other, car_id: cid, date: "2022-06-02", start_odometer: 100, end_odometer: 250, location: null });
+    const cid = insertCar(db, {
+      short: "CA",
+      name: "Car A",
+      price_per_km: 0.2,
+      brand: null,
+      color: null,
+      owner_person_id: owner,
+    });
+    insertTrip(db, {
+      person_id: owner,
+      car_id: cid,
+      date: "2022-06-01",
+      start_odometer: 0,
+      end_odometer: 100,
+      location: null,
+    });
+    insertTrip(db, {
+      person_id: other,
+      car_id: cid,
+      date: "2022-06-02",
+      start_odometer: 100,
+      end_odometer: 250,
+      location: null,
+    });
     const result = getHistoricalOwnerSplit(db, 2026);
     const row = result.find((r) => r.car_id === cid && r.year === 2022);
     expect(row?.owner_km).toBe(100);
@@ -510,9 +553,27 @@ describe("getHistoricalExpenses", () => {
   it("sums expenses per car per year", () => {
     const db = makeDb();
     const pid = insertPerson(db, { ...basePerson, first_name: "Alice" });
-    const cid = insertCar(db, { short: "CA", name: "Car A", price_per_km: 0.2, brand: null, color: null });
-    insertExpense(db, { person_id: pid, car_id: cid, date: "2022-03-01", amount: 300, description: "Insurance" });
-    insertExpense(db, { person_id: pid, car_id: cid, date: "2022-09-01", amount: 150, description: "Tax" });
+    const cid = insertCar(db, {
+      short: "CA",
+      name: "Car A",
+      price_per_km: 0.2,
+      brand: null,
+      color: null,
+    });
+    insertExpense(db, {
+      person_id: pid,
+      car_id: cid,
+      date: "2022-03-01",
+      amount: 300,
+      description: "Insurance",
+    });
+    insertExpense(db, {
+      person_id: pid,
+      car_id: cid,
+      date: "2022-09-01",
+      amount: 150,
+      description: "Tax",
+    });
     const result = getHistoricalExpenses(db, 2026);
     const row = result.find((r) => r.car_id === cid && r.year === 2022);
     expect(row?.amount).toBe(450);

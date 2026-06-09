@@ -1,9 +1,9 @@
-import { NextResponse } from "next/server";
-import { getDb } from "@/lib/db";
 import { json, requireAdmin } from "@/lib/api";
-import { getSetting } from "@/lib/queries/settings";
+import { getDb } from "@/lib/db";
 import { env } from "@/lib/env";
+import { getSetting } from "@/lib/queries/settings";
 import { syncReservationCreate, syncReservationUpdate } from "@/lib/reservation-sync";
+import { NextResponse } from "next/server";
 
 export const POST = json(async (req) => {
   await requireAdmin(req);

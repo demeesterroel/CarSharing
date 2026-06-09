@@ -1,31 +1,30 @@
 "use client";
-import { Suspense, useEffect, useMemo, useState } from "react";
-import { useSearchParams, useRouter, usePathname } from "next/navigation";
-import { useQueryClient } from "@tanstack/react-query";
-import { toast } from "sonner";
-import { useOnlineState } from "@/lib/offline/online-state";
-import { PageHeader } from "@/components/page-header";
-import { ReservationForm } from "./reservation-form";
-import {
-  useReservations,
-  useCreateReservation,
-  useUpdateReservation,
-  useDeleteReservation,
-} from "@/hooks/use-reservations";
-import { useCars } from "@/hooks/use-vehicles";
-import { useMe } from "@/hooks/use-me";
-import { canEdit } from "@/lib/permissions";
-import type { Reservation, Car } from "@/types";
-import { paper, fontMono, fontSerif } from "@/lib/paper-theme";
-import { useT } from "@/components/locale-provider";
-import { ReservationCard } from "@/components/reservation-card";
-import { PickCalendar } from "@/components/pick-calendar";
 import { CarBadge } from "@/components/car-badge";
 import { ErrorBoundary } from "@/components/error-boundary";
 import { Fab } from "@/components/fab";
-import { useQuery } from "@tanstack/react-query";
+import { useT } from "@/components/locale-provider";
+import { PageHeader } from "@/components/page-header";
+import { PickCalendar } from "@/components/pick-calendar";
+import { ReservationCard } from "@/components/reservation-card";
+import { useMe } from "@/hooks/use-me";
+import {
+  useCreateReservation,
+  useDeleteReservation,
+  useReservations,
+  useUpdateReservation,
+} from "@/hooks/use-reservations";
+import { useCars } from "@/hooks/use-vehicles";
 import { apiFetch } from "@/lib/api/client";
+import { useOnlineState } from "@/lib/offline/online-state";
+import { fontMono, fontSerif, paper } from "@/lib/paper-theme";
+import { canEdit } from "@/lib/permissions";
+import type { Car, Reservation } from "@/types";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { CalendarPlus } from "lucide-react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { Suspense, useEffect, useMemo, useState } from "react";
+import { toast } from "sonner";
+import { ReservationForm } from "./reservation-form";
 
 // ── Bottom Sheet ──────────────────────────────────────────────
 function BottomSheet({

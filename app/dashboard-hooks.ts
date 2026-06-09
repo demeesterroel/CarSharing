@@ -1,13 +1,13 @@
 // Re-export mutation hooks for the dashboard page
-export { useCreateTrip, useUpdateTrip, useDeleteTrip } from "@/hooks/use-trips";
+export { useCreateExpense, useDeleteExpense, useUpdateExpense } from "@/hooks/use-expenses";
 export {
   useCreateFuelFillup,
-  useUpdateFuelFillup,
   useDeleteFuelFillup,
+  useUpdateFuelFillup,
 } from "@/hooks/use-fuel-fillups";
-export { useCreateExpense, useUpdateExpense, useDeleteExpense } from "@/hooks/use-expenses";
 export {
   useCreateReservation,
-  useUpdateReservation,
   useDeleteReservation,
+  useUpdateReservation,
 } from "@/hooks/use-reservations";
+export { useCreateTrip, useDeleteTrip, useUpdateTrip } from "@/hooks/use-trips";

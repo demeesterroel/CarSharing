@@ -1,5 +1,5 @@
-import { describe, it, expect } from "vitest";
 import Database from "better-sqlite3";
+import { describe, expect, it } from "vitest";
 import { runMigrations } from "../db/migrate";
 
 function makeDb() {
@@ -240,9 +240,11 @@ describe("migration 0015 — first_name / last_name columns", () => {
 
     runMigrations(db);
 
-    const people = db
-      .prepare("SELECT id, first_name, last_name FROM people ORDER BY id")
-      .all() as { id: number; first_name: string; last_name: string }[];
+    const people = db.prepare("SELECT id, first_name, last_name FROM people ORDER BY id").all() as {
+      id: number;
+      first_name: string;
+      last_name: string;
+    }[];
 
     // 'Alice Wonderland' → first_name='Alice', last_name='Wonderland'
     expect(people[0].first_name).toBe("Alice");
@@ -288,9 +290,13 @@ describe("migration 0016 — drop owner_name from cars", () => {
 
   it("fixed settings trigger fires correctly (uses key PK, not id)", () => {
     const db = makeDb();
-    db.exec("UPDATE settings SET updated_at = '1970-01-01 00:00:00' WHERE key = 'coop_bank_account'");
+    db.exec(
+      "UPDATE settings SET updated_at = '1970-01-01 00:00:00' WHERE key = 'coop_bank_account'"
+    );
     db.exec("UPDATE settings SET value = 'BE00000000000000' WHERE key = 'coop_bank_account'");
-    const row = db.prepare("SELECT updated_at FROM settings WHERE key = 'coop_bank_account'").get() as {
+    const row = db
+      .prepare("SELECT updated_at FROM settings WHERE key = 'coop_bank_account'")
+      .get() as {
       updated_at: string;
     };
     expect(row.updated_at).not.toBe("1970-01-01 00:00:00");

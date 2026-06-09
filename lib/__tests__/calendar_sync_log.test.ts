@@ -1,8 +1,8 @@
 // lib/__tests__/calendar_sync_log.test.ts
-import { describe, it, expect } from "vitest";
 import Database from "better-sqlite3";
+import { describe, expect, it } from "vitest";
+import { getRecentSyncLog, logSync, MAX_ROWS } from "../calendar-sync-log";
 import { runMigrations } from "../db/migrate";
-import { logSync, getRecentSyncLog, MAX_ROWS } from "../calendar-sync-log";
 
 function makeDb() {
   const db = new Database(":memory:");

@@ -12,8 +12,8 @@
  */
 
 import { execSync } from "child_process";
-import path from "path";
 import fs from "fs";
+import path from "path";
 
 export default async function globalSetup(): Promise<void> {
   // Skip when reusing an already-seeded server (e.g. running specs one file at a

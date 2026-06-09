@@ -1,9 +1,9 @@
-import { NextResponse } from "next/server";
-import { z } from "zod";
+import { json, readBody, requireAdmin, requireAdminOrOwner } from "@/lib/api";
 import { getDb } from "@/lib/db";
 import { env } from "@/lib/env";
-import { json, readBody, requireAdmin, requireAdminOrOwner } from "@/lib/api";
 import { getSetting, setSetting } from "@/lib/queries/settings";
+import { NextResponse } from "next/server";
+import { z } from "zod";
 
 const settingsSchema = z.object({
   coop_bank_account: z.string().max(200).optional(),

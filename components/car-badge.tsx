@@ -1,5 +1,5 @@
 "use client";
-import { paper, fontMono } from "@/lib/paper-theme";
+import { fontMono, paper } from "@/lib/paper-theme";
 import { useTheme } from "@/lib/theme-context";
 
 export function CarBadge({ short, active = true }: { short: string; active?: boolean }) {

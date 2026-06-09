@@ -1,8 +1,7 @@
 // @vitest-environment jsdom
-import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, screen } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
 import "@testing-library/jest-dom";
+import { render, screen } from "@testing-library/react";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { BottomTabBar } from "../bottom-tab-bar";
 
 // --- module mocks ---
@@ -53,8 +52,8 @@ vi.mock("@/hooks/use-me", () => ({
   useMe: vi.fn(() => ({ data: null })),
 }));
 
-import { usePathname } from "next/navigation";
 import { useMe } from "@/hooks/use-me";
+import { usePathname } from "next/navigation";
 
 const mockUsePathname = usePathname as ReturnType<typeof vi.fn>;
 const mockUseMe = useMe as ReturnType<typeof vi.fn>;

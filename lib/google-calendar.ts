@@ -1,7 +1,7 @@
 // lib/google-calendar.ts
-import { google } from "googleapis";
-import type { OAuth2Client } from "google-auth-library";
 import { env } from "@/lib/env";
+import type { OAuth2Client } from "google-auth-library";
+import { google } from "googleapis";
 
 export type { OAuth2Client };
 

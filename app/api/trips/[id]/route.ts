@@ -1,9 +1,9 @@
-import { NextResponse } from "next/server";
-import { getTripById, updateTrip, deleteTrip, ConflictError } from "@/lib/queries/trips";
-import { tripSchema } from "@/lib/schemas/trip";
+import { json, notFound, readBody, readId, requireCanEdit } from "@/lib/api";
 import { getOneHandler } from "@/lib/api/crud-handler";
-import { json, readBody, readId, notFound, requireCanEdit } from "@/lib/api";
 import { getDb } from "@/lib/db";
+import { ConflictError, deleteTrip, getTripById, updateTrip } from "@/lib/queries/trips";
+import { tripSchema } from "@/lib/schemas/trip";
+import { NextResponse } from "next/server";
 
 export const GET = getOneHandler(getTripById);
 

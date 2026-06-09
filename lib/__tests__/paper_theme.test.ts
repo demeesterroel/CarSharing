@@ -1,15 +1,15 @@
 // lib/__tests__/paper_theme.test.ts
-import { describe, it, expect } from "vitest";
+import { describe, expect, it } from "vitest";
 import {
+  amtColor,
+  fmtDate,
+  fmtKm,
   fmtMoney,
   fmtMoneyOut,
-  fmtKm,
-  fmtDate,
   fmtYearMonth,
-  paper,
   fontMono,
   fontSerif,
-  amtColor,
+  paper,
   signPrefix,
 } from "../paper-theme";
 

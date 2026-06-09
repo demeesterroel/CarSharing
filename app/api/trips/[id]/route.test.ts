@@ -1,5 +1,5 @@
 // app/api/trips/[id]/route.test.ts
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("@/lib/env", () => ({
   env: { SESSION_PASSWORD: "test-password-32-chars-minimum!!", NODE_ENV: "test" },
@@ -38,7 +38,7 @@ vi.mock("@/lib/queries/trips", () => {
   };
 });
 
-import { GET, PUT, DELETE } from "./route";
+import { DELETE, GET, PUT } from "./route";
 // Import the SAME ConflictError class used by the module under test.
 import { ConflictError } from "@/lib/queries/trips";
 
@@ -107,7 +107,12 @@ describe("PUT /api/trips/[id]", () => {
     const res = await PUT(mutReq("PUT", validTrip), ctx);
     expect(res.status).toBe(200);
     expect(await res.json()).toEqual({ ok: true });
-    expect(mockUpdateTrip).toHaveBeenCalledWith({}, 5, expect.objectContaining({ person_id: 2 }), expect.any(Object));
+    expect(mockUpdateTrip).toHaveBeenCalledWith(
+      {},
+      5,
+      expect.objectContaining({ person_id: 2 }),
+      expect.any(Object)
+    );
   });
 
   it("allows the record creator (person_id 2) to update", async () => {
@@ -148,7 +153,9 @@ describe("PUT /api/trips/[id]", () => {
   });
 
   it("returns 409 when updateTrip throws ConflictError", async () => {
-    mockUpdateTrip.mockImplementation(() => { throw new ConflictError("stale"); });
+    mockUpdateTrip.mockImplementation(() => {
+      throw new ConflictError("stale");
+    });
     const res = await PUT(mutReq("PUT", validTrip), ctx);
     expect(res.status).toBe(409);
     expect(await res.json()).toMatchObject({ error: "stale" });
@@ -157,7 +164,10 @@ describe("PUT /api/trips/[id]", () => {
   it("returns 403 when CSRF token is missing", async () => {
     const req = new Request("http://localhost/api/trips/5", {
       method: "PUT",
-      headers: { "Content-Type": "application/json", "x-forwarded-for": `203.0.113.${++ipCounter}` },
+      headers: {
+        "Content-Type": "application/json",
+        "x-forwarded-for": `203.0.113.${++ipCounter}`,
+      },
       body: JSON.stringify(validTrip),
     });
     const res = await PUT(req, ctx);

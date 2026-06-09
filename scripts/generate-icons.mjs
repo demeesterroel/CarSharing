@@ -1,5 +1,5 @@
-import sharp from "sharp";
 import { mkdir, writeFile } from "fs/promises";
+import sharp from "sharp";
 
 await mkdir("public/icons", { recursive: true });
 

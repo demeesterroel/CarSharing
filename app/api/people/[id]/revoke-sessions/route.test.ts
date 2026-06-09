@@ -1,5 +1,5 @@
 // app/api/people/[id]/revoke-sessions/route.test.ts
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("@/lib/env", () => ({
   env: { SESSION_PASSWORD: "test-password-32-chars-minimum!!", NODE_ENV: "test" },
@@ -18,8 +18,8 @@ vi.mock("@/lib/api", async (importOriginal) => {
   return { ...actual, requireAdmin: (...a: unknown[]) => mockRequireAdmin(...a) };
 });
 
-import { POST } from "./route";
 import { HttpError } from "@/lib/api";
+import { POST } from "./route";
 
 const CSRF = "test-csrf-token";
 function req(withCsrf = true) {

@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { expect, test } from "@playwright/test";
 
 /**
  * Smoke tests — happy path + offline badge.
@@ -38,9 +38,7 @@ test("login and view trips", async ({ page }) => {
   // The trips page header title comes from t("page.trips") → "Ritten" (nl) / "Trips" (en)
   // It is rendered as a large heading inside PageHeader.
   // We look for any element containing "Ritt" (Dutch) or "Trip" (English).
-  await expect(
-    page.locator("text=/ritten|trips/i").first()
-  ).toBeVisible();
+  await expect(page.locator("text=/ritten|trips/i").first()).toBeVisible();
 });
 
 // ---------------------------------------------------------------------------

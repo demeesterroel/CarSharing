@@ -1,16 +1,15 @@
 "use client";
-import { QueryClient, QueryClientProvider, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Toaster } from "sonner";
-import { toast } from "sonner";
-import { useState, useEffect, useCallback } from "react";
-import { usePathname, useRouter } from "next/navigation";
+import { useT } from "@/components/locale-provider";
+import PullToRefresh from "@/components/pull-to-refresh";
+import { useMe } from "@/hooks/use-me";
 import { OnlineStateProvider, useOnlineState } from "@/lib/offline/online-state";
 import { useBootPrewarm } from "@/lib/offline/prewarm";
 import { useSyncEngine } from "@/lib/offline/sync-engine";
-import { useT } from "@/components/locale-provider";
 import { ThemeProvider, useTheme } from "@/lib/theme-context";
-import { useMe } from "@/hooks/use-me";
-import PullToRefresh from "@/components/pull-to-refresh";
+import { QueryClient, QueryClientProvider, useQuery, useQueryClient } from "@tanstack/react-query";
+import { usePathname, useRouter } from "next/navigation";
+import { useCallback, useEffect, useState } from "react";
+import { toast, Toaster } from "sonner";
 
 // Guest pages where an unauthenticated (null) session is expected; never bounce
 // away from these. Mirrors the GUEST/PUBLIC page prefixes in proxy.ts.

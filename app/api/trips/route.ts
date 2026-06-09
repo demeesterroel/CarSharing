@@ -1,9 +1,9 @@
-import { NextResponse } from "next/server";
-import { getTrips, getTripById, insertTrip } from "@/lib/queries/trips";
-import { tripSchema } from "@/lib/schemas/trip";
-import { listHandler } from "@/lib/api/crud-handler";
 import { json } from "@/lib/api";
+import { listHandler } from "@/lib/api/crud-handler";
 import { getDb } from "@/lib/db";
+import { getTripById, getTrips, insertTrip } from "@/lib/queries/trips";
+import { tripSchema } from "@/lib/schemas/trip";
+import { NextResponse } from "next/server";
 
 export const GET = listHandler(getTrips);
 

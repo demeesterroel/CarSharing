@@ -1,5 +1,5 @@
-import { createResourceHooks } from "./use-resource";
 import type { Payment, PaymentInput } from "@/types";
+import { createResourceHooks } from "./use-resource";
 
 export const paymentsHooks = createResourceHooks<Payment, PaymentInput>(
   "payments",

@@ -1,5 +1,11 @@
-import { test, expect } from "@playwright/test";
-import { loginAndGetSession, loginAndGetCsrf, makeApi, getTestEntities, scrollToLoadAll } from "./helpers";
+import { expect, test } from "@playwright/test";
+import {
+  getTestEntities,
+  loginAndGetCsrf,
+  loginAndGetSession,
+  makeApi,
+  scrollToLoadAll,
+} from "./helpers";
 
 /**
  * Fuel fill-up CRUD + dashboard delta tests.
@@ -74,12 +80,14 @@ test.describe("fuel fill-up CRUD", () => {
   });
 
   test("dashboard fuel_liters increases by the fill-up liters", async ({ request }) => {
-    const dashWithFillup = await api.get<Array<{
-      person_id: number;
-      fuel_count: number;
-      fuel_liters: number;
-      fuel_amount: number;
-    }>>(`/api/dashboard?year=${YEAR}`);
+    const dashWithFillup = await api.get<
+      Array<{
+        person_id: number;
+        fuel_count: number;
+        fuel_liters: number;
+        fuel_amount: number;
+      }>
+    >(`/api/dashboard?year=${YEAR}`);
 
     const rowWith = dashWithFillup.find((r) => r.person_id === personId);
     const litersWithFillup = rowWith?.fuel_liters ?? 0;
@@ -89,12 +97,14 @@ test.describe("fuel fill-up CRUD", () => {
     await api.delete(`/api/fuel/${fillupId}`);
     fillupId = 0;
 
-    const dashWithout = await api.get<Array<{
-      person_id: number;
-      fuel_count: number;
-      fuel_liters: number;
-      fuel_amount: number;
-    }>>(`/api/dashboard?year=${YEAR}`);
+    const dashWithout = await api.get<
+      Array<{
+        person_id: number;
+        fuel_count: number;
+        fuel_liters: number;
+        fuel_amount: number;
+      }>
+    >(`/api/dashboard?year=${YEAR}`);
 
     const rowWithout = dashWithout.find((r) => r.person_id === personId);
     const litersWithout = rowWithout?.fuel_liters ?? 0;

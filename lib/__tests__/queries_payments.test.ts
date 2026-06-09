@@ -1,14 +1,14 @@
 // lib/__tests__/queries_payments.test.ts
-import { describe, it, expect } from "vitest";
 import Database from "better-sqlite3";
+import { describe, expect, it } from "vitest";
 import { runMigrations } from "../db/migrate";
 import {
-  getPayments,
+  deletePayment,
   getPaymentById,
+  getPayments,
+  getPaymentsByYear,
   insertPayment,
   updatePayment,
-  deletePayment,
-  getPaymentsByYear,
 } from "../queries/payments";
 
 function makeDb() {

@@ -1,7 +1,7 @@
 "use client";
 import { useLocale, type Locale } from "@/components/locale-provider";
+import { fontMono, paper } from "@/lib/paper-theme";
 import { useTheme } from "@/lib/theme-context";
-import { paper, fontMono } from "@/lib/paper-theme";
 
 export function LangSwitcher() {
   const { locale, setLocale } = useLocale();

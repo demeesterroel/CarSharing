@@ -1,19 +1,19 @@
 "use client";
-import { useState } from "react";
-import { paper, fontMono, fontSerif, fmtMoney, fmtMoneyOut } from "@/lib/paper-theme";
+import { Card, Row } from "@/app/admin/_shared";
 import { useT } from "@/components/locale-provider";
 import { useUpdateCar } from "@/hooks/use-vehicles";
-import { useQueryClient } from "@tanstack/react-query";
-import { toast } from "sonner";
-import { Card, Row } from "@/app/admin/_shared";
+import { fmtMoney, fmtMoneyOut, fontMono, fontSerif, paper } from "@/lib/paper-theme";
 import type {
-  CarPnL,
-  CarYearKm,
   CarOwnerSplit,
-  CarYearExpenses,
+  CarPnL,
   CarPriceHistory,
+  CarYearExpenses,
+  CarYearKm,
 } from "@/lib/queries/admin";
 import type { Car } from "@/types";
+import { useQueryClient } from "@tanstack/react-query";
+import { useState } from "react";
+import { toast } from "sonner";
 
 export interface CostCoverageScreenProps {
   car: CarPnL;

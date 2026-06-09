@@ -1,8 +1,8 @@
 "use client";
-import { useRef, useState } from "react";
-import { Camera } from "lucide-react";
-import { toast } from "sonner";
 import { t } from "@/lib/i18n";
+import { Camera } from "lucide-react";
+import { useRef, useState } from "react";
+import { toast } from "sonner";
 
 interface Props {
   value: string | null;

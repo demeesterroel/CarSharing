@@ -1,9 +1,9 @@
 // lib/__tests__/calendar_renew.test.ts
-import { describe, it, expect, vi, beforeEach } from "vitest";
 import Database from "better-sqlite3";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { handleCalendarRenew } from "../calendar-renew";
 import { runMigrations } from "../db/migrate";
 import { setSetting } from "../queries/settings";
-import { handleCalendarRenew } from "../calendar-renew";
 
 vi.mock("../google-calendar", () => ({
   getOAuthClient: vi.fn(() => ({})),
@@ -50,9 +50,9 @@ describe("handleCalendarRenew", () => {
     expect(result).toEqual({ ok: true, skipped: "not_due" });
     expect(calMock.watchEvents).not.toHaveBeenCalled();
     expect(calMock.listEventsDelta).toHaveBeenCalledWith(expect.anything(), "cal-id", "tok");
-    const row = db
-      .prepare("SELECT sync_token FROM calendar_sync_state WHERE id = 1")
-      .get() as { sync_token: string };
+    const row = db.prepare("SELECT sync_token FROM calendar_sync_state WHERE id = 1").get() as {
+      sync_token: string;
+    };
     expect(row.sync_token).toBe("new-tok");
   });
 
@@ -74,9 +74,9 @@ describe("handleCalendarRenew", () => {
     // First call with stale token, second without (full re-sync)
     expect(calMock.listEventsDelta).toHaveBeenCalledTimes(2);
     expect(calMock.listEventsDelta).toHaveBeenLastCalledWith(expect.anything(), "cal-id");
-    const row = db
-      .prepare("SELECT sync_token FROM calendar_sync_state WHERE id = 1")
-      .get() as { sync_token: string };
+    const row = db.prepare("SELECT sync_token FROM calendar_sync_state WHERE id = 1").get() as {
+      sync_token: string;
+    };
     expect(row.sync_token).toBe("fresh-tok");
   });
 

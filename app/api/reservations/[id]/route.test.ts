@@ -1,5 +1,5 @@
 // app/api/reservations/[id]/route.test.ts
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("@/lib/env", () => ({
   env: { SESSION_PASSWORD: "test-password-32-chars-minimum!!", NODE_ENV: "test" },
@@ -41,7 +41,7 @@ vi.mock("@/lib/reservation-sync", () => ({
   syncReservationDelete: vi.fn(() => Promise.resolve()),
 }));
 
-import { GET, PUT, DELETE } from "./route";
+import { DELETE, GET, PUT } from "./route";
 
 const CSRF = "test-csrf-token";
 const ctx = { params: Promise.resolve({ id: "5" }) };
@@ -55,9 +55,7 @@ function putReq(body: unknown, withCsrf = true) {
     method: "PUT",
     headers: {
       "Content-Type": "application/json",
-      ...(withCsrf
-        ? { Cookie: `csrf-token=${CSRF}`, "x-csrf-token": CSRF }
-        : {}),
+      ...(withCsrf ? { Cookie: `csrf-token=${CSRF}`, "x-csrf-token": CSRF } : {}),
       "x-forwarded-for": `198.51.100.${++ip}`,
     },
     body: JSON.stringify(body),
@@ -67,9 +65,7 @@ function deleteReq(withCsrf = true) {
   return new Request("http://localhost/api/reservations/5", {
     method: "DELETE",
     headers: {
-      ...(withCsrf
-        ? { Cookie: `csrf-token=${CSRF}`, "x-csrf-token": CSRF }
-        : {}),
+      ...(withCsrf ? { Cookie: `csrf-token=${CSRF}`, "x-csrf-token": CSRF } : {}),
       "x-forwarded-for": `198.51.100.${++ip}`,
     },
   });

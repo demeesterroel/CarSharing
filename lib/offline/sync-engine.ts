@@ -1,9 +1,9 @@
 "use client";
-import { useEffect, useRef } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import { peek, remove, update, count } from "./outbox";
-import type { QueuedMutation } from "./outbox";
+import { useEffect, useRef } from "react";
 import { useOnlineState } from "./online-state";
+import type { QueuedMutation } from "./outbox";
+import { count, peek, remove, update } from "./outbox";
 
 export interface DrainResult {
   drained: number;
@@ -82,9 +82,7 @@ export async function drainOutbox(opts: DrainOptions = {}): Promise<DrainResult>
   return { drained, conflicts, failed };
 }
 
-export function useSyncEngine(opts?: {
-  setPendingCount?: (n: number) => void;
-}) {
+export function useSyncEngine(opts?: { setPendingCount?: (n: number) => void }) {
   const qc = useQueryClient();
   const { online } = useOnlineState();
   const lastTriggerRef = useRef(0);

@@ -1,8 +1,8 @@
 import Database from "better-sqlite3";
-import path from "path";
 import { readFileSync } from "fs";
+import path from "path";
 import { runMigrations } from "../lib/db/migrate.js";
-import { calcTripAmount, calcPricePerLiter, calcPaymentYear } from "../lib/formulas.js";
+import { calcPaymentYear, calcPricePerLiter, calcTripAmount } from "../lib/formulas.js";
 
 const DB_PATH = process.env.DB_PATH ?? path.join(process.cwd(), "data", "carsharing.db");
 const JSON_PATH = path.join(process.cwd(), "docs", "data", "car_sharing.json");
@@ -88,9 +88,7 @@ for (const p of data.people) {
 const insertPerson = db.prepare(
   "INSERT OR IGNORE INTO people (first_name, last_name, discount, discount_long, active) VALUES (?,?,?,?,?)"
 );
-const getPersonByName = db.prepare(
-  "SELECT id FROM people WHERE first_name=? AND last_name=?"
-);
+const getPersonByName = db.prepare("SELECT id FROM people WHERE first_name=? AND last_name=?");
 
 db.transaction(() => {
   for (const fullName of Array.from(allNames).sort()) {
@@ -98,7 +96,13 @@ db.transaction(() => {
     const firstName = spaceIdx > 0 ? fullName.slice(0, spaceIdx) : fullName;
     const lastName = spaceIdx > 0 ? fullName.slice(spaceIdx + 1) : "";
     const defaults = peopleDefaults[fullName] ?? { discount: 0, discount_long: 0, active: 0 };
-    insertPerson.run(firstName, lastName, defaults.discount, defaults.discount_long, defaults.active);
+    insertPerson.run(
+      firstName,
+      lastName,
+      defaults.discount,
+      defaults.discount_long,
+      defaults.active
+    );
   }
 })();
 

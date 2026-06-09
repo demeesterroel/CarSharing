@@ -1,6 +1,6 @@
-import type Database from "better-sqlite3";
 import type { Person } from "@/types";
-export { shortNameOf, fullNameOf } from "@/lib/person-utils";
+import type Database from "better-sqlite3";
+export { fullNameOf, shortNameOf } from "@/lib/person-utils";
 
 // Strip internal-only columns (password hash, session epoch) from public-facing
 // person objects.

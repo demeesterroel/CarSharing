@@ -1,11 +1,11 @@
+import { resolveBaseUrl } from "@/lib/base-url";
+import { getDb } from "@/lib/db";
+import { sendMail } from "@/lib/mailer";
+import { createAuthToken, getPersonByEmail } from "@/lib/queries/people";
+import { checkRateLimit } from "@/lib/rate-limit";
+import { randomBytes } from "crypto";
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { randomBytes } from "crypto";
-import { getDb } from "@/lib/db";
-import { getPersonByEmail, createAuthToken } from "@/lib/queries/people";
-import { sendMail } from "@/lib/mailer";
-import { resolveBaseUrl } from "@/lib/base-url";
-import { checkRateLimit } from "@/lib/rate-limit";
 
 const Schema = z.object({ email: z.string().email() });
 

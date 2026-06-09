@@ -1,10 +1,10 @@
 "use client";
-import type { Reservation } from "@/types";
-import { paper, fontMono, fontSerif, fmtDate } from "@/lib/paper-theme";
-import { useLocale } from "@/components/locale-provider";
-import { useTheme } from "@/lib/theme-context";
 import { CarBadge } from "@/components/car-badge";
+import { useLocale } from "@/components/locale-provider";
 import { PendingBadge } from "@/components/pending-badge";
+import { fmtDate, fontMono, fontSerif, paper } from "@/lib/paper-theme";
+import { useTheme } from "@/lib/theme-context";
+import type { Reservation } from "@/types";
 
 export interface ReservationCardProps {
   reservation: Reservation;
@@ -41,7 +41,9 @@ export function ReservationCard({ reservation, onClick }: ReservationCardProps) 
         borderTop: "none",
         borderRight: "none",
         borderBottom: mono ? `1px solid ${paper.paperDark}` : "none",
-        borderLeft: mono ? "none" : `3px ${isPending ? "dashed" : "solid"} ${isPending ? paper.amber : paper.green}`,
+        borderLeft: mono
+          ? "none"
+          : `3px ${isPending ? "dashed" : "solid"} ${isPending ? paper.amber : paper.green}`,
         boxShadow: mono ? "none" : "0 1px 2px rgba(0,0,0,0.04)",
         cursor: onClick ? "pointer" : "default",
         textAlign: "left",

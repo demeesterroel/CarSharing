@@ -1,9 +1,9 @@
 // @vitest-environment jsdom
-import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, screen } from "@testing-library/react";
-import "@testing-library/jest-dom";
-import { OfflineBadge } from "../offline-badge";
 import type { OnlineState } from "@/lib/offline/online-state";
+import "@testing-library/jest-dom";
+import { render, screen } from "@testing-library/react";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { OfflineBadge } from "../offline-badge";
 
 // Mock both dependencies
 vi.mock("@/lib/offline/online-state", () => ({

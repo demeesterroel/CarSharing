@@ -1,5 +1,5 @@
 // app/api/fuel/[id]/route.test.ts
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("@/lib/env", () => ({
   env: { SESSION_PASSWORD: "test-password-32-chars-minimum!!", NODE_ENV: "test" },
@@ -37,8 +37,8 @@ vi.mock("@/lib/queries/fuel-fillups", () => {
   };
 });
 
-import { GET, PUT, DELETE } from "./route";
 import { ConflictError } from "@/lib/queries/fuel-fillups";
+import { DELETE, GET, PUT } from "./route";
 
 const CSRF = "test-csrf-token";
 const ctx = { params: Promise.resolve({ id: "5" }) };

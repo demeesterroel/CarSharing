@@ -1,9 +1,9 @@
 // lib/__tests__/settlement.test.ts
-import { describe, it, expect } from "vitest";
 import Database from "better-sqlite3";
+import { describe, expect, it } from "vitest";
 import { runMigrations } from "../db/migrate";
-import { getSettlement, lockSettlement, unlockSettlement } from "../queries/settlement";
 import { insertPayment } from "../queries/payments";
+import { getSettlement, lockSettlement, unlockSettlement } from "../queries/settlement";
 
 function makeDb() {
   const db = new Database(":memory:");

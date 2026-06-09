@@ -1,7 +1,7 @@
 "use client";
-import { useOnlineState } from "@/lib/offline/online-state";
-import { paper, fontMono } from "@/lib/paper-theme";
 import { useT } from "@/components/locale-provider";
+import { useOnlineState } from "@/lib/offline/online-state";
+import { fontMono, paper } from "@/lib/paper-theme";
 
 export function OfflineBadge() {
   const t = useT();

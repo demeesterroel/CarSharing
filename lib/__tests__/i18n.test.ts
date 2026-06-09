@@ -1,5 +1,5 @@
-import { describe, it, expect } from "vitest";
 import { t } from "@/lib/i18n";
+import { describe, expect, it } from "vitest";
 
 describe("t()", () => {
   it("returns the Dutch value for a known key", () => {

@@ -1,5 +1,11 @@
-import { test, expect } from "@playwright/test";
-import { loginAndGetSession, loginAndGetCsrf, makeApi, getTestEntities, scrollToLoadAll } from "./helpers";
+import { expect, test } from "@playwright/test";
+import {
+  getTestEntities,
+  loginAndGetCsrf,
+  loginAndGetSession,
+  makeApi,
+  scrollToLoadAll,
+} from "./helpers";
 
 /**
  * Trip CRUD + dashboard delta tests.
@@ -83,11 +89,13 @@ test.describe("trips CRUD", () => {
     // Instead, we capture the current dashboard state which already has the trip,
     // then delete the trip and re-fetch to confirm the km decreased.
 
-    const dashWithTrip = await api.get<Array<{
-      person_id: number;
-      trip_count: number;
-      trip_km: number;
-    }>>(`/api/dashboard?year=${YEAR}`);
+    const dashWithTrip = await api.get<
+      Array<{
+        person_id: number;
+        trip_count: number;
+        trip_km: number;
+      }>
+    >(`/api/dashboard?year=${YEAR}`);
 
     const rowWith = dashWithTrip.find((r) => r.person_id === personId);
     const kmWith = rowWith?.trip_km ?? 0;
@@ -96,11 +104,13 @@ test.describe("trips CRUD", () => {
     // Now delete the trip
     await api.delete(`/api/trips/${tripId}`);
 
-    const dashWithout = await api.get<Array<{
-      person_id: number;
-      trip_count: number;
-      trip_km: number;
-    }>>(`/api/dashboard?year=${YEAR}`);
+    const dashWithout = await api.get<
+      Array<{
+        person_id: number;
+        trip_count: number;
+        trip_km: number;
+      }>
+    >(`/api/dashboard?year=${YEAR}`);
 
     const rowWithout = dashWithout.find((r) => r.person_id === personId);
     const kmWithout = rowWithout?.trip_km ?? 0;

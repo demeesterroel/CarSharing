@@ -1,6 +1,6 @@
-import type Database from "better-sqlite3";
-import type { FuelFillup, FuelFillupInput } from "@/types";
 import { calcPricePerLiter } from "@/lib/formulas";
+import type { FuelFillup, FuelFillupInput } from "@/types";
+import type Database from "better-sqlite3";
 
 export class ConflictError extends Error {
   constructor(message = "Conflict") {

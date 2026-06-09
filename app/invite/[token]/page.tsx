@@ -1,9 +1,9 @@
 "use client";
-import { useState } from "react";
-import { useRouter, useParams } from "next/navigation";
-import { Eye, EyeOff } from "lucide-react";
-import { paper, fontMono, fontSerif } from "@/lib/paper-theme";
 import { useT } from "@/components/locale-provider";
+import { fontMono, fontSerif, paper } from "@/lib/paper-theme";
+import { Eye, EyeOff } from "lucide-react";
+import { useParams, useRouter } from "next/navigation";
+import { useState } from "react";
 
 export default function InvitePage() {
   const t = useT();
@@ -46,7 +46,7 @@ export default function InvitePage() {
         body: JSON.stringify({ password }),
       });
       if (res.ok) {
-        const data = await res.json() as { ok: boolean; person_id: number };
+        const data = (await res.json()) as { ok: boolean; person_id: number };
         router.replace(`/user/${data.person_id}/edit`);
       } else {
         setError(t("invite.invalid"));
@@ -132,7 +132,18 @@ export default function InvitePage() {
                 tabIndex={-1}
                 onClick={() => setShowPassword((v) => !v)}
                 aria-label={showPassword ? t("action.hide_password") : t("action.show_password")}
-                style={{ position: "absolute", right: 10, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", padding: 0, color: paper.inkMute, display: "flex" }}
+                style={{
+                  position: "absolute",
+                  right: 10,
+                  top: "50%",
+                  transform: "translateY(-50%)",
+                  background: "none",
+                  border: "none",
+                  cursor: "pointer",
+                  padding: 0,
+                  color: paper.inkMute,
+                  display: "flex",
+                }}
               >
                 {showPassword ? <EyeOff size={15} /> : <Eye size={15} />}
               </button>

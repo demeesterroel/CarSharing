@@ -1,6 +1,6 @@
-import { describe, it, expect } from "vitest";
+import { describe, expect, it } from "vitest";
 import { z } from "zod";
-import { json, readBody, badRequest, readId, HttpError } from "../api";
+import { HttpError, json, readBody, readId } from "../api";
 
 describe("json wrapper", () => {
   it("returns data as JSON on success", async () => {
@@ -31,7 +31,7 @@ describe("json wrapper", () => {
       body: JSON.stringify({ n: "not-a-number" }),
       headers: {
         "Content-Type": "application/json",
-        "Cookie": `csrf-token=${token}`,
+        Cookie: `csrf-token=${token}`,
         "x-csrf-token": token,
       },
     });

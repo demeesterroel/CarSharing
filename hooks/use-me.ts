@@ -1,5 +1,5 @@
+import { ApiError, apiFetch } from "@/lib/api/client";
 import { useQuery } from "@tanstack/react-query";
-import { apiFetch, ApiError } from "@/lib/api/client";
 
 export interface Me {
   personId: number | null;
@@ -7,7 +7,7 @@ export interface Me {
   isAdmin: boolean;
   isOwner: boolean;
   isCloaked: boolean;
-  themePreference: 'paper' | 'mono' | null;
+  themePreference: "paper" | "mono" | null;
   /** Whether a mail transport is configured server-side (drives send-vs-copy invite). */
   mailEnabled: boolean;
 }

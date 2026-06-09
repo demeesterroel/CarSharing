@@ -1,15 +1,15 @@
 // lib/__tests__/queries_reservations.test.ts
-import { describe, it, expect } from "vitest";
 import Database from "better-sqlite3";
+import { describe, expect, it } from "vitest";
 import { runMigrations } from "../db/migrate";
 import {
-  getReservations,
+  ConflictError,
+  deleteReservation,
   getReservationById,
+  getReservations,
   insertReservation,
   updateReservation,
   updateReservationStatus,
-  deleteReservation,
-  ConflictError,
 } from "../queries/reservations";
 
 function makeDb() {
@@ -20,7 +20,9 @@ function makeDb() {
 }
 
 function seed(db: Database.Database) {
-  db.exec(`INSERT INTO people (id, first_name, last_name, active) VALUES (1, 'Alice', 'Owner', 1), (2, 'Bob', 'Member', 1)`);
+  db.exec(
+    `INSERT INTO people (id, first_name, last_name, active) VALUES (1, 'Alice', 'Owner', 1), (2, 'Bob', 'Member', 1)`
+  );
   db.exec(
     `INSERT INTO cars (id, short, name, price_per_km, owner_person_id, owner_from, active) VALUES (1, 'CA', 'Car A', 0.2, 1, '2020-01-01', 1)`
   );

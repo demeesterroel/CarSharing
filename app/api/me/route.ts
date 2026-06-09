@@ -1,10 +1,10 @@
-import { NextResponse } from "next/server";
-import { getIronSession } from "iron-session";
-import { sessionOptions, type SessionData } from "@/lib/session";
-import { getDb } from "@/lib/db";
-import { isOwner, isActivePerson, shortNameOf, getSessionEpoch } from "@/lib/queries/people";
 import { generateCsrfToken } from "@/lib/csrf";
+import { getDb } from "@/lib/db";
 import { isMailEnabled } from "@/lib/mailer";
+import { getSessionEpoch, isActivePerson, isOwner, shortNameOf } from "@/lib/queries/people";
+import { sessionOptions, type SessionData } from "@/lib/session";
+import { getIronSession } from "iron-session";
+import { NextResponse } from "next/server";
 
 function getPersonFields(personId: number): {
   shortName: string | null;

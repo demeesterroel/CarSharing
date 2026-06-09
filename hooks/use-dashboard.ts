@@ -1,6 +1,6 @@
-import { useQuery } from "@tanstack/react-query";
-import type { DashboardRow } from "@/types";
 import { apiFetch } from "@/lib/api/client";
+import type { DashboardRow } from "@/types";
+import { useQuery } from "@tanstack/react-query";
 
 export function useDashboard(year: number) {
   return useQuery<DashboardRow[]>({

@@ -1,14 +1,14 @@
-import { NextResponse } from "next/server";
+import { json, notFound, readBody, readId, requireCanEdit, requireSession } from "@/lib/api";
 import { getDb } from "@/lib/db";
 import {
+  ConflictError,
+  deleteReservation,
   getReservationById,
   updateReservation,
-  deleteReservation,
-  ConflictError,
 } from "@/lib/queries/reservations";
-import { json, readBody, readId, notFound, requireCanEdit, requireSession } from "@/lib/api";
+import { syncReservationDelete, syncReservationUpdate } from "@/lib/reservation-sync";
 import { reservationSchema } from "@/lib/schemas/reservation";
-import { syncReservationUpdate, syncReservationDelete } from "@/lib/reservation-sync";
+import { NextResponse } from "next/server";
 
 export const GET = json(async (req, ctx) => {
   await requireSession(req);

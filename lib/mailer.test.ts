@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 // Mutable fake env shared by all cases. lib/mailer imports `./env`, which
 // resolves to the same module id as `@/lib/env`, so this single mock covers it.

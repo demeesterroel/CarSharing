@@ -1,6 +1,6 @@
 "use client";
+import { fontSerif, paper } from "@/lib/paper-theme";
 import { createElement, useEffect, useRef } from "react";
-import { paper, fontSerif } from "@/lib/paper-theme";
 
 const innerInputStyle: React.CSSProperties = {
   fontFamily: fontSerif,
@@ -102,7 +102,12 @@ export function TimePicker({
 
   return createElement(
     "clock-timepicker",
-    { format: "HH:mm", precision: "00:05", style: wrapperStyle, ...(disabled ? { disabled: true } : {}) },
+    {
+      format: "HH:mm",
+      precision: "00:05",
+      style: wrapperStyle,
+      ...(disabled ? { disabled: true } : {}),
+    },
     <input
       ref={inputRef}
       type="text"

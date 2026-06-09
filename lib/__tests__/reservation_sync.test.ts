@@ -1,12 +1,12 @@
 // lib/__tests__/reservation_sync.test.ts
-import { describe, it, expect, vi, beforeEach } from "vitest";
 import Database from "better-sqlite3";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { runMigrations } from "../db/migrate";
 import { setSetting } from "../queries/settings";
 import {
   syncReservationCreate,
-  syncReservationUpdate,
   syncReservationDelete,
+  syncReservationUpdate,
 } from "../reservation-sync";
 
 // Mock the google-calendar module

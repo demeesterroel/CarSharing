@@ -1,9 +1,9 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { useT } from "@/components/locale-provider";
-import { paper, fontMono, fontSerif } from "@/lib/paper-theme";
+import { fontMono, fontSerif, paper } from "@/lib/paper-theme";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 
 /**
  * Password-reset / magic-link request form.

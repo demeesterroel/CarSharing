@@ -1,10 +1,10 @@
 "use client";
-import type { FuelFillup } from "@/types";
-import { paper, fontMono, fontSerif, fmtMoney, fmtDate } from "@/lib/paper-theme";
-import { useT, useLocale } from "@/components/locale-provider";
-import { useTheme } from "@/lib/theme-context";
 import { CarBadge } from "@/components/car-badge";
+import { useLocale, useT } from "@/components/locale-provider";
 import { PendingBadge } from "@/components/pending-badge";
+import { fmtDate, fmtMoney, fontMono, fontSerif, paper } from "@/lib/paper-theme";
+import { useTheme } from "@/lib/theme-context";
+import type { FuelFillup } from "@/types";
 
 export interface FuelCardProps {
   fuel: FuelFillup;

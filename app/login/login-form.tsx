@@ -1,11 +1,11 @@
 "use client";
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { LangSwitcher } from "@/components/lang-switcher";
+import { useT } from "@/components/locale-provider";
+import { fontMono, fontSerif, paper } from "@/lib/paper-theme";
 import { useQueryClient } from "@tanstack/react-query";
 import { Eye, EyeOff } from "lucide-react";
-import { useT } from "@/components/locale-provider";
-import { LangSwitcher } from "@/components/lang-switcher";
-import { paper, fontMono, fontSerif } from "@/lib/paper-theme";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 
 export default function LoginForm({ mailEnabled }: { mailEnabled: boolean }) {
   const router = useRouter();
@@ -229,7 +229,9 @@ export default function LoginForm({ mailEnabled }: { mailEnabled: boolean }) {
                     type="button"
                     tabIndex={-1}
                     onClick={() => setShowPassword((v) => !v)}
-                    aria-label={showPassword ? t("action.hide_password") : t("action.show_password")}
+                    aria-label={
+                      showPassword ? t("action.hide_password") : t("action.show_password")
+                    }
                     style={{
                       position: "absolute",
                       right: 10,

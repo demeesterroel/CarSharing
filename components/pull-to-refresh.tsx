@@ -21,19 +21,19 @@
 // In a normal browser tab this renders null and attaches no listeners, so the
 // native gesture is left completely untouched.
 
-import { useEffect, useRef, useState } from "react";
-import { toast } from "sonner";
-import { useOnlineState } from "@/lib/offline/online-state";
 import { useT } from "@/components/locale-provider";
+import { useOnlineState } from "@/lib/offline/online-state";
 import {
+  CONTENT_LOADING_PX,
+  contentOffset,
   decideRefresh,
   isStandalone,
-  pullOffset,
-  contentOffset,
-  PULL_THRESHOLD_PX,
   PULL_MAX_PX,
-  CONTENT_LOADING_PX,
+  PULL_THRESHOLD_PX,
+  pullOffset,
 } from "@/lib/pwa/pull-to-refresh-logic";
+import { useEffect, useRef, useState } from "react";
+import { toast } from "sonner";
 
 // Ignore horizontal-ish swipes so we don't hijack carousels / back gestures.
 const HORIZONTAL_TOLERANCE = 1.2;

@@ -1,7 +1,7 @@
 // @vitest-environment node
-import { describe, it, expect, beforeEach } from "vitest";
 import "fake-indexeddb/auto";
-import { enqueue, list, peek, remove, count, clearAll } from "./outbox";
+import { beforeEach, describe, expect, it } from "vitest";
+import { clearAll, count, enqueue, list, peek, remove } from "./outbox";
 
 describe("outbox", () => {
   beforeEach(async () => {

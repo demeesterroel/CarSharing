@@ -1,7 +1,7 @@
-import { NextResponse } from "next/server";
+import { json, readId, requireAdmin } from "@/lib/api";
 import { getDb } from "@/lib/db";
 import { bumpSessionEpoch } from "@/lib/queries/people";
-import { json, readId, requireAdmin } from "@/lib/api";
+import { NextResponse } from "next/server";
 
 /**
  * Admin "revoke sessions": bumps the target member's session epoch, invalidating

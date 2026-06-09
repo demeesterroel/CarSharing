@@ -1,9 +1,9 @@
-import { NextResponse, type NextRequest } from "next/server";
-import { getIronSession } from "iron-session";
-import { sessionOptions, type SessionData } from "@/lib/session";
+import { validateCsrfToken } from "@/lib/csrf";
 import { getDb } from "@/lib/db";
 import { bumpSessionEpoch } from "@/lib/queries/people";
-import { validateCsrfToken } from "@/lib/csrf";
+import { sessionOptions, type SessionData } from "@/lib/session";
+import { getIronSession } from "iron-session";
+import { NextResponse, type NextRequest } from "next/server";
 
 /**
  * "Log out everywhere": bumps the user's session epoch (revoking every

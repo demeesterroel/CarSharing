@@ -1,9 +1,9 @@
-import { NextResponse } from "next/server";
+import { json, requireSession } from "@/lib/api";
 import { getDb } from "@/lib/db";
-import { getReservations, getReservationById, insertReservation } from "@/lib/queries/reservations";
-import { json, readBody, requireSession } from "@/lib/api";
-import { reservationSchema } from "@/lib/schemas/reservation";
+import { getReservationById, getReservations, insertReservation } from "@/lib/queries/reservations";
 import { syncReservationCreate } from "@/lib/reservation-sync";
+import { reservationSchema } from "@/lib/schemas/reservation";
+import { NextResponse } from "next/server";
 
 export const GET = json(async (req) => {
   await requireSession(req);

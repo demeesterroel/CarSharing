@@ -14,9 +14,9 @@
  * Output: docs/screenshots/*.png
  */
 
-import { chromium, type Page, type Browser } from "playwright";
 import { mkdirSync } from "fs";
 import path from "path";
+import { chromium, type Browser, type Page } from "playwright";
 
 const BASE_URL = (process.env.BASE_URL ?? "http://localhost:4000").replace(/\/$/, "");
 const START_FROM = parseInt(process.env.START_FROM ?? "0", 10);

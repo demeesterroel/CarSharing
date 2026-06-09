@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
-import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, fireEvent } from "@testing-library/react";
 import "@testing-library/jest-dom";
+import { fireEvent, render } from "@testing-library/react";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { ReceiptUpload } from "../receipt-upload";
 
 vi.mock("@/lib/i18n", () => ({ t: (k: string) => k }));

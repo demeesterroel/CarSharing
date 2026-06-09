@@ -1,9 +1,9 @@
-import { NextResponse } from "next/server";
-import { getExpenses, getExpenseById, insertExpense } from "@/lib/queries/expenses";
-import { expenseSchema } from "@/lib/schemas/expense";
-import { listHandler } from "@/lib/api/crud-handler";
 import { json } from "@/lib/api";
+import { listHandler } from "@/lib/api/crud-handler";
 import { getDb } from "@/lib/db";
+import { getExpenseById, getExpenses, insertExpense } from "@/lib/queries/expenses";
+import { expenseSchema } from "@/lib/schemas/expense";
+import { NextResponse } from "next/server";
 
 export const GET = listHandler(getExpenses);
 

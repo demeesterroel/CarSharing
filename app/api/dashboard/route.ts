@@ -1,7 +1,7 @@
-import { NextResponse } from "next/server";
+import { json } from "@/lib/api";
 import { getDb } from "@/lib/db";
 import { getDashboard } from "@/lib/queries/dashboard";
-import { json } from "@/lib/api";
+import { NextResponse } from "next/server";
 
 export const GET = json(async (req) => {
   const { searchParams } = new URL(req.url);

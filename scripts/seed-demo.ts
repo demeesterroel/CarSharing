@@ -1,11 +1,11 @@
-import Database from "better-sqlite3";
 import bcrypt from "bcryptjs";
+import Database from "better-sqlite3";
 import { mkdirSync } from "fs";
 import path from "path";
 import { runMigrations } from "../lib/db/migrate.js";
-import { calcTripAmount, calcPricePerLiter } from "../lib/formulas.js";
-import { getSettlement } from "../lib/queries/settlement.js";
+import { calcPricePerLiter, calcTripAmount } from "../lib/formulas.js";
 import { shortNameOf } from "../lib/person-utils.js";
+import { getSettlement } from "../lib/queries/settlement.js";
 
 const DB_PATH = process.env.DB_PATH ?? path.join(process.cwd(), "data", "carsharing.db");
 mkdirSync(path.dirname(DB_PATH), { recursive: true });
@@ -496,7 +496,9 @@ console.log(`  → ${expensesTotal} expenses`);
 
   // Pair 1: Alice on AA — same range entered twice on different dates
   const p1Exists = db
-    .prepare("SELECT 1 FROM trips WHERE car_id = ? AND person_id = ? AND start_odometer = ? AND end_odometer = ?")
+    .prepare(
+      "SELECT 1 FROM trips WHERE car_id = ? AND person_id = ? AND start_odometer = ? AND end_odometer = ?"
+    )
     .get(aaId, aliceId, 9000, 9080);
   if (!p1Exists) {
     db.prepare(
@@ -511,7 +513,9 @@ console.log(`  → ${expensesTotal} expenses`);
 
   // Pair 2: Owner on BB — same range, different dates
   const p2Exists = db
-    .prepare("SELECT 1 FROM trips WHERE car_id = ? AND person_id = ? AND start_odometer = ? AND end_odometer = ?")
+    .prepare(
+      "SELECT 1 FROM trips WHERE car_id = ? AND person_id = ? AND start_odometer = ? AND end_odometer = ?"
+    )
     .get(bbId, ownerIdVal, 8800, 8950);
   if (!p2Exists) {
     db.prepare(

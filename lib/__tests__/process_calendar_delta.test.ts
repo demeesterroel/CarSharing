@@ -1,10 +1,9 @@
 // lib/__tests__/process_calendar_delta.test.ts
-import { describe, it, expect, vi, beforeEach } from "vitest";
 import Database from "better-sqlite3";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { runMigrations } from "../db/migrate";
-import { setSetting } from "../queries/settings";
-import { processCalendarDelta } from "../process-calendar-delta";
 import type { CalendarEvent } from "../google-calendar";
+import { processCalendarDelta } from "../process-calendar-delta";
 
 vi.mock("../google-calendar", () => ({
   getOAuthClient: vi.fn(() => ({})),

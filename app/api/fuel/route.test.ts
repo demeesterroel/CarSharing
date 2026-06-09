@@ -1,5 +1,5 @@
 // app/api/fuel/route.test.ts
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("@/lib/env", () => ({
   env: { SESSION_PASSWORD: "test-password-32-chars-minimum!!", NODE_ENV: "test" },
@@ -93,7 +93,10 @@ describe("POST /api/fuel", () => {
   it("passes the client_id through when provided", async () => {
     const res = await POST(postReq({ ...validFillup, client_id: "xyz-456" }), ctx);
     expect(res.status).toBe(201);
-    const [, insertedData] = mockInsertFuelFillup.mock.calls[0] as [unknown, Record<string, unknown>];
+    const [, insertedData] = mockInsertFuelFillup.mock.calls[0] as [
+      unknown,
+      Record<string, unknown>,
+    ];
     expect(insertedData.client_id).toBe("xyz-456");
   });
 
@@ -106,7 +109,10 @@ describe("POST /api/fuel", () => {
   it("returns 403 when CSRF token is missing", async () => {
     const req = new Request("http://localhost/api/fuel", {
       method: "POST",
-      headers: { "Content-Type": "application/json", "x-forwarded-for": `203.0.113.${++ipCounter}` },
+      headers: {
+        "Content-Type": "application/json",
+        "x-forwarded-for": `203.0.113.${++ipCounter}`,
+      },
       body: JSON.stringify(validFillup),
     });
     const res = await POST(req, ctx);

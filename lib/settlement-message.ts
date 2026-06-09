@@ -1,8 +1,8 @@
-import type { MemberStatement, CarParticipantRow } from "@/types";
+import type { CarParticipantRow, MemberStatement } from "@/types";
 import { buildSettlementLines, type SettlementLine } from "./settlement-lines";
 
-export type { SettlementLine };
 export { buildSettlementLines };
+export type { SettlementLine };
 
 export interface SettlementMessageParams {
   m: MemberStatement;
@@ -80,11 +80,21 @@ export function buildSettlementMessage({
   alreadyPaid,
   t,
 }: SettlementMessageParams): string {
-  const lines = buildSettlementLines({ m, year, bankAccount, personBankAccount, crossRows, alreadyPaid, t });
+  const lines = buildSettlementLines({
+    m,
+    year,
+    bankAccount,
+    personBankAccount,
+    crossRows,
+    alreadyPaid,
+    t,
+  });
   const body = renderLinesToText(lines);
   const header = [
     `Beste ${personFullName},`,
-    m.is_owner ? `Jouw eigenaarspayout voor ${year}:` : `Jouw aandeel in de jaarafrekening ${year}:`,
+    m.is_owner
+      ? `Jouw eigenaarspayout voor ${year}:`
+      : `Jouw aandeel in de jaarafrekening ${year}:`,
   ].join("\n");
   return ["```", header, body, `Je overzicht: `, "```"].join("\n");
 }

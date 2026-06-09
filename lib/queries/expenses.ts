@@ -1,5 +1,5 @@
-import type Database from "better-sqlite3";
 import type { Expense, ExpenseInput } from "@/types";
+import type Database from "better-sqlite3";
 
 export class ConflictError extends Error {
   constructor(message = "Conflict") {

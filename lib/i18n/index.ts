@@ -1,5 +1,5 @@
-import { nl, type MessageKey, type Messages } from "./messages/nl";
 import { en } from "./messages/en";
+import { nl, type MessageKey, type Messages } from "./messages/nl";
 
 type Params = Record<string, string | number>;
 const PLACEHOLDER = /\{(\w+)\}/g;

@@ -1,6 +1,6 @@
-import { NextResponse } from "next/server";
 import { getDb } from "@/lib/db";
 import { getSetting } from "@/lib/queries/settings";
+import { NextResponse } from "next/server";
 
 export function GET() {
   const db = getDb();

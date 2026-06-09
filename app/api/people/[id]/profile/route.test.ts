@@ -1,5 +1,5 @@
 // app/api/people/[id]/profile/route.test.ts
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { PATCH } from "./route";
 
 vi.mock("@/lib/env", () => ({
@@ -126,10 +126,7 @@ describe("PATCH /api/people/[id]/profile", () => {
   });
 
   it("persists theme_preference update", async () => {
-    const res = await PATCH(
-      makeReq({ ...validBody, theme_preference: "paper" }),
-      makeCtx("1")
-    );
+    const res = await PATCH(makeReq({ ...validBody, theme_preference: "paper" }), makeCtx("1"));
     expect(res.status).toBe(200);
     const [, , data] = mockUpdatePerson.mock.calls[0];
     expect(data.theme_preference).toBe("paper");

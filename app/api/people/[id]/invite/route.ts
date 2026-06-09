@@ -1,12 +1,12 @@
-import { NextResponse } from "next/server";
-import { randomBytes } from "crypto";
-import { getDb } from "@/lib/db";
-import { getPersonById, createInviteToken } from "@/lib/queries/people";
-import { getIronSession } from "iron-session";
-import { sessionOptions, type SessionData } from "@/lib/session";
 import { json, readId } from "@/lib/api";
 import { resolveBaseUrl } from "@/lib/base-url";
-import { sendMail, isMailEnabled } from "@/lib/mailer";
+import { getDb } from "@/lib/db";
+import { isMailEnabled, sendMail } from "@/lib/mailer";
+import { createInviteToken, getPersonById } from "@/lib/queries/people";
+import { sessionOptions, type SessionData } from "@/lib/session";
+import { randomBytes } from "crypto";
+import { getIronSession } from "iron-session";
+import { NextResponse } from "next/server";
 
 export const POST = json(async (req, ctx) => {
   const session = await getIronSession<SessionData>(req, NextResponse.next(), sessionOptions);

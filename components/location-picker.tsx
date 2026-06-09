@@ -1,9 +1,9 @@
 "use client";
-import { useEffect, useRef, useState } from "react";
-import { MapPin } from "lucide-react";
-import { paper, fontMono, fontSerif } from "@/lib/paper-theme";
 import { t } from "@/lib/i18n";
+import { fontMono, fontSerif, paper } from "@/lib/paper-theme";
 import { useTheme } from "@/lib/theme-context";
+import { MapPin } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 
 interface Props {
   address: string | null; // human-readable; stored in location column

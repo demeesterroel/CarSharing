@@ -13,11 +13,11 @@ Autodelen has a two-way sync with a shared Google Calendar:
 
 **Event status mapping:**
 
-| App status  | Google Calendar event |
-| ----------- | --------------------- |
-| Pending     | Tentative             |
-| Confirmed   | Confirmed             |
-| Rejected    | Cancelled (removed)   |
+| App status | Google Calendar event |
+| ---------- | --------------------- |
+| Pending    | Tentative             |
+| Confirmed  | Confirmed             |
+| Rejected   | Cancelled (removed)   |
 
 **Who needs an email address?**
 Only car owners — they receive personal invites. Regular members do not need an email address for this feature.
@@ -59,6 +59,7 @@ The integration is **opt-in**: it is disabled until both `GOOGLE_CLIENT_ID`/`GOO
 4. Click **Create**. Copy the **Client ID** and **Client Secret**.
 
 **Note on accounts:**
+
 - **Client ID + Client Secret** — tied to the Google Cloud project, not a personal account.
 - **Refresh token** — tied to the Google account that went through OAuth. This account must have editor access to the shared calendar.
 - **Calendar ID** — any Google Calendar. Share it with the OAuth account if it is not owned by it.
@@ -143,9 +144,9 @@ For owners to receive personal invites:
 
 ## Ongoing maintenance
 
-| Event                        | Action                                                                 |
-| ---------------------------- | ---------------------------------------------------------------------- |
-| Refresh token expires        | Repeat Step 5 and paste the new token in Admin → Settings              |
-| Watch channel stops working  | Call `/api/admin/calendar-renew` manually (cron should handle this)    |
-| New car added                | Set its owner in Admin → Cars; ensure owner email is set               |
-| Calendar sync seems stuck    | Click **Sync upcoming reservations** in Admin → Settings               |
+| Event                       | Action                                                              |
+| --------------------------- | ------------------------------------------------------------------- |
+| Refresh token expires       | Repeat Step 5 and paste the new token in Admin → Settings           |
+| Watch channel stops working | Call `/api/admin/calendar-renew` manually (cron should handle this) |
+| New car added               | Set its owner in Admin → Cars; ensure owner email is set            |
+| Calendar sync seems stuck   | Click **Sync upcoming reservations** in Admin → Settings            |

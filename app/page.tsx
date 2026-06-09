@@ -1,59 +1,58 @@
 "use client";
-import { useState, useEffect, useMemo, Suspense } from "react";
-import Link from "next/link";
-import { useDashboard, useEarliestDashboardYear } from "@/hooks/use-dashboard";
-import { useQueryParam } from "@/hooks/use-query-param";
-import { useTrips } from "@/hooks/use-trips";
-import { useFuelFillups } from "@/hooks/use-fuel-fillups";
-import { useReservations } from "@/hooks/use-reservations";
-import { useExpenses } from "@/hooks/use-expenses";
+import { ReservationForm } from "@/app/calendar/reservation-form";
+import { ExpenseForm } from "@/app/expenses/expense-form";
+import { FuelForm } from "@/app/fuel/fuel-form";
+import { TripForm } from "@/app/trips/trip-form";
+import { CarBadge } from "@/components/car-badge";
+import { ErrorBoundary } from "@/components/error-boundary";
+import { ExpenseCard } from "@/components/expense-card";
 import { MultiFab } from "@/components/fab";
+import { FuelCard } from "@/components/fuel-card";
+import { useT } from "@/components/locale-provider";
+import { PageHeader } from "@/components/page-header";
+import { ReservationCard } from "@/components/reservation-card";
+import { ShimmerBar, shimmerKeyframes } from "@/components/shimmer";
+import { TripCard } from "@/components/trip-card";
+import { useDashboard, useEarliestDashboardYear } from "@/hooks/use-dashboard";
+import { useExpenses } from "@/hooks/use-expenses";
+import { useFuelFillups } from "@/hooks/use-fuel-fillups";
+import { useMe } from "@/hooks/use-me";
+import { useQueryParam } from "@/hooks/use-query-param";
+import { useReservations } from "@/hooks/use-reservations";
+import { useSettlement } from "@/hooks/use-settlement";
+import { useTrips } from "@/hooks/use-trips";
+import { useCars } from "@/hooks/use-vehicles";
 import {
-  paper,
-  fontMono,
-  fontSerif,
-  fmtMoney,
+  amtColor,
   fmtDate,
   fmtKm,
-  amtColor,
+  fmtMoney,
+  fontMono,
+  fontSerif,
+  paper,
   signPrefix,
 } from "@/lib/paper-theme";
 import { useTheme } from "@/lib/theme-context";
-import { Navigation, Fuel as FuelIcon, Receipt as ReceiptIcon } from "lucide-react";
-import type { Trip, FuelFillup, Reservation, Expense } from "@/types";
+import type { CarDashboardBreakdown, Expense, FuelFillup, Reservation, Trip } from "@/types";
 import * as Dialog from "@radix-ui/react-dialog";
-import { TripForm } from "@/app/trips/trip-form";
-import { FuelForm } from "@/app/fuel/fuel-form";
-import { ExpenseForm } from "@/app/expenses/expense-form";
-import { ReservationForm } from "@/app/calendar/reservation-form";
+import { Fuel as FuelIcon, Navigation, Receipt as ReceiptIcon } from "lucide-react";
+import Link from "next/link";
+import { Suspense, useMemo, useState } from "react";
 import { toast } from "sonner";
-import { useT } from "@/components/locale-provider";
-import { PageHeader } from "@/components/page-header";
-import { TripCard } from "@/components/trip-card";
-import { FuelCard } from "@/components/fuel-card";
-import { ExpenseCard } from "@/components/expense-card";
-import { ReservationCard } from "@/components/reservation-card";
-import { useMe } from "@/hooks/use-me";
-import { useSettlement } from "@/hooks/use-settlement";
-import type { CarDashboardBreakdown } from "@/types";
 import {
-  useCreateTrip,
-  useUpdateTrip,
-  useDeleteTrip,
-  useCreateFuelFillup,
-  useUpdateFuelFillup,
-  useDeleteFuelFillup,
   useCreateExpense,
-  useUpdateExpense,
-  useDeleteExpense,
+  useCreateFuelFillup,
   useCreateReservation,
-  useUpdateReservation,
+  useCreateTrip,
+  useDeleteExpense,
+  useDeleteFuelFillup,
   useDeleteReservation,
+  useDeleteTrip,
+  useUpdateExpense,
+  useUpdateFuelFillup,
+  useUpdateReservation,
+  useUpdateTrip,
 } from "./dashboard-hooks";
-import { useCars } from "@/hooks/use-vehicles";
-import { CarBadge } from "@/components/car-badge";
-import { ErrorBoundary } from "@/components/error-boundary";
-import { ShimmerBar, shimmerKeyframes } from "@/components/shimmer";
 
 // ── Primitives ────────────────────────────────────────────────────
 function NameEditLink({ name, personId }: { name: string; personId: number }) {
@@ -94,10 +93,7 @@ function Perf({ margin = "12px 0" }: { margin?: string }) {
     <div
       style={{
         height: 0,
-        borderTop:
-          theme === "mono"
-            ? `1px solid ${paper.paperDark}`
-            : `1.5px dashed ${paper.ink}`,
+        borderTop: theme === "mono" ? `1px solid ${paper.paperDark}` : `1.5px dashed ${paper.ink}`,
         margin,
       }}
     />
@@ -229,8 +225,7 @@ function DashboardSettledNote({
       )}
       {expHas && (
         <div style={noteStyle}>
-          {expPrefix}{" "}
-          {expCount} kost{expCount !== 1 ? "en" : ""} buiten afrekening
+          {expPrefix} {expCount} kost{expCount !== 1 ? "en" : ""} buiten afrekening
         </div>
       )}
     </div>
@@ -452,15 +447,58 @@ function BalanceCardSkeleton() {
           }}
         >
           {/* Year browser */}
-          <div style={{ display: "flex", justifyContent: "center", marginBottom: 14, pointerEvents: "none" }}>
-            <div style={{ display: "flex", border: `1.5px solid ${paper.paperDark}`, borderRadius: "var(--radius-pill, 999px)", padding: 2, gap: 1 }}>
-              <div style={{ padding: "4px 12px", fontFamily: fontMono, fontSize: 10, fontWeight: 700, color: paper.inkDim, borderRadius: "var(--radius-pill, 999px)" }}>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              marginBottom: 14,
+              pointerEvents: "none",
+            }}
+          >
+            <div
+              style={{
+                display: "flex",
+                border: `1.5px solid ${paper.paperDark}`,
+                borderRadius: "var(--radius-pill, 999px)",
+                padding: 2,
+                gap: 1,
+              }}
+            >
+              <div
+                style={{
+                  padding: "4px 12px",
+                  fontFamily: fontMono,
+                  fontSize: 10,
+                  fontWeight: 700,
+                  color: paper.inkDim,
+                  borderRadius: "var(--radius-pill, 999px)",
+                }}
+              >
                 ← {currentYear - 1}
               </div>
-              <div style={{ padding: "4px 16px", fontFamily: fontMono, fontSize: 10, fontWeight: 700, background: paper.paperDark, color: paper.inkDim, borderRadius: "var(--radius-pill, 999px)" }}>
+              <div
+                style={{
+                  padding: "4px 16px",
+                  fontFamily: fontMono,
+                  fontSize: 10,
+                  fontWeight: 700,
+                  background: paper.paperDark,
+                  color: paper.inkDim,
+                  borderRadius: "var(--radius-pill, 999px)",
+                }}
+              >
                 {currentYear}
               </div>
-              <div style={{ padding: "4px 12px", fontFamily: fontMono, fontSize: 10, fontWeight: 700, color: paper.inkDim, borderRadius: "var(--radius-pill, 999px)" }}>
+              <div
+                style={{
+                  padding: "4px 12px",
+                  fontFamily: fontMono,
+                  fontSize: 10,
+                  fontWeight: 700,
+                  color: paper.inkDim,
+                  borderRadius: "var(--radius-pill, 999px)",
+                }}
+              >
                 {currentYear + 1} →
               </div>
             </div>
@@ -573,16 +611,22 @@ function BalanceReceipt({ fullName, personId }: { fullName: string; personId: nu
           background: paper.paper,
           padding: "16px 18px 22px",
           borderRadius: mono ? "var(--radius-lg, 14px)" : 0,
-          boxShadow: mono
-            ? "none"
-            : "0 1px 2px rgba(0,0,0,0.05), 0 8px 24px rgba(0,0,0,0.07)",
+          boxShadow: mono ? "none" : "0 1px 2px rgba(0,0,0,0.05), 0 8px 24px rgba(0,0,0,0.07)",
           border: mono ? `1px solid ${paper.paperDark}` : "none",
         }}
       >
         {/* Year navigation + owner badge */}
         <div style={{ display: "flex", alignItems: "center", marginBottom: 14 }}>
           <div style={{ flex: 1 }} />
-          <div style={{ display: "flex", border: mono ? `1px solid ${paper.paperDark}` : `1.5px solid ${paper.ink}`, borderRadius: "var(--radius-pill, 999px)", padding: 2, gap: 1 }}>
+          <div
+            style={{
+              display: "flex",
+              border: mono ? `1px solid ${paper.paperDark}` : `1.5px solid ${paper.ink}`,
+              borderRadius: "var(--radius-pill, 999px)",
+              padding: 2,
+              gap: 1,
+            }}
+          >
             <button
               onClick={() => setYear(year - 1)}
               disabled={year <= earliestYear}
@@ -593,7 +637,7 @@ function BalanceReceipt({ fullName, personId }: { fullName: string; personId: nu
                 fontWeight: 700,
                 letterSpacing: mono ? 0 : 1,
                 background: "transparent",
-                color: year <= earliestYear ? paper.inkDim : (mono ? paper.inkDim : paper.ink),
+                color: year <= earliestYear ? paper.inkDim : mono ? paper.inkDim : paper.ink,
                 border: "none",
                 borderRadius: "var(--radius-pill, 999px)",
                 cursor: year <= earliestYear ? "default" : "pointer",
@@ -625,7 +669,7 @@ function BalanceReceipt({ fullName, personId }: { fullName: string; personId: nu
                 fontWeight: 700,
                 letterSpacing: mono ? 0 : 1,
                 background: "transparent",
-                color: year >= currentYear ? paper.inkDim : (mono ? paper.inkDim : paper.ink),
+                color: year >= currentYear ? paper.inkDim : mono ? paper.inkDim : paper.ink,
                 border: "none",
                 borderRadius: "var(--radius-pill, 999px)",
                 cursor: year >= currentYear ? "default" : "pointer",
@@ -914,9 +958,7 @@ function CarLocations({
           background: paper.paper,
           padding: "16px 18px",
           borderRadius: mono ? "var(--radius-lg, 14px)" : 0,
-          boxShadow: mono
-            ? "none"
-            : "0 1px 2px rgba(0,0,0,0.05), 0 8px 24px rgba(0,0,0,0.07)",
+          boxShadow: mono ? "none" : "0 1px 2px rgba(0,0,0,0.05), 0 8px 24px rgba(0,0,0,0.07)",
           border: mono ? `1px solid ${paper.paperDark}` : "none",
         }}
       >
@@ -953,9 +995,7 @@ function CarLocations({
                 gap: 12,
                 paddingTop: 10,
                 paddingBottom: 10,
-                borderTop: mono
-                  ? `1px solid ${paper.paperDark}`
-                  : `1px dashed ${paper.paperDark}`,
+                borderTop: mono ? `1px solid ${paper.paperDark}` : `1px dashed ${paper.paperDark}`,
                 cursor: "pointer",
               }}
             >

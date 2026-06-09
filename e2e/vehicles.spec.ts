@@ -1,5 +1,5 @@
-import { test, expect } from "@playwright/test";
-import { loginAndGetSession, loginAndGetCsrf, makeApi, scrollToLoadAll } from "./helpers";
+import { expect, test } from "@playwright/test";
+import { loginAndGetCsrf, loginAndGetSession, makeApi, scrollToLoadAll } from "./helpers";
 
 /**
  * Vehicles CRUD e2e tests.

@@ -1,5 +1,5 @@
-import { test, expect } from "@playwright/test";
-import { loginAndGetSession, loginAndGetCsrf, makeApi, scrollToLoadAll } from "./helpers";
+import { expect, test } from "@playwright/test";
+import { loginAndGetCsrf, loginAndGetSession, makeApi, scrollToLoadAll } from "./helpers";
 
 /**
  * Members (people) deactivate e2e tests.
@@ -110,7 +110,9 @@ test.describe("members deactivate", () => {
     // The inactive ("Anderen") section is shown and the member is listed under it.
     // fullNameOf() uppercases the last name, so match accordingly.
     await expect(page.getByText("Anderen", { exact: true })).toBeVisible({ timeout: 10_000 });
-    await expect(page.getByText(`${uniqueFirstName} ${LAST_NAME.toUpperCase()}`, { exact: true })).toBeVisible();
+    await expect(
+      page.getByText(`${uniqueFirstName} ${LAST_NAME.toUpperCase()}`, { exact: true })
+    ).toBeVisible();
   });
 
   test("deactivated member still retrievable via API", async () => {
@@ -156,9 +158,7 @@ test.describe("members add via FAB", () => {
 });
 
 test.describe("members invite link", () => {
-  test("invite link activates on username entry and persists before inviting", async ({
-    page,
-  }) => {
+  test("invite link activates on username entry and persists before inviting", async ({ page }) => {
     const firstName = `E2EInvite${Date.now()}`;
     const lastName = "Member";
 

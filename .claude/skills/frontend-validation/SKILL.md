@@ -24,16 +24,16 @@ git diff --name-only HEAD
 
 Map changed files to affected routes:
 
-| Changed path | Routes to check |
-|---|---|
-| `app/trips/` | `/trips` |
-| `app/expenses/` | `/expenses` |
-| `app/fuel/` | `/fuel` |
-| `app/reservations/` | `/reservations` |
-| `app/vehicles/` | `/vehicles` |
-| `components/` (shared) | All routes that use the component |
-| `app/layout.tsx`, `globals.css` | All routes |
-| `app/login/` | `/login` (public) |
+| Changed path                    | Routes to check                   |
+| ------------------------------- | --------------------------------- |
+| `app/trips/`                    | `/trips`                          |
+| `app/expenses/`                 | `/expenses`                       |
+| `app/fuel/`                     | `/fuel`                           |
+| `app/reservations/`             | `/reservations`                   |
+| `app/vehicles/`                 | `/vehicles`                       |
+| `components/` (shared)          | All routes that use the component |
+| `app/layout.tsx`, `globals.css` | All routes                        |
+| `app/login/`                    | `/login` (public)                 |
 
 If scope is unclear, validate: `/trips`, `/expenses`, `/fuel`, `/reservations`.
 
@@ -44,6 +44,7 @@ lsof -ti:3000
 ```
 
 If no process: start the server using `.env.validation` so it runs against `demo.db`:
+
 ```bash
 (cd ~/Projects/CarSharing && set -a && source .env.validation && set +a && npm run dev) &
 sleep 4 && curl -s -o /dev/null -w "%{http_code}" http://localhost:3000
@@ -52,10 +53,13 @@ sleep 4 && curl -s -o /dev/null -w "%{http_code}" http://localhost:3000
 Expected: `200` or `307` (redirect to login is fine).
 
 **If a server is already running on :3000**, verify it uses `demo.db`:
+
 ```bash
 lsof -ti:3000 | xargs -I{} sh -c 'cat /proc/{}/environ 2>/dev/null | tr "\0" "\n" | grep DB_PATH'
 ```
+
 If not using `demo.db`, kill and restart:
+
 ```bash
 kill $(lsof -ti:3000) && sleep 2
 (cd ~/Projects/CarSharing && set -a && source .env.validation && set +a && npm run dev) &
@@ -82,11 +86,12 @@ For each affected route, capture 3 viewports. Use Playwright MCP:
 
 ```
 playwright_screenshot at viewport 375x812   (mobile)
-playwright_screenshot at viewport 768x1024  (tablet)  
+playwright_screenshot at viewport 768x1024  (tablet)
 playwright_screenshot at viewport 1440x900  (desktop)
 ```
 
 **What to look for:**
+
 - Text overflow / truncation on mobile
 - Layout breaks (elements overlapping, misaligned)
 - Button/touch targets too small on mobile (< 44px)
@@ -115,21 +120,21 @@ Inject axe-core on each route via Playwright MCP:
 ```javascript
 playwright_evaluate: async () => {
   // Inject axe-core from CDN
-  await new Promise(resolve => {
-    const s = document.createElement('script');
-    s.src = 'https://cdnjs.cloudflare.com/ajax/libs/axe-core/4.10.3/axe.min.js';
+  await new Promise((resolve) => {
+    const s = document.createElement("script");
+    s.src = "https://cdnjs.cloudflare.com/ajax/libs/axe-core/4.10.3/axe.min.js";
     s.onload = resolve;
     document.head.appendChild(s);
   });
   const results = await window.axe.run();
-  return results.violations.map(v => ({
+  return results.violations.map((v) => ({
     id: v.id,
     impact: v.impact,
     description: v.description,
     nodes: v.nodes.length,
-    selector: v.nodes[0]?.target?.join(' ') ?? ''
+    selector: v.nodes[0]?.target?.join(" ") ?? "",
   }));
-}
+};
 ```
 
 **Block on:** `critical` or `serious` violations (e.g. missing alt text, insufficient color contrast, missing form labels, keyboard trap).  
@@ -144,14 +149,17 @@ Output a single markdown block:
 ## Frontend Validation — <route> — <timestamp>
 
 ### Viewports
+
 - [ ] 375px — [description or "clean"]
-- [ ] 768px — [description or "clean"]  
+- [ ] 768px — [description or "clean"]
 - [ ] 1440px — [description or "clean"]
 
 ### Console Errors
+
 - [none | list errors]
 
 ### A11y
+
 - [none | list violations with impact level]
 
 ### Result: PASS / FAIL
@@ -168,11 +176,11 @@ If FAIL: fix, re-run from Step 2 for the failing route only.
 
 ## Quick Reference — Playwright MCP Tools
 
-| Task | MCP call |
-|---|---|
-| Navigate | `playwright_navigate url` |
-| Screenshot | `playwright_screenshot` |
-| Click element | `playwright_click selector` |
-| Run JS | `playwright_evaluate script` |
-| Get page content | `playwright_get_visible_text` |
-| Fill form field | `playwright_fill selector value` |
+| Task             | MCP call                         |
+| ---------------- | -------------------------------- |
+| Navigate         | `playwright_navigate url`        |
+| Screenshot       | `playwright_screenshot`          |
+| Click element    | `playwright_click selector`      |
+| Run JS           | `playwright_evaluate script`     |
+| Get page content | `playwright_get_visible_text`    |
+| Fill form field  | `playwright_fill selector value` |

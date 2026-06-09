@@ -1,6 +1,6 @@
-import type Database from "better-sqlite3";
-import type { DashboardRow } from "@/types";
 import { shortNameOf } from "@/lib/person-utils";
+import type { DashboardRow } from "@/types";
+import type Database from "better-sqlite3";
 
 interface TripAgg {
   person_id: number;
@@ -87,7 +87,9 @@ export function getEarliestYear(db: Database.Database): number {
 export function getDashboard(db: Database.Database, year: number): DashboardRow[] {
   const yearStr = String(year);
 
-  const people = db.prepare("SELECT id, first_name, username FROM people ORDER BY first_name, last_name").all() as {
+  const people = db
+    .prepare("SELECT id, first_name, username FROM people ORDER BY first_name, last_name")
+    .all() as {
     id: number;
     first_name: string;
     username: string | null;
@@ -218,7 +220,7 @@ export function getDashboard(db: Database.Database, year: number): DashboardRow[
       yearStr, // own_fuel_count
       yearStr, // own_fuel_liters
       yearStr, // own_expense_count
-      yearStr  // LEFT JOIN trips date filter
+      yearStr // LEFT JOIN trips date filter
     ) as OwnCarRow[];
 
   // Owners: trips/fuel/expenses on OTHER owners' cars
@@ -269,7 +271,18 @@ export function getDashboard(db: Database.Database, year: number): DashboardRow[
       GROUP BY t.person_id, c.id
       `
     )
-    .all(yearStr, yearStr, yearStr, yearStr, yearStr, yearStr, yearStr, yearStr, yearStr, yearStr) as CrossCarRow[];
+    .all(
+      yearStr,
+      yearStr,
+      yearStr,
+      yearStr,
+      yearStr,
+      yearStr,
+      yearStr,
+      yearStr,
+      yearStr,
+      yearStr
+    ) as CrossCarRow[];
 
   const ownCarByPerson = new Map<number, OwnCarRow[]>();
   for (const row of ownCarRows) {

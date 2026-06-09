@@ -1,10 +1,10 @@
-import type { Metadata, Viewport } from "next";
-import { Fraunces, Inter, Inter_Tight, JetBrains_Mono, Courier_Prime } from "next/font/google";
-import "./globals.css";
-import { Providers } from "./providers";
 import { BottomTabBar } from "@/components/bottom-tab-bar";
 import { CloakBanner } from "@/components/cloak-banner";
 import { LocaleProvider } from "@/components/locale-provider";
+import type { Metadata, Viewport } from "next";
+import { Courier_Prime, Fraunces, Inter, Inter_Tight, JetBrains_Mono } from "next/font/google";
+import "./globals.css";
+import { Providers } from "./providers";
 
 const fraunces = Fraunces({
   subsets: ["latin"],
@@ -66,7 +66,11 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="nl" data-theme="mono" className={`${fraunces.variable} ${inter.variable} ${courierPrime.variable} ${interTight.variable} ${jetbrainsMono.variable}`}>
+    <html
+      lang="nl"
+      data-theme="mono"
+      className={`${fraunces.variable} ${inter.variable} ${courierPrime.variable} ${interTight.variable} ${jetbrainsMono.variable}`}
+    >
       <head></head>
       <body>
         <LocaleProvider>

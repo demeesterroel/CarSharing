@@ -1,16 +1,16 @@
-import { getCarById, updateCar, deleteCar, carHasHistory } from "@/lib/queries/cars";
-import { carSchema, ownerCarPatchSchema } from "@/lib/schemas/car";
-import { getDb } from "@/lib/db";
 import {
+  conflict,
+  forbidden,
   json,
+  notFound,
   readBody,
   readId,
-  notFound,
-  forbidden,
-  conflict,
   requireAdminOrOwner,
   requireSession,
 } from "@/lib/api";
+import { getDb } from "@/lib/db";
+import { carHasHistory, deleteCar, getCarById, updateCar } from "@/lib/queries/cars";
+import { carSchema, ownerCarPatchSchema } from "@/lib/schemas/car";
 
 export const GET = json(async (req, ctx) => {
   await requireSession(req);

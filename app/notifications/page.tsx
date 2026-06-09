@@ -56,20 +56,22 @@ export default function NotificationsPage() {
               onClick={handleMarkAllRead}
               disabled={unreadCount === 0}
               style={{
-                padding: "4px 8px",
+                padding: "4px 2px",
                 fontFamily: fontMono,
-                fontSize: 9,
-                letterSpacing: 1,
-                fontWeight: 700,
+                fontSize: 10,
+                letterSpacing: 0.5,
+                fontWeight: 600,
                 textTransform: "uppercase",
                 background: "transparent",
-                border: `1.5px solid ${unreadCount > 0 ? paper.ink : paper.paperDark}`,
-                color: unreadCount > 0 ? paper.ink : paper.inkMute,
+                border: "none",
+                color: unreadCount > 0 ? paper.inkDim : paper.inkMute,
+                textDecoration: unreadCount > 0 ? "underline" : "none",
+                textUnderlineOffset: 2,
                 cursor: unreadCount > 0 ? "pointer" : "default",
-                opacity: unreadCount > 0 ? 1 : 0.55,
+                opacity: unreadCount > 0 ? 1 : 0.5,
               }}
             >
-              {unreadCount > 0 ? `${t("notif.mark_all_read")} (${unreadCount})` : t("notif.mark_all_read")}
+              {t("notif.mark_all_read")}
             </button>
           ) : undefined
         }

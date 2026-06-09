@@ -31,6 +31,23 @@ export default function NotificationsPage() {
 
   const unreadCount = notifications.filter((n) => n.read_at === null).length;
 
+  // Mark a single notification read when the user opens it (fire-and-forget: the
+  // click navigates away, but the POST completes and the shared query cache —
+  // bell badge + the list on return — refreshes).
+  async function markOneRead(notificationId: number) {
+    try {
+      await apiFetch("/api/notifications/read", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ids: [notificationId] }),
+      });
+      await queryClient.invalidateQueries({ queryKey: ["notifications", "unread"] });
+      await queryClient.invalidateQueries({ queryKey: ["notifications"] });
+    } catch {
+      // ignore
+    }
+  }
+
   async function handleMarkAllRead() {
     try {
       await apiFetch("/api/notifications/read", {
@@ -166,7 +183,14 @@ export default function NotificationsPage() {
 
             if (href) {
               return (
-                <Link key={n.id} href={href} style={{ textDecoration: "none", display: "block" }}>
+                <Link
+                  key={n.id}
+                  href={href}
+                  onClick={() => {
+                    if (isUnread) void markOneRead(n.id);
+                  }}
+                  style={{ textDecoration: "none", display: "block" }}
+                >
                   {inner}
                 </Link>
               );

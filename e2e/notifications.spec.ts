@@ -83,6 +83,60 @@ test.describe("in-app notifications (#358)", () => {
 
     await bobCtx.dispose();
   });
+
+  test("opening a notification marks just that one read", async ({ page, request }) => {
+    const alice = await loginAndGetSession(request, "alice", "alice");
+    test.skip(alice.personId == null, "needs seeded alice");
+    const aliceApi = makeApi(request, alice.csrf);
+    await aliceApi.patch(`/api/people/${alice.personId}/profile`, {
+      first_name: "Alice",
+      notify_new_reservations: "all",
+    });
+    await aliceApi.post("/api/notifications/read", {}); // baseline clear
+
+    const bobCtx = await playwrightRequest.newContext({ baseURL });
+    const bob = await loginAndGetSession(bobCtx, "bob", "bob");
+    const bobApi = makeApi(bobCtx, bob.csrf);
+    const cars = await bobApi.get<Array<{ id: number }>>("/api/vehicles");
+    const resv = await bobApi.post<{ id: number }>("/api/reservations", {
+      person_id: bob.personId,
+      car_id: cars[0].id,
+      start_date: futureDate(45),
+      end_date: futureDate(45),
+      note: "E2E-notif-click",
+    });
+
+    await expect
+      .poll(
+        async () =>
+          (await aliceApi.get<{ count: number }>("/api/notifications/unread-count")).count,
+        { timeout: 10_000 }
+      )
+      .toBe(1);
+
+    await page.request.post("/api/auth/login", { data: { username: "alice", password: "alice" } });
+    await page.goto("/");
+    await page.waitForLoadState("networkidle");
+    await page.goto("/notifications");
+    await page.waitForLoadState("networkidle");
+    await scrollToLoadAll(page);
+
+    // Clicking the notification deep-links AND marks just that one read.
+    const row = page.getByRole("link").filter({ hasText: /reserv/i }).first();
+    await expect(row).toBeVisible({ timeout: 10_000 });
+    await row.click();
+    await page.waitForURL(new RegExp(`/calendar\\?reservation=${resv.id}`));
+
+    await expect
+      .poll(
+        async () =>
+          (await aliceApi.get<{ count: number }>("/api/notifications/unread-count")).count,
+        { timeout: 10_000 }
+      )
+      .toBe(0);
+
+    await bobCtx.dispose();
+  });
 });
 
 function futureDate(daysAhead: number): string {

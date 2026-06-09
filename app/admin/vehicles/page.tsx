@@ -6,7 +6,7 @@ import { useT } from "@/components/locale-provider";
 import { useEarliestDashboardYear } from "@/hooks/use-dashboard";
 import { useMe } from "@/hooks/use-me";
 import { usePeople } from "@/hooks/use-people";
-import { useCars, useCreateCar, useDeleteCar, useUpdateCar } from "@/hooks/use-vehicles";
+import { useCars, useCreateCar, useDeleteCar, useUpdateCar, useCarStats } from "@/hooks/use-vehicles";
 import { fontMono, fontSerif, paper } from "@/lib/paper-theme";
 import { shortNameOf } from "@/lib/person-utils";
 import type { CarPnL, CarPriceHistory } from "@/lib/queries/admin";
@@ -123,6 +123,8 @@ function CarAccordion({
   const [activeLocal, setActiveLocal] = useState(car.active !== 0);
   const [ownerPersonId, setOwnerPersonId] = useState<number | null>(car.owner_person_id ?? null);
   const [deleteConfirm, setDeleteConfirm] = useState(false);
+  
+  const { data: carStats } = useCarStats(car.id, year);
 
   const [prevId, setPrevId] = useState(car.id);
   if (car.id !== prevId) {
@@ -263,13 +265,46 @@ function CarAccordion({
         </div>
       </div>
 
-      {/* Expanded edit form */}
-      {expanded && (
-        <div style={{ padding: "0 14px 14px", borderTop: `1px dashed ${paper.paperDark}` }}>
-          <div style={{ paddingTop: 12, marginBottom: 8 }}>
-            <label style={labelStyle}>{t("form.name")}</label>
-            <input value={name} onChange={(e) => setName(e.target.value)} style={inputStyle} />
-          </div>
+       {/* Expanded edit form */}
+       {expanded && (
+         <div style={{ padding: "0 14px 14px", borderTop: `1px dashed ${paper.paperDark}` }}>
+           {carStats && (
+             <div style={{ paddingTop: 12, marginBottom: 16, background: paper.paperDark, padding: "12px", borderRadius: "6px" }}>
+               <div style={{ fontFamily: fontMono, fontSize: 10, fontWeight: 700, letterSpacing: 1.5, textTransform: "uppercase", color: paper.inkDim, marginBottom: 8 }}>
+                 {t("admin.car_stats")} {year}
+               </div>
+               <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "8px 16px", fontFamily: fontMono, fontSize: 11 }}>
+                 <div>
+                   <div style={{ color: paper.inkDim, fontSize: 9, textTransform: "uppercase" }}>Ritten</div>
+                   <div>{carStats.tripCount} ritten</div>
+                 </div>
+                 <div>
+                   <div style={{ color: paper.inkDim, fontSize: 9, textTransform: "uppercase" }}>Totaal km</div>
+                   <div>{carStats.totalKm.toLocaleString("nl-BE")} km</div>
+                 </div>
+                 <div>
+                   <div style={{ color: paper.inkDim, fontSize: 9, textTransform: "uppercase" }}>Brandstof</div>
+                   <div>{carStats.totalFuelLiters.toLocaleString("nl-BE", { minimumFractionDigits: 1, maximumFractionDigits: 1 })} L</div>
+                 </div>
+                 <div>
+                   <div style={{ color: paper.inkDim, fontSize: 9, textTransform: "uppercase" }}>Brandstofkost</div>
+                   <div>€ {carStats.totalFuelCost.toFixed(2)}</div>
+                 </div>
+                 <div>
+                   <div style={{ color: paper.inkDim, fontSize: 9, textTransform: "uppercase" }}>Verbruik</div>
+                   <div>{carStats.avgConsumptionLper100km !== null ? carStats.avgConsumptionLper100km.toFixed(1) + " L/100km" : "-"}</div>
+                 </div>
+                 <div>
+                   <div style={{ color: paper.inkDim, fontSize: 9, textTransform: "uppercase" }}>Kost/km</div>
+                   <div>{carStats.avgFuelCostPerKm !== null ? "€ " + carStats.avgFuelCostPerKm.toFixed(3) + "/km" : "-"}</div>
+                 </div>
+               </div>
+             </div>
+           )}
+           <div style={{ paddingTop: 12, marginBottom: 8 }}>
+             <label style={labelStyle}>{t("form.name")}</label>
+             <input value={name} onChange={(e) => setName(e.target.value)} style={inputStyle} />
+           </div>
           <div style={{ marginBottom: 12 }}>
             <label style={labelStyle}>{t("form.price_per_km")}</label>
             <div style={{ display: "flex", gap: 6 }}>

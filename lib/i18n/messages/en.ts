@@ -311,6 +311,7 @@ export const en: Messages = {
   "admin.sub_payout": "Payout",
   "admin.sub_payments": "Payments",
   "admin.sub_settings": "Settings",
+  "admin.car_stats": "Car statistics",
   "admin.inbox_empty": "Nothing to confirm",
   "admin.confirm": "✓ Confirm",
   "admin.reject": "✗ Reject",

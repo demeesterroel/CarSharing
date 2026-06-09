@@ -77,3 +77,43 @@ export function carHasHistory(db: Database.Database, id: number): boolean {
 export function deleteCar(db: Database.Database, id: number): void {
   db.prepare("DELETE FROM cars WHERE id = ?").run(id);
 }
+
+export interface CarStats {
+  tripCount: number;
+  totalKm: number;
+  totalFuelLiters: number;
+  totalFuelCost: number;
+  avgConsumptionLper100km: number | null;
+  avgFuelCostPerKm: number | null;
+}
+
+export function getCarStats(db: Database.Database, carId: number, year: number): CarStats {
+  const startDate = `${year}-01-01`;
+  const endDate = `${year}-12-31`;
+
+  const tripResult = db
+    .prepare(
+      "SELECT COUNT(*) as tripCount, COALESCE(SUM(km), 0) as totalKm FROM trips WHERE car_id = ? AND date BETWEEN ? AND ?"
+    )
+    .get(carId, startDate, endDate) as { tripCount: number; totalKm: number };
+
+  const fuelResult = db
+    .prepare(
+      "SELECT COALESCE(SUM(liters), 0) as totalFuelLiters, COALESCE(SUM(amount), 0) as totalFuelCost FROM fuel_fillups WHERE car_id = ? AND date BETWEEN ? AND ?"
+    )
+    .get(carId, startDate, endDate) as { totalFuelLiters: number; totalFuelCost: number };
+
+  const tripCount = tripResult.tripCount;
+  const totalKm = tripResult.totalKm;
+  const totalFuelLiters = fuelResult.totalFuelLiters;
+  const totalFuelCost = fuelResult.totalFuelCost;
+
+  return {
+    tripCount,
+    totalKm,
+    totalFuelLiters,
+    totalFuelCost,
+    avgConsumptionLper100km: totalKm > 0 ? (totalFuelLiters / totalKm) * 100 : null,
+    avgFuelCostPerKm: totalKm > 0 ? totalFuelCost / totalKm : null,
+  };
+}

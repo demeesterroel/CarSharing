@@ -310,6 +310,7 @@ export const nl = {
   "admin.sub_payout": "Uitbetaling",
   "admin.sub_payments": "Betalingen",
   "admin.sub_settings": "Instellingen",
+  "admin.car_stats": "Wagenstatistieken",
   "admin.inbox_empty": "Niets te bevestigen",
   "admin.confirm": "✓ Bevestigen",
   "admin.reject": "✗ Weigeren",

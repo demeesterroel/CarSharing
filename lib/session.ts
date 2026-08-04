@@ -4,6 +4,7 @@ import { env } from "./env";
 /** Shape of the iron-session payload stored in the encrypted cookie. */
 export interface SessionData {
   authenticated: boolean;
+  tenantSlug?: string;
   personId?: number;
   shortName?: string;
   isAdmin?: boolean;

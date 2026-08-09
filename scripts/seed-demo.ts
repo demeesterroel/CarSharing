@@ -4,7 +4,7 @@ process.env.SESSION_PASSWORD =
 import bcrypt from "bcryptjs";
 import Database from "better-sqlite3";
 import { execSync } from "child_process";
-import { mkdirSync } from "fs";
+import fs, { mkdirSync } from "fs";
 import path from "path";
 import { runMigrations } from "../lib/db/migrate.js";
 import { calcPricePerLiter, calcTripAmount } from "../lib/formulas.js";
@@ -567,18 +567,48 @@ function seedSingleTenantDb(targetPath: string) {
   console.log(`  ✓ Demo seed complete for ${path.basename(targetPath)}`);
 }
 
-// 2. Determine target databases to seed
+// 2. Determine target databases from tenants.json (or tenants.example.json)
+function resolveTenantsConfig(): { slug: string }[] {
+  const candidates = [
+    process.env.TENANTS_CONFIG_PATH,
+    path.join(process.cwd(), "tenants.json"),
+    path.join(process.cwd(), "tenants.example.json"),
+  ].filter(Boolean) as string[];
+
+  for (const p of candidates) {
+    const resolved = path.isAbsolute(p) ? p : path.join(process.cwd(), p);
+    if (fs.existsSync(resolved)) {
+      const config = JSON.parse(fs.readFileSync(resolved, "utf-8")) as {
+        default?: string;
+        sites?: Record<string, { slug?: string }>;
+      };
+      console.log(`  Using tenants config: ${path.relative(process.cwd(), resolved)}`);
+      const slugs: Set<string> = new Set();
+      // Always include the default slug
+      slugs.add(config.default || "primary");
+      for (const [host, site] of Object.entries(config.sites || {})) {
+        if (host.startsWith("*.")) continue;
+        slugs.add(site.slug || host.split(".")[0]);
+      }
+      return [...slugs].map((slug) => ({ slug }));
+    }
+  }
+  // Fallback: just seed primary
+  return [{ slug: "primary" }];
+}
+
 const targetPaths: string[] = [];
 
 if (process.env.DB_PATH) {
+  // Legacy single-tenant mode
   targetPaths.push(process.env.DB_PATH);
 } else {
-  targetPaths.push(
-    path.join(process.cwd(), "data", "carsharing.db"),
-    path.join(process.cwd(), "data", "tenants", "primary.db"),
-    path.join(process.cwd(), "data", "tenants", "coop-a.db"),
-    path.join(process.cwd(), "data", "tenants", "coop-b.db")
-  );
+  // Also seed the legacy carsharing.db for backward compat
+  targetPaths.push(path.join(process.cwd(), "data", "carsharing.db"));
+  // Seed a DB for each tenant defined in tenants.json
+  for (const { slug } of resolveTenantsConfig()) {
+    targetPaths.push(path.join(process.cwd(), "data", "tenants", `${slug}.db`));
+  }
 }
 
 for (const targetPath of targetPaths) {

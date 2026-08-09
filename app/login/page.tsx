@@ -11,13 +11,12 @@ export default async function LoginPage() {
   const tenantSlug = reqHeaders.get("x-tenant-slug") ?? "primary";
   const tenant = getTenantBySlug(tenantSlug);
 
-  const tenantName = tenant?.name ?? `Cooperative ${tenantSlug}`;
+  // x-tenant-name is set by the proxy from per-host tenants.json config,
+  // allowing URL aliases (e.g. wilrijk.coop.localhost) to show their own name
+  // even when they share a slug/DB with another host.
+  const tenantName = reqHeaders.get("x-tenant-name") ?? tenant?.name ?? `Cooperative ${tenantSlug}`;
 
   return (
-    <LoginForm
-      mailEnabled={isMailEnabled()}
-      tenantName={tenantName}
-      tenantSlug={tenantSlug}
-    />
+    <LoginForm mailEnabled={isMailEnabled()} tenantName={tenantName} tenantSlug={tenantSlug} />
   );
 }

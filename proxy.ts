@@ -37,13 +37,19 @@ const ADMIN_ONLY_PAGES = ["/vehicles", "/people", "/payments"];
 const GUEST_ONLY_PAGES = ["/login", "/forgot", "/reset"];
 
 import { extractTenantSlug } from "@/lib/tenant-context";
+import { getTenantConfigForHost } from "@/lib/tenants-config";
 
 export async function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl;
+  const host = req.headers.get("host") || "";
   const tenantSlug = extractTenantSlug(req);
+  const siteConfig = getTenantConfigForHost(host);
 
   const requestHeaders = new Headers(req.headers);
   requestHeaders.set("x-tenant-slug", tenantSlug);
+  if (siteConfig?.name) {
+    requestHeaders.set("x-tenant-name", siteConfig.name);
+  }
 
   // Static assets and Next.js internals are excluded via the matcher below.
   if (PUBLIC_PATHS.some((p) => pathname === p || pathname.startsWith(p + "/"))) {

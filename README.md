@@ -54,6 +54,7 @@ Note : The `data/` directory is gitignored.
 - [End-user Guide](docs/user-guide.md) — for members: logging trips, fuel, and reading your costs
 - [Owner Guide](docs/owner-guide.md) — for car owners: inbox, cars, members, and settlements
 - [Admin Guide](docs/admin-guide.md) — for admins: payments and settings
+- [Multi-Tenant Guide](docs/multi-tenant.md) — for developers and operators: enabling multi-tenant mode and provisioning tenants
 
 ## Tech Stack
 

@@ -141,18 +141,20 @@ export default function LoginForm({
             }}
           >
             {tenantName ?? t("brand.tagline")}
-            {tenantSlug && tenantSlug !== "primary" && (
-              <span
-                style={{
-                  fontSize: 10,
-                  color: tokens.inkDim,
-                  marginLeft: 6,
-                  textTransform: "uppercase",
-                }}
-              >
-                ({tenantSlug})
-              </span>
-            )}
+            {tenantSlug &&
+              tenantSlug !== "primary" &&
+              tenantName === `Cooperative ${tenantSlug}` && (
+                <span
+                  style={{
+                    fontSize: 10,
+                    color: tokens.inkDim,
+                    marginLeft: 6,
+                    textTransform: "uppercase",
+                  }}
+                >
+                  ({tenantSlug})
+                </span>
+              )}
           </p>
 
           <div style={{ display: "flex", justifyContent: "center", marginTop: 16 }}>

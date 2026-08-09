@@ -15,11 +15,7 @@
   "include-component-in-tag": false,
   "packages": {
     ".": {
-      "bump-minor-pre-major": false,
-      "extra-files": [],
-      "versioning": "default",
-      "skip-github-release": false
+      "release-as": "1.21.1"
     }
-  },
-  "next-version": "1.21.1"
+  }
 }

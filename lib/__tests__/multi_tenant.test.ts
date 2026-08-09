@@ -182,6 +182,12 @@ describe("Multi-Tenant Architecture", () => {
         headers: { host: "antwerp.coop.localhost:3000" },
       });
       expect(extractTenantSlug(reqB)).toBe("antwerp");
+
+      // wilrijk.coop.localhost is an alias — same slug "antwerp", same DB
+      const reqC = new NextRequest("http://wilrijk.coop.localhost:3000/login", {
+        headers: { host: "wilrijk.coop.localhost:3000" },
+      });
+      expect(extractTenantSlug(reqC)).toBe("antwerp");
     });
 
     it("falls back to default tenant for main domain or plain localhost", () => {

@@ -10,6 +10,11 @@
       "slug": "antwerp",
       "name": "Cooperative B (Antwerpen)",
       "adminEmail": "admin@antwerp.local"
+    },
+    "wilrijk.coop.localhost": {
+      "slug": "antwerp",
+      "name": "Cooperative B (Antwerpen)",
+      "adminEmail": "admin@antwerp.local"
     }
   }
 }

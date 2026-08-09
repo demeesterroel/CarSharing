@@ -1,6 +1,18 @@
-import { getPlatformDb, seedPlatformDb } from "../lib/platform-db";
+process.env.SESSION_PASSWORD =
+  process.env.SESSION_PASSWORD || "dev-session-password-placeholder-32-chars";
 
-console.log("Seeding platform database...");
+import { createTenantRecord, getPlatformDb } from "../lib/platform-db.js";
+
+console.log("Seeding platform database with demo cooperatives...");
 const db = getPlatformDb();
-seedPlatformDb(db);
-console.log("✅ Platform database seeded successfully.");
+
+const demoTenants = [
+  { slug: "coop-a", name: "Cooperative A (Gent)", email: "admin@coop-a.local" },
+  { slug: "coop-b", name: "Cooperative B (Antwerpen)", email: "admin@coop-b.local" },
+];
+
+for (const t of demoTenants) {
+  createTenantRecord(t.slug, t.name, t.email);
+}
+
+console.log(`✅ Platform database seeded with ${demoTenants.length} demo cooperatives.`);

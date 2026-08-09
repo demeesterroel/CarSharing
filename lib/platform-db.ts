@@ -34,12 +34,11 @@ export function getPlatformDb(): Database.Database {
     _platformDb.pragma("foreign_keys = ON");
 
     initPlatformSchema(_platformDb);
-    seedPlatformDb(_platformDb);
   }
   return _platformDb;
 }
 
-/** Initializes the DDL schema for the platform database. */
+/** Initializes the DDL schema for the platform database and ensures default primary tenant exists. */
 function initPlatformSchema(db: Database.Database): void {
   db.exec(`
     CREATE TABLE IF NOT EXISTS tenants (
@@ -60,26 +59,18 @@ function initPlatformSchema(db: Database.Database): void {
       updated_at  TEXT NOT NULL DEFAULT (datetime('now'))
     );
   `);
-}
 
-/** Seeds initial platform database records (primary tenant & demo cooperatives). */
-export function seedPlatformDb(db: Database.Database): void {
+  // Ensure default primary tenant exists in platform.db
   const defaultSlug = env.DEFAULT_TENANT_SLUG ?? "primary";
-  const defaultTenants = [
-    { slug: defaultSlug, name: "Primary Cooperative" },
-    { slug: "coop-a", name: "Cooperative A (Gent)" },
-    { slug: "coop-b", name: "Cooperative B (Antwerpen)" },
-  ];
+  const existingDefault = db
+    .prepare("SELECT 1 FROM tenants WHERE slug = ?")
+    .get(defaultSlug);
 
-  const insert = db.prepare(
-    "INSERT OR IGNORE INTO tenants (slug, name, status) VALUES (?, ?, 'active')"
-  );
-
-  db.transaction(() => {
-    for (const t of defaultTenants) {
-      insert.run(t.slug, t.name);
-    }
-  })();
+  if (!existingDefault) {
+    db.prepare(
+      "INSERT INTO tenants (slug, name, status) VALUES (?, 'Primary Cooperative', 'active')"
+    ).run(defaultSlug);
+  }
 }
 
 /** Formats a generic human-friendly tenant name from a slug (e.g. "coop-a" -> "Cooperative A", "groene-buurt" -> "Groene Buurt") */
@@ -97,7 +88,7 @@ export function formatTenantName(slug: string): string {
 
 export function getTenantBySlug(slug: string): TenantRecord {
   const db = getPlatformDb();
-  let tenant = db
+  const tenant = db
     .prepare("SELECT * FROM tenants WHERE slug = ?")
     .get(slug) as TenantRecord | undefined;
 

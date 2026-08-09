@@ -5,6 +5,7 @@ import { shortNameOf } from "@/lib/person-utils";
 import { getPersonByUsername } from "@/lib/queries/people";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { sessionOptions, type SessionData } from "@/lib/session";
+import { extractTenantSlug } from "@/lib/tenant-context";
 import { getIronSession } from "iron-session";
 import { NextResponse } from "next/server";
 
@@ -37,7 +38,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "invalid_credentials" }, { status: 401 });
   }
 
-  const tenantSlug = req.headers.get("x-tenant-slug") ?? undefined;
+  const tenantSlug = extractTenantSlug(req);
   const db = getDb(tenantSlug);
   const person = getPersonByUsername(db, username);
 

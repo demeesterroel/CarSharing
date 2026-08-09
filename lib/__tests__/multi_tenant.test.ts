@@ -75,9 +75,11 @@ describe("Multi-Tenant Architecture", () => {
     });
 
     it("formats generic tenant names cleanly from slugs", () => {
-      expect(formatTenantName("coop-a")).toBe("Cooperative A");
+      // These slugs are NOT in tenants.example.json so fall through to generic formatting
       expect(formatTenantName("groene-buurt")).toBe("Groene Buurt");
       expect(formatTenantName("my-car-share")).toBe("My Car Share");
+      // coop-a IS in tenants.example.json, so name comes from config
+      expect(formatTenantName("coop-a")).toBe("Cooperative A (Gent)");
     });
 
     it("dynamically auto-registers unknown tenant slugs with formatted generic names", () => {

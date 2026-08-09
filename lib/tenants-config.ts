@@ -19,16 +19,30 @@ let lastMtime = 0;
 
 /**
  * Loads the Drupal-style `tenants.json` configuration file.
- * Caches the config in-memory and reloads automatically if the file modification timestamp changes.
+ * Resolution order (same as seed scripts):
+ *   1. TENANTS_CONFIG_PATH env var
+ *   2. tenants.json  (production / local override)
+ *   3. tenants.example.json  (dev fallback — committed example)
+ * Caches the config in-memory and reloads automatically if the file mtime changes.
  */
 export function getTenantsConfig(): TenantsConfigFile {
   try {
-    const targetPath = process.env.TENANTS_CONFIG_PATH || env.TENANTS_CONFIG_PATH || "tenants.json";
-    const configPath = path.isAbsolute(targetPath)
-      ? targetPath
-      : path.join(process.cwd(), targetPath);
+    const candidates = [
+      process.env.TENANTS_CONFIG_PATH || env.TENANTS_CONFIG_PATH,
+      "tenants.json",
+      "tenants.example.json",
+    ].filter(Boolean) as string[];
 
-    if (!fs.existsSync(configPath)) {
+    let configPath: string | null = null;
+    for (const candidate of candidates) {
+      const resolved = path.isAbsolute(candidate) ? candidate : path.join(process.cwd(), candidate);
+      if (fs.existsSync(resolved)) {
+        configPath = resolved;
+        break;
+      }
+    }
+
+    if (!configPath) {
       return { default: env.DEFAULT_TENANT_SLUG, sites: {} };
     }
 
@@ -47,7 +61,7 @@ export function getTenantsConfig(): TenantsConfigFile {
     lastMtime = stat.mtimeMs;
     return cachedConfig;
   } catch (e) {
-    console.warn("[tenants-config] Could not parse tenants.json:", (e as Error).message);
+    console.warn("[tenants-config] Could not parse tenants config:", (e as Error).message);
     return { default: env.DEFAULT_TENANT_SLUG, sites: {} };
   }
 }

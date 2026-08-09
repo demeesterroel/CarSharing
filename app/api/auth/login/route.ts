@@ -37,7 +37,8 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "invalid_credentials" }, { status: 401 });
   }
 
-  const db = getDb();
+  const tenantSlug = req.headers.get("x-tenant-slug") ?? undefined;
+  const db = getDb(tenantSlug);
   const person = getPersonByUsername(db, username);
 
   let authenticated = false;

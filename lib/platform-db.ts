@@ -59,32 +59,49 @@ function initPlatformSchema(db: Database.Database): void {
     );
   `);
 
-  // Ensure default demo tenants exist in platform.db
+  // Ensure default primary tenant exists in platform.db
   const defaultSlug = env.DEFAULT_TENANT_SLUG ?? "primary";
-  const demoTenants = [
-    { slug: defaultSlug, name: "Primary Cooperative" },
-    { slug: "coop-a", name: "Cooperative A (Gent)" },
-    { slug: "coop-b", name: "Cooperative B (Antwerpen)" },
-  ];
-
-  for (const t of demoTenants) {
-    const existing = db.prepare("SELECT 1 FROM tenants WHERE slug = ?").get(t.slug);
-    if (!existing) {
-      db.prepare("INSERT INTO tenants (slug, name, status) VALUES (?, ?, 'active')").run(
-        t.slug,
-        t.name
-      );
-    }
+  const existingDefault = db
+    .prepare("SELECT 1 FROM tenants WHERE slug = ?")
+    .get(defaultSlug);
+  if (!existingDefault) {
+    db.prepare(
+      "INSERT INTO tenants (slug, name, status) VALUES (?, ?, 'active')"
+    ).run(defaultSlug, "Primary Cooperative");
   }
 }
 
-export function getTenantBySlug(slug: string): TenantRecord | null {
+/** Formats a generic human-friendly tenant name from a slug (e.g. "coop-a" -> "Cooperative A", "groene-buurt" -> "Groene Buurt") */
+export function formatTenantName(slug: string): string {
+  if (!slug || slug === "primary") return "Primary Cooperative";
+  const clean = slug
+    .replace(/^coop[-_]?/i, "Cooperative ")
+    .replace(/[-_]/g, " ");
+  return clean
+    .split(" ")
+    .filter(Boolean)
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
+    .join(" ");
+}
+
+export function getTenantBySlug(slug: string): TenantRecord {
   const db = getPlatformDb();
-  return (
-    (db.prepare("SELECT * FROM tenants WHERE slug = ?").get(slug) as
-      | TenantRecord
-      | undefined) ?? null
-  );
+  let tenant = db
+    .prepare("SELECT * FROM tenants WHERE slug = ?")
+    .get(slug) as TenantRecord | undefined;
+
+  // Auto-register generic tenant record if accessed dynamically (e.g. on localhost or subdomains)
+  if (!tenant) {
+    const genericName = formatTenantName(slug);
+    db.prepare(
+      "INSERT OR IGNORE INTO tenants (slug, name, status) VALUES (?, ?, 'active')"
+    ).run(slug, genericName);
+    tenant = db
+      .prepare("SELECT * FROM tenants WHERE slug = ?")
+      .get(slug) as TenantRecord;
+  }
+
+  return tenant;
 }
 
 export function getTenantByDomain(domain: string): TenantRecord | null {
@@ -111,11 +128,11 @@ export function createTenantRecord(
 ): TenantRecord {
   const db = getPlatformDb();
   db.prepare(
-    `INSERT INTO tenants (slug, name, admin_email, status)
-     VALUES (?, ?, ?, ?)`
+    `INSERT OR REPLACE INTO tenants (slug, name, admin_email, status, updated_at)
+     VALUES (?, ?, ?, ?, datetime('now'))`
   ).run(slug, name, adminEmail ?? null, status);
 
-  return getTenantBySlug(slug)!;
+  return getTenantBySlug(slug);
 }
 
 export function setTenantStatus(

@@ -1,6 +1,7 @@
 import { closeAllTenantDbs, getDb, getTenantDbPath } from "@/lib/db";
 import {
   createTenantRecord,
+  formatTenantName,
   getPlatformDb,
   getTenantBySlug,
   getTenantSlugByCalendarChannel,
@@ -15,7 +16,7 @@ import path from "path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 describe("Multi-Tenant Architecture", () => {
-  const testTenantSlugs = ["tenant-a", "tenant-b", "zonnedael"];
+  const testTenantSlugs = ["tenant-a", "tenant-b", "zonnedael", "custom-coop"];
 
   function cleanupTestArtifacts() {
     closeAllTenantDbs();
@@ -41,10 +42,10 @@ describe("Multi-Tenant Architecture", () => {
       try {
         const platformDb = getPlatformDb();
         platformDb
-          .prepare("DELETE FROM tenants WHERE slug IN (?, ?, ?)")
+          .prepare("DELETE FROM tenants WHERE slug IN (?, ?, ?, ?)")
           .run(...testTenantSlugs);
         platformDb
-          .prepare("DELETE FROM calendar_channels WHERE tenant_slug IN (?, ?, ?)")
+          .prepare("DELETE FROM calendar_channels WHERE tenant_slug IN (?, ?, ?, ?)")
           .run(...testTenantSlugs);
       } catch {
         // ignore
@@ -70,6 +71,20 @@ describe("Multi-Tenant Architecture", () => {
       expect(defaultTenant).not.toBeNull();
       expect(defaultTenant?.name).toBe("Primary Cooperative");
       expect(defaultTenant?.status).toBe("active");
+    });
+
+    it("formats generic tenant names cleanly from slugs", () => {
+      expect(formatTenantName("coop-a")).toBe("Cooperative A");
+      expect(formatTenantName("groene-buurt")).toBe("Groene Buurt");
+      expect(formatTenantName("my-car-share")).toBe("My Car Share");
+    });
+
+    it("dynamically auto-registers unknown tenant slugs with formatted generic names", () => {
+      const tenant = getTenantBySlug("custom-coop");
+      expect(tenant).toBeDefined();
+      expect(tenant.slug).toBe("custom-coop");
+      expect(tenant.name).toBe("Custom Coop");
+      expect(tenant.status).toBe("active");
     });
 
     it("provisions new tenant records and updates status", () => {

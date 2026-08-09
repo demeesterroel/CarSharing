@@ -28,6 +28,7 @@ const envSchema = z.object({
   // Multi-tenant configuration
   DEFAULT_TENANT_SLUG: z.string().optional().default("primary"),
   TENANTS_DIR: z.string().optional().default("data/tenants"),
+  TENANTS_CONFIG_PATH: z.string().optional().default("tenants.json"),
 });
 
 type Env = z.infer<typeof envSchema>;

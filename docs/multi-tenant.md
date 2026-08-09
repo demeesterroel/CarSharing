@@ -26,15 +26,36 @@ DEFAULT_TENANT_SLUG=primary
 TENANTS_DIR=data/tenants
 ```
 
-### Request Tenant Resolution Strategy
+### Request Tenant Resolution Strategy (Drupal Sites-Style)
 
-The application extracts the tenant slug for each HTTP request in the following priority order:
+The application extracts the tenant slug and metadata for each HTTP request in the following priority order:
 
 1. **`x-tenant-slug` HTTP Header**: Injected by a reverse proxy (e.g. Nginx, Caddy, Cloudflare, Traefik).
-2. **Host Subdomain**:
+2. **`tenants.json` Site Mapping (Drupal Multisite Style)**:
+   Define exact host mappings or wildcard subdomains in `tenants.json` (or path in `TENANTS_CONFIG_PATH`):
+   ```json
+   {
+     "default": "primary",
+     "sites": {
+       "autodelen.bluette.be": {
+         "slug": "autodelen",
+         "name": "Van Trier"
+       },
+       "wim.autodelen.bluette.be": {
+         "slug": "wim",
+         "name": "Wim",
+         "adminEmail": "wim@autodelen.bluette.be"
+       },
+       "*.mycoop.org": {
+         "name": "MyCoop Branch"
+       }
+     }
+   }
+   ```
+3. **Dynamic Host Subdomain**:
    - Production: `coop-gent.example.com` extracts tenant slug `coop-gent`.
    - Local Development: `coop-gent.localhost:3000` extracts tenant slug `coop-gent`.
-3. **Fallback**: Default tenant slug defined in `DEFAULT_TENANT_SLUG` (`primary`).
+4. **Fallback**: Default tenant slug defined in `tenants.json` or `DEFAULT_TENANT_SLUG` (`primary`).
 
 ---
 

@@ -29,7 +29,7 @@ export function extractTenantSlug(req: NextRequest | Request): string {
   // Handle subdomain.localhost (e.g., coop-a.localhost -> parts: ['coop-a', 'localhost'])
   if (parts.length === 2 && parts[1] === "localhost") {
     const subdomain = parts[0];
-    if (subdomain && subdomain !== "www" && subdomain !== "app") {
+    if (subdomain && !["www", "app", "autodelen"].includes(subdomain)) {
       return subdomain;
     }
   }
@@ -37,7 +37,7 @@ export function extractTenantSlug(req: NextRequest | Request): string {
   // Handle subdomain.domain.tld (e.g. coop-a.carsharing.app -> 3+ parts)
   if (parts.length >= 3) {
     const subdomain = parts[0];
-    if (subdomain && subdomain !== "www" && subdomain !== "app") {
+    if (subdomain && !["www", "app", "autodelen"].includes(subdomain)) {
       return subdomain;
     }
   }

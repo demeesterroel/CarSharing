@@ -1,5 +1,19 @@
 # Changelog
 
+## [1.21.2](https://github.com/demeesterroel/CarSharing/compare/v1.21.1...v1.21.2) (2026-08-09)
+
+
+### 🐛 Bug fixes
+
+* **auth:** extract tenant slug from request headers in login route ([9df088b](https://github.com/demeesterroel/CarSharing/commit/9df088b80d918f6d4391330e6dfc4e2b47c129fa))
+* **ci:** GHCR-only Docker build — remove all Docker Hub steps ([e0d6690](https://github.com/demeesterroel/CarSharing/commit/e0d66900db5dc752947ac83ed03e443c35331c94))
+* **ci:** make Docker Hub push optional, GHCR always succeeds ([2c74d43](https://github.com/demeesterroel/CarSharing/commit/2c74d433113f6297d010e7b1d1a932dec393b0d7))
+* **ci:** push Docker image to both Docker Hub and GHCR ([71456f9](https://github.com/demeesterroel/CarSharing/commit/71456f9aa8f47c21babe65b1fe70be6b6c32330d))
+* **ci:** trigger Docker build on tag push instead of release event ([#379](https://github.com/demeesterroel/CarSharing/issues/379)) ([0e7939d](https://github.com/demeesterroel/CarSharing/commit/0e7939d45b681da15db17e6e0c572090199aeb8e))
+* **tenant:** auto-detect tenant slug from x-tenant-slug header in getDb() ([#379](https://github.com/demeesterroel/CarSharing/issues/379)) ([e715b72](https://github.com/demeesterroel/CarSharing/commit/e715b72d4d9bc5196c84fac3634dd6d622efd0f2))
+* **tenant:** propagate tenant context via AsyncLocalStorage for robust standalone getDb() resolution ([#379](https://github.com/demeesterroel/CarSharing/issues/379)) ([eec5c63](https://github.com/demeesterroel/CarSharing/commit/eec5c63949707979dc59febd1e338485131389ca))
+* **tenant:** wrap /api/me in runWithTenant() and default new people theme to mono ([#379](https://github.com/demeesterroel/CarSharing/issues/379)) ([514c44e](https://github.com/demeesterroel/CarSharing/commit/514c44e7cf515869860df7ecbdc29945381631b3))
+
 ## [1.21.1](https://github.com/demeesterroel/CarSharing/compare/v1.21.0...v1.21.1) (2026-08-09)
 
 

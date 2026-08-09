@@ -191,10 +191,10 @@ describe("Multi-Tenant Architecture", () => {
       });
       expect(extractTenantSlug(reqApp)).toBe("primary");
 
-      const reqAutodelen = new NextRequest("http://autodelen.bluette.be/", {
-        headers: { host: "autodelen.bluette.be" },
+      const reqTenant = new NextRequest("http://subdomain.carsharing.app/", {
+        headers: { host: "subdomain.carsharing.app" },
       });
-      expect(extractTenantSlug(reqAutodelen)).toBe("primary");
+      expect(extractTenantSlug(reqTenant)).toBe("subdomain");
     });
   });
 });

@@ -177,8 +177,9 @@ describe("Multi-Tenant Architecture", () => {
       });
       expect(extractTenantSlug(reqA)).toBe("coop-a");
 
-      const reqB = new NextRequest("http://coop-b.localhost:3000/login", {
-        headers: { host: "coop-b.localhost:3000" },
+      // 4-part host resolved via tenants.json mapping to slug "coop-b"
+      const reqB = new NextRequest("http://antwerp.coop.localhost:3000/login", {
+        headers: { host: "antwerp.coop.localhost:3000" },
       });
       expect(extractTenantSlug(reqB)).toBe("coop-b");
     });

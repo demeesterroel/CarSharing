@@ -6,7 +6,7 @@
       "name": "Cooperative A (Gent)",
       "adminEmail": "admin@coop-a.local"
     },
-    "coop-b.localhost": {
+    "antwerp.coop.localhost": {
       "slug": "coop-b",
       "name": "Cooperative B (Antwerpen)",
       "adminEmail": "admin@coop-b.local"

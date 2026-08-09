@@ -4,6 +4,7 @@ import { validateCsrfToken } from "./csrf";
 import { canEdit } from "./permissions";
 import { checkRateLimit } from "./rate-limit";
 import type { SessionData } from "./session";
+import { extractTenantSlug, runWithTenant } from "./tenant-context";
 
 // Re-export the pure permission helper so existing call sites that import it
 // from "./api" keep working. The single source of truth lives in
@@ -166,7 +167,8 @@ export function json<T>(handler: Handler<T>) {
           return NextResponse.json({ error: "invalid_csrf" }, { status: 403 });
         }
       }
-      const result = await handler(req, ctx);
+      const tenantSlug = extractTenantSlug(req);
+      const result = await runWithTenant(tenantSlug, () => handler(req, ctx));
       if (result instanceof NextResponse) return result;
       return NextResponse.json(result);
     } catch (err) {

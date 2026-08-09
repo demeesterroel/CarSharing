@@ -1,6 +1,20 @@
+import { AsyncLocalStorage } from "async_hooks";
 import { NextRequest } from "next/server";
 import { env } from "./env";
 import { getTenantConfigForHost, getTenantsConfig } from "./tenants-config";
+
+/** AsyncLocalStorage store to track current tenant slug across async call stacks */
+const tenantStorage = new AsyncLocalStorage<string>();
+
+/** Runs a function within the context of a specified tenant slug. */
+export function runWithTenant<T>(tenantSlug: string, fn: () => T): T {
+  return tenantStorage.run(tenantSlug, fn);
+}
+
+/** Gets the current tenant slug from the active AsyncLocalStorage store context, if any. */
+export function getCurrentTenantSlug(): string | undefined {
+  return tenantStorage.getStore();
+}
 
 /**
  * Extracts the tenant slug from an incoming HTTP request.

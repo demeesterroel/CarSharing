@@ -5,6 +5,7 @@ import fs from "fs";
 import path from "path";
 import { runMigrations } from "./db/migrate";
 import { env } from "./env";
+import { getCurrentTenantSlug } from "./tenant-context";
 
 const _dbConnections = new Map<string, Database.Database>();
 
@@ -36,18 +37,11 @@ export function getTenantDbPath(slug?: string): string {
 export function getDb(tenantSlug?: string): Database.Database {
   let slug = tenantSlug;
 
-  // Auto-detect tenant slug from request headers if not explicitly passed
-  if (!slug && typeof window === "undefined") {
-    try {
-      // Dynamic import or AsyncLocalStorage pattern
-      const { headers } = require("next/headers");
-      const h = headers();
-      const headerSlug = h.get("x-tenant-slug");
-      if (headerSlug) {
-        slug = headerSlug.trim().toLowerCase();
-      }
-    } catch {
-      // Outside request context (e.g. CLI / scripts) — fall back to default
+  // Auto-detect tenant slug from active AsyncLocalStorage store context if not explicitly passed
+  if (!slug) {
+    const contextSlug = getCurrentTenantSlug();
+    if (contextSlug) {
+      slug = contextSlug;
     }
   }
 

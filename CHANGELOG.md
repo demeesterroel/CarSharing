@@ -1,5 +1,36 @@
 # Changelog
 
+## [1.21.0](https://github.com/demeesterroel/CarSharing/compare/v1.20.0...v1.21.0) (2026-08-09)
+
+
+### ✨ New features
+
+* **admin:** copy invite link sends full welcome message ([#371](https://github.com/demeesterroel/CarSharing/issues/371)) ([271154d](https://github.com/demeesterroel/CarSharing/commit/271154d3942053378f6040bb184ece99d09b0ff2))
+* **calendar:** show one-time toast nudging users to subscribe to calendar ([#372](https://github.com/demeesterroel/CarSharing/issues/372)) ([da01b7e](https://github.com/demeesterroel/CarSharing/commit/da01b7e38f3f192865bbd4779fd66a022a519cc3))
+* **demo:** add wilrijk.coop.localhost alias pointing to antwerp tenant ([#379](https://github.com/demeesterroel/CarSharing/issues/379)) ([d536d28](https://github.com/demeesterroel/CarSharing/commit/d536d28fd50ae515bf4cc646d4ee9f0c467be1a3))
+* **multi-tenant:** add Drupal-style tenants.json site mapping ([#379](https://github.com/demeesterroel/CarSharing/issues/379)) ([d814f51](https://github.com/demeesterroel/CarSharing/commit/d814f51fbe67426be9f313dd35826faef1737eea))
+* **multi-tenant:** allow running in multi-tenant mode ([#379](https://github.com/demeesterroel/CarSharing/issues/379)) ([#380](https://github.com/demeesterroel/CarSharing/issues/380)) ([fda2ec3](https://github.com/demeesterroel/CarSharing/commit/fda2ec37092b5fa872c2d7836e3d3ba364fc4529))
+* **notifications:** in-app notifications with two-block prefs ([#358](https://github.com/demeesterroel/CarSharing/issues/358)) ([#376](https://github.com/demeesterroel/CarSharing/issues/376)) ([7b2b36f](https://github.com/demeesterroel/CarSharing/commit/7b2b36f9ff8cde294ec937d377733f455a18a30f))
+* **notify:** email admins when non-admin user mutates data ([#98](https://github.com/demeesterroel/CarSharing/issues/98)) ([#369](https://github.com/demeesterroel/CarSharing/issues/369)) ([154c5a7](https://github.com/demeesterroel/CarSharing/commit/154c5a742da6a26fbe2f9b7d0ec0bb65dc15fbbf))
+* **tenant:** pass x-tenant-name header per host alias for per-URL display names ([#379](https://github.com/demeesterroel/CarSharing/issues/379)) ([2ba2506](https://github.com/demeesterroel/CarSharing/commit/2ba2506af75f83069c38da02bdb8470039f787dc))
+
+
+### 🐛 Bug fixes
+
+* **auth:** use x-tenant-slug header in login route to select correct tenant DB ([#379](https://github.com/demeesterroel/CarSharing/issues/379)) ([60029cc](https://github.com/demeesterroel/CarSharing/commit/60029cc2c09d62b3a5d3afc3e71ce0cddd518401))
+* **ci:** fix Docker Hub login in docker.yml ([#379](https://github.com/demeesterroel/CarSharing/issues/379)) ([61cfc66](https://github.com/demeesterroel/CarSharing/commit/61cfc660867987f6defc1b28b7ee628a707dcd20))
+* **ci:** use GITHUB_TOKEN for release-please workflow ([#379](https://github.com/demeesterroel/CarSharing/issues/379)) ([c06c17e](https://github.com/demeesterroel/CarSharing/commit/c06c17e98c11c36475738ad5798eafa1e8123f59))
+* **env:** add missing RESEND_API_KEY to envSchema to fix production build ([#379](https://github.com/demeesterroel/CarSharing/issues/379)) ([82cd696](https://github.com/demeesterroel/CarSharing/commit/82cd696b6296ece58775330e47b48e1a809f95f5))
+* **login:** hide slug badge when tenant has a configured name ([#379](https://github.com/demeesterroel/CarSharing/issues/379)) ([ef950e9](https://github.com/demeesterroel/CarSharing/commit/ef950e95f4726b506b6df69f0294d1f251aa3b13))
+* **tenants-config:** fall back to tenants.example.json at runtime ([#379](https://github.com/demeesterroel/CarSharing/issues/379)) ([2ba0379](https://github.com/demeesterroel/CarSharing/commit/2ba0379a8170c1f5352d4d5dbc191b7a1539b7ba))
+* **tenants-config:** support Edge Runtime (middleware) via NEXT_PUBLIC_TENANTS_CONFIG env var ([#379](https://github.com/demeesterroel/CarSharing/issues/379)) ([b38a5ee](https://github.com/demeesterroel/CarSharing/commit/b38a5ee945747b9d4cc91f39196e691e0d08c318))
+* **tenant:** treat autodelen host as primary tenant domain ([#379](https://github.com/demeesterroel/CarSharing/issues/379)) ([1a7b609](https://github.com/demeesterroel/CarSharing/commit/1a7b609516216ff0cbf2e92aadbc09218c740d56))
+
+
+### 📖 Documentation
+
+* add multi-tenant developer and operator guide ([#379](https://github.com/demeesterroel/CarSharing/issues/379)) ([dd2cbd3](https://github.com/demeesterroel/CarSharing/commit/dd2cbd3dc63740a28594c8ee8fd3d5f5bea4daf6))
+
 ## [1.20.0](https://github.com/demeesterroel/CarSharing/compare/v1.19.4...v1.20.0) (2026-06-09)
 
 

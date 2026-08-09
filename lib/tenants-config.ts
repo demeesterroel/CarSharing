@@ -19,13 +19,43 @@ let lastMtime = 0;
 
 /**
  * Loads the Drupal-style `tenants.json` configuration file.
- * Resolution order (same as seed scripts):
- *   1. TENANTS_CONFIG_PATH env var
- *   2. tenants.json  (production / local override)
- *   3. tenants.example.json  (dev fallback — committed example)
- * Caches the config in-memory and reloads automatically if the file mtime changes.
+ * Resolution order:
+ *   1. TENANTS_CONFIG_PATH env var → tenants.json → tenants.example.json  (Node.js runtime, fs)
+ *   2. NEXT_PUBLIC_TENANTS_CONFIG env var  (Edge Runtime / middleware — fs not available)
+ *
+ * In Node.js routes the file is read from disk and hot-reloaded on mtime change.
+ * In middleware (Edge Runtime) the config must be embedded at server start via:
+ *   NEXT_PUBLIC_TENANTS_CONFIG=$(cat tenants.json) node .next/standalone/server.js
  */
 export function getTenantsConfig(): TenantsConfigFile {
+  // --- Edge Runtime path (no fs) ---
+  // Check for embedded config first when fs is unavailable.
+  let fsAvailable = true;
+  try {
+    // Quick probe: accessing process.cwd() is fine in both runtimes,
+    // but fs.existsSync will throw in Edge.
+    fs.existsSync("/");
+  } catch {
+    fsAvailable = false;
+  }
+
+  if (!fsAvailable) {
+    const embedded = process.env.NEXT_PUBLIC_TENANTS_CONFIG;
+    if (embedded) {
+      try {
+        const parsed = JSON.parse(embedded) as TenantsConfigFile;
+        return {
+          default: parsed.default || env.DEFAULT_TENANT_SLUG,
+          sites: parsed.sites || {},
+        };
+      } catch {
+        // malformed — fall through to empty
+      }
+    }
+    return { default: env.DEFAULT_TENANT_SLUG, sites: {} };
+  }
+
+  // --- Node.js runtime path (fs available, hot-reloadable) ---
   try {
     const candidates = [
       process.env.TENANTS_CONFIG_PATH || env.TENANTS_CONFIG_PATH,
@@ -43,6 +73,12 @@ export function getTenantsConfig(): TenantsConfigFile {
     }
 
     if (!configPath) {
+      // No file found — try embedded env var as last resort
+      const embedded = process.env.NEXT_PUBLIC_TENANTS_CONFIG;
+      if (embedded) {
+        const parsed = JSON.parse(embedded) as TenantsConfigFile;
+        return { default: parsed.default || env.DEFAULT_TENANT_SLUG, sites: parsed.sites || {} };
+      }
       return { default: env.DEFAULT_TENANT_SLUG, sites: {} };
     }
 

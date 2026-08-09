@@ -24,6 +24,7 @@ const envSchema = z.object({
   MAIL_FROM: z.string().optional(),
   // Resend HTTP API key. When set, transactional mail (reset / magic-link /
   // invite) is sent via Resend; takes precedence over MAIL_WEBHOOK_URL.
+  RESEND_API_KEY: z.string().optional(),
   // Multi-tenant configuration
   DEFAULT_TENANT_SLUG: z.string().optional().default("primary"),
   TENANTS_DIR: z.string().optional().default("data/tenants"),

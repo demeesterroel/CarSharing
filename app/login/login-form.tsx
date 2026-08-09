@@ -7,7 +7,15 @@ import { Eye, EyeOff } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
-export default function LoginForm({ mailEnabled }: { mailEnabled: boolean }) {
+export default function LoginForm({
+  mailEnabled,
+  tenantName,
+  tenantSlug,
+}: {
+  mailEnabled: boolean;
+  tenantName?: string;
+  tenantSlug?: string;
+}) {
   const router = useRouter();
   const qc = useQueryClient();
   const t = useT();
@@ -133,6 +141,32 @@ export default function LoginForm({ mailEnabled }: { mailEnabled: boolean }) {
           >
             {t("brand.tagline")}
           </p>
+
+          {tenantName && (
+            <div
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 6,
+                marginTop: 12,
+                padding: "4px 12px",
+                background: tokens.paperDark,
+                borderRadius: 16,
+                fontFamily: fontMono,
+                fontSize: 11,
+                fontWeight: 600,
+                color: tokens.ink,
+              }}
+            >
+              <span>{tenantName}</span>
+              {tenantSlug && tenantSlug !== "primary" && (
+                <span style={{ fontSize: 9, color: tokens.inkDim, textTransform: "uppercase" }}>
+                  ({tenantSlug})
+                </span>
+              )}
+            </div>
+          )}
+
           <div style={{ display: "flex", justifyContent: "center", marginTop: 16 }}>
             <LangSwitcher />
           </div>

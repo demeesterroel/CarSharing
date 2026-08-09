@@ -59,15 +59,22 @@ function initPlatformSchema(db: Database.Database): void {
     );
   `);
 
-  // Ensure default primary tenant exists in platform.db
+  // Ensure default demo tenants exist in platform.db
   const defaultSlug = env.DEFAULT_TENANT_SLUG ?? "primary";
-  const existingDefault = db
-    .prepare("SELECT 1 FROM tenants WHERE slug = ?")
-    .get(defaultSlug);
-  if (!existingDefault) {
-    db.prepare(
-      "INSERT INTO tenants (slug, name, status) VALUES (?, ?, 'active')"
-    ).run(defaultSlug, "Primary Cooperative");
+  const demoTenants = [
+    { slug: defaultSlug, name: "Primary Cooperative" },
+    { slug: "coop-a", name: "Cooperative A (Gent)" },
+    { slug: "coop-b", name: "Cooperative B (Antwerpen)" },
+  ];
+
+  for (const t of demoTenants) {
+    const existing = db.prepare("SELECT 1 FROM tenants WHERE slug = ?").get(t.slug);
+    if (!existing) {
+      db.prepare("INSERT INTO tenants (slug, name, status) VALUES (?, ?, 'active')").run(
+        t.slug,
+        t.name
+      );
+    }
   }
 }
 

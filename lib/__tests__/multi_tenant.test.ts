@@ -10,6 +10,7 @@ import {
   setTenantStatus,
 } from "@/lib/platform-db";
 import { extractTenantSlug } from "@/lib/tenant-context";
+import { resetTenantsConfigCache } from "@/lib/tenants-config";
 import fs from "fs";
 import { NextRequest } from "next/server";
 import path from "path";
@@ -195,6 +196,59 @@ describe("Multi-Tenant Architecture", () => {
         headers: { host: "subdomain.carsharing.app" },
       });
       expect(extractTenantSlug(reqTenant)).toBe("subdomain");
+    });
+  });
+
+  describe("Drupal-Style Site Mapping (tenants.json)", () => {
+    const testJsonPath = path.join(process.cwd(), "tenants.test.json");
+
+    beforeEach(() => {
+      process.env.TENANTS_CONFIG_PATH = "tenants.test.json";
+      resetTenantsConfigCache();
+      fs.writeFileSync(
+        testJsonPath,
+        JSON.stringify({
+          default: "main-coop",
+          sites: {
+            "demo.carsharing.app": { slug: "demo-site", name: "Demo Site" },
+            "custom.cooperative.org": { slug: "custom-org", name: "Custom Org" },
+            "*.mycoop.org": { name: "MyCoop Branch" },
+          },
+        })
+      );
+    });
+
+    afterEach(() => {
+      delete process.env.TENANTS_CONFIG_PATH;
+      resetTenantsConfigCache();
+      if (fs.existsSync(testJsonPath)) {
+        try {
+          fs.unlinkSync(testJsonPath);
+        } catch {
+          // ignore
+        }
+      }
+    });
+
+    it("matches exact domains from tenants.json", () => {
+      const reqDemo = new NextRequest("http://demo.carsharing.app/login", {
+        headers: { host: "demo.carsharing.app" },
+      });
+      expect(extractTenantSlug(reqDemo)).toBe("demo-site");
+
+      const reqCustom = new NextRequest("http://custom.cooperative.org/trips", {
+        headers: { host: "custom.cooperative.org:3000" },
+      });
+      expect(extractTenantSlug(reqCustom)).toBe("custom-org");
+      expect(formatTenantName("custom-org")).toBe("Custom Org");
+    });
+
+    it("supports wildcard domain matching in tenants.json", () => {
+      const reqBranch = new NextRequest("http://gent.mycoop.org/login", {
+        headers: { host: "gent.mycoop.org" },
+      });
+      expect(extractTenantSlug(reqBranch)).toBe("gent");
+      expect(formatTenantName("gent")).toBe("MyCoop Branch");
     });
   });
 });

@@ -2,6 +2,7 @@ import Database from "better-sqlite3";
 import fs from "fs";
 import path from "path";
 import { env } from "./env";
+import { getTenantConfigBySlug } from "./tenants-config";
 
 export interface TenantRecord {
   id: number;
@@ -62,9 +63,7 @@ function initPlatformSchema(db: Database.Database): void {
 
   // Ensure default primary tenant exists in platform.db
   const defaultSlug = env.DEFAULT_TENANT_SLUG ?? "primary";
-  const existingDefault = db
-    .prepare("SELECT 1 FROM tenants WHERE slug = ?")
-    .get(defaultSlug);
+  const existingDefault = db.prepare("SELECT 1 FROM tenants WHERE slug = ?").get(defaultSlug);
 
   if (!existingDefault) {
     db.prepare(
@@ -75,10 +74,11 @@ function initPlatformSchema(db: Database.Database): void {
 
 /** Formats a generic human-friendly tenant name from a slug (e.g. "coop-a" -> "Cooperative A", "groene-buurt" -> "Groene Buurt") */
 export function formatTenantName(slug: string): string {
+  const config = getTenantConfigBySlug(slug);
+  if (config && config.name) return config.name;
+
   if (!slug || slug === "primary") return "Primary Cooperative";
-  const clean = slug
-    .replace(/^coop[-_]?/i, "Cooperative ")
-    .replace(/[-_]/g, " ");
+  const clean = slug.replace(/^coop[-_]?/i, "Cooperative ").replace(/[-_]/g, " ");
   return clean
     .split(" ")
     .filter(Boolean)
@@ -88,21 +88,31 @@ export function formatTenantName(slug: string): string {
 
 export function getTenantBySlug(slug: string): TenantRecord {
   const db = getPlatformDb();
-  const tenant = db
-    .prepare("SELECT * FROM tenants WHERE slug = ?")
-    .get(slug) as TenantRecord | undefined;
+  const tenant = db.prepare("SELECT * FROM tenants WHERE slug = ?").get(slug) as
+    | TenantRecord
+    | undefined;
+
+  const siteConfig = getTenantConfigBySlug(slug);
 
   if (!tenant) {
     // If querying an unseeded slug, return a synthetic TenantRecord (pure read, no side-effect write)
     return {
       id: 0,
       slug,
-      name: formatTenantName(slug),
+      name: siteConfig?.name || formatTenantName(slug),
       status: "active",
-      admin_email: null,
-      custom_domain: null,
+      admin_email: siteConfig?.adminEmail || null,
+      custom_domain: siteConfig?.customDomain || null,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
+    };
+  }
+
+  if (siteConfig?.name) {
+    return {
+      ...tenant,
+      name: siteConfig.name,
+      admin_email: siteConfig.adminEmail ?? tenant.admin_email,
     };
   }
 
@@ -120,9 +130,7 @@ export function getTenantByDomain(domain: string): TenantRecord | null {
 
 export function getAllTenants(): TenantRecord[] {
   const db = getPlatformDb();
-  return db
-    .prepare("SELECT * FROM tenants ORDER BY name ASC")
-    .all() as TenantRecord[];
+  return db.prepare("SELECT * FROM tenants ORDER BY name ASC").all() as TenantRecord[];
 }
 
 export function createTenantRecord(
@@ -140,14 +148,12 @@ export function createTenantRecord(
   return getTenantBySlug(slug);
 }
 
-export function setTenantStatus(
-  slug: string,
-  status: "active" | "suspended"
-): void {
+export function setTenantStatus(slug: string, status: "active" | "suspended"): void {
   const db = getPlatformDb();
-  db.prepare(
-    "UPDATE tenants SET status = ?, updated_at = datetime('now') WHERE slug = ?"
-  ).run(status, slug);
+  db.prepare("UPDATE tenants SET status = ?, updated_at = datetime('now') WHERE slug = ?").run(
+    status,
+    slug
+  );
 }
 
 export function registerCalendarChannel(
@@ -162,9 +168,7 @@ export function registerCalendarChannel(
   ).run(channelId, tenantSlug, resourceId);
 }
 
-export function getTenantSlugByCalendarChannel(
-  channelId: string
-): string | null {
+export function getTenantSlugByCalendarChannel(channelId: string): string | null {
   const db = getPlatformDb();
   const row = db
     .prepare("SELECT tenant_slug FROM calendar_channels WHERE channel_id = ?")

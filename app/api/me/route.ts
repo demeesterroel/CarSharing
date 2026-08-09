@@ -3,6 +3,7 @@ import { getDb } from "@/lib/db";
 import { isMailEnabled } from "@/lib/mailer";
 import { getSessionEpoch, isActivePerson, isOwner, shortNameOf } from "@/lib/queries/people";
 import { sessionOptions, type SessionData } from "@/lib/session";
+import { extractTenantSlug, runWithTenant } from "@/lib/tenant-context";
 import { getIronSession } from "iron-session";
 import { NextResponse } from "next/server";
 
@@ -43,73 +44,76 @@ function withCsrfCookie(req: Request, response: NextResponse): NextResponse {
 }
 
 export async function GET(req: Request) {
-  // Use the final response when reading the session so cookie writes (destroy) attach to it.
-  const out = NextResponse.json(null);
-  const session = await getIronSession<SessionData>(req, out, sessionOptions);
-  if (!session.authenticated) {
-    return withCsrfCookie(req, out);
-  }
+  const tenantSlug = extractTenantSlug(req);
+  return runWithTenant(tenantSlug, async () => {
+    // Use the final response when reading the session so cookie writes (destroy) attach to it.
+    const out = NextResponse.json(null);
+    const session = await getIronSession<SessionData>(req, out, sessionOptions);
+    if (!session.authenticated) {
+      return withCsrfCookie(req, out);
+    }
 
-  // Reject phantom sessions — person deleted, deactivated, or missing after cookie was issued.
-  // Destroy the session so the client is forced to log in again.
-  if (!session.personId || !isActivePerson(getDb(), session.personId)) {
-    session.destroy();
-    await session.save();
-    return withCsrfCookie(req, out);
-  }
-
-  // Honour server-side session revocation ("log out everywhere"): if this
-  // cookie's epoch is stale, destroy it and report as logged out.
-  if (session.epoch !== undefined && session.personId !== undefined) {
-    if (getSessionEpoch(getDb(), session.personId) !== session.epoch) {
-      // Persist the destroy to the bound response (`out`) — returning a fresh
-      // NextResponse would drop the cleared-cookie header, leaving the client a
-      // "valid" cookie that the Edge proxy keeps treating as authenticated (#284).
+    // Reject phantom sessions — person deleted, deactivated, or missing after cookie was issued.
+    // Destroy the session so the client is forced to log in again.
+    if (!session.personId || !isActivePerson(getDb(), session.personId)) {
       session.destroy();
       await session.save();
       return withCsrfCookie(req, out);
     }
-  }
 
-  const cloaked = session.cloakedAs;
+    // Honour server-side session revocation ("log out everywhere"): if this
+    // cookie's epoch is stale, destroy it and report as logged out.
+    if (session.epoch !== undefined && session.personId !== undefined) {
+      if (getSessionEpoch(getDb(), session.personId) !== session.epoch) {
+        // Persist the destroy to the bound response (`out`) — returning a fresh
+        // NextResponse would drop the cleared-cookie header, leaving the client a
+        // "valid" cookie that the Edge proxy keeps treating as authenticated (#284).
+        session.destroy();
+        await session.save();
+        return withCsrfCookie(req, out);
+      }
+    }
 
-  if (cloaked) {
-    // While cloaked, return the cloaked person's identity.
-    // isOwner is computed from their personId; isAdmin reflects their actual role.
-    const cloakedOwner = isOwner(getDb(), cloaked.personId);
-    const { shortName: cloakedShortName, themePreference } = getPersonFields(cloaked.personId);
+    const cloaked = session.cloakedAs;
+
+    if (cloaked) {
+      // While cloaked, return the cloaked person's identity.
+      // isOwner is computed from their personId; isAdmin reflects their actual role.
+      const cloakedOwner = isOwner(getDb(), cloaked.personId);
+      const { shortName: cloakedShortName, themePreference } = getPersonFields(cloaked.personId);
+      return withCsrfCookie(
+        req,
+        NextResponse.json({
+          personId: cloaked.personId,
+          shortName: cloakedShortName ?? cloaked.shortName,
+          isAdmin: cloaked.isAdmin,
+          isOwner: cloakedOwner,
+          isCloaked: true,
+          themePreference,
+          mailEnabled: isMailEnabled(),
+        })
+      );
+    }
+
+    let owner = false;
+    if (session.personId) {
+      owner = isOwner(getDb(), session.personId);
+    }
+
+    const fields = session.personId
+      ? getPersonFields(session.personId)
+      : { shortName: session.shortName ?? null, themePreference: null };
     return withCsrfCookie(
       req,
       NextResponse.json({
-        personId: cloaked.personId,
-        shortName: cloakedShortName ?? cloaked.shortName,
-        isAdmin: cloaked.isAdmin,
-        isOwner: cloakedOwner,
-        isCloaked: true,
-        themePreference,
+        personId: session.personId ?? null,
+        shortName: fields.shortName,
+        isAdmin: session.isAdmin ?? false,
+        isOwner: owner,
+        isCloaked: false,
+        themePreference: fields.themePreference,
         mailEnabled: isMailEnabled(),
       })
     );
-  }
-
-  let owner = false;
-  if (session.personId) {
-    owner = isOwner(getDb(), session.personId);
-  }
-
-  const fields = session.personId
-    ? getPersonFields(session.personId)
-    : { shortName: session.shortName ?? null, themePreference: null };
-  return withCsrfCookie(
-    req,
-    NextResponse.json({
-      personId: session.personId ?? null,
-      shortName: fields.shortName,
-      isAdmin: session.isAdmin ?? false,
-      isOwner: owner,
-      isCloaked: false,
-      themePreference: fields.themePreference,
-      mailEnabled: isMailEnabled(),
-    })
-  );
+  });
 }

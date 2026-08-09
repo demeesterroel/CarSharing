@@ -4,6 +4,7 @@
   "description": "A self-hosted Progressive Web App (PWA) for managing a car-sharing cooperative. Track mileage trips, fuel fill-ups, maintenance costs, car reservations, and per-member financial balances.",
   "scripts": {
     "dev": "next dev --webpack",
+    "dev:seed": "npm run seed:demo && next dev --webpack",
     "build": "next build --webpack",
     "start": "next start",
     "lint": "eslint .",

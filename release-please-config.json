@@ -14,8 +14,6 @@
   ],
   "include-component-in-tag": false,
   "packages": {
-    ".": {
-      "release-as": "1.21.1"
-    }
+    ".": {}
   }
 }

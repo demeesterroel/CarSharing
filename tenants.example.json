@@ -7,9 +7,9 @@
       "adminEmail": "admin@coop-a.local"
     },
     "antwerp.coop.localhost": {
-      "slug": "coop-b",
+      "slug": "antwerp",
       "name": "Cooperative B (Antwerpen)",
-      "adminEmail": "admin@coop-b.local"
+      "adminEmail": "admin@antwerp.local"
     }
   }
 }

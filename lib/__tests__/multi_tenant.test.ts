@@ -148,14 +148,26 @@ describe("Multi-Tenant Architecture", () => {
       expect(extractTenantSlug(req)).toBe("groenebuurt");
     });
 
-    it("extracts tenant slug from subdomain", () => {
+    it("extracts tenant slug from subdomain.domain.tld", () => {
       const req = new NextRequest("http://groenebuurt.carsharing.app/trips", {
         headers: { host: "groenebuurt.carsharing.app" },
       });
       expect(extractTenantSlug(req)).toBe("groenebuurt");
     });
 
-    it("falls back to default tenant for main domain or localhost", () => {
+    it("extracts tenant slug from *.localhost development subdomains", () => {
+      const reqA = new NextRequest("http://coop-a.localhost:3000/login", {
+        headers: { host: "coop-a.localhost:3000" },
+      });
+      expect(extractTenantSlug(reqA)).toBe("coop-a");
+
+      const reqB = new NextRequest("http://coop-b.localhost:3000/login", {
+        headers: { host: "coop-b.localhost:3000" },
+      });
+      expect(extractTenantSlug(reqB)).toBe("coop-b");
+    });
+
+    it("falls back to default tenant for main domain or plain localhost", () => {
       const reqLocal = new NextRequest("http://localhost:3000/", {
         headers: { host: "localhost:3000" },
       });

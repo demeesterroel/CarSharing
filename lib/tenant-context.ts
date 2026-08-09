@@ -5,7 +5,7 @@ import { env } from "./env";
  * Extracts the tenant slug from an incoming HTTP request.
  * Strategy:
  * 1. Read `x-tenant-slug` header if present (e.g. injected by reverse proxy).
- * 2. Parse subdomain from `Host` header (e.g. `coop-a.carsharing.app` -> `coop-a`).
+ * 2. Parse subdomain from `Host` header (e.g. `coop-a.localhost` or `coop-a.carsharing.app` -> `coop-a`).
  * 3. Fallback to `env.DEFAULT_TENANT_SLUG` ("primary").
  */
 export function extractTenantSlug(req: NextRequest | Request): string {
@@ -19,16 +19,25 @@ export function extractTenantSlug(req: NextRequest | Request): string {
   const host = req.headers.get("host") || "";
   const hostname = host.split(":")[0].toLowerCase();
 
-  // Exclude IP addresses and localhost
+  // Exclude empty host, plain "localhost", or IP addresses
   if (!hostname || hostname === "localhost" || /^(\d{1,3}\.){3}\d{1,3}$/.test(hostname)) {
     return defaultSlug;
   }
 
   const parts = hostname.split(".");
-  // If subdomain exists (e.g. coop.domain.com or coop.local)
+
+  // Handle subdomain.localhost (e.g., coop-a.localhost -> parts: ['coop-a', 'localhost'])
+  if (parts.length === 2 && parts[1] === "localhost") {
+    const subdomain = parts[0];
+    if (subdomain && subdomain !== "www" && subdomain !== "app") {
+      return subdomain;
+    }
+  }
+
+  // Handle subdomain.domain.tld (e.g. coop-a.carsharing.app -> 3+ parts)
   if (parts.length >= 3) {
     const subdomain = parts[0];
-    if (subdomain !== "www" && subdomain !== "app") {
+    if (subdomain && subdomain !== "www" && subdomain !== "app") {
       return subdomain;
     }
   }

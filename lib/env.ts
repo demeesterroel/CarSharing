@@ -1,9 +1,10 @@
 import { z } from "zod";
 
 const isBuildPhase = process.env.NEXT_PHASE === "phase-production-build";
+const isBuildOrTest = isBuildPhase || process.env.NODE_ENV === "test";
 
 const envSchema = z.object({
-  SESSION_PASSWORD: isBuildPhase
+  SESSION_PASSWORD: isBuildOrTest
     ? z.string().optional().default("build-placeholder")
     : z.string().min(1, "SESSION_PASSWORD is required"),
   DB_PATH: z
@@ -23,7 +24,9 @@ const envSchema = z.object({
   MAIL_FROM: z.string().optional(),
   // Resend HTTP API key. When set, transactional mail (reset / magic-link /
   // invite) is sent via Resend; takes precedence over MAIL_WEBHOOK_URL.
-  RESEND_API_KEY: z.string().optional(),
+  // Multi-tenant configuration
+  DEFAULT_TENANT_SLUG: z.string().optional().default("primary"),
+  TENANTS_DIR: z.string().optional().default("data/tenants"),
 });
 
 type Env = z.infer<typeof envSchema>;

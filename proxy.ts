@@ -36,19 +36,28 @@ const ADMIN_ONLY_PAGES = ["/vehicles", "/people", "/payments"];
 // endpoints and the magic-link consume route stay accessible.
 const GUEST_ONLY_PAGES = ["/login", "/forgot", "/reset"];
 
+import { extractTenantSlug } from "@/lib/tenant-context";
+
 export async function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl;
+  const tenantSlug = extractTenantSlug(req);
+
+  const requestHeaders = new Headers(req.headers);
+  requestHeaders.set("x-tenant-slug", tenantSlug);
 
   // Static assets and Next.js internals are excluded via the matcher below.
   if (PUBLIC_PATHS.some((p) => pathname === p || pathname.startsWith(p + "/"))) {
     if (GUEST_ONLY_PAGES.some((p) => pathname === p || pathname.startsWith(p + "/"))) {
-      const res = NextResponse.next();
+      const res = NextResponse.next({ request: { headers: requestHeaders } });
+      res.headers.set("x-tenant-slug", tenantSlug);
       const session = await getIronSession<SessionData>(req, res, sessionOptions);
       if (session.authenticated) {
         return NextResponse.redirect(new URL("/", req.url));
       }
     }
-    return NextResponse.next();
+    const res = NextResponse.next({ request: { headers: requestHeaders } });
+    res.headers.set("x-tenant-slug", tenantSlug);
+    return res;
   }
 
   // Reject sessions that lack a personId — env-var fallback admin sessions
@@ -67,7 +76,8 @@ export async function proxy(req: NextRequest) {
     return loginRedirect;
   }
 
-  const res = NextResponse.next();
+  const res = NextResponse.next({ request: { headers: requestHeaders } });
+  res.headers.set("x-tenant-slug", tenantSlug);
   // Re-read session on the pass-through response so downstream cookie ops are wired correctly.
   await getIronSession<SessionData>(req, res, sessionOptions);
 

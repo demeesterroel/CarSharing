@@ -88,11 +88,7 @@ describe("Multi-Tenant Architecture", () => {
     });
 
     it("provisions new tenant records and updates status", () => {
-      const tenant = createTenantRecord(
-        "zonnedael",
-        "Zonnedael Autodeel",
-        "admin@zonnedael.be"
-      );
+      const tenant = createTenantRecord("zonnedael", "Zonnedael Autodeel", "admin@zonnedael.be");
       expect(tenant.slug).toBe("zonnedael");
       expect(tenant.name).toBe("Zonnedael Autodeel");
       expect(tenant.admin_email).toBe("admin@zonnedael.be");
@@ -127,21 +123,23 @@ describe("Multi-Tenant Architecture", () => {
       expect(dbA).not.toBe(dbB);
 
       // Verify schema was initialized on tenant-a
-      const tablesA = dbA
-        .prepare("SELECT name FROM sqlite_master WHERE type='table'")
-        .all() as { name: string }[];
+      const tablesA = dbA.prepare("SELECT name FROM sqlite_master WHERE type='table'").all() as {
+        name: string;
+      }[];
       const tableNamesA = tablesA.map((t) => t.name);
       expect(tableNamesA).toContain("people");
       expect(tableNamesA).toContain("cars");
       expect(tableNamesA).toContain("trips");
 
       // Verify tenant data isolation
-      dbA.prepare(
-        "INSERT INTO people (first_name, last_name, discount) VALUES ('Alice', 'Smith', 0)"
-      ).run();
-      dbB.prepare(
-        "INSERT INTO people (first_name, last_name, discount) VALUES ('Bob', 'Jones', 0)"
-      ).run();
+      dbA
+        .prepare(
+          "INSERT INTO people (first_name, last_name, discount) VALUES ('Alice', 'Smith', 0)"
+        )
+        .run();
+      dbB
+        .prepare("INSERT INTO people (first_name, last_name, discount) VALUES ('Bob', 'Jones', 0)")
+        .run();
 
       const peopleA = dbA
         .prepare("SELECT first_name FROM people WHERE first_name IN ('Alice', 'Bob')")
@@ -192,6 +190,11 @@ describe("Multi-Tenant Architecture", () => {
         headers: { host: "app.carsharing.app" },
       });
       expect(extractTenantSlug(reqApp)).toBe("primary");
+
+      const reqAutodelen = new NextRequest("http://autodelen.bluette.be/", {
+        headers: { host: "autodelen.bluette.be" },
+      });
+      expect(extractTenantSlug(reqAutodelen)).toBe("primary");
     });
   });
 });

@@ -34,8 +34,25 @@ export function getTenantDbPath(slug?: string): string {
  * @returns The tenant's `better-sqlite3` database instance.
  */
 export function getDb(tenantSlug?: string): Database.Database {
+  let slug = tenantSlug;
+
+  // Auto-detect tenant slug from request headers if not explicitly passed
+  if (!slug && typeof window === "undefined") {
+    try {
+      // Dynamic import or AsyncLocalStorage pattern
+      const { headers } = require("next/headers");
+      const h = headers();
+      const headerSlug = h.get("x-tenant-slug");
+      if (headerSlug) {
+        slug = headerSlug.trim().toLowerCase();
+      }
+    } catch {
+      // Outside request context (e.g. CLI / scripts) — fall back to default
+    }
+  }
+
   const defaultSlug = env.DEFAULT_TENANT_SLUG ?? "primary";
-  const slug = tenantSlug || defaultSlug;
+  slug = slug || defaultSlug;
 
   let db = _dbConnections.get(slug);
   if (!db || !db.open) {

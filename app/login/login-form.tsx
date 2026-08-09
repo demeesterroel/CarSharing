@@ -133,39 +133,27 @@ export default function LoginForm({
           <p
             style={{
               fontFamily: fontMono,
-              fontSize: 11,
-              color: tokens.inkDim,
+              fontSize: 12,
+              fontWeight: 600,
+              color: tokens.ink,
               marginTop: 6,
-              letterSpacing: 1,
+              letterSpacing: 0.5,
             }}
           >
-            {t("brand.tagline")}
+            {tenantName ?? t("brand.tagline")}
+            {tenantSlug && tenantSlug !== "primary" && (
+              <span
+                style={{
+                  fontSize: 10,
+                  color: tokens.inkDim,
+                  marginLeft: 6,
+                  textTransform: "uppercase",
+                }}
+              >
+                ({tenantSlug})
+              </span>
+            )}
           </p>
-
-          {tenantName && (
-            <div
-              style={{
-                display: "inline-flex",
-                alignItems: "center",
-                gap: 6,
-                marginTop: 12,
-                padding: "4px 12px",
-                background: tokens.paperDark,
-                borderRadius: 16,
-                fontFamily: fontMono,
-                fontSize: 11,
-                fontWeight: 600,
-                color: tokens.ink,
-              }}
-            >
-              <span>{tenantName}</span>
-              {tenantSlug && tenantSlug !== "primary" && (
-                <span style={{ fontSize: 9, color: tokens.inkDim, textTransform: "uppercase" }}>
-                  ({tenantSlug})
-                </span>
-              )}
-            </div>
-          )}
 
           <div style={{ display: "flex", justifyContent: "center", marginTop: 16 }}>
             <LangSwitcher />

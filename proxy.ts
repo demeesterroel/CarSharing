@@ -76,6 +76,12 @@ export async function proxy(req: NextRequest) {
   if (!session.authenticated) {
     return loginRedirect;
   }
+  // Cross-tenant session protection: if session was issued for a different tenant, destroy and redirect to login
+  if (session.tenantSlug && session.tenantSlug !== tenantSlug) {
+    session.destroy();
+    await session.save();
+    return loginRedirect;
+  }
   if (!session.personId) {
     session.destroy();
     await session.save();

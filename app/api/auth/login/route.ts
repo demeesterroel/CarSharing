@@ -91,6 +91,7 @@ export async function POST(req: Request) {
   const res = NextResponse.json({ ok: true });
   const session = await getIronSession<SessionData>(req, res, sessionOptions);
   session.authenticated = true;
+  session.tenantSlug = tenantSlug ?? "primary";
   session.personId = sessionPersonId;
   session.shortName = sessionShortName;
   session.isAdmin = sessionIsAdmin;

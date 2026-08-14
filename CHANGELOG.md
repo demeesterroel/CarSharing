@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.21.3](https://github.com/demeesterroel/CarSharing/compare/v1.21.2...v1.21.3) (2026-08-14)
+
+
+### 🐛 Bug fixes
+
+* **docker:** use Node http module for container healthcheck ([ccc173c](https://github.com/demeesterroel/CarSharing/commit/ccc173ca01ffef2ffb3a7d5b86f4b7f71094d0c7))
+
 ## [1.21.2](https://github.com/demeesterroel/CarSharing/compare/v1.21.1...v1.21.2) (2026-08-09)
 
 

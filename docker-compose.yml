@@ -11,7 +11,7 @@ services:
         failure_action: rollback
         delay: 2s
     healthcheck:
-      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:3000/"]
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3000', (r) => process.exit(r.statusCode < 500 ? 0 : 1))"]
       interval: 5s
       timeout: 3s
       retries: 3

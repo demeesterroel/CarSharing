@@ -53,3 +53,5 @@ data
 coverage/
 test-results/
 .mcp.json
+.aider*
+tenants.json
